@@ -1,0 +1,24 @@
+{
+    "id": "ragnarmmo:status_recovery",
+    "display_name": "Recovery",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 5,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 40,
+    "cast_time_ticks": 0,
+    "requirements": {},
+    "jobs": [
+        "PRIEST"
+    ],
+    "ui": {
+        "texture": "priest/priest_recovery",
+        "grid_x": 1,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.priest.StatusRecoverySkillEffect"
+}

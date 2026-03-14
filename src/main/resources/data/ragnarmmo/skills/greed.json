@@ -1,0 +1,25 @@
+{
+    "id": "ragnarmmo:greed",
+    "display_name": "Greed",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 1,
+        "upgrade_cost": 1
+    },
+    "costs": {
+        "base_cost": 10,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 2,
+    "jobs": [
+        "BLACKSMITH"
+    ],
+    "ui": {
+        "texture": "blacksmith/blacksmith_greed",
+        "grid_x": 8,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.GreedSkillEffect"
+}

@@ -1,0 +1,25 @@
+{
+    "id": "ragnarmmo:grimtooth",
+    "display_name": "Grimtooth",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "STR",
+    "progression": {
+        "max_level": 5,
+        "upgrade_cost": 1
+    },
+    "requirements": {
+        "ragnarmmo:sonic_blow": 5,
+        "ragnarmmo:cloak": 2
+    },
+    "jobs": [
+        "ASSASSIN"
+    ],
+    "ui": {
+        "texture": "assassin/assassin_grimtooth",
+        "grid_x": 5,
+        "grid_y": 3
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.GrimtoothSkillEffect"
+}

@@ -1,0 +1,121 @@
+{
+    "job": "BLACKSMITH",
+    "tier": 2,
+    "inherit": "ragnarmmo:merchant_1",
+    "grid": {
+        "width": 10,
+        "height": 10
+    },
+    "skills": [
+        {
+            "id": "ragnarmmo:iron_tempering",
+            "x": 4,
+            "y": 1
+        },
+        {
+            "id": "ragnarmmo:steel_tempering",
+            "x": 5,
+            "y": 1
+        },
+        {
+            "id": "ragnarmmo:enchanted_stone_craft",
+            "x": 5,
+            "y": 2
+        },
+        {
+            "id": "ragnarmmo:research_oridecon",
+            "x": 6,
+            "y": 2
+        },
+        {
+            "id": "ragnarmmo:smith_dagger",
+            "x": 5,
+            "y": 3
+        },
+        {
+            "id": "ragnarmmo:smith_sword",
+            "x": 6,
+            "y": 3
+        },
+        {
+            "id": "ragnarmmo:smith_two_handed_sword",
+            "x": 7,
+            "y": 3
+        },
+        {
+            "id": "ragnarmmo:smith_axe",
+            "x": 7,
+            "y": 4
+        },
+        {
+            "id": "ragnarmmo:smith_mace",
+            "x": 8,
+            "y": 5
+        },
+        {
+            "id": "ragnarmmo:smith_brass_knuckle",
+            "x": 7,
+            "y": 5
+        },
+        {
+            "id": "ragnarmmo:smith_spear",
+            "x": 7,
+            "y": 6
+        },
+        {
+            "id": "ragnarmmo:finding_ore",
+            "x": 6,
+            "y": 1
+        },
+        {
+            "id": "ragnarmmo:research_weaponry",
+            "x": 5,
+            "y": 4
+        },
+        {
+            "id": "ragnarmmo:repair_weapon",
+            "x": 6,
+            "y": 4
+        },
+        {
+            "id": "ragnarmmo:skin_tempering",
+            "x": 4,
+            "y": 4
+        },
+        {
+            "id": "ragnarmmo:hammer_fall",
+            "x": 4,
+            "y": 7
+        },
+        {
+            "id": "ragnarmmo:adrenaline_rush",
+            "x": 5,
+            "y": 7
+        },
+        {
+            "id": "ragnarmmo:weapon_perfection",
+            "x": 6,
+            "y": 7
+        },
+        {
+            "id": "ragnarmmo:over_thrust",
+            "x": 6,
+            "y": 8
+        },
+        {
+            "id": "ragnarmmo:maximize_power",
+            "x": 7,
+            "y": 8
+        },
+        {
+            "id": "ragnarmmo:full_adrenaline_rush",
+            "x": 6,
+            "y": 9
+        },
+        {
+            "id": "ragnarmmo:cart_termination",
+            "x": 4,
+            "y": 9
+        }
+    ]
+}

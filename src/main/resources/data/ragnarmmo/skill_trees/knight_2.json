@@ -1,0 +1,68 @@
+{
+  "job": "KNIGHT",
+  "tier": 2,
+  "grid": {
+    "width": 10,
+    "height": 7
+  },
+  "inherit_from": [
+    "ragnarmmo:swordsman_1"
+  ],
+  "skills": [
+    {
+      "id": "ragnarmmo:spear_mastery",
+      "x": 5,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:pierce",
+      "x": 6,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:spear_stab",
+      "x": 7,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:spear_boomerang",
+      "x": 8,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:brandish_spear",
+      "x": 8,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:two_hand_quicken",
+      "x": 5,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:auto_counter",
+      "x": 6,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:bowling_bash",
+      "x": 7,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:one_hand_quicken",
+      "x": 5,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:peco_peco_ride",
+      "x": 9,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:cavalier_mastery",
+      "x": 9,
+      "y": 2
+    }
+  ]
+}

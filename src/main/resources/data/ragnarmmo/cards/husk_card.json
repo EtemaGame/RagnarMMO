@@ -1,0 +1,10 @@
+{
+    "id": "husk_card",
+    "displayName": "Husk Card",
+    "mobId": "minecraft:husk",
+    "modifiers": {
+        "ragnarmmo:vit": 1.5
+    },
+    "dropRate": 0.01,
+    "modelId": 26
+}

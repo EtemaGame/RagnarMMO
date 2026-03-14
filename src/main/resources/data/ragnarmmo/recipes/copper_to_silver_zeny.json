@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "ragnarmmo:copper_zeny" },
+    { "item": "ragnarmmo:copper_zeny" },
+    { "item": "ragnarmmo:copper_zeny" },
+    { "item": "ragnarmmo:copper_zeny" },
+    { "item": "ragnarmmo:copper_zeny" },
+    { "item": "ragnarmmo:copper_zeny" },
+    { "item": "ragnarmmo:copper_zeny" },
+    { "item": "ragnarmmo:copper_zeny" },
+    { "item": "ragnarmmo:copper_zeny" }
+  ],
+  "result": {
+    "item": "ragnarmmo:silver_zeny",
+    "count": 1
+  }
+}

@@ -1,0 +1,11 @@
+{
+    "id": "warden_card",
+    "displayName": "Warden Card",
+    "mobId": "minecraft:warden",
+    "modifiers": {
+        "ragnarmmo:vit": 4.0,
+        "ragnarmmo:str": 2.0
+    },
+    "dropRate": 0.001,
+    "modelId": 65
+}

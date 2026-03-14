@@ -1,0 +1,11 @@
+{
+    "id": "iron_golem_card",
+    "displayName": "Iron Golem Card",
+    "mobId": "minecraft:iron_golem",
+    "modifiers": {
+        "ragnarmmo:str": 2.0,
+        "ragnarmmo:vit": 2.0
+    },
+    "dropRate": 0.005,
+    "modelId": 28
+}

@@ -1,0 +1,29 @@
+{
+    "id": "ragnarmmo:beast_strafing",
+    "display_name": "Beast Strafing",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 1,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 12,
+        "cost_per_level": 0
+    },
+    "jobs": [
+        "HUNTER"
+    ],
+    "requirements": {
+        "ragnarmmo:double_strafe": 10
+    },
+    "ui": {
+        "texture": "hunter/hunter_beast_strafing",
+        "grid_x": 0,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.hunter.BeastStrafingSkillEffect"
+}

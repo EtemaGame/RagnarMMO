@@ -1,0 +1,10 @@
+{
+    "id": "allay_card",
+    "displayName": "Allay Card",
+    "mobId": "minecraft:allay",
+    "modifiers": {
+        "ragnarmmo:luk": 1.5
+    },
+    "dropRate": 0.01,
+    "modelId": 1
+}

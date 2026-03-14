@@ -1,0 +1,10 @@
+{
+    "id": "bat_card",
+    "displayName": "Bat Card",
+    "mobId": "minecraft:bat",
+    "modifiers": {
+        "ragnarmmo:agi": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 2
+}

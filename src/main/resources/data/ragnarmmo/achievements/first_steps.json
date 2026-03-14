@@ -1,0 +1,13 @@
+{
+    "category": "BASIC",
+    "name": "First Steps",
+    "description": "Reach Base Level 10.",
+    "trigger_type": "level_up",
+    "trigger_id": "base",
+    "required_amount": 10,
+    "points": 10,
+    "title": "Novice",
+    "rewards": {
+        "minecraft:apple": 5
+    }
+}

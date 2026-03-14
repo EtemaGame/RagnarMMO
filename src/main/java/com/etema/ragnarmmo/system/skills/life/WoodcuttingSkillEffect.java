@@ -1,0 +1,16 @@
+package com.etema.ragnarmmo.system.skills.life;
+
+import net.minecraft.resources.ResourceLocation;
+import com.etema.ragnarmmo.system.skills.ISkillEffect;
+
+/**
+ * Effect handler for Woodcutting skill.
+ * Break speed bonuses are applied via {@link LifeSkillBreakSpeedHandler}.
+ */
+public class WoodcuttingSkillEffect implements ISkillEffect {
+
+    @Override
+    public ResourceLocation getSkillId() {
+        return ResourceLocation.fromNamespaceAndPath("ragnarmmo", "woodcutting");
+    }
+}

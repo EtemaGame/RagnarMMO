@@ -1,0 +1,18 @@
+{
+    "id": "ragnarmmo:assassin_base_dual_wield",
+    "display_name": "Dual Wield Training",
+    "category": "CLASS_PASSIVE",
+    "tier": "SECOND",
+    "usage": "PASSIVE",
+    "scaling_stat": "AGI",
+    "requirements": {},
+    "jobs": [
+        "ASSASSIN"
+    ],
+    "ui": {
+        "texture": "assassin/assassin_dual_wield_training",
+        "grid_x": 0,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.DualWieldSkillEffect"
+}

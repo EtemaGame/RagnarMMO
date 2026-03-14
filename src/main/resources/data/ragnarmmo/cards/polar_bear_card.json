@@ -1,0 +1,10 @@
+{
+    "id": "polar_bear_card",
+    "displayName": "Polar Bear Card",
+    "mobId": "minecraft:polar_bear",
+    "modifiers": {
+        "ragnarmmo:str": 1.5
+    },
+    "dropRate": 0.01,
+    "modelId": 41
+}

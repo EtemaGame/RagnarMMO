@@ -1,0 +1,23 @@
+{
+    "id": "ragnarmmo:steel_tempering",
+    "display_name": "Steel Tempering",
+    "category": "CLASS_PASSIVE",
+    "tier": "SECOND",
+    "usage": "PASSIVE",
+    "progression": {
+        "max_level": 5,
+        "upgrade_cost": 1
+    },
+    "requirements": {
+        "ragnarmmo:iron_tempering": 1
+    },
+    "jobs": [
+        "BLACKSMITH"
+    ],
+    "ui": {
+        "texture": "blacksmith/blacksmith_steel_tempering",
+        "grid_x": 0,
+        "grid_y": 3
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.SteelTemperingSkillEffect"
+}

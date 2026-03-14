@@ -1,0 +1,20 @@
+{
+    "id": "ragnarmmo:sonic_acceleration",
+    "display_name": "Sonic Acceleration",
+    "category": "CLASS_PASSIVE",
+    "tier": "SECOND",
+    "usage": "PASSIVE",
+    "scaling_stat": "DEX",
+    "requirements": {
+        "ragnarmmo:sonic_blow": 1
+    },
+    "jobs": [
+        "ASSASSIN"
+    ],
+    "ui": {
+        "texture": "assassin/assassin_sonic_acceleration",
+        "grid_x": 5,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.SonicAccelerationSkillEffect"
+}

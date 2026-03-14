@@ -1,0 +1,13 @@
+{
+    "category": "BATTLE",
+    "name": "Creeper Sweeper",
+    "description": "Defeat 50 Creepers.",
+    "trigger_type": "kill_mob",
+    "trigger_id": "minecraft:creeper",
+    "required_amount": 50,
+    "points": 20,
+    "title": "Explosive",
+    "rewards": {
+        "minecraft:gunpowder": 20
+    }
+}

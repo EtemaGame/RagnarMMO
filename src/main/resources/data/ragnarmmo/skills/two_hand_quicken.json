@@ -1,0 +1,21 @@
+{
+    "id": "ragnarmmo:two_hand_quicken",
+    "display_name": "Two-Hand Quicken",
+    "family": "ragnarmmo:physical_buff",
+    "costs": {
+        "base_cost": 20,
+        "cost_per_level": 5
+    },
+    "requirements": {
+        "ragnarmmo:two_hand_mastery": 1
+    },
+    "jobs": [
+        "KNIGHT"
+    ],
+    "ui": {
+        "texture": "knight/knight_two_hand_quicken",
+        "grid_x": 0,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.knight.TwoHandQuickenSkillEffect"
+}

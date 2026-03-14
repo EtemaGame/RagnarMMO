@@ -1,0 +1,13 @@
+{
+    "category": "BASIC",
+    "name": "Adventurer Training",
+    "description": "Reach Base Level 50.",
+    "trigger_type": "level_up",
+    "trigger_id": "base",
+    "required_amount": 50,
+    "points": 30,
+    "title": "Experienced",
+    "rewards": {
+        "minecraft:diamond": 1
+    }
+}

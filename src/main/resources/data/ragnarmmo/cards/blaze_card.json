@@ -1,0 +1,10 @@
+{
+    "id": "blaze_card",
+    "displayName": "Blaze Card",
+    "mobId": "minecraft:blaze",
+    "modifiers": {
+        "ragnarmmo:dex": 2.0
+    },
+    "dropRate": 0.005,
+    "modelId": 4
+}

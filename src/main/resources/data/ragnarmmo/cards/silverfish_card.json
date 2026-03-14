@@ -1,0 +1,10 @@
+{
+    "id": "silverfish_card",
+    "displayName": "Silverfish Card",
+    "mobId": "minecraft:silverfish",
+    "modifiers": {
+        "ragnarmmo:agi": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 48
+}

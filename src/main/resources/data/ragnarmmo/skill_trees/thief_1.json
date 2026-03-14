@@ -1,0 +1,40 @@
+{
+  "job": "THIEF",
+  "tier": 1,
+  "grid": {
+    "width": 10,
+    "height": 7
+  },
+  "skills": [
+    {
+      "id": "ragnarmmo:double_attack",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:improve_dodge",
+      "x": 1,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:steal",
+      "x": 2,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:hiding",
+      "x": 2,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:envenom",
+      "x": 3,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:detoxify",
+      "x": 3,
+      "y": 1
+    }
+  ]
+}

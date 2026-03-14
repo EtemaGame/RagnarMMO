@@ -1,0 +1,21 @@
+{
+    "id": "ragnarmmo:auto_counter",
+    "display_name": "Auto Counter",
+    "family": "ragnarmmo:physical_attack",
+    "costs": {
+        "base_cost": 2,
+        "cost_per_level": 1
+    },
+    "requirements": {
+        "ragnarmmo:two_hand_mastery": 1
+    },
+    "jobs": [
+        "KNIGHT"
+    ],
+    "ui": {
+        "texture": "knight/knight_auto_counter",
+        "grid_x": 0,
+        "grid_y": 3
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.knight.AutoCounterSkillEffect"
+}

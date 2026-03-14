@@ -1,0 +1,91 @@
+{
+  "minecraft:leather_helmet": {
+    "requiredBaseLevel": 1
+  },
+  "minecraft:leather_chestplate": {
+    "requiredBaseLevel": 1
+  },
+  "minecraft:leather_leggings": {
+    "requiredBaseLevel": 1
+  },
+  "minecraft:leather_boots": {
+    "requiredBaseLevel": 1
+  },
+  "minecraft:chainmail_helmet": {
+    "requiredBaseLevel": 12
+  },
+  "minecraft:chainmail_chestplate": {
+    "requiredBaseLevel": 12
+  },
+  "minecraft:chainmail_leggings": {
+    "requiredBaseLevel": 12
+  },
+  "minecraft:chainmail_boots": {
+    "requiredBaseLevel": 12
+  },
+  "minecraft:iron_helmet": {
+    "requiredBaseLevel": 15
+  },
+  "minecraft:iron_chestplate": {
+    "requiredBaseLevel": 15
+  },
+  "minecraft:iron_leggings": {
+    "requiredBaseLevel": 15
+  },
+  "minecraft:iron_boots": {
+    "requiredBaseLevel": 15
+  },
+  "minecraft:golden_helmet": {
+    "requiredBaseLevel": 10
+  },
+  "minecraft:golden_chestplate": {
+    "requiredBaseLevel": 10
+  },
+  "minecraft:golden_leggings": {
+    "requiredBaseLevel": 10
+  },
+  "minecraft:golden_boots": {
+    "requiredBaseLevel": 10
+  },
+  "minecraft:diamond_helmet": {
+    "requiredBaseLevel": 25,
+    "cardSlots": 1
+  },
+  "minecraft:diamond_chestplate": {
+    "requiredBaseLevel": 25,
+    "cardSlots": 1
+  },
+  "minecraft:diamond_leggings": {
+    "requiredBaseLevel": 25,
+    "cardSlots": 1
+  },
+  "minecraft:diamond_boots": {
+    "requiredBaseLevel": 25,
+    "cardSlots": 1
+  },
+  "minecraft:netherite_helmet": {
+    "requiredBaseLevel": 40,
+    "cardSlots": 1
+  },
+  "minecraft:netherite_chestplate": {
+    "requiredBaseLevel": 40,
+    "cardSlots": 1
+  },
+  "minecraft:netherite_leggings": {
+    "requiredBaseLevel": 40,
+    "cardSlots": 1
+  },
+  "minecraft:netherite_boots": {
+    "requiredBaseLevel": 40,
+    "cardSlots": 1
+  },
+  "minecraft:turtle_helmet": {
+    "requiredBaseLevel": 20
+  },
+  "minecraft:elytra": {
+    "requiredBaseLevel": 30
+  },
+  "minecraft:shield": {
+    "requiredBaseLevel": 5
+  }
+}

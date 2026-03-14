@@ -1,0 +1,11 @@
+{
+    "id": "wither_card",
+    "displayName": "Wither Card",
+    "mobId": "minecraft:wither",
+    "modifiers": {
+        "ragnarmmo:int": 4.0,
+        "ragnarmmo:str": 3.0
+    },
+    "dropRate": 0.001,
+    "modelId": 67
+}

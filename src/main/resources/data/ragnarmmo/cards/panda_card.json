@@ -1,0 +1,10 @@
+{
+    "id": "panda_card",
+    "displayName": "Panda Card",
+    "mobId": "minecraft:panda",
+    "modifiers": {
+        "ragnarmmo:vit": 1.0
+    },
+    "dropRate": 0.02,
+    "modelId": 34
+}

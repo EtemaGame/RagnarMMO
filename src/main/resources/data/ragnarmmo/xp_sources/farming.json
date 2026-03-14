@@ -1,0 +1,32 @@
+{
+    "minecraft:wheat": {
+        "farming": 15
+    },
+    "minecraft:carrots": {
+        "farming": 15
+    },
+    "minecraft:potatoes": {
+        "farming": 15
+    },
+    "minecraft:beetroots": {
+        "farming": 15
+    },
+    "minecraft:melon": {
+        "farming": 20
+    },
+    "minecraft:pumpkin": {
+        "farming": 20
+    },
+    "minecraft:sugar_cane": {
+        "farming": 5
+    },
+    "minecraft:cactus": {
+        "farming": 5
+    },
+    "minecraft:cocoa": {
+        "farming": 15
+    },
+    "minecraft:nether_wart": {
+        "farming": 10
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "id": "salmon_card",
+    "displayName": "Salmon Card",
+    "mobId": "minecraft:salmon",
+    "modifiers": {
+        "ragnarmmo:agi": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 45
+}

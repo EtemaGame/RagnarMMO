@@ -1,0 +1,10 @@
+{
+    "id": "pig_card",
+    "displayName": "Pig Card",
+    "mobId": "minecraft:pig",
+    "modifiers": {
+        "ragnarmmo:vit": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 37
+}

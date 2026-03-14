@@ -1,0 +1,13 @@
+{
+    "category": "ADVENTURE",
+    "name": "Apple Gatherer",
+    "description": "Collect 50 Apples.",
+    "trigger_type": "pickup_item",
+    "trigger_id": "minecraft:apple",
+    "required_amount": 50,
+    "points": 20,
+    "title": "Hoarder",
+    "rewards": {
+        "minecraft:golden_apple": 1
+    }
+}

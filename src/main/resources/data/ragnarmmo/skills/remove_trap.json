@@ -1,0 +1,29 @@
+{
+    "id": "ragnarmmo:remove_trap",
+    "display_name": "Remove Trap",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 1,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 5,
+        "cost_per_level": 0
+    },
+    "jobs": [
+        "HUNTER"
+    ],
+    "requirements": {
+        "ragnarmmo:land_mine": 1
+    },
+    "ui": {
+        "texture": "hunter/hunter_remove_trap",
+        "grid_x": 0,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.hunter.RemoveTrapSkillEffect"
+}

@@ -1,0 +1,26 @@
+{
+    "id": "ragnarmmo:lex_aeterna",
+    "display_name": "Lex Aeterna",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 10,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 60,
+    "cast_time_ticks": 0,
+    "requirements": {
+        "ragnarmmo:lex_divina": 5
+    },
+    "jobs": [
+        "PRIEST"
+    ],
+    "ui": {
+        "texture": "priest/priest_lex_aeterna",
+        "grid_x": 6,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.priest.LexAeternaSkillEffect"
+}

@@ -1,0 +1,103 @@
+{
+  "job": "PRIEST",
+  "tier": 2,
+  "grid": {
+    "width": 10,
+    "height": 7
+  },
+  "inherit_from": [
+    "ragnarmmo:acolyte_1"
+  ],
+  "skills": [
+    {
+      "id": "ragnarmmo:increase_sp_recovery_priest",
+      "x": 5,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:mace_mastery",
+      "x": 5,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:impositio_manus",
+      "x": 5,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:suffragium",
+      "x": 6,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:aspersion",
+      "x": 6,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:benedictio_sanctissimi_sacramenti",
+      "x": 7,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:slow_poison",
+      "x": 5,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:status_recovery",
+      "x": 5,
+      "y": 4
+    },
+    {
+      "id": "ragnarmmo:resurrection",
+      "x": 6,
+      "y": 4
+    },
+    {
+      "id": "ragnarmmo:magnificat",
+      "x": 5,
+      "y": 5
+    },
+    {
+      "id": "ragnarmmo:kyrie_eleison",
+      "x": 6,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:gloria",
+      "x": 7,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:lex_divina",
+      "x": 8,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:lex_aeterna",
+      "x": 9,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:turn_undead",
+      "x": 8,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:magnus_exorcismus",
+      "x": 9,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:sanctuary",
+      "x": 6,
+      "y": 5
+    },
+    {
+      "id": "ragnarmmo:safety_wall",
+      "x": 7,
+      "y": 5
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+    "id": "ragnarmmo:blitz_beat",
+    "family": "ragnarmmo:falcon_skill",
+    "display_name": "Blitz Beat",
+    "costs": {
+        "base_cost": 20,
+        "cost_per_level": 4
+    },
+    "requirements": {
+        "ragnarmmo:falconry_mastery": 1
+    },
+    "jobs": [
+        "HUNTER"
+    ],
+    "ui": {
+        "texture": "hunter/hunter_blitz_beat",
+        "grid_x": 2,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.hunter.BlitzBeatSkillEffect"
+}

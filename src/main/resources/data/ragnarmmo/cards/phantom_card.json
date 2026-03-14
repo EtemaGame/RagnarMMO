@@ -1,0 +1,10 @@
+{
+    "id": "phantom_card",
+    "displayName": "Phantom Card",
+    "mobId": "minecraft:phantom",
+    "modifiers": {
+        "ragnarmmo:agi": 1.5
+    },
+    "dropRate": 0.01,
+    "modelId": 36
+}

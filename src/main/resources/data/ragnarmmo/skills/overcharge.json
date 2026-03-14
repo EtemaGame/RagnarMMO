@@ -1,0 +1,25 @@
+{
+    "id": "ragnarmmo:overcharge",
+    "display_name": "Overcharge",
+    "category": "CLASS_PASSIVE",
+    "tier": "FIRST",
+    "usage": "PASSIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "jobs": [
+        "MERCHANT"
+    ],
+    "requirements": {
+        "ragnarmmo:discount": 3
+    },
+    "ui": {
+        "texture": "merchant/merchant_overcharge",
+        "grid_x": 0,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.merchant.OverchargeSkillEffect"
+}

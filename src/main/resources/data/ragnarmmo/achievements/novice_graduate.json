@@ -1,0 +1,13 @@
+{
+    "category": "BASIC",
+    "name": "Novice Graduate",
+    "description": "Reach Job Level 10.",
+    "trigger_type": "level_up",
+    "trigger_id": "job",
+    "required_amount": 10,
+    "points": 10,
+    "title": "Ready to Change",
+    "rewards": {
+        "minecraft:bread": 10
+    }
+}

@@ -1,0 +1,30 @@
+{
+    "id": "ragnarmmo:thunder_storm",
+    "display_name": "Thunder Storm",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 29,
+        "cost_per_level": 5
+    },
+    "cooldown_ticks": 40,
+    "jobs": [
+        "MAGE"
+    ],
+    "requirements": {
+        "ragnarmmo:lightning_bolt": 4
+    },
+    "ui": {
+        "texture": "mage/mage_thunder_storm",
+        "grid_x": 1,
+        "grid_y": 6
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.mage.ThunderStormSkillEffect"
+}

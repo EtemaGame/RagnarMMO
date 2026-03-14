@@ -1,0 +1,31 @@
+{
+    "id": "ragnarmmo:benedictio_sanctissimi_sacramenti",
+    "display_name": "Benedictio Sanctissimi Sacramenti",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 5,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 20,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 100,
+    "jobs": [
+        "PRIEST"
+    ],
+    "requirements": {
+        "ragnarmmo:aspersion": 5,
+        "ragnarmmo:gloria": 3
+    },
+    "ui": {
+        "texture": "priest/priest_benedictio_sanctissimi_sacramenti",
+        "grid_x": 3,
+        "grid_y": 5
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.priest.BenedictioSanctissimiSacramentiSkillEffect"
+}

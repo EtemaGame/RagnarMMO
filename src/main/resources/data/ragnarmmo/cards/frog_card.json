@@ -1,0 +1,10 @@
+{
+    "id": "frog_card",
+    "displayName": "Frog Card",
+    "mobId": "minecraft:frog",
+    "modifiers": {
+        "ragnarmmo:agi": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 20
+}

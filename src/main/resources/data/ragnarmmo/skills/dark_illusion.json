@@ -1,0 +1,26 @@
+{
+    "id": "ragnarmmo:dark_illusion",
+    "display_name": "Dark Illusion",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "STR",
+    "costs": {
+        "base_cost": 40,
+        "cost_per_level": 5
+    },
+    "cooldown_ticks": 100,
+    "cast_time_ticks": 0,
+    "requirements": {
+        "ragnarmmo:cloak": 5
+    },
+    "jobs": [
+        "ASSASSIN"
+    ],
+    "ui": {
+        "texture": "assassin/assassin_dark_illusion",
+        "grid_x": 6,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.DarkIllusionSkillEffect"
+}

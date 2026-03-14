@@ -1,0 +1,30 @@
+{
+    "id": "ragnarmmo:frost_diver",
+    "display_name": "Frost Diver",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 25,
+        "cost_per_level": 1
+    },
+    "cooldown_ticks": 30,
+    "jobs": [
+        "MAGE"
+    ],
+    "requirements": {
+        "ragnarmmo:cold_bolt": 5
+    },
+    "ui": {
+        "texture": "mage/mage_frost_diver",
+        "grid_x": 1,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.mage.FrostDiverSkillEffect"
+}

@@ -1,0 +1,10 @@
+{
+    "id": "chicken_card",
+    "displayName": "Chicken Card",
+    "mobId": "minecraft:chicken",
+    "modifiers": {
+        "ragnarmmo:agi": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 8
+}

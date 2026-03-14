@@ -1,0 +1,18 @@
+{
+    "id": "ragnarmmo:increase_sp_recovery_priest",
+    "display_name": "Increase Spiritual Power",
+    "category": "CLASS_PASSIVE",
+    "tier": "SECOND",
+    "usage": "PASSIVE",
+    "scaling_stat": "INT",
+    "requirements": {},
+    "jobs": [
+        "PRIEST"
+    ],
+    "ui": {
+        "texture": "priest/priest_increase_spiritual_power",
+        "grid_x": 0,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.priest.IncreaseSpRecoverySkillEffect"
+}

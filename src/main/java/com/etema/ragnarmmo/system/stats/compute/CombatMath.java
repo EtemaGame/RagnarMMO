@@ -1,0 +1,479 @@
+package com.etema.ragnarmmo.system.stats.compute;
+
+import net.minecraft.world.item.*;
+
+/**
+ * Formulas de combate basadas en Ragnarok Online (pre-renewal).
+ * Todos los valores son constantes hardcodeadas usando las formulas RO
+ * clasicas.
+ *
+ * Referencia: https://irowiki.org/wiki/Attacks
+ */
+public final class CombatMath {
+
+    private CombatMath() {
+    }
+
+    // ========================================
+    // CONSTANTES RO (hardcodeadas)
+    // ========================================
+
+    // ATK
+    private static final double DEX_TO_ATK_DIVISOR = 5.0;
+    private static final double LUK_TO_ATK_DIVISOR = 3.0; // iROWiki Renewal
+    private static final double LEVEL_TO_ATK_MULT = 0.25;
+
+    // MATK
+    private static final double DEX_TO_MATK_DIVISOR = 5.0; // iROWiki Renewal
+    private static final double LUK_TO_MATK_DIVISOR = 3.0; // iROWiki Renewal
+    private static final double LEVEL_TO_MATK_MULT = 0.25;
+
+    // Damage Variance
+    private static final double MIN_DAMAGE_ROLL = 0.8;
+    private static final double DEX_VARIANCE_DIVISOR = 200.0;
+    private static final double LUK_VARIANCE_BONUS = 300.0;
+
+    // HIT/FLEE
+    public static final double HIT_BASE = 120.0;
+    public static final double DEX_TO_HIT_MULT = 1.0;
+    public static final double LUK_TO_HIT_DIVISOR = 3.0;
+    public static final double LEVEL_TO_HIT_MULT = 1.0;
+    public static final double FLEE_BASE = 120.0;
+    public static final double AGI_TO_FLEE_MULT = 1.0;
+    public static final double LUK_TO_FLEE_DIVISOR = 5.0;
+    public static final double LEVEL_TO_FLEE_MULT = 1.0;
+    public static final double HIT_FLEE_FORMULA_CONSTANT = 80.0;
+    private static final double PERFECT_DODGE_DIVISOR = 10.0;
+    private static final double PERFECT_DODGE_MAX = 0.3;
+
+    // Critical
+    private static final double LUK_TO_CRIT_DIVISOR = 3.0;
+    private static final double DEX_TO_CRIT_DIVISOR = 0.0; // disabled
+    private static final double CRIT_MAX = 0.8;
+    private static final double CRIT_BASE_MULT = 1.4;
+    private static final double LUK_TO_CRIT_DMG_DIVISOR = 200.0;
+    private static final double STR_TO_CRIT_DMG_DIVISOR = 0.0; // disabled
+
+    // ASPD
+    private static final double AGI_TO_ASPD = 0.25;
+    private static final double DEX_TO_ASPD = 0.1;
+    private static final double ASPD_RO_MIN = 50.0;
+    private static final double ASPD_RO_MAX = 200.0;
+    private static final double ASPD_MIN = 0.25;
+    private static final double APS_MAX = 8.0;
+
+    public static final int SHIELD_ASPD_PENALTY = 5; // iROWiki flat penalty
+
+    // Defense
+    private static final double ARMOR_HARD_DEF_MULT = 5.0;
+    private static final double VIT_HARD_DEF_MULT = 0.5;
+    private static final double HARD_DEF_CONSTANT = 100.0;
+    private static final double DR_PHYS_MAX = 0.8;
+
+    // MDEF
+    private static final double MDEF_CONSTANT = 80.0;
+    private static final double DR_MAGIC_MAX = 0.7;
+    private static final double MDEF_SOFT_REDUCTION = 0.25;
+
+    // Cast Time
+    private static final double CAST_FIXED_RATIO = 0.2;
+    private static final double CAST_MIN = 0.0;
+
+    // HP
+    private static final double HP_REGEN_BASE = 1.0;
+    private static final double VIT_TO_HP_REGEN = 0.2;
+    private static final double HP_REGEN_MAX_PERCENT = 0.02;
+
+    // Mana
+    private static final double MANA_REGEN_BASE_PERCENT = 0.01;
+    private static final double INT_TO_MANA_REGEN = 0.002;
+    private static final double MANA_REGEN_MAX_PERCENT = 0.05;
+
+    // ========================================
+    // UTILIDADES
+    // ========================================
+
+    public static double clamp(double min, double max, double value) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    public static double soft(double value, double constant) {
+        if (constant <= 0)
+            return 0;
+        return value / (value + constant);
+    }
+
+    public static double lerp(double a, double b, double t) {
+        return a + (b - a) * t;
+    }
+
+    // ========================================
+    // ATK (ATAQUE FISICO)
+    // ========================================
+
+    public static double computeStatusATK(int STR, int DEX, int LUK, int level, boolean isRanged) {
+        double atk = 0;
+
+        if (isRanged) {
+            atk += DEX * 1.0;
+            atk += STR / DEX_TO_ATK_DIVISOR;
+        } else {
+            atk += STR * 1.0;
+            atk += DEX / DEX_TO_ATK_DIVISOR;
+        }
+
+        atk += LUK / LUK_TO_ATK_DIVISOR;
+        atk += level * LEVEL_TO_ATK_MULT;
+
+        return atk;
+    }
+
+    public static double computeWeaponATK(double weaponBase, int STR) {
+        return weaponBase * (1.0 + STR / 200.0);
+    }
+
+    public static double computeTotalATK(int STR, int DEX, int LUK, int level,
+            double weaponATK, double bonusATK, boolean isRanged) {
+        double status = computeStatusATK(STR, DEX, LUK, level, isRanged);
+        double weapon = computeWeaponATK(weaponATK, STR);
+        return status + weapon + bonusATK;
+    }
+
+    public static double computeDamageVariance(double baseDamage, int DEX, int LUK,
+            java.util.Random rng) {
+        double dexFactor = clamp(0, 1, DEX / DEX_VARIANCE_DIVISOR);
+        double lukBonus = LUK_VARIANCE_BONUS > 0 ? LUK / LUK_VARIANCE_BONUS : 0;
+
+        double floor = MIN_DAMAGE_ROLL + (1 - MIN_DAMAGE_ROLL) * (dexFactor + lukBonus);
+        floor = clamp(MIN_DAMAGE_ROLL, 1.0, floor);
+
+        double variance = floor + rng.nextDouble() * (1.0 - floor);
+        return baseDamage * variance;
+    }
+
+    /**
+     * Compute the minimum damage floor (deterministic, no RNG).
+     * Used by StatComputer to show the damage range in UI.
+     */
+    public static double computeDamageVarianceFloor(double baseDamage, int DEX, int LUK) {
+        double dexFactor = clamp(0, 1, DEX / DEX_VARIANCE_DIVISOR);
+        double lukBonus = LUK_VARIANCE_BONUS > 0 ? LUK / LUK_VARIANCE_BONUS : 0;
+
+        double floor = MIN_DAMAGE_ROLL + (1 - MIN_DAMAGE_ROLL) * (dexFactor + lukBonus);
+        floor = clamp(MIN_DAMAGE_ROLL, 1.0, floor);
+
+        return baseDamage * floor;
+    }
+
+    // ========================================
+    // MATK (ATAQUE MAGICO)
+    // ========================================
+
+    public static double computeStatusMATK(int INT, int DEX, int LUK, int level) {
+        double matk = INT * 1.5;
+
+        matk += DEX / DEX_TO_MATK_DIVISOR;
+        matk += LUK / LUK_TO_MATK_DIVISOR;
+        matk += level * LEVEL_TO_MATK_MULT;
+
+        return matk;
+    }
+
+    public static double computeTotalMATK(int INT, int DEX, int LUK, int level,
+            double spellBase, double bonusMATK) {
+        return computeStatusMATK(INT, DEX, LUK, level) + spellBase + bonusMATK;
+    }
+
+    // ========================================
+    // HIT / FLEE
+    // ========================================
+
+    public static double computeHIT(int DEX, int LUK, int level, double bonus) {
+        return HIT_BASE
+                + DEX * DEX_TO_HIT_MULT
+                + LUK / LUK_TO_HIT_DIVISOR
+                + level * LEVEL_TO_HIT_MULT
+                + bonus;
+    }
+
+    public static double computeFLEE(int AGI, int LUK, int level, double bonus) {
+        return FLEE_BASE
+                + AGI * AGI_TO_FLEE_MULT
+                + LUK / LUK_TO_FLEE_DIVISOR
+                + level * LEVEL_TO_FLEE_MULT
+                + bonus;
+    }
+
+    public static double computeHitRate(double attackerHIT, double defenderFLEE) {
+        double hitRate = HIT_FLEE_FORMULA_CONSTANT + attackerHIT - defenderFLEE;
+        return clamp(0.05, 0.95, hitRate / 100.0);
+    }
+
+    public static double computePerfectDodge(int LUK) {
+        double pd = 0.01 + (LUK / PERFECT_DODGE_DIVISOR / 100.0);
+        return clamp(0.0, PERFECT_DODGE_MAX, pd);
+    }
+
+    // ========================================
+    // CRITICO
+    // ========================================
+
+    public static double computeCritChance(int LUK, int DEX, double bonus) {
+        double crit = 0.01 + (LUK / LUK_TO_CRIT_DIVISOR / 100.0);
+
+        if (DEX_TO_CRIT_DIVISOR > 0) {
+            crit += DEX / DEX_TO_CRIT_DIVISOR / 100.0;
+        }
+
+        crit += bonus;
+        return clamp(0.0, CRIT_MAX, crit);
+    }
+
+    public static double computeCritDamageMultiplier(int LUK, int STR) {
+        double mult = CRIT_BASE_MULT;
+
+        mult += LUK / LUK_TO_CRIT_DMG_DIVISOR;
+
+        if (STR_TO_CRIT_DMG_DIVISOR > 0) {
+            mult += STR / STR_TO_CRIT_DMG_DIVISOR;
+        }
+
+        return mult;
+    }
+
+    // ========================================
+    // ASPD (VELOCIDAD DE ATAQUE)
+    // ========================================
+
+    public static boolean isRangedWeapon(ItemStack weapon) {
+        if (weapon.isEmpty())
+            return false;
+        Item item = weapon.getItem();
+        return item instanceof BowItem || item instanceof CrossbowItem || item instanceof TridentItem;
+    }
+
+    public static int getWeaponBaseASPD(ItemStack weapon) {
+        if (weapon.isEmpty())
+            return 180; // Puño
+
+        Item item = weapon.getItem();
+
+        if (item instanceof SwordItem)
+            return 170;
+        if (item instanceof AxeItem)
+            return 155;
+        if (item instanceof PickaxeItem)
+            return 160;
+        if (item instanceof ShovelItem)
+            return 165;
+        if (item instanceof HoeItem)
+            return 175;
+        if (item instanceof BowItem || item instanceof CrossbowItem)
+            return 165;
+        if (item instanceof TridentItem)
+            return 150;
+
+        return 170;
+    }
+
+    public static int computeASPD_RO(int baseWeaponASPD, boolean hasShield, int AGI, int DEX, double bonus) {
+        double aspd = baseWeaponASPD
+                + AGI * AGI_TO_ASPD
+                + DEX * DEX_TO_ASPD
+                + bonus;
+
+        if (hasShield) {
+            aspd -= SHIELD_ASPD_PENALTY;
+        }
+
+        return (int) clamp(ASPD_RO_MIN, ASPD_RO_MAX, aspd);
+    }
+
+    public static double convertASPD_ToAPS(int aspdRO) {
+        if (aspdRO >= 200)
+            return APS_MAX;
+        if (aspdRO <= 0)
+            return ASPD_MIN;
+
+        double aps = 50.0 / (200.0 - aspdRO);
+        return clamp(ASPD_MIN, APS_MAX, aps);
+    }
+
+    public static double computeAPS(ItemStack weapon, boolean hasShield, int AGI, int DEX, double bonus) {
+        int baseASPD = getWeaponBaseASPD(weapon);
+        int aspdRO = computeASPD_RO(baseASPD, hasShield, AGI, DEX, bonus);
+        return convertASPD_ToAPS(aspdRO);
+    }
+
+    // ========================================
+    // DEFENSA FISICA
+    // ========================================
+
+    public static double computeSoftDEF(int VIT, int AGI, int level) {
+        return (VIT * 1.0) + (level / 2.0) + (AGI / 5.0);
+    }
+
+    public static double computeHardDEF(double armorDEF, int VIT) {
+        return armorDEF * ARMOR_HARD_DEF_MULT + VIT * VIT_HARD_DEF_MULT;
+    }
+
+    public static double computePhysDR(double totalDEF) {
+        double dr = soft(totalDEF, HARD_DEF_CONSTANT);
+        return clamp(0, DR_PHYS_MAX, dr);
+    }
+
+    public static double applyPhysicalDefense(double rawDamage, double softDEF,
+            double hardDEF, double drPhys) {
+        double afterHard = rawDamage * (1.0 - drPhys);
+        double afterSoft = Math.max(1.0, afterHard - softDEF);
+        return afterSoft;
+    }
+
+    // ========================================
+    // DEFENSA MAGICA
+    // ========================================
+
+    public static double computeMDEF(int INT, int VIT, int DEX, int level, double equipMDEF) {
+        double soft = INT + (level / 4.0) + ((VIT + level) / 5.0) + (DEX / 5.0);
+        double hard = equipMDEF;
+        return soft + hard;
+    }
+
+    public static double computeMagicDR(double totalMDEF) {
+        double dr = soft(totalMDEF, MDEF_CONSTANT);
+        return clamp(0, DR_MAGIC_MAX, dr);
+    }
+
+    public static double applyMagicDefense(double rawDamage, int INT, double drMagic) {
+        double softReduction = INT * MDEF_SOFT_REDUCTION;
+        double afterSoft = Math.max(rawDamage * 0.1, rawDamage - softReduction);
+        return afterSoft * (1.0 - drMagic);
+    }
+
+    // ========================================
+    // CAST TIME
+    // ========================================
+
+    public static double computeCastTime(double baseCast, int DEX, int INT,
+            boolean useRenewalFormula) {
+        double fixed = baseCast * CAST_FIXED_RATIO;
+        double variable = baseCast * (1.0 - CAST_FIXED_RATIO);
+
+        double castReduction = Math.sqrt(1.0 - Math.min(1.0, (DEX * 2.0 + INT) / 530.0));
+        variable *= castReduction;
+
+        return Math.max(CAST_MIN, fixed + variable);
+    }
+
+    // ========================================
+    // HP / MANA
+    // ========================================
+
+    private static double getJobHpMultiplier(String jobId) {
+        var job = com.etema.ragnarmmo.common.api.jobs.JobType.fromId(jobId);
+        return switch (job) {
+            case SWORDSMAN, KNIGHT -> 1.5;
+            case THIEF, MERCHANT -> 1.2;
+            case MAGE, WIZARD -> 0.8;
+            default -> 1.0;
+        };
+    }
+
+    private static double getJobSpMultiplier(String jobId) {
+        var job = com.etema.ragnarmmo.common.api.jobs.JobType.fromId(jobId);
+        return switch (job) {
+            case MAGE, WIZARD, ACOLYTE, PRIEST -> 1.5;
+            case ARCHER, HUNTER -> 1.2;
+            case THIEF -> 0.8;
+            case SWORDSMAN, KNIGHT -> 0.7;
+            default -> 1.0;
+        };
+    }
+
+    public static double computeMaxHP(int VIT, int level, String jobId) {
+        double jobMult = getJobHpMultiplier(jobId);
+        double hpBase = 35 + (level * 5 * jobMult);
+        return Math.floor(hpBase * (1.0 + VIT / 100.0));
+    }
+
+    public static double computeHPRegen(int VIT, double maxHP) {
+        double regen = HP_REGEN_BASE + VIT * VIT_TO_HP_REGEN;
+        return Math.min(regen, maxHP * HP_REGEN_MAX_PERCENT);
+    }
+
+    public static double computeMaxMana(int INT, int level, String jobId) {
+        double jobMult = getJobSpMultiplier(jobId);
+        double spBase = 100 + ((level - 1) * 3 * jobMult);
+        return Math.floor(spBase * (1.0 + INT / 100.0));
+    }
+
+    public static double computeManaRegen(int INT, double maxMana) {
+        double regen = maxMana * (MANA_REGEN_BASE_PERCENT + INT * INT_TO_MANA_REGEN);
+        return Math.min(regen, maxMana * MANA_REGEN_MAX_PERCENT);
+    }
+
+    // ========================================
+    // UTILIDADES DE COMBATE
+    // ========================================
+
+    public static boolean rollCritical(double critChance, java.util.Random rng) {
+        return rng.nextDouble() < critChance;
+    }
+
+    public static boolean rollHit(double hitRate, java.util.Random rng) {
+        return rng.nextDouble() < hitRate;
+    }
+
+    public static boolean rollPerfectDodge(double perfectDodge, java.util.Random rng) {
+        return rng.nextDouble() < perfectDodge;
+    }
+
+    public static double calculatePhysicalDamage(
+            int attackerSTR, int attackerDEX, int attackerLUK, int attackerLevel,
+            int defenderVIT, int defenderAGI, int defenderSTR, double defenderArmorDEF,
+            double weaponATK, double bonusATK,
+            boolean isCritical, java.util.Random rng, boolean isRanged) {
+
+        double totalATK = computeTotalATK(attackerSTR, attackerDEX, attackerLUK,
+                attackerLevel, weaponATK, bonusATK, isRanged);
+
+        double damage = computeDamageVariance(totalATK, attackerDEX, attackerLUK, rng);
+
+        if (isCritical) {
+            double critMult = computeCritDamageMultiplier(attackerLUK, attackerSTR);
+            damage *= critMult;
+        }
+
+        double softDEF = computeSoftDEF(defenderVIT, defenderAGI, attackerLevel);
+        double hardDEF = computeHardDEF(defenderArmorDEF, defenderVIT);
+        double drPhys = computePhysDR(hardDEF);
+
+        if (isCritical) {
+            softDEF = 0;
+        }
+
+        damage = applyPhysicalDefense(damage, softDEF, hardDEF, drPhys);
+
+        return Math.max(1.0, damage);
+    }
+
+    public static double calculateMagicDamage(
+            int attackerINT, int attackerDEX, int attackerLUK, int attackerLevel,
+            int defenderINT, int defenderVIT, double defenderEquipMDEF,
+            double spellBase, double bonusMATK,
+            java.util.Random rng) {
+
+        double totalMATK = computeTotalMATK(attackerINT, attackerDEX, attackerLUK,
+                attackerLevel, spellBase, bonusMATK);
+
+        double variance = 0.9 + rng.nextDouble() * 0.1;
+        double damage = totalMATK * variance;
+
+        double mdef = computeMDEF(defenderINT, defenderVIT, 1, 1, defenderEquipMDEF);
+        double drMagic = computeMagicDR(mdef);
+
+        damage = applyMagicDefense(damage, defenderINT, drMagic);
+
+        return Math.max(1.0, damage);
+    }
+}

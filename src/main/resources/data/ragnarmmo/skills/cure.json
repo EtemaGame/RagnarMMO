@@ -1,0 +1,30 @@
+{
+    "id": "ragnarmmo:cure",
+    "display_name": "Cure",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 1,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 15,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 20,
+    "jobs": [
+        "ACOLYTE"
+    ],
+    "requirements": {
+        "ragnarmmo:heal": 2
+    },
+    "ui": {
+        "texture": "acolyte/acolyte_cure",
+        "grid_x": 0,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.CureSkillEffect"
+}

@@ -1,0 +1,30 @@
+{
+    "id": "ragnarmmo:warp_portal",
+    "display_name": "Warp Portal",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 4,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 35,
+        "cost_per_level": -2
+    },
+    "cooldown_ticks": 60,
+    "jobs": [
+        "ACOLYTE"
+    ],
+    "requirements": {
+        "ragnarmmo:teleportation": 2
+    },
+    "ui": {
+        "texture": "acolyte/acolyte_warp_portal",
+        "grid_x": 4,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.WarpPortalSkillEffect"
+}

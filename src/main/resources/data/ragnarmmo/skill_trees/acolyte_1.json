@@ -1,0 +1,80 @@
+{
+  "job": "ACOLYTE",
+  "tier": 1,
+  "grid": {
+    "width": 10,
+    "height": 7
+  },
+  "skills": [
+    {
+      "id": "ragnarmmo:divine_protection",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:demon_bane",
+      "x": 0,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:angelus",
+      "x": 0,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:blessing",
+      "x": 0,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:heal",
+      "x": 2,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:increase_agi",
+      "x": 2,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:decrease_agi",
+      "x": 2,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:cure",
+      "x": 2,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:ruwach",
+      "x": 4,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:teleportation",
+      "x": 4,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:warp_portal",
+      "x": 4,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:pneuma",
+      "x": 4,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:aqua_benedicta",
+      "x": 6,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:signum_crucis",
+      "x": 1,
+      "y": 1
+    }
+  ]
+}

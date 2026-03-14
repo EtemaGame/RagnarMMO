@@ -1,0 +1,10 @@
+{
+    "id": "drowned_card",
+    "displayName": "Drowned Card",
+    "mobId": "minecraft:drowned",
+    "modifiers": {
+        "ragnarmmo:vit": 1.0
+    },
+    "dropRate": 0.01,
+    "modelId": 14
+}

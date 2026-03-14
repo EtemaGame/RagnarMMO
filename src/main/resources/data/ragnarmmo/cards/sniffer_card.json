@@ -1,0 +1,10 @@
+{
+    "id": "sniffer_card",
+    "displayName": "Sniffer Card",
+    "mobId": "minecraft:sniffer",
+    "modifiers": {
+        "ragnarmmo:luk": 2.0
+    },
+    "dropRate": 0.005,
+    "modelId": 52
+}

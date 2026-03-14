@@ -1,0 +1,10 @@
+{
+    "id": "zombified_piglin_card",
+    "displayName": "Zombified Piglin Card",
+    "mobId": "minecraft:zombified_piglin",
+    "modifiers": {
+        "ragnarmmo:str": 1.0
+    },
+    "dropRate": 0.01,
+    "modelId": 74
+}

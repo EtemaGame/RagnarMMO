@@ -1,0 +1,32 @@
+{
+    "id": "ragnarmmo:heavens_drive",
+    "display_name": "Heaven's Drive",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "progression": {
+        "max_level": 5,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 45,
+        "cost_per_level": 8
+    },
+    "cooldown_ticks": 80,
+    "cast_time_ticks": 40,
+    "requirements": {
+        "ragnarmmo:earth_spike": 3
+    },
+    "jobs": [
+        "WIZARD"
+    ],
+    "ui": {
+        "texture": "wizard/wizard_heaven_s_drive",
+        "grid_x": 7,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.wizard.HeavensDriveSkillEffect"
+}

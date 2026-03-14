@@ -1,0 +1,10 @@
+{
+    "id": "glow_squid_card",
+    "displayName": "Glow Squid Card",
+    "mobId": "minecraft:glow_squid",
+    "modifiers": {
+        "ragnarmmo:luk": 1.0
+    },
+    "dropRate": 0.01,
+    "modelId": 22
+}

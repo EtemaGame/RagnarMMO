@@ -1,0 +1,10 @@
+{
+    "id": "sheep_card",
+    "displayName": "Sheep Card",
+    "mobId": "minecraft:sheep",
+    "modifiers": {
+        "ragnarmmo:luk": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 46
+}

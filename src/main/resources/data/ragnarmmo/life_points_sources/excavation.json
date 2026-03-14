@@ -1,0 +1,30 @@
+{
+  "_comment": "Excavation points - dirt/sand common, treasure blocks more",
+
+  "minecraft:dirt": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:coarse_dirt": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:rooted_dirt": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:grass_block": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:podzol": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:mycelium": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:mud": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:muddy_mangrove_roots": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 2 },
+
+  "minecraft:sand": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:red_sand": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:suspicious_sand": { "skill": "excavation", "mode": "per_block", "points": 10 },
+
+  "minecraft:gravel": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:suspicious_gravel": { "skill": "excavation", "mode": "per_block", "points": 10 },
+
+  "minecraft:clay": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 3 },
+
+  "minecraft:soul_sand": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:soul_soil": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 2 },
+
+  "minecraft:snow_block": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:powder_snow": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 2 },
+
+  "minecraft:moss_block": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:sculk": { "skill": "excavation", "mode": "per_10", "threshold": 10, "points": 4 }
+}

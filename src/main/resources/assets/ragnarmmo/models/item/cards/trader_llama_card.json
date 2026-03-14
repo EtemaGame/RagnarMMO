@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "ragnarmmo:item/cards/trader_llama_card"
+  }
+}

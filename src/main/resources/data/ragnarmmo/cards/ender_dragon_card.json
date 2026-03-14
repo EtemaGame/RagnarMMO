@@ -1,0 +1,11 @@
+{
+    "id": "ender_dragon_card",
+    "displayName": "Ender Dragon Card",
+    "mobId": "minecraft:ender_dragon",
+    "modifiers": {
+        "ragnarmmo:str": 5.0,
+        "ragnarmmo:int": 3.0
+    },
+    "dropRate": 0.001,
+    "modelId": 15
+}

@@ -1,0 +1,17 @@
+{
+    "id": "ragnarmmo:freezing_trap",
+    "family": "ragnarmmo:trap",
+    "display_name": "Freezing Trap",
+    "requirements": {
+        "ragnarmmo:flasher": 1
+    },
+    "jobs": [
+        "HUNTER"
+    ],
+    "ui": {
+        "texture": "hunter/hunter_freezing_trap",
+        "grid_x": 4,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.hunter.FreezingTrapSkillEffect"
+}

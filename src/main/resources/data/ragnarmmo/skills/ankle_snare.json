@@ -1,0 +1,31 @@
+{
+    "id": "ragnarmmo:ankle_snare",
+    "family": "ragnarmmo:trap",
+    "display_name": "Ankle Snare",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 5,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 10,
+        "cost_per_level": 2
+    },
+    "cooldown_ticks": 60,
+    "jobs": [
+        "HUNTER"
+    ],
+    "requirements": {
+        "ragnarmmo:skid_trap": 1
+    },
+    "ui": {
+        "texture": "hunter/hunter_ankle_snare",
+        "grid_x": 4,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.hunter.AnkleSnareSkillEffect"
+}

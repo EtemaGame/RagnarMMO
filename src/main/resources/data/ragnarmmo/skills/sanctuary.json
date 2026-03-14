@@ -1,0 +1,23 @@
+{
+    "id": "ragnarmmo:sanctuary",
+    "family": "ragnarmmo:heal",
+    "display_name": "Sanctuary",
+    "costs": {
+        "base_cost": 40,
+        "cost_per_level": 8
+    },
+    "cooldown_ticks": 120,
+    "cast_time_ticks": 40,
+    "requirements": {
+        "ragnarmmo:heal": 1
+    },
+    "jobs": [
+        "PRIEST"
+    ],
+    "ui": {
+        "texture": "priest/priest_sanctuary",
+        "grid_x": 1,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.priest.SanctuarySkillEffect"
+}

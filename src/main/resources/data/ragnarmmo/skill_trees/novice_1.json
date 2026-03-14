@@ -1,0 +1,20 @@
+{
+  "job": "NOVICE",
+  "tier": 1,
+  "grid": {
+    "width": 10,
+    "height": 7
+  },
+  "skills": [
+    {
+      "id": "ragnarmmo:first_aid",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:survival_instinct",
+      "x": 3,
+      "y": 0
+    }
+  ]
+}

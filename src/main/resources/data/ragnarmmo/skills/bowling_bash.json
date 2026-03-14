@@ -1,0 +1,26 @@
+{
+    "id": "ragnarmmo:bowling_bash",
+    "family": "ragnarmmo:physical_attack",
+    "display_name": "Bowling Bash",
+    "costs": {
+        "base_cost": 25,
+        "cost_per_level": 5
+    },
+    "cooldown_ticks": 100,
+    "requirements": {
+        "ragnarmmo:two_hand_mastery": 5,
+        "ragnarmmo:bash": 10,
+        "ragnarmmo:magnum_break": 3,
+        "ragnarmmo:two_hand_quicken": 10,
+        "ragnarmmo:auto_counter": 5
+    },
+    "jobs": [
+        "KNIGHT"
+    ],
+    "ui": {
+        "texture": "knight/knight_bowling_bash",
+        "grid_x": 2,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.knight.BowlingBashSkillEffect"
+}

@@ -1,0 +1,28 @@
+{
+    "id": "ragnarmmo:lightning_bolt",
+    "display_name": "Lightning Bolt",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 12,
+        "cost_per_level": 2
+    },
+    "cooldown_ticks": 20,
+    "jobs": [
+        "MAGE"
+    ],
+    "requirements": {},
+    "ui": {
+        "texture": "mage/mage_lightning_bolt",
+        "grid_x": 3,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.mage.LightningBoltSkillEffect"
+}

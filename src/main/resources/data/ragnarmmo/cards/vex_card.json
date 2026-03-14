@@ -1,0 +1,10 @@
+{
+    "id": "vex_card",
+    "displayName": "Vex Card",
+    "mobId": "minecraft:vex",
+    "modifiers": {
+        "ragnarmmo:agi": 2.0
+    },
+    "dropRate": 0.005,
+    "modelId": 61
+}

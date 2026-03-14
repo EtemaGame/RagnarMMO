@@ -1,0 +1,10 @@
+{
+    "id": "stray_card",
+    "displayName": "Stray Card",
+    "mobId": "minecraft:stray",
+    "modifiers": {
+        "ragnarmmo:dex": 1.5
+    },
+    "dropRate": 0.01,
+    "modelId": 56
+}

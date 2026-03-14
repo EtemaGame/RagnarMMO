@@ -1,0 +1,28 @@
+{
+    "id": "ragnarmmo:magnus_exorcismus",
+    "display_name": "Magnus Exorcismus",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 40,
+        "cost_per_level": 10
+    },
+    "cooldown_ticks": 80,
+    "cast_time_ticks": 80,
+    "requirements": {
+        "ragnarmmo:safety_wall": 1,
+        "ragnarmmo:turn_undead": 3,
+        "ragnarmmo:lex_aeterna": 1
+    },
+    "jobs": [
+        "PRIEST"
+    ],
+    "ui": {
+        "texture": "priest/priest_magnus_exorcismus",
+        "grid_x": 8,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.priest.MagnusExorcismusSkillEffect"
+}

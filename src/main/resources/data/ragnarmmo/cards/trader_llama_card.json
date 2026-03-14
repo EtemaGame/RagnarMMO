@@ -1,0 +1,11 @@
+{
+    "id": "trader_llama_card",
+    "displayName": "Trader Llama Card",
+    "mobId": "minecraft:trader_llama",
+    "modifiers": {
+        "ragnarmmo:str": 1.0,
+        "ragnarmmo:luk": 0.5
+    },
+    "dropRate": 0.01,
+    "modelId": 59
+}

@@ -1,0 +1,30 @@
+{
+    "id": "ragnarmmo:one_hand_quicken",
+    "display_name": "One-Hand Quicken",
+    "category": "QUEST",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 1,
+        "upgrade_cost": 0,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": false
+    },
+    "costs": {
+        "base_cost": 50,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 20,
+    "jobs": [
+        "KNIGHT"
+    ],
+    "requirements": {
+        "ragnarmmo:two_hand_quicken": 10
+    },
+    "ui": {
+        "texture": "knight/knight_one_hand_quicken",
+        "grid_x": 3,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.knight.OneHandQuickenSkillEffect"
+}

@@ -1,0 +1,10 @@
+{
+    "id": "rabbit_card",
+    "displayName": "Rabbit Card",
+    "mobId": "minecraft:rabbit",
+    "modifiers": {
+        "ragnarmmo:agi": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 43
+}

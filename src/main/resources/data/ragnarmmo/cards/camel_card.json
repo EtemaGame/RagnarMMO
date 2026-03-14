@@ -1,0 +1,10 @@
+{
+    "id": "camel_card",
+    "displayName": "Camel Card",
+    "mobId": "minecraft:camel",
+    "modifiers": {
+        "ragnarmmo:vit": 1.5
+    },
+    "dropRate": 0.01,
+    "modelId": 5
+}

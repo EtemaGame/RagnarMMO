@@ -1,0 +1,10 @@
+{
+    "id": "skeleton_horse_card",
+    "displayName": "Skeleton Horse Card",
+    "mobId": "minecraft:skeleton_horse",
+    "modifiers": {
+        "ragnarmmo:agi": 2.0
+    },
+    "dropRate": 0.005,
+    "modelId": 50
+}

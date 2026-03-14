@@ -1,0 +1,71 @@
+{
+  "minecraft:stone": {
+    "mining": 5
+  },
+  "minecraft:diorite": {
+    "mining": 5
+  },
+  "minecraft:andesite": {
+    "mining": 5
+  },
+  "minecraft:granite": {
+    "mining": 5
+  },
+  "minecraft:coal_ore": {
+    "mining": 15
+  },
+  "minecraft:deepslate_coal_ore": {
+    "mining": 15
+  },
+  "minecraft:iron_ore": {
+    "mining": 20
+  },
+  "minecraft:deepslate_iron_ore": {
+    "mining": 20
+  },
+  "minecraft:copper_ore": {
+    "mining": 15
+  },
+  "minecraft:deepslate_copper_ore": {
+    "mining": 15
+  },
+  "minecraft:gold_ore": {
+    "mining": 30
+  },
+  "minecraft:deepslate_gold_ore": {
+    "mining": 30
+  },
+  "minecraft:redstone_ore": {
+    "mining": 25
+  },
+  "minecraft:deepslate_redstone_ore": {
+    "mining": 25
+  },
+  "minecraft:lapis_ore": {
+    "mining": 30
+  },
+  "minecraft:deepslate_lapis_ore": {
+    "mining": 30
+  },
+  "minecraft:diamond_ore": {
+    "mining": 100
+  },
+  "minecraft:deepslate_diamond_ore": {
+    "mining": 100
+  },
+  "minecraft:emerald_ore": {
+    "mining": 150
+  },
+  "minecraft:deepslate_emerald_ore": {
+    "mining": 150
+  },
+  "minecraft:deepslate": {
+    "mining": 6
+  },
+  "minecraft:netherrack": {
+    "mining": 2
+  },
+  "minecraft:obsidian": {
+    "mining": 100
+  }
+}

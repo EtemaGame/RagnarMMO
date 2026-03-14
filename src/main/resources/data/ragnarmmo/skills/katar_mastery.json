@@ -1,0 +1,18 @@
+{
+    "id": "ragnarmmo:katar_mastery",
+    "display_name": "Katar Mastery",
+    "category": "CLASS_PASSIVE",
+    "tier": "SECOND",
+    "usage": "PASSIVE",
+    "scaling_stat": "STR",
+    "requirements": {},
+    "jobs": [
+        "ASSASSIN"
+    ],
+    "ui": {
+        "texture": "assassin/assassin_katar_mastery",
+        "grid_x": 4,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.KatarMasterySkillEffect"
+}

@@ -1,0 +1,162 @@
+package com.etema.ragnarmmo.roitems.runtime;
+
+import com.etema.ragnarmmo.common.api.stats.StatKeys;
+import com.etema.ragnarmmo.roitems.data.RoItemRule;
+import com.etema.ragnarmmo.roitems.data.RoItemRuleLoader;
+import com.etema.ragnarmmo.roitems.data.RoItemRuleSet;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import net.minecraft.world.item.ItemStack;
+import java.util.EnumMap;
+import java.util.Map;
+
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Resolves an Item to its applicable RoItemRule.
+ * Uses caching for performance and implements precedence logic:
+ * 1. Exact item ID match (highest priority)
+ * 2. Tag match (middle priority)
+ * 3. Heuristic fallback (lowest priority)
+ */
+public final class RoItemRuleResolver {
+
+    // Cache: Item -> resolved RoItemRule
+    // Cleared on datapack reload
+    private static final Map<Item, RoItemRule> CACHE = new ConcurrentHashMap<>();
+
+    private RoItemRuleResolver() {
+    }
+
+    /**
+     * Clear the resolution cache.
+     * Called when datapacks are reloaded.
+     */
+    public static void clearCache() {
+        CACHE.clear();
+    }
+
+    /**
+     * Resolve the RoItemRule for an item.
+     * Results are cached for performance.
+     *
+     * @param item the item to resolve
+     * @return the resolved rule, never null (returns EMPTY if no rule applies)
+     */
+    public static RoItemRule resolve(Item item) {
+        if (item == null) {
+            return RoItemRule.EMPTY;
+        }
+        return CACHE.computeIfAbsent(item, RoItemRuleResolver::computeRule);
+    }
+
+    /**
+     * Resolve the RoItemRule for an item stack, merging with dynamic stats.
+     * 
+     * @param stack the item stack
+     * @return a merged rule (not cached due to NBT variance)
+     */
+    public static RoItemRule resolve(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return RoItemRule.EMPTY;
+        }
+
+        RoItemRule baseRule = resolve(stack.getItem());
+        java.util.List<String> slottedCards = RoItemNbtHelper.getSlottedCards(stack);
+
+        if (slottedCards.isEmpty()) {
+            return baseRule;
+        }
+
+        // Merge base rule with NBT bonuses
+        Map<StatKeys, Integer> mergedBonuses = new EnumMap<>(StatKeys.class);
+        mergedBonuses.putAll(baseRule.attributeBonuses());
+
+        mergedBonuses.putAll(baseRule.attributeBonuses());
+
+        for (String cardId : slottedCards) {
+            var cardDef = com.etema.ragnarmmo.system.loot.cards.CardRegistry.getInstance().get(cardId);
+            if (cardDef != null && cardDef.modifiers() != null) {
+                cardDef.modifiers().forEach((attr, val) -> {
+                    if (attr.startsWith("ragnarmmo:")) {
+                        try {
+                            String statName = attr.substring(10).toUpperCase(java.util.Locale.ROOT);
+                            StatKeys statKey = StatKeys.valueOf(statName);
+                            int intVal = (int) Math.round(val);
+                            mergedBonuses.put(statKey, mergedBonuses.getOrDefault(statKey, 0) + intVal);
+                        } catch (Exception ignored) {
+                        }
+                    }
+                });
+            }
+        }
+
+        String baseDisplayName = baseRule.displayName() != null ? baseRule.displayName()
+                : stack.getHoverName().getString();
+
+        return new RoItemRule(
+                baseDisplayName,
+                mergedBonuses,
+                baseRule.requiredBaseLevel(),
+                baseRule.allowedJobs(),
+                baseRule.cardSlots());
+    }
+
+    /**
+     * Compute the rule for an item (not cached).
+     * Implements precedence: itemId > tags > heuristics
+     */
+    private static RoItemRule computeRule(Item item) {
+        RoItemRuleSet ruleSet = RoItemRuleLoader.getRuleSet();
+        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(item);
+
+        if (itemId == null) {
+            return RoItemRule.EMPTY;
+        }
+
+        // 1. Check exact item ID match (highest priority)
+        RoItemRule byId = ruleSet.getByItemId(itemId);
+        if (byId != null) {
+            return byId;
+        }
+
+        // 2. Check tag matches
+        // If multiple tags match, use the first one found
+        // (In a more sophisticated system, you might combine or prioritize)
+        for (Map.Entry<ResourceLocation, RoItemRule> entry : ruleSet.getTagRules().entrySet()) {
+            TagKey<Item> tagKey = TagKey.create(Registries.ITEM, entry.getKey());
+            if (item.builtInRegistryHolder().is(tagKey)) {
+                return entry.getValue();
+            }
+        }
+
+        // 3. Heuristic fallback DISABLED
+        // In "Identity per Item" mode, we do NOT generate fake rules.
+        // If an item has no rule, it has no RO stats/requirements.
+        return RoItemRule.EMPTY;
+    }
+
+    /**
+     * Check if an item has any rule (explicit or heuristic).
+     * 
+     * @param item the item to check
+     * @return true if a non-empty rule exists
+     */
+    public static boolean hasRule(Item item) {
+        RoItemRule rule = resolve(item);
+        return rule != null && !rule.isEmpty();
+    }
+
+    /**
+     * Get cache statistics for debugging.
+     * 
+     * @return number of cached resolutions
+     */
+    public static int getCacheSize() {
+        return CACHE.size();
+    }
+}

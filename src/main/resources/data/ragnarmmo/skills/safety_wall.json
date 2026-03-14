@@ -1,0 +1,32 @@
+{
+    "id": "ragnarmmo:safety_wall",
+    "display_name": "Safety Wall",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 30,
+        "cost_per_level": 5
+    },
+    "cooldown_ticks": 100,
+    "jobs": [
+        "MAGE",
+        "PRIEST"
+    ],
+    "requirements": {
+        "ragnarmmo:napalm_beat": 7,
+        "ragnarmmo:soul_strike": 5
+    },
+    "ui": {
+        "texture": "mage/mage_safety_wall",
+        "grid_x": 3,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.mage.SafetyWallSkillEffect"
+}

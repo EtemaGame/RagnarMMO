@@ -1,0 +1,11 @@
+{
+    "id": "wandering_trader_card",
+    "displayName": "Wandering Trader Card",
+    "mobId": "minecraft:wandering_trader",
+    "modifiers": {
+        "ragnarmmo:luk": 1.5,
+        "ragnarmmo:dex": 1.0
+    },
+    "dropRate": 0.005,
+    "modelId": 64
+}

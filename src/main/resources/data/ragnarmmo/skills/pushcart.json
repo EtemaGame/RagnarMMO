@@ -1,0 +1,30 @@
+{
+    "id": "ragnarmmo:pushcart",
+    "display_name": "Pushcart",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 0,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 20,
+    "jobs": [
+        "MERCHANT"
+    ],
+    "requirements": {
+        "ragnarmmo:enlarge_weight_limit": 5
+    },
+    "ui": {
+        "texture": "merchant/merchant_pushcart",
+        "grid_x": 0,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.merchant.PushcartSkillEffect"
+}

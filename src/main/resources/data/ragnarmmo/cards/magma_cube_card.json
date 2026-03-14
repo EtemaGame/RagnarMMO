@@ -1,0 +1,10 @@
+{
+    "id": "magma_cube_card",
+    "displayName": "Magma Cube Card",
+    "mobId": "minecraft:magma_cube",
+    "modifiers": {
+        "ragnarmmo:vit": 1.5
+    },
+    "dropRate": 0.01,
+    "modelId": 30
+}

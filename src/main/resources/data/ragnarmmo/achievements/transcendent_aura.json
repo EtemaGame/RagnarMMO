@@ -1,0 +1,13 @@
+{
+    "category": "BASIC",
+    "name": "Transcendent Aura",
+    "description": "Reach Base Level 99.",
+    "trigger_type": "level_up",
+    "trigger_id": "base",
+    "required_amount": 99,
+    "points": 50,
+    "title": "Aura Holder",
+    "rewards": {
+        "minecraft:nether_star": 1
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "category": "BATTLE",
+    "name": "Skeleton Crusher",
+    "description": "Defeat 50 Skeletons.",
+    "trigger_type": "kill_mob",
+    "trigger_id": "minecraft:skeleton",
+    "required_amount": 50,
+    "points": 20,
+    "title": "Bone Crusher",
+    "rewards": {
+        "minecraft:bone": 20,
+        "minecraft:iron_nugget": 5
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "id": "ragnarmmo:spear_stab",
+    "display_name": "Spear Stab",
+    "family": "ragnarmmo:spear_skill",
+    "costs": {
+        "base_cost": 15,
+        "cost_per_level": 3
+    },
+    "requirements": {
+        "ragnarmmo:pierce": 5
+    },
+    "jobs": [
+        "KNIGHT"
+    ],
+    "ui": {
+        "texture": "knight/knight_spear_stab",
+        "grid_x": 1,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.knight.SpearStabSkillEffect"
+}

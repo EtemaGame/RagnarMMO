@@ -1,0 +1,25 @@
+{
+    "id": "ragnarmmo:storm_gust",
+    "family": "ragnarmmo:ball",
+    "display_name": "Storm Gust",
+    "tier": "SECOND",
+    "costs": {
+        "base_cost": 40,
+        "cost_per_level": 8
+    },
+    "cooldown_ticks": 100,
+    "cast_time_ticks": 60,
+    "requirements": {
+        "ragnarmmo:frost_diver": 1,
+        "ragnarmmo:jupitel_thunder": 3
+    },
+    "jobs": [
+        "WIZARD"
+    ],
+    "ui": {
+        "texture": "wizard/wizard_storm_gust",
+        "grid_x": 3,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.wizard.StormGustSkillEffect"
+}

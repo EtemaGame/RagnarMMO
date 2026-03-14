@@ -1,0 +1,25 @@
+{
+    "id": "ragnarmmo:steel_crow",
+    "display_name": "Steel Crow",
+    "category": "CLASS_PASSIVE",
+    "tier": "SECOND",
+    "usage": "PASSIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "jobs": [
+        "HUNTER"
+    ],
+    "requirements": {
+        "ragnarmmo:blitz_beat": 5
+    },
+    "ui": {
+        "texture": "hunter/hunter_steel_crow",
+        "grid_x": 0,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.hunter.SteelCrowSkillEffect"
+}

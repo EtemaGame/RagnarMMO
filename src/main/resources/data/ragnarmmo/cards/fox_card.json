@@ -1,0 +1,10 @@
+{
+    "id": "fox_card",
+    "displayName": "Fox Card",
+    "mobId": "minecraft:fox",
+    "modifiers": {
+        "ragnarmmo:luk": 1.0
+    },
+    "dropRate": 0.01,
+    "modelId": 19
+}

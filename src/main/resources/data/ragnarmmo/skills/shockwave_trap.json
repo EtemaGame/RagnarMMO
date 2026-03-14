@@ -1,0 +1,30 @@
+{
+    "id": "ragnarmmo:shockwave_trap",
+    "family": "ragnarmmo:trap",
+    "display_name": "Shockwave Trap",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 5,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 45,
+        "cost_per_level": 5
+    },
+    "jobs": [
+        "HUNTER"
+    ],
+    "requirements": {
+        "ragnarmmo:ankle_snare": 1
+    },
+    "ui": {
+        "texture": "hunter/hunter_shockwave_trap",
+        "grid_x": 0,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.hunter.ShockwaveTrapSkillEffect"
+}

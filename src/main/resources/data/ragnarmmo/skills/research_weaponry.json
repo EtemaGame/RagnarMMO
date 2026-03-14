@@ -1,0 +1,23 @@
+{
+    "id": "ragnarmmo:research_weaponry",
+    "display_name": "Weaponry Research",
+    "category": "CLASS_PASSIVE",
+    "tier": "SECOND",
+    "usage": "PASSIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1
+    },
+    "requirements": {
+        "ragnarmmo:hilt_binding": 1
+    },
+    "jobs": [
+        "BLACKSMITH"
+    ],
+    "ui": {
+        "texture": "blacksmith/blacksmith_weaponry_research",
+        "grid_x": 3,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.ResearchWeaponrySkillEffect"
+}

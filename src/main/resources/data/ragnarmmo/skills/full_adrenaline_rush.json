@@ -1,0 +1,29 @@
+{
+    "id": "ragnarmmo:full_adrenaline_rush",
+    "display_name": "Full Adrenaline Rush",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 1,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 100,
+        "cost_per_level": 0
+    },
+    "jobs": [
+        "BLACKSMITH"
+    ],
+    "requirements": {
+        "ragnarmmo:adrenaline_rush": 5
+    },
+    "ui": {
+        "texture": "blacksmith/blacksmith_full_adrenaline_rush",
+        "grid_x": 0,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.FullAdrenalineRushSkillEffect"
+}

@@ -1,0 +1,17 @@
+{
+    "id": "ragnarmmo:pierce",
+    "family": "ragnarmmo:spear_skill",
+    "display_name": "Pierce",
+    "requirements": {
+        "ragnarmmo:spear_mastery": 1
+    },
+    "jobs": [
+        "KNIGHT"
+    ],
+    "ui": {
+        "texture": "knight/knight_pierce",
+        "grid_x": 1,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.knight.PierceSkillEffect"
+}

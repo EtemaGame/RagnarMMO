@@ -1,0 +1,27 @@
+{
+  "_comment": "Fishing points - based on catch rarity. Uses item IDs, applied via FishingEventHandler",
+
+  "minecraft:cod": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:salmon": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:tropical_fish": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 4 },
+  "minecraft:pufferfish": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 3 },
+
+  "minecraft:bow": { "skill": "fishing", "mode": "per_block", "points": 8 },
+  "minecraft:enchanted_book": { "skill": "fishing", "mode": "per_block", "points": 15 },
+  "minecraft:fishing_rod": { "skill": "fishing", "mode": "per_block", "points": 5 },
+  "minecraft:name_tag": { "skill": "fishing", "mode": "per_block", "points": 10 },
+  "minecraft:nautilus_shell": { "skill": "fishing", "mode": "per_block", "points": 12 },
+  "minecraft:saddle": { "skill": "fishing", "mode": "per_block", "points": 8 },
+
+  "minecraft:lily_pad": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:bowl": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:leather": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:leather_boots": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:rotten_flesh": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:stick": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:string": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:potion": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 3 },
+  "minecraft:bone": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:ink_sac": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:tripwire_hook": { "skill": "fishing", "mode": "per_10", "threshold": 10, "points": 2 }
+}

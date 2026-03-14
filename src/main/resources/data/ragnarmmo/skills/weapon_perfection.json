@@ -1,0 +1,29 @@
+{
+    "id": "ragnarmmo:weapon_perfection",
+    "display_name": "Weapon Perfection",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 5,
+        "upgrade_cost": 1
+    },
+    "costs": {
+        "base_cost": 18,
+        "cost_per_level": 3
+    },
+    "cooldown_ticks": 100,
+    "requirements": {
+        "ragnarmmo:research_weaponry": 2,
+        "ragnarmmo:adrenaline_rush": 2
+    },
+    "jobs": [
+        "BLACKSMITH"
+    ],
+    "ui": {
+        "texture": "blacksmith/blacksmith_weapon_perfection",
+        "grid_x": 5,
+        "grid_y": 4
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.WeaponPerfectionSkillEffect"
+}

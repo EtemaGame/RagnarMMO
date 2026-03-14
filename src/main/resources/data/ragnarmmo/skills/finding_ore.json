@@ -1,0 +1,26 @@
+{
+    "id": "ragnarmmo:finding_ore",
+    "display_name": "Finding Ore",
+    "category": "CLASS_PASSIVE",
+    "tier": "SECOND",
+    "usage": "PASSIVE",
+    "progression": {
+        "max_level": 1,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "jobs": [
+        "BLACKSMITH"
+    ],
+    "requirements": {
+        "ragnarmmo:steel_tempering": 1,
+        "ragnarmmo:hilt_binding": 1
+    },
+    "ui": {
+        "texture": "blacksmith/blacksmith_finding_ore",
+        "grid_x": 0,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.FindingOreSkillEffect"
+}

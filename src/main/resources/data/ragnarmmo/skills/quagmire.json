@@ -1,0 +1,32 @@
+{
+    "id": "ragnarmmo:quagmire",
+    "display_name": "Quagmire",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "progression": {
+        "max_level": 5,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 30,
+        "cost_per_level": 5
+    },
+    "cooldown_ticks": 100,
+    "cast_time_ticks": 10,
+    "requirements": {
+        "ragnarmmo:heavens_drive": 1
+    },
+    "jobs": [
+        "WIZARD"
+    ],
+    "ui": {
+        "texture": "wizard/wizard_quagmire",
+        "grid_x": 7,
+        "grid_y": 3
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.wizard.QuagmireSkillEffect"
+}

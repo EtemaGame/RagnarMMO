@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "ragnarmmo:item/cards/skeleton_horse_card"
+  }
+}

@@ -1,0 +1,27 @@
+{
+    "id": "ragnarmmo:resurrection",
+    "display_name": "Resurrection",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 60,
+        "cost_per_level": 10
+    },
+    "cooldown_ticks": 200,
+    "cast_time_ticks": 60,
+    "requirements": {
+        "ragnarmmo:increase_sp_recovery_priest": 4,
+        "ragnarmmo:status_recovery": 1
+    },
+    "jobs": [
+        "PRIEST"
+    ],
+    "ui": {
+        "texture": "priest/priest_resurrection",
+        "grid_x": 0,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.priest.ResurrectionSkillEffect"
+}

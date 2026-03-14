@@ -1,0 +1,30 @@
+{
+    "id": "ragnarmmo:fire_ball",
+    "display_name": "Fire Ball",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 25,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 30,
+    "jobs": [
+        "MAGE"
+    ],
+    "requirements": {
+        "ragnarmmo:fire_bolt": 4
+    },
+    "ui": {
+        "texture": "mage/mage_fire_ball",
+        "grid_x": 0,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.mage.FireBallSkillEffect"
+}

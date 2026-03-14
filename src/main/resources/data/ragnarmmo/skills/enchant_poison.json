@@ -1,0 +1,26 @@
+{
+    "id": "ragnarmmo:enchant_poison",
+    "display_name": "Enchant Poison",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 20,
+        "cost_per_level": 5
+    },
+    "cooldown_ticks": 100,
+    "cast_time_ticks": 0,
+    "requirements": {
+        "ragnarmmo:envenom": 1
+    },
+    "jobs": [
+        "ASSASSIN"
+    ],
+    "ui": {
+        "texture": "assassin/assassin_enchant_poison",
+        "grid_x": 2,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.EnchantPoisonSkillEffect"
+}

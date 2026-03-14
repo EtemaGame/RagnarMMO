@@ -1,0 +1,31 @@
+{
+  "_comment": "Farming points - simple crops less, rare crops more",
+
+  "minecraft:wheat": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:carrots": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:potatoes": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:beetroots": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 1 },
+
+  "minecraft:melon": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:pumpkin": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 2 },
+
+  "minecraft:sugar_cane": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:bamboo": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:cactus": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 1 },
+
+  "minecraft:cocoa": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:sweet_berry_bush": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:glow_berries": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 3 },
+
+  "minecraft:nether_wart": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 3 },
+  "minecraft:chorus_flower": { "skill": "farming", "mode": "per_block", "points": 5 },
+  "minecraft:chorus_plant": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 2 },
+
+  "minecraft:brown_mushroom": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:red_mushroom": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:crimson_fungus": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 3 },
+  "minecraft:warped_fungus": { "skill": "farming", "mode": "per_10", "threshold": 10, "points": 3 },
+
+  "minecraft:torchflower": { "skill": "farming", "mode": "per_block", "points": 8 },
+  "minecraft:pitcher_plant": { "skill": "farming", "mode": "per_block", "points": 8 }
+}

@@ -1,0 +1,10 @@
+{
+    "id": "squid_card",
+    "displayName": "Squid Card",
+    "mobId": "minecraft:squid",
+    "modifiers": {
+        "ragnarmmo:agi": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 55
+}

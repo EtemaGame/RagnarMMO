@@ -1,0 +1,10 @@
+{
+    "id": "vindicator_card",
+    "displayName": "Vindicator Card",
+    "mobId": "minecraft:vindicator",
+    "modifiers": {
+        "ragnarmmo:str": 2.0
+    },
+    "dropRate": 0.005,
+    "modelId": 63
+}

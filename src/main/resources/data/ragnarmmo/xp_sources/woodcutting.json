@@ -1,0 +1,11 @@
+{
+    "#minecraft:logs": {
+        "woodcutting": 15
+    },
+    "#minecraft:pank_logs": {
+        "woodcutting": 15
+    },
+    "#minecraft:completes_find_tree": {
+        "woodcutting": 0
+    }
+}

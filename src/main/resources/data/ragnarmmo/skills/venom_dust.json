@@ -1,0 +1,26 @@
+{
+    "id": "ragnarmmo:venom_dust",
+    "display_name": "Venom Dust",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 20,
+        "cost_per_level": 2
+    },
+    "cooldown_ticks": 40,
+    "cast_time_ticks": 0,
+    "requirements": {
+        "ragnarmmo:enchant_poison": 5
+    },
+    "jobs": [
+        "ASSASSIN"
+    ],
+    "ui": {
+        "texture": "assassin/assassin_venom_dust",
+        "grid_x": 3,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.VenomDustSkillEffect"
+}

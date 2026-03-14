@@ -1,0 +1,23 @@
+{
+    "id": "ragnarmmo:brandish_spear",
+    "family": "ragnarmmo:spear_skill",
+    "display_name": "Brandish Spear",
+    "costs": {
+        "base_cost": 30,
+        "cost_per_level": 6
+    },
+    "cooldown_ticks": 120,
+    "requirements": {
+        "ragnarmmo:spear_stab": 3,
+        "ragnarmmo:peco_peco_ride": 1
+    },
+    "jobs": [
+        "KNIGHT"
+    ],
+    "ui": {
+        "texture": "knight/knight_brandish_spear",
+        "grid_x": 3,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.knight.BrandishSpearSkillEffect"
+}

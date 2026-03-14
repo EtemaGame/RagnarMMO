@@ -1,0 +1,13 @@
+{
+    "category": "ADVENTURE",
+    "name": "Miner Initiate",
+    "description": "Collect 64 Cobblestone.",
+    "trigger_type": "pickup_item",
+    "trigger_id": "minecraft:cobblestone",
+    "required_amount": 64,
+    "points": 10,
+    "title": "Miner",
+    "rewards": {
+        "minecraft:iron_pickaxe": 1
+    }
+}

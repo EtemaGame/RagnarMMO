@@ -1,0 +1,10 @@
+{
+    "id": "cave_spider_card",
+    "displayName": "Cave Spider Card",
+    "mobId": "minecraft:cave_spider",
+    "modifiers": {
+        "ragnarmmo:agi": 1.5
+    },
+    "dropRate": 0.01,
+    "modelId": 7
+}

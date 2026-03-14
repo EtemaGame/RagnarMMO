@@ -1,0 +1,20 @@
+{
+    "id": "ragnarmmo:iron_tempering",
+    "display_name": "Iron Tempering",
+    "category": "CLASS_PASSIVE",
+    "tier": "SECOND",
+    "usage": "PASSIVE",
+    "progression": {
+        "max_level": 5,
+        "upgrade_cost": 1
+    },
+    "jobs": [
+        "BLACKSMITH"
+    ],
+    "ui": {
+        "texture": "blacksmith/blacksmith_iron_tempering",
+        "grid_x": 0,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.IronTemperingSkillEffect"
+}

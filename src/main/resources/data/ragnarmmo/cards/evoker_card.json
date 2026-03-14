@@ -1,0 +1,10 @@
+{
+    "id": "evoker_card",
+    "displayName": "Evoker Card",
+    "mobId": "minecraft:evoker",
+    "modifiers": {
+        "ragnarmmo:int": 3.0
+    },
+    "dropRate": 0.002,
+    "modelId": 18
+}

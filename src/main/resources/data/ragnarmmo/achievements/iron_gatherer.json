@@ -1,0 +1,13 @@
+{
+    "category": "ADVENTURE",
+    "name": "Iron Gatherer",
+    "description": "Collect 64 Iron Ingots.",
+    "trigger_type": "pickup_item",
+    "trigger_id": "minecraft:iron_ingot",
+    "required_amount": 64,
+    "points": 20,
+    "title": "Iron Monger",
+    "rewards": {
+        "minecraft:iron_block": 1
+    }
+}

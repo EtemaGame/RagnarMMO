@@ -1,0 +1,78 @@
+{
+  "job": "WIZARD",
+  "tier": 2,
+  "grid": {
+    "width": 10,
+    "height": 7
+  },
+  "inherit_from": [
+    "ragnarmmo:mage_1"
+  ],
+  "skills": [
+    {
+      "id": "ragnarmmo:monster_property",
+      "x": 4,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:fire_pillar",
+      "x": 4,
+      "y": 5
+    },
+    {
+      "id": "ragnarmmo:sightrasher",
+      "x": 4,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:meteor_storm",
+      "x": 5,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:jupitel_thunder",
+      "x": 5,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:lord_of_vermillion",
+      "x": 6,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:water_ball",
+      "x": 5,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:ice_wall",
+      "x": 5,
+      "y": 4
+    },
+    {
+      "id": "ragnarmmo:frost_nova",
+      "x": 6,
+      "y": 4
+    },
+    {
+      "id": "ragnarmmo:storm_gust",
+      "x": 6,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:earth_spike",
+      "x": 4,
+      "y": 4
+    },
+    {
+      "id": "ragnarmmo:heavens_drive",
+      "x": 5,
+      "y": 4
+    },
+    {
+      "id": "ragnarmmo:quagmire",
+      "x": 6,
+      "y": 4
+    }
+  ]
+}

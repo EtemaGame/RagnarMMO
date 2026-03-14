@@ -1,0 +1,32 @@
+{
+  "_comment": "Woodcutting points - common logs less, rare woods more",
+
+  "minecraft:oak_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:birch_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:spruce_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 1 },
+
+  "minecraft:jungle_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:acacia_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:dark_oak_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 2 },
+
+  "minecraft:mangrove_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 3 },
+  "minecraft:cherry_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 3 },
+
+  "minecraft:crimson_stem": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 4 },
+  "minecraft:warped_stem": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 4 },
+
+  "minecraft:stripped_oak_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:stripped_birch_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:stripped_spruce_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:stripped_jungle_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:stripped_acacia_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:stripped_dark_oak_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:stripped_mangrove_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 3 },
+  "minecraft:stripped_cherry_log": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 3 },
+  "minecraft:stripped_crimson_stem": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 4 },
+  "minecraft:stripped_warped_stem": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 4 },
+
+  "minecraft:mushroom_stem": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:brown_mushroom_block": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:red_mushroom_block": { "skill": "woodcutting", "mode": "per_10", "threshold": 10, "points": 2 }
+}

@@ -1,0 +1,40 @@
+{
+    "job": "LIFE",
+    "tier": 1,
+    "grid": {
+        "width": 10,
+        "height": 7
+    },
+    "skills": [
+        {
+            "id": "ragnarmmo:mining",
+            "x": 0,
+            "y": 0
+        },
+        {
+            "id": "ragnarmmo:woodcutting",
+            "x": 1,
+            "y": 0
+        },
+        {
+            "id": "ragnarmmo:excavation",
+            "x": 2,
+            "y": 0
+        },
+        {
+            "id": "ragnarmmo:farming",
+            "x": 3,
+            "y": 0
+        },
+        {
+            "id": "ragnarmmo:fishing",
+            "x": 4,
+            "y": 0
+        },
+        {
+            "id": "ragnarmmo:exploration",
+            "x": 5,
+            "y": 0
+        }
+    ]
+}

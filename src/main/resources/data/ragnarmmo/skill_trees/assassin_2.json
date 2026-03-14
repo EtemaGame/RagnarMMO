@@ -1,0 +1,63 @@
+{
+    "job": "ASSASSIN",
+    "tier": 2,
+    "grid": {
+        "width": 10,
+        "height": 7
+    },
+    "inherit_from": [
+        "ragnarmmo:thief_1"
+    ],
+    "skills": [
+        {
+            "id": "ragnarmmo:righthand_mastery",
+            "x": 4,
+            "y": 1
+        },
+        {
+            "id": "ragnarmmo:lefthand_mastery",
+            "x": 5,
+            "y": 1
+        },
+        {
+            "id": "ragnarmmo:katar_mastery",
+            "x": 4,
+            "y": 2
+        },
+        {
+            "id": "ragnarmmo:sonic_blow",
+            "x": 5,
+            "y": 2
+        },
+        {
+            "id": "ragnarmmo:cloak",
+            "x": 6,
+            "y": 2
+        },
+        {
+            "id": "ragnarmmo:grimtooth",
+            "x": 7,
+            "y": 2
+        },
+        {
+            "id": "ragnarmmo:enchant_poison",
+            "x": 4,
+            "y": 3
+        },
+        {
+            "id": "ragnarmmo:poison_react",
+            "x": 5,
+            "y": 3
+        },
+        {
+            "id": "ragnarmmo:venom_dust",
+            "x": 5,
+            "y": 4
+        },
+        {
+            "id": "ragnarmmo:venom_splasher",
+            "x": 6,
+            "y": 4
+        }
+    ]
+}

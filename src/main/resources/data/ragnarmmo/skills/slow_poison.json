@@ -1,0 +1,28 @@
+{
+    "id": "ragnarmmo:slow_poison",
+    "display_name": "Slow Poison",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 4,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 6,
+        "cost_per_level": 2
+    },
+    "cooldown_ticks": 40,
+    "jobs": [
+        "PRIEST"
+    ],
+    "requirements": {},
+    "ui": {
+        "texture": "priest/priest_slow_poison",
+        "grid_x": 0,
+        "grid_y": 3
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.priest.SlowPoisonSkillEffect"
+}

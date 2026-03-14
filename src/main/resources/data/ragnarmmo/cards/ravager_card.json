@@ -1,0 +1,10 @@
+{
+    "id": "ravager_card",
+    "displayName": "Ravager Card",
+    "mobId": "minecraft:ravager",
+    "modifiers": {
+        "ragnarmmo:str": 2.5
+    },
+    "dropRate": 0.005,
+    "modelId": 44
+}

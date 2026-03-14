@@ -1,0 +1,10 @@
+{
+    "id": "bee_card",
+    "displayName": "Bee Card",
+    "mobId": "minecraft:bee",
+    "modifiers": {
+        "ragnarmmo:agi": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 3
+}

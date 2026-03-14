@@ -1,0 +1,47 @@
+{
+  "minecraft:wooden_sword": {
+    "requiredBaseLevel": 1
+  },
+  "minecraft:stone_sword": {
+    "requiredBaseLevel": 5
+  },
+  "minecraft:iron_sword": {
+    "requiredBaseLevel": 15
+  },
+  "minecraft:golden_sword": {
+    "requiredBaseLevel": 10
+  },
+  "minecraft:diamond_sword": {
+    "displayName": "Blade [3]",
+    "requiredBaseLevel": 25,
+    "cardSlots": 3
+  },
+  "minecraft:netherite_sword": {
+    "displayName": "Nether Blade [4]",
+    "requiredBaseLevel": 40,
+    "cardSlots": 4
+  },
+  "minecraft:bow": {
+    "requiredBaseLevel": 10,
+    "allowedJobs": [
+      "ARCHER",
+      "THIEF"
+    ]
+  },
+  "minecraft:crossbow": {
+    "requiredBaseLevel": 20,
+    "allowedJobs": [
+      "ARCHER"
+    ]
+  },
+  "minecraft:trident": {
+    "requiredBaseLevel": 25
+  },
+  "#forge:tools/axes": {
+    "requiredBaseLevel": 10,
+    "allowedJobs": [
+      "SWORDSMAN",
+      "MERCHANT"
+    ]
+  }
+}

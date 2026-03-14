@@ -1,0 +1,27 @@
+{
+    "id": "ragnarmmo:venom_splasher",
+    "display_name": "Venom Splasher",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "STR",
+    "costs": {
+        "base_cost": 12,
+        "cost_per_level": 2
+    },
+    "cooldown_ticks": 100,
+    "cast_time_ticks": 10,
+    "requirements": {
+        "ragnarmmo:poison_react": 5,
+        "ragnarmmo:venom_dust": 5
+    },
+    "jobs": [
+        "ASSASSIN"
+    ],
+    "ui": {
+        "texture": "assassin/assassin_venom_splasher",
+        "grid_x": 2,
+        "grid_y": 3
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.VenomSplasherSkillEffect"
+}

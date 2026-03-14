@@ -1,0 +1,33 @@
+{
+    "id": "ragnarmmo:water_ball",
+    "display_name": "Water Ball",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "progression": {
+        "max_level": 5,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 25,
+        "cost_per_level": 3
+    },
+    "cooldown_ticks": 20,
+    "cast_time_ticks": 30,
+    "requirements": {
+        "ragnarmmo:cold_bolt": 1,
+        "ragnarmmo:lightning_bolt": 1
+    },
+    "jobs": [
+        "WIZARD"
+    ],
+    "ui": {
+        "texture": "wizard/wizard_water_ball",
+        "grid_x": 4,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.wizard.WaterBallSkillEffect"
+}

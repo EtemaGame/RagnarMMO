@@ -1,0 +1,38 @@
+{
+    "minecraft:zombie": {
+        "swords": 10,
+        "axes": 10,
+        "unarmed": 10,
+        "archery": 10
+    },
+    "minecraft:skeleton": {
+        "swords": 10,
+        "axes": 10,
+        "unarmed": 10,
+        "archery": 15
+    },
+    "minecraft:creeper": {
+        "swords": 20,
+        "axes": 20,
+        "unarmed": 20,
+        "archery": 20
+    },
+    "minecraft:spider": {
+        "swords": 10,
+        "axes": 10,
+        "unarmed": 10,
+        "archery": 10
+    },
+    "minecraft:ender_dragon": {
+        "swords": 1000,
+        "axes": 1000,
+        "unarmed": 1000,
+        "archery": 1000
+    },
+    "minecraft:wither": {
+        "swords": 1000,
+        "axes": 1000,
+        "unarmed": 1000,
+        "archery": 1000
+    }
+}

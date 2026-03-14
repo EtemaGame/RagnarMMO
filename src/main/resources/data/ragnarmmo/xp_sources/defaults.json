@@ -1,0 +1,32 @@
+{
+  "minecraft:coal_ore": {
+    "mining": 15
+  },
+  "minecraft:iron_ore": {
+    "mining": 25
+  },
+  "minecraft:gold_ore": {
+    "mining": 35
+  },
+  "minecraft:diamond_ore": {
+    "mining": 100
+  },
+  "minecraft:oak_log": {
+    "woodcutting": 10
+  },
+  "minecraft:birch_log": {
+    "woodcutting": 10
+  },
+  "minecraft:spruce_log": {
+    "woodcutting": 10
+  },
+  "minecraft:zombie": {
+    "swords": 20,
+    "axes": 15,
+    "unarmed": 10
+  },
+  "minecraft:skeleton": {
+    "swords": 20,
+    "archery": 30
+  }
+}

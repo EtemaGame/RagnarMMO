@@ -1,0 +1,26 @@
+{
+    "id": "ragnarmmo:frost_nova",
+    "display_name": "Frost Nova",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 40,
+        "cost_per_level": 6
+    },
+    "cooldown_ticks": 60,
+    "cast_time_ticks": 20,
+    "requirements": {
+        "ragnarmmo:ice_wall": 1
+    },
+    "jobs": [
+        "WIZARD"
+    ],
+    "ui": {
+        "texture": "wizard/wizard_frost_nova",
+        "grid_x": 3,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.wizard.FrostNovaSkillEffect"
+}

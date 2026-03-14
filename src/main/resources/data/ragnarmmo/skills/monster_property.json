@@ -1,0 +1,28 @@
+{
+    "id": "ragnarmmo:monster_property",
+    "display_name": "Monster Property",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 1,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 10,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 40,
+    "jobs": [
+        "WIZARD"
+    ],
+    "requirements": {},
+    "ui": {
+        "texture": "wizard/wizard_monster_property",
+        "grid_x": 0,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.wizard.MonsterPropertySkillEffect"
+}

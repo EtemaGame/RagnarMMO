@@ -1,0 +1,11 @@
+{
+    "id": "mooshroom_card",
+    "displayName": "Mooshroom Card",
+    "mobId": "minecraft:mooshroom",
+    "modifiers": {
+        "ragnarmmo:vit": 1.0,
+        "ragnarmmo:luk": 0.5
+    },
+    "dropRate": 0.01,
+    "modelId": 31
+}

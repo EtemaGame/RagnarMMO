@@ -1,0 +1,31 @@
+{
+    "id": "ragnarmmo:falconry_mastery",
+    "family": "ragnarmmo:animal_mastery",
+    "display_name": "Falconry Mastery",
+    "category": "CLASS_PASSIVE",
+    "tier": "SECOND",
+    "usage": "PASSIVE",
+    "progression": {
+        "max_level": 1,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 0,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 0,
+    "jobs": [
+        "HUNTER"
+    ],
+    "requirements": {
+        "ragnarmmo:beast_bane": 1
+    },
+    "ui": {
+        "texture": "hunter/hunter_falconry_mastery",
+        "grid_x": 7,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.hunter.FalconryMasterySkillEffect"
+}

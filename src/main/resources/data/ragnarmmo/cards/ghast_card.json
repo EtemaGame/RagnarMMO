@@ -1,0 +1,10 @@
+{
+    "id": "ghast_card",
+    "displayName": "Ghast Card",
+    "mobId": "minecraft:ghast",
+    "modifiers": {
+        "ragnarmmo:int": 2.0
+    },
+    "dropRate": 0.005,
+    "modelId": 21
+}

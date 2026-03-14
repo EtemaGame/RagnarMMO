@@ -1,0 +1,10 @@
+{
+    "id": "snow_golem_card",
+    "displayName": "Snow Golem Card",
+    "mobId": "minecraft:snow_golem",
+    "modifiers": {
+        "ragnarmmo:dex": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 53
+}

@@ -1,0 +1,27 @@
+{
+    "id": "ragnarmmo:holy_light",
+    "display_name": "Holy Light",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 1,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 15,
+        "cost_per_level": 0
+    },
+    "jobs": [
+        "ACOLYTE"
+    ],
+    "requirements": {},
+    "ui": {
+        "texture": "acolyte/acolyte_holy_light",
+        "grid_x": 0,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.HolyLightSkillEffect"
+}

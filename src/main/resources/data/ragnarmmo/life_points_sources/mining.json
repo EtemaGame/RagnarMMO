@@ -1,0 +1,51 @@
+{
+  "_comment": "Mining points - based on ore rarity. per_10 = accumulate counter, per_block = instant",
+
+  "minecraft:stone": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:deepslate": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:andesite": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:diorite": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:granite": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:tuff": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:calcite": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:netherrack": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:basalt": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:blackstone": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 1 },
+  "minecraft:end_stone": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 1 },
+
+  "minecraft:coal_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 2 },
+  "minecraft:deepslate_coal_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 2 },
+
+  "minecraft:copper_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 3 },
+  "minecraft:deepslate_copper_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 3 },
+
+  "minecraft:iron_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 4 },
+  "minecraft:deepslate_iron_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 4 },
+
+  "minecraft:gold_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 6 },
+  "minecraft:deepslate_gold_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 6 },
+  "minecraft:nether_gold_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 6 },
+
+  "minecraft:redstone_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 6 },
+  "minecraft:deepslate_redstone_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 6 },
+
+  "minecraft:lapis_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 7 },
+  "minecraft:deepslate_lapis_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 7 },
+
+  "minecraft:emerald_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 9 },
+  "minecraft:deepslate_emerald_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 9 },
+
+  "minecraft:diamond_ore": { "skill": "mining", "mode": "per_block", "points": 10 },
+  "minecraft:deepslate_diamond_ore": { "skill": "mining", "mode": "per_block", "points": 10 },
+
+  "minecraft:ancient_debris": { "skill": "mining", "mode": "per_block", "points": 15 },
+
+  "minecraft:obsidian": { "skill": "mining", "mode": "per_block", "points": 5 },
+  "minecraft:crying_obsidian": { "skill": "mining", "mode": "per_block", "points": 6 },
+
+  "minecraft:nether_quartz_ore": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 4 },
+  "minecraft:glowstone": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 3 },
+
+  "minecraft:amethyst_block": { "skill": "mining", "mode": "per_10", "threshold": 10, "points": 5 },
+  "minecraft:amethyst_cluster": { "skill": "mining", "mode": "per_block", "points": 3 }
+}

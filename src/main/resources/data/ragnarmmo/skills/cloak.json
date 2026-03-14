@@ -1,0 +1,26 @@
+{
+    "id": "ragnarmmo:cloak",
+    "display_name": "Cloaking",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "AGI",
+    "costs": {
+        "base_cost": 15,
+        "cost_per_level": -1
+    },
+    "cooldown_ticks": 0,
+    "cast_time_ticks": 0,
+    "requirements": {
+        "ragnarmmo:hiding": 2
+    },
+    "jobs": [
+        "ASSASSIN"
+    ],
+    "ui": {
+        "texture": "assassin/assassin_cloaking",
+        "grid_x": 6,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.CloakSkillEffect"
+}

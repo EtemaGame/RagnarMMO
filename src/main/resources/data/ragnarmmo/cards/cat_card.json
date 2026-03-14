@@ -1,0 +1,10 @@
+{
+    "id": "cat_card",
+    "displayName": "Cat Card",
+    "mobId": "minecraft:cat",
+    "modifiers": {
+        "ragnarmmo:luk": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 6
+}

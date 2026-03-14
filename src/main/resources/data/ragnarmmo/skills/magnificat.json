@@ -1,0 +1,23 @@
+{
+    "id": "ragnarmmo:magnificat",
+    "family": "ragnarmmo:buff",
+    "display_name": "Magnificat",
+    "costs": {
+        "base_cost": 50,
+        "cost_per_level": 5
+    },
+    "cooldown_ticks": 200,
+    "requirements": {
+        "ragnarmmo:blessing": 3,
+        "ragnarmmo:faith": 5
+    },
+    "jobs": [
+        "PRIEST"
+    ],
+    "ui": {
+        "texture": "priest/priest_magnificat",
+        "grid_x": 5,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.priest.MagnificatSkillEffect"
+}

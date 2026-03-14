@@ -1,0 +1,26 @@
+{
+    "id": "ragnarmmo:fire_pillar",
+    "display_name": "Fire Pillar",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 30,
+        "cost_per_level": 5
+    },
+    "cooldown_ticks": 60,
+    "cast_time_ticks": 20,
+    "requirements": {
+        "ragnarmmo:fire_wall": 1
+    },
+    "jobs": [
+        "WIZARD"
+    ],
+    "ui": {
+        "texture": "wizard/wizard_fire_pillar",
+        "grid_x": 0,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.wizard.FirePillarSkillEffect"
+}

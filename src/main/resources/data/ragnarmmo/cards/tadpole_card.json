@@ -1,0 +1,10 @@
+{
+    "id": "tadpole_card",
+    "displayName": "Tadpole Card",
+    "mobId": "minecraft:tadpole",
+    "modifiers": {
+        "ragnarmmo:agi": 0.3
+    },
+    "dropRate": 0.02,
+    "modelId": 58
+}

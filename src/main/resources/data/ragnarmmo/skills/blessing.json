@@ -1,0 +1,30 @@
+{
+    "id": "ragnarmmo:blessing",
+    "display_name": "Blessing",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 24,
+        "cost_per_level": 4
+    },
+    "cooldown_ticks": 40,
+    "jobs": [
+        "ACOLYTE"
+    ],
+    "requirements": {
+        "ragnarmmo:divine_protection": 5
+    },
+    "ui": {
+        "texture": "acolyte/acolyte_blessing",
+        "grid_x": 1,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.BlessingSkillEffect"
+}

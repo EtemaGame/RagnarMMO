@@ -1,0 +1,30 @@
+{
+    "id": "ragnarmmo:detecting",
+    "display_name": "Detecting",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 4,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 8,
+        "cost_per_level": 0
+    },
+    "jobs": [
+        "HUNTER"
+    ],
+    "requirements": {
+        "ragnarmmo:improve_concentration": 1,
+        "ragnarmmo:falconry_mastery": 1
+    },
+    "ui": {
+        "texture": "hunter/hunter_detecting",
+        "grid_x": 0,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.hunter.DetectingSkillEffect"
+}

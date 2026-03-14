@@ -1,0 +1,26 @@
+{
+    "id": "ragnarmmo:venom_knife",
+    "display_name": "Venom Knife",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "DEX",
+    "costs": {
+        "base_cost": 2,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 10,
+    "cast_time_ticks": 0,
+    "requirements": {
+        "ragnarmmo:enchant_poison": 1
+    },
+    "jobs": [
+        "ASSASSIN"
+    ],
+    "ui": {
+        "texture": "assassin/assassin_venom_knife",
+        "grid_x": 2,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.VenomKnifeSkillEffect"
+}

@@ -1,0 +1,10 @@
+{
+    "id": "tropical_fish_card",
+    "displayName": "Tropical Fish Card",
+    "mobId": "minecraft:tropical_fish",
+    "modifiers": {
+        "ragnarmmo:luk": 1.0
+    },
+    "dropRate": 0.01,
+    "modelId": 60
+}

@@ -1,0 +1,10 @@
+{
+    "id": "piglin_card",
+    "displayName": "Piglin Card",
+    "mobId": "minecraft:piglin",
+    "modifiers": {
+        "ragnarmmo:dex": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 39
+}

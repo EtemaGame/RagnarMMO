@@ -1,0 +1,20 @@
+{
+    "id": "ragnarmmo:lefthand_mastery",
+    "display_name": "Left-Hand Mastery",
+    "category": "CLASS_PASSIVE",
+    "tier": "SECOND",
+    "usage": "PASSIVE",
+    "scaling_stat": "STR",
+    "requirements": {
+        "ragnarmmo:righthand_mastery": 2
+    },
+    "jobs": [
+        "ASSASSIN"
+    ],
+    "ui": {
+        "texture": "assassin/assassin_left_hand_mastery",
+        "grid_x": 7,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.LeftHandMasterySkillEffect"
+}

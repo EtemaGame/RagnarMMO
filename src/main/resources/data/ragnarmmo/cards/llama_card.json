@@ -1,0 +1,10 @@
+{
+    "id": "llama_card",
+    "displayName": "Llama Card",
+    "mobId": "minecraft:llama",
+    "modifiers": {
+        "ragnarmmo:str": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 29
+}

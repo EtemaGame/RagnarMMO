@@ -1,0 +1,10 @@
+{
+    "id": "endermite_card",
+    "displayName": "Endermite Card",
+    "mobId": "minecraft:endermite",
+    "modifiers": {
+        "ragnarmmo:agi": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 17
+}

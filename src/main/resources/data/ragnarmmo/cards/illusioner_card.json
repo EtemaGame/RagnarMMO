@@ -1,0 +1,11 @@
+{
+    "id": "illusioner_card",
+    "displayName": "Illusioner Card",
+    "mobId": "minecraft:illusioner",
+    "modifiers": {
+        "ragnarmmo:int": 3.0,
+        "ragnarmmo:luk": 2.0
+    },
+    "dropRate": 0.001,
+    "modelId": 27
+}

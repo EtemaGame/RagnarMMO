@@ -1,0 +1,75 @@
+{
+  "job": "MAGE",
+  "tier": 1,
+  "grid": {
+    "width": 10,
+    "height": 7
+  },
+  "skills": [
+    {
+      "id": "ragnarmmo:increase_sp_recovery",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:sight",
+      "x": 0,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:napalm_beat",
+      "x": 0,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:soul_strike",
+      "x": 1,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:safety_wall",
+      "x": 2,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:cold_bolt",
+      "x": 0,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:frost_diver",
+      "x": 1,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:stone_curse",
+      "x": 0,
+      "y": 4
+    },
+    {
+      "id": "ragnarmmo:fire_bolt",
+      "x": 0,
+      "y": 5
+    },
+    {
+      "id": "ragnarmmo:fire_ball",
+      "x": 1,
+      "y": 5
+    },
+    {
+      "id": "ragnarmmo:fire_wall",
+      "x": 2,
+      "y": 5
+    },
+    {
+      "id": "ragnarmmo:lightning_bolt",
+      "x": 0,
+      "y": 6
+    },
+    {
+      "id": "ragnarmmo:thunder_storm",
+      "x": 1,
+      "y": 6
+    }
+  ]
+}

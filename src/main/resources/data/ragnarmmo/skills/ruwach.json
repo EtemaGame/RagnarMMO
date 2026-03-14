@@ -1,0 +1,28 @@
+{
+    "id": "ragnarmmo:ruwach",
+    "display_name": "Ruwach",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 1,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 10,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 60,
+    "jobs": [
+        "ACOLYTE"
+    ],
+    "requirements": {},
+    "ui": {
+        "texture": "acolyte/acolyte_ruwach",
+        "grid_x": 1,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.RuwachSkillEffect"
+}

@@ -1,0 +1,25 @@
+{
+    "id": "ragnarmmo:discount",
+    "display_name": "Discount",
+    "category": "CLASS_PASSIVE",
+    "tier": "FIRST",
+    "usage": "PASSIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "jobs": [
+        "MERCHANT"
+    ],
+    "requirements": {
+        "ragnarmmo:enlarge_weight_limit": 3
+    },
+    "ui": {
+        "texture": "merchant/merchant_discount",
+        "grid_x": 0,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.merchant.DiscountSkillEffect"
+}

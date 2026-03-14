@@ -1,0 +1,26 @@
+{
+    "id": "ragnarmmo:suffragium",
+    "display_name": "Suffragium",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 8,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 40,
+    "cast_time_ticks": 0,
+    "requirements": {
+        "ragnarmmo:impositio_manus": 2
+    },
+    "jobs": [
+        "PRIEST"
+    ],
+    "ui": {
+        "texture": "priest/priest_suffragium",
+        "grid_x": 2,
+        "grid_y": 3
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.priest.SuffragiumSkillEffect"
+}

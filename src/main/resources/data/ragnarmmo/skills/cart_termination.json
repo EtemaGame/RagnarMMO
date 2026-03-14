@@ -1,0 +1,29 @@
+{
+    "id": "ragnarmmo:cart_termination",
+    "display_name": "Cart Termination",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1
+    },
+    "costs": {
+        "base_cost": 15,
+        "cost_per_level": 1
+    },
+    "cooldown_ticks": 10,
+    "requirements": {
+        "ragnarmmo:mammonite": 10,
+        "ragnarmmo:cart_strength": 5
+    },
+    "jobs": [
+        "BLACKSMITH"
+    ],
+    "ui": {
+        "texture": "blacksmith/blacksmith_cart_termination",
+        "grid_x": 2,
+        "grid_y": 5
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.CartTerminationSkillEffect"
+}

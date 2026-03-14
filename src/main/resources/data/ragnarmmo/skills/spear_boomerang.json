@@ -1,0 +1,21 @@
+{
+    "id": "ragnarmmo:spear_boomerang",
+    "display_name": "Spear Boomerang",
+    "family": "ragnarmmo:spear_skill",
+    "costs": {
+        "base_cost": 10,
+        "cost_per_level": 2
+    },
+    "requirements": {
+        "ragnarmmo:pierce": 3
+    },
+    "jobs": [
+        "KNIGHT"
+    ],
+    "ui": {
+        "texture": "knight/knight_spear_boomerang",
+        "grid_x": 1,
+        "grid_y": 3
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.knight.SpearBoomerangSkillEffect"
+}

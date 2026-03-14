@@ -1,0 +1,10 @@
+{
+    "id": "creeper_card",
+    "displayName": "Creeper Card",
+    "mobId": "minecraft:creeper",
+    "modifiers": {
+        "ragnarmmo:str": 2.0
+    },
+    "dropRate": 0.005,
+    "modelId": 11
+}

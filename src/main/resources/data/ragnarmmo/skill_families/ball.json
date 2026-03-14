@@ -1,0 +1,22 @@
+{
+  "id": "ragnarmmo:ball",
+  "defaults": {
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+      "base_cost": 25,
+      "cost_per_level": 5
+    },
+    "cooldown_ticks": 60,
+    "cast_time_ticks": 40,
+    "interruptible": true,
+    "progression": {
+      "max_level": 10,
+      "upgrade_cost": 3,
+      "can_gain_xp": false,
+      "can_upgrade_with_points": true
+    }
+  }
+}

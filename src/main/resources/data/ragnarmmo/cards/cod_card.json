@@ -1,0 +1,10 @@
+{
+    "id": "cod_card",
+    "displayName": "Cod Card",
+    "mobId": "minecraft:cod",
+    "modifiers": {
+        "ragnarmmo:vit": 0.5
+    },
+    "dropRate": 0.02,
+    "modelId": 9
+}

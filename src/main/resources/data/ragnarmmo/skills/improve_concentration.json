@@ -1,0 +1,30 @@
+{
+    "id": "ragnarmmo:improve_concentration",
+    "display_name": "Attention Concentrate",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 20,
+        "cost_per_level": 5
+    },
+    "cooldown_ticks": 100,
+    "jobs": [
+        "ARCHER"
+    ],
+    "requirements": {
+        "ragnarmmo:vultures_eye": 1
+    },
+    "ui": {
+        "texture": "archer/archer_attention_concentrate",
+        "grid_x": 0,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.archer.ImproveConcentrationSkillEffect"
+}

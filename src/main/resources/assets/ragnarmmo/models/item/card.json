@@ -1,0 +1,452 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "ragnarmmo:item/card_template"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "ragnarmmo:item/cards/allay_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "ragnarmmo:item/cards/bat_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "ragnarmmo:item/cards/bee_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "ragnarmmo:item/cards/blaze_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 5
+      },
+      "model": "ragnarmmo:item/cards/camel_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 6
+      },
+      "model": "ragnarmmo:item/cards/cat_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 7
+      },
+      "model": "ragnarmmo:item/cards/cave_spider_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 8
+      },
+      "model": "ragnarmmo:item/cards/chicken_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 9
+      },
+      "model": "ragnarmmo:item/cards/cod_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 10
+      },
+      "model": "ragnarmmo:item/cards/cow_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 11
+      },
+      "model": "ragnarmmo:item/cards/creeper_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 12
+      },
+      "model": "ragnarmmo:item/cards/dolphin_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 13
+      },
+      "model": "ragnarmmo:item/cards/donkey_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 14
+      },
+      "model": "ragnarmmo:item/cards/drowned_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 15
+      },
+      "model": "ragnarmmo:item/cards/ender_dragon_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 16
+      },
+      "model": "ragnarmmo:item/cards/enderman_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 17
+      },
+      "model": "ragnarmmo:item/cards/endermite_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 18
+      },
+      "model": "ragnarmmo:item/cards/evoker_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 19
+      },
+      "model": "ragnarmmo:item/cards/fox_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 20
+      },
+      "model": "ragnarmmo:item/cards/frog_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 21
+      },
+      "model": "ragnarmmo:item/cards/ghast_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 22
+      },
+      "model": "ragnarmmo:item/cards/glow_squid_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 23
+      },
+      "model": "ragnarmmo:item/cards/guardian_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 24
+      },
+      "model": "ragnarmmo:item/cards/hoglin_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 25
+      },
+      "model": "ragnarmmo:item/cards/horse_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 26
+      },
+      "model": "ragnarmmo:item/cards/husk_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 27
+      },
+      "model": "ragnarmmo:item/cards/illusioner_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 28
+      },
+      "model": "ragnarmmo:item/cards/iron_golem_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 29
+      },
+      "model": "ragnarmmo:item/cards/llama_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 30
+      },
+      "model": "ragnarmmo:item/cards/magma_cube_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 31
+      },
+      "model": "ragnarmmo:item/cards/mooshroom_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 32
+      },
+      "model": "ragnarmmo:item/cards/mule_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 33
+      },
+      "model": "ragnarmmo:item/cards/ocelot_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 34
+      },
+      "model": "ragnarmmo:item/cards/panda_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 35
+      },
+      "model": "ragnarmmo:item/cards/parrot_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 36
+      },
+      "model": "ragnarmmo:item/cards/phantom_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 37
+      },
+      "model": "ragnarmmo:item/cards/pig_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 38
+      },
+      "model": "ragnarmmo:item/cards/piglin_brute_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 39
+      },
+      "model": "ragnarmmo:item/cards/piglin_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 40
+      },
+      "model": "ragnarmmo:item/cards/pillager_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 41
+      },
+      "model": "ragnarmmo:item/cards/polar_bear_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 42
+      },
+      "model": "ragnarmmo:item/cards/pufferfish_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 43
+      },
+      "model": "ragnarmmo:item/cards/rabbit_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 44
+      },
+      "model": "ragnarmmo:item/cards/ravager_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 45
+      },
+      "model": "ragnarmmo:item/cards/salmon_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 46
+      },
+      "model": "ragnarmmo:item/cards/sheep_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 47
+      },
+      "model": "ragnarmmo:item/cards/shulker_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 48
+      },
+      "model": "ragnarmmo:item/cards/silverfish_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 49
+      },
+      "model": "ragnarmmo:item/cards/skeleton_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 50
+      },
+      "model": "ragnarmmo:item/cards/skeleton_horse_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 51
+      },
+      "model": "ragnarmmo:item/cards/slime_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 52
+      },
+      "model": "ragnarmmo:item/cards/sniffer_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 53
+      },
+      "model": "ragnarmmo:item/cards/snow_golem_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 54
+      },
+      "model": "ragnarmmo:item/cards/spider_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 55
+      },
+      "model": "ragnarmmo:item/cards/squid_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 56
+      },
+      "model": "ragnarmmo:item/cards/stray_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 57
+      },
+      "model": "ragnarmmo:item/cards/strider_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 58
+      },
+      "model": "ragnarmmo:item/cards/tadpole_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 59
+      },
+      "model": "ragnarmmo:item/cards/trader_llama_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 60
+      },
+      "model": "ragnarmmo:item/cards/tropical_fish_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 61
+      },
+      "model": "ragnarmmo:item/cards/vex_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 62
+      },
+      "model": "ragnarmmo:item/cards/villager_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 63
+      },
+      "model": "ragnarmmo:item/cards/vindicator_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 64
+      },
+      "model": "ragnarmmo:item/cards/wandering_trader_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 65
+      },
+      "model": "ragnarmmo:item/cards/warden_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 66
+      },
+      "model": "ragnarmmo:item/cards/witch_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 67
+      },
+      "model": "ragnarmmo:item/cards/wither_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 68
+      },
+      "model": "ragnarmmo:item/cards/wither_skeleton_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 69
+      },
+      "model": "ragnarmmo:item/cards/wolf_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 70
+      },
+      "model": "ragnarmmo:item/cards/zoglin_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 71
+      },
+      "model": "ragnarmmo:item/cards/zombie_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 72
+      },
+      "model": "ragnarmmo:item/cards/zombie_horse_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 73
+      },
+      "model": "ragnarmmo:item/cards/zombie_villager_card"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 74
+      },
+      "model": "ragnarmmo:item/cards/zombified_piglin_card"
+    }
+  ]
+}

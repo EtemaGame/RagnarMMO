@@ -1,0 +1,27 @@
+{
+    "id": "ragnarmmo:turn_undead",
+    "display_name": "Turn Undead",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 20,
+        "cost_per_level": 5
+    },
+    "cooldown_ticks": 20,
+    "cast_time_ticks": 20,
+    "requirements": {
+        "ragnarmmo:resurrection": 1,
+        "ragnarmmo:lex_divina": 3
+    },
+    "jobs": [
+        "PRIEST"
+    ],
+    "ui": {
+        "texture": "priest/priest_turn_undead",
+        "grid_x": 8,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.priest.TurnUndeadSkillEffect"
+}

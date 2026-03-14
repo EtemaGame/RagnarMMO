@@ -1,0 +1,27 @@
+{
+    "id": "ragnarmmo:gloria",
+    "display_name": "Gloria",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 20,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 40,
+    "cast_time_ticks": 0,
+    "requirements": {
+        "ragnarmmo:kyrie_eleison": 4,
+        "ragnarmmo:magnificat": 3
+    },
+    "jobs": [
+        "PRIEST"
+    ],
+    "ui": {
+        "texture": "priest/priest_gloria",
+        "grid_x": 4,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.priest.GloriaSkillEffect"
+}

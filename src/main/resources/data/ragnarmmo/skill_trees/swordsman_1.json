@@ -1,0 +1,45 @@
+{
+  "job": "SWORDSMAN",
+  "tier": 1,
+  "grid": {
+    "width": 10,
+    "height": 7
+  },
+  "skills": [
+    {
+      "id": "ragnarmmo:sword_mastery",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:increase_hp_recovery",
+      "x": 0,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:bash",
+      "x": 0,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:provoke",
+      "x": 0,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:two_hand_mastery",
+      "x": 1,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:magnum_break",
+      "x": 1,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:endure",
+      "x": 1,
+      "y": 3
+    }
+  ]
+}

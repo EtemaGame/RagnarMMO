@@ -1,0 +1,30 @@
+{
+    "id": "ragnarmmo:signum_crucis",
+    "display_name": "Signum Crucis",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 35,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 40,
+    "jobs": [
+        "ACOLYTE"
+    ],
+    "requirements": {
+        "ragnarmmo:demon_bane": 3
+    },
+    "ui": {
+        "texture": "acolyte/acolyte_signum_crucis",
+        "grid_x": 1,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.SignumCrucisSkillEffect"
+}

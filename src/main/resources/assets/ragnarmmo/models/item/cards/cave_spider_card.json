@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "ragnarmmo:item/cards/cave_spider_card"
+  }
+}

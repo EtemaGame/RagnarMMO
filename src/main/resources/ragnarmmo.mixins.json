@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.etema.ragnarmmo.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "ragnarmmo.refmap.json",
+  "mixins": [
+    "MerchantOfferMixin"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

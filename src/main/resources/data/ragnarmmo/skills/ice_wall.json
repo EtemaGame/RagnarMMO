@@ -1,0 +1,34 @@
+{
+    "id": "ragnarmmo:ice_wall",
+    "display_name": "Ice Wall",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 20,
+        "cost_per_level": 3
+    },
+    "cooldown_ticks": 40,
+    "cast_time_ticks": 10,
+    "interruptible": true,
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "requirements": {
+        "ragnarmmo:frost_diver": 1,
+        "ragnarmmo:stone_curse": 1
+    },
+    "jobs": [
+        "WIZARD"
+    ],
+    "ui": {
+        "texture": "wizard/wizard_ice_wall",
+        "grid_x": 3,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.wizard.IceWallSkillEffect"
+}

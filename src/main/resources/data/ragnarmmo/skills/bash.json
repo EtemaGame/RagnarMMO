@@ -1,0 +1,28 @@
+{
+    "id": "ragnarmmo:bash",
+    "display_name": "Bash",
+    "category": "CLASS_ACTIVE",
+    "tier": "FIRST",
+    "usage": "ACTIVE",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
+    "costs": {
+        "base_cost": 8,
+        "cost_per_level": 1
+    },
+    "cooldown_ticks": 10,
+    "jobs": [
+        "SWORDMAN"
+    ],
+    "requirements": {},
+    "ui": {
+        "texture": "swordman/swordman_bash",
+        "grid_x": 0,
+        "grid_y": 3
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.swordman.BashSkillEffect"
+}

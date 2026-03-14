@@ -1,0 +1,13 @@
+{
+    "category": "BATTLE",
+    "name": "Spider Squasher",
+    "description": "Defeat 50 Spiders.",
+    "trigger_type": "kill_mob",
+    "trigger_id": "minecraft:spider",
+    "required_amount": 50,
+    "points": 20,
+    "title": "Bug Catcher",
+    "rewards": {
+        "minecraft:string": 20
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "id": "shulker_card",
+    "displayName": "Shulker Card",
+    "mobId": "minecraft:shulker",
+    "modifiers": {
+        "ragnarmmo:vit": 2.0
+    },
+    "dropRate": 0.005,
+    "modelId": 47
+}

@@ -1,0 +1,10 @@
+{
+    "id": "witch_card",
+    "displayName": "Witch Card",
+    "mobId": "minecraft:witch",
+    "modifiers": {
+        "ragnarmmo:int": 2.0
+    },
+    "dropRate": 0.005,
+    "modelId": 66
+}

@@ -1,0 +1,27 @@
+{
+    "id": "ragnarmmo:jupitel_thunder",
+    "display_name": "Jupitel Thunder",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+        "base_cost": 35,
+        "cost_per_level": 5
+    },
+    "cooldown_ticks": 30,
+    "cast_time_ticks": 40,
+    "requirements": {
+        "ragnarmmo:napalm_beat": 1,
+        "ragnarmmo:lightning_bolt": 1
+    },
+    "jobs": [
+        "WIZARD"
+    ],
+    "ui": {
+        "texture": "wizard/wizard_jupitel_thunder",
+        "grid_x": 5,
+        "grid_y": 1
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.wizard.JupitelThunderSkillEffect"
+}

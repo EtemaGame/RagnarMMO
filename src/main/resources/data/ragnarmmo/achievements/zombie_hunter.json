@@ -1,0 +1,14 @@
+{
+    "category": "BATTLE",
+    "name": "Porings Bane",
+    "description": "Defeat 50 Zombies.",
+    "trigger_type": "kill_mob",
+    "trigger_id": "minecraft:zombie",
+    "required_amount": 50,
+    "points": 20,
+    "title": "Zombie Hunter",
+    "rewards": {
+        "minecraft:rotten_flesh": 10,
+        "minecraft:emerald": 1
+    }
+}

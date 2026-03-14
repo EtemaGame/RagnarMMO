@@ -1,0 +1,10 @@
+{
+    "id": "pufferfish_card",
+    "displayName": "Pufferfish Card",
+    "mobId": "minecraft:pufferfish",
+    "modifiers": {
+        "ragnarmmo:vit": 1.5
+    },
+    "dropRate": 0.01,
+    "modelId": 42
+}

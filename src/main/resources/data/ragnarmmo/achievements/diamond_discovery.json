@@ -1,0 +1,13 @@
+{
+    "category": "ADVENTURE",
+    "name": "Diamond Discovery!",
+    "description": "Collect your first Diamond.",
+    "trigger_type": "pickup_item",
+    "trigger_id": "minecraft:diamond",
+    "required_amount": 1,
+    "points": 30,
+    "title": "Lucky",
+    "rewards": {
+        "minecraft:emerald": 5
+    }
+}

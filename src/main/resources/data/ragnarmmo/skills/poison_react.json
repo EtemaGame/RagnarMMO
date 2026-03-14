@@ -1,0 +1,26 @@
+{
+    "id": "ragnarmmo:poison_react",
+    "display_name": "Poison React",
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "AGI",
+    "costs": {
+        "base_cost": 50,
+        "cost_per_level": -5
+    },
+    "cooldown_ticks": 200,
+    "cast_time_ticks": 0,
+    "requirements": {
+        "ragnarmmo:enchant_poison": 3
+    },
+    "jobs": [
+        "ASSASSIN"
+    ],
+    "ui": {
+        "texture": "assassin/assassin_poison_react",
+        "grid_x": 1,
+        "grid_y": 2
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.PoisonReactSkillEffect"
+}

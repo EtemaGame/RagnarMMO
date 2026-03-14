@@ -1,0 +1,29 @@
+{
+    "id": "ragnarmmo:meteor_storm",
+    "family": "ragnarmmo:ball",
+    "display_name": "Meteor Storm",
+    "tier": "SECOND",
+    "costs": {
+        "base_cost": 50,
+        "cost_per_level": 12
+    },
+    "cooldown_ticks": 120,
+    "cast_time_ticks": 80,
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 2
+    },
+    "requirements": {
+        "ragnarmmo:thunder_storm": 1,
+        "ragnarmmo:sightrasher": 2
+    },
+    "jobs": [
+        "WIZARD"
+    ],
+    "ui": {
+        "texture": "wizard/wizard_meteor_storm",
+        "grid_x": 1,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.wizard.MeteorStormSkillEffect"
+}

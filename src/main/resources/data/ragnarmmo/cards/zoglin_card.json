@@ -1,0 +1,10 @@
+{
+    "id": "zoglin_card",
+    "displayName": "Zoglin Card",
+    "mobId": "minecraft:zoglin",
+    "modifiers": {
+        "ragnarmmo:str": 1.5
+    },
+    "dropRate": 0.01,
+    "modelId": 70
+}

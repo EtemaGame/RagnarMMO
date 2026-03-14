@@ -1,0 +1,10 @@
+{
+    "id": "wither_skeleton_card",
+    "displayName": "Wither Skeleton Card",
+    "mobId": "minecraft:wither_skeleton",
+    "modifiers": {
+        "ragnarmmo:str": 3.0
+    },
+    "dropRate": 0.002,
+    "modelId": 68
+}

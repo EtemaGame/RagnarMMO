@@ -1,0 +1,22 @@
+{
+  "id": "ragnarmmo:heal",
+  "defaults": {
+    "category": "CLASS_ACTIVE",
+    "tier": "SECOND",
+    "usage": "ACTIVE",
+    "scaling_stat": "INT",
+    "costs": {
+      "base_cost": 15,
+      "cost_per_level": 3
+    },
+    "cooldown_ticks": 40,
+    "cast_time_ticks": 20,
+    "interruptible": true,
+    "progression": {
+      "max_level": 10,
+      "upgrade_cost": 2,
+      "can_gain_xp": false,
+      "can_upgrade_with_points": true
+    }
+  }
+}

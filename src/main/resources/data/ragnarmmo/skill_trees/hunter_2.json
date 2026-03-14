@@ -1,0 +1,103 @@
+{
+  "job": "HUNTER",
+  "tier": 2,
+  "grid": {
+    "width": 10,
+    "height": 7
+  },
+  "inherit_from": [
+    "ragnarmmo:archer_1"
+  ],
+  "skills": [
+    {
+      "id": "ragnarmmo:skid_trap",
+      "x": 4,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:land_mine",
+      "x": 4,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:ankle_snare",
+      "x": 5,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:shockwave_trap",
+      "x": 6,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:sandman",
+      "x": 6,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:flasher",
+      "x": 5,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:freezing_trap",
+      "x": 5,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:blast_mine",
+      "x": 6,
+      "y": 3
+    },
+    {
+      "id": "ragnarmmo:claymore_trap",
+      "x": 7,
+      "y": 2
+    },
+    {
+      "id": "ragnarmmo:remove_trap",
+      "x": 4,
+      "y": 4
+    },
+    {
+      "id": "ragnarmmo:talkie_box",
+      "x": 7,
+      "y": 1
+    },
+    {
+      "id": "ragnarmmo:beast_bane",
+      "x": 4,
+      "y": 5
+    },
+    {
+      "id": "ragnarmmo:falconry_mastery",
+      "x": 5,
+      "y": 5
+    },
+    {
+      "id": "ragnarmmo:steel_crow",
+      "x": 7,
+      "y": 5
+    },
+    {
+      "id": "ragnarmmo:blitz_beat",
+      "x": 6,
+      "y": 5
+    },
+    {
+      "id": "ragnarmmo:detecting",
+      "x": 6,
+      "y": 4
+    },
+    {
+      "id": "ragnarmmo:spring_trap",
+      "x": 5,
+      "y": 4
+    },
+    {
+      "id": "ragnarmmo:beast_strafing",
+      "x": 4,
+      "y": 6
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+    "id": "ragnarmmo:enchanted_stone_craft",
+    "display_name": "Enchanted Stone Craft",
+    "category": "CLASS_PASSIVE",
+    "tier": "SECOND",
+    "usage": "PASSIVE",
+    "progression": {
+        "max_level": 5,
+        "upgrade_cost": 1
+    },
+    "requirements": {
+        "ragnarmmo:iron_tempering": 1
+    },
+    "jobs": [
+        "BLACKSMITH"
+    ],
+    "ui": {
+        "texture": "blacksmith/blacksmith_enchanted_stone_craft",
+        "grid_x": 1,
+        "grid_y": 3
+    },
+    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.EnchantedStoneCraftSkillEffect"
+}

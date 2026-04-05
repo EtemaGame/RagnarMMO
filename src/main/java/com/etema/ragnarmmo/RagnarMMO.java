@@ -3,6 +3,7 @@ package com.etema.ragnarmmo;
 import com.etema.ragnarmmo.common.init.RagnarCommand;
 import com.etema.ragnarmmo.common.init.modules.BarModule;
 import com.etema.ragnarmmo.common.init.modules.CoreModule;
+import com.etema.ragnarmmo.common.init.modules.CombatModule;
 import com.etema.ragnarmmo.common.init.modules.LifeSkillsModule;
 import com.etema.ragnarmmo.common.init.modules.MobStatsModule;
 import com.etema.ragnarmmo.common.init.modules.SkillsModule;
@@ -48,6 +49,7 @@ public class RagnarMMO {
 
         // Modules (order matters where networking/registries are involved)
         CoreModule.init(modBus);
+        CombatModule.init(modBus);
         StatsModule.init(modBus);
         MobStatsModule.init(modBus);
         SkillsModule.init(modBus);

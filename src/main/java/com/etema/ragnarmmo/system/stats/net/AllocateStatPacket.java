@@ -58,7 +58,6 @@ public class AllocateStatPacket {
                     case LUK -> s.setLUK(currentValue + 1);
                 }
                 s.setStatPoints(s.getStatPoints() - cost);
-                s.markDirty();
             });
         });
         ctx.setPacketHandled(true);

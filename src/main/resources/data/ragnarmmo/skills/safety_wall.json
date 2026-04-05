@@ -28,5 +28,5 @@
         "grid_x": 3,
         "grid_y": 2
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.mage.SafetyWallSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.mage.SafetyWallSkillEffect"
 }

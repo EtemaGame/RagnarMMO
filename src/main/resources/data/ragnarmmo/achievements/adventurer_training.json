@@ -1,13 +1,13 @@
 {
     "category": "BASIC",
-    "name": "Adventurer Training",
-    "description": "Reach Base Level 50.",
+    "name": "achievement.ragnarmmo.adventurer_training.name",
+    "description": "achievement.ragnarmmo.adventurer_training.desc",
     "trigger_type": "level_up",
-    "trigger_id": "base",
+    "trigger_id": "job",
     "required_amount": 50,
-    "points": 30,
-    "title": "Experienced",
+    "points": 50,
+    "title": "title.ragnarmmo.the_adventurer",
     "rewards": {
-        "minecraft:diamond": 1
+        "minecraft:diamond": 5
     }
 }

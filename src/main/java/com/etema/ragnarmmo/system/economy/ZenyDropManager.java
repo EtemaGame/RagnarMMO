@@ -35,25 +35,48 @@ public class ZenyDropManager {
         // 4. Calculate final multipliers
         double tierMult = switch (tier) {
             case ELITE -> ZenyConfig.ELITE_CHANCE_MULT.get();
+            case MINI_BOSS -> ZenyConfig.ELITE_CHANCE_MULT.get() * 1.75D;
             case BOSS -> ZenyConfig.BOSS_CHANCE_MULT.get();
+            case MVP -> ZenyConfig.BOSS_CHANCE_MULT.get() * 1.5D;
             default -> 1.0;
         };
 
         double finalMult = dimMult * luckBonus * tierMult;
+        int copperMax = switch (tier) {
+            case NORMAL -> 2;
+            case ELITE -> 5;
+            case MINI_BOSS -> 8;
+            case BOSS -> 12;
+            case MVP -> 16;
+        };
+        int silverCount = switch (tier) {
+            case BOSS -> 1;
+            case MVP -> 2;
+            default -> 0;
+        };
+        int goldCount = tier == MobTier.MVP ? 1 : 0;
 
         // Roll for Copper
         if (random.nextDouble() < ZenyConfig.COPPER_BASE_CHANCE.get() * finalMult) {
-            drops.add(new ItemStack(ZenyItems.COPPER_ZENY.get(), 1 + random.nextInt(tier == MobTier.NORMAL ? 2 : 5)));
+            drops.add(new ItemStack(ZenyItems.COPPER_ZENY.get(), 1 + random.nextInt(copperMax)));
         }
 
         // Roll for Silver
         if (random.nextDouble() < ZenyConfig.SILVER_BASE_CHANCE.get() * finalMult) {
-            drops.add(new ItemStack(ZenyItems.SILVER_ZENY.get(), 1));
+            drops.add(new ItemStack(ZenyItems.SILVER_ZENY.get(), Math.max(1, silverCount + 1)));
         }
 
         // Roll for Gold
         if (random.nextDouble() < ZenyConfig.GOLD_BASE_CHANCE.get() * finalMult) {
-            drops.add(new ItemStack(ZenyItems.GOLD_ZENY.get(), 1));
+            drops.add(new ItemStack(ZenyItems.GOLD_ZENY.get(), Math.max(1, goldCount + 1)));
+        }
+
+        if (silverCount > 0) {
+            drops.add(new ItemStack(ZenyItems.SILVER_ZENY.get(), silverCount));
+        }
+
+        if (goldCount > 0) {
+            drops.add(new ItemStack(ZenyItems.GOLD_ZENY.get(), goldCount));
         }
 
         return drops;

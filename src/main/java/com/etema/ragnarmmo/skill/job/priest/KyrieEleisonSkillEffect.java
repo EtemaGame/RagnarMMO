@@ -1,11 +1,12 @@
 package com.etema.ragnarmmo.skill.job.priest;
 
+import com.etema.ragnarmmo.common.init.RagnarMobEffects;
+import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -16,7 +17,7 @@ import java.util.List;
 
 public class KyrieEleisonSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:kyrie_eleison");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "kyrie_eleison");
 
     @Override
     public ResourceLocation getSkillId() {
@@ -25,8 +26,8 @@ public class KyrieEleisonSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        // Kyrie Eleison: Barrier that blocks physical damage.
-        // For Minecraft, we'll use Absorption and Resistance.
+        if (level <= 0) return;
+        
         LivingEntity target = getClosestTarget(player, 10.0);
         if (target == null)
             target = player;
@@ -34,11 +35,13 @@ public class KyrieEleisonSkillEffect implements ISkillEffect {
         if (player.level() instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.END_ROD, target.getX(), target.getY() + 1.0, target.getZ(), 30, 0.5,
                     1.0, 0.5, 0.05);
-            serverLevel.playSound(null, target.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 1.0f,
-                    2.0f);
+            serverLevel.playSound(null, target.blockPosition(), RagnarSounds.KYRIE_ELEISON.get(), SoundSource.PLAYERS, 1.0f,
+                    1.0f);
 
+            // Kyrie Eleison: Barrier that blocks physical damage.
+            // We use Absorption for the shield and custom KYRIE_ELEISON for Armor/Icon.
             target.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 600, level));
-            target.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, level / 3));
+            target.addEffect(new MobEffectInstance(RagnarMobEffects.KYRIE_ELEISON.get(), 600, level - 1));
         }
     }
 

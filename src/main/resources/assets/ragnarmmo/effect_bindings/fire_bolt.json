@@ -1,0 +1,6 @@
+{
+  "skill_id": "ragnarmmo:fire_bolt",
+  "bindings": [
+    { "phase": "projectile_tick", "effect": "ragnarmmo:projectiles/fire_bolt_travel" }
+  ]
+}

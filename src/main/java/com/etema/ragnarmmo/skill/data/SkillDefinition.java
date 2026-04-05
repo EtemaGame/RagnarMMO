@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -54,6 +55,10 @@ public final class SkillDefinition implements ISkillDefinition {
     // Effect
     private final String effectClass;
 
+    // Reference & tuning
+    private final SkillReference reference;
+    private final Map<Integer, SkillLevelData> levelData;
+
     private SkillDefinition(Builder builder) {
         this.id = Objects.requireNonNull(builder.id, "Skill ID cannot be null");
         this.displayName = Objects.requireNonNull(builder.displayName, "Display name cannot be null");
@@ -85,6 +90,8 @@ public final class SkillDefinition implements ISkillDefinition {
         this.gridY = builder.gridY;
 
         this.effectClass = builder.effectClass;
+        this.reference = builder.reference;
+        this.levelData = builder.levelData != null ? Map.copyOf(builder.levelData) : Map.of();
     }
 
     // === Identity ===
@@ -161,13 +168,31 @@ public final class SkillDefinition implements ISkillDefinition {
     }
 
     @Override
+    public int getCooldownTicks(int level) {
+        return getAliasedLevelInt(level, cooldownTicks,
+                "cooldown_ticks", "cooldown");
+    }
+
+    @Override
     public int getCastDelayTicks() {
         return castDelayTicks;
     }
 
     @Override
+    public int getCastDelayTicks(int level) {
+        return getAliasedLevelInt(level, castDelayTicks,
+                "cast_delay_ticks", "skill_delay_ticks", "cast_delay", "skill_delay");
+    }
+
+    @Override
     public int getCastTimeTicks() {
         return castTimeTicks;
+    }
+
+    @Override
+    public int getCastTimeTicks(int level) {
+        return getAliasedLevelInt(level, castTimeTicks,
+                "cast_time_ticks", "cast_time");
     }
 
     @Override
@@ -214,7 +239,7 @@ public final class SkillDefinition implements ISkillDefinition {
     @Override
     public ResourceLocation getIcon() {
         return icon != null ? icon
-                : new ResourceLocation(id.getNamespace(), "textures/gui/skills/" + textureName + ".png");
+                : ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "textures/gui/skills/" + textureName + ".png");
     }
 
     @Override
@@ -237,6 +262,58 @@ public final class SkillDefinition implements ISkillDefinition {
     @Override
     public String getEffectClass() {
         return effectClass;
+    }
+
+    @Override
+    public int getResourceCost(int level) {
+        if (!isActive()) {
+            return 0;
+        }
+        int defaultCost = ISkillDefinition.super.getResourceCost(level);
+        return getAliasedLevelInt(level, defaultCost,
+                "resource_cost", "sp_cost", "mana_cost");
+    }
+
+    @Override
+    public Optional<String> getReferenceSourceName() {
+        return reference != null && reference.sourceName() != null && !reference.sourceName().isBlank()
+                ? Optional.of(reference.sourceName())
+                : Optional.empty();
+    }
+
+    @Override
+    public Optional<String> getReferenceSourceUrl() {
+        return reference != null && reference.sourceUrl() != null && !reference.sourceUrl().isBlank()
+                ? Optional.of(reference.sourceUrl())
+                : Optional.empty();
+    }
+
+    @Override
+    public Optional<String> getReferenceNotes() {
+        return reference != null && reference.notes() != null && !reference.notes().isBlank()
+                ? Optional.of(reference.notes())
+                : Optional.empty();
+    }
+
+    @Override
+    public Map<Integer, SkillLevelData> getLevelDataMap() {
+        return levelData;
+    }
+
+    private int getAliasedLevelInt(int level, int fallback, String... aliases) {
+        SkillLevelData data = levelData.get(level);
+        if (data == null) {
+            return fallback;
+        }
+
+        for (String alias : aliases) {
+            Optional<Integer> value = data.getInt(alias);
+            if (value.isPresent()) {
+                return value.get();
+            }
+        }
+
+        return fallback;
     }
 
     // === Object methods ===
@@ -267,7 +344,7 @@ public final class SkillDefinition implements ISkillDefinition {
     }
 
     public static Builder builder(String namespace, String path) {
-        return new Builder(new ResourceLocation(namespace, path));
+        return new Builder(ResourceLocation.fromNamespaceAndPath(namespace, path));
     }
 
     public static final class Builder {
@@ -301,6 +378,8 @@ public final class SkillDefinition implements ISkillDefinition {
         private int gridY = 0;
 
         private String effectClass;
+        private SkillReference reference;
+        private Map<Integer, SkillLevelData> levelData;
 
         private Builder(ResourceLocation id) {
             this.id = id;
@@ -419,6 +498,16 @@ public final class SkillDefinition implements ISkillDefinition {
 
         public Builder effectClass(String effectClass) {
             this.effectClass = effectClass;
+            return this;
+        }
+
+        public Builder reference(SkillReference reference) {
+            this.reference = reference;
+            return this;
+        }
+
+        public Builder levelData(Map<Integer, SkillLevelData> levelData) {
+            this.levelData = levelData;
             return this;
         }
 

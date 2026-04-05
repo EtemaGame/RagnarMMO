@@ -1,0 +1,6 @@
+{
+  "parent": "ragnarmmo:item/war_axes_1h/base_war_axe_1h",
+  "textures": {
+    "layer0": "ragnarmmo:item/weapons/war_axes_1h/sunmaw_axe"
+  }
+}

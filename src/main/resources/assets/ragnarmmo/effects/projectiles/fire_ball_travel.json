@@ -1,0 +1,30 @@
+{
+  "id": "ragnarmmo:projectiles/fire_ball_travel",
+  "type": "layered",
+  "duration_ticks": 6,
+  "loop": true,
+  "layers": [
+    {
+      "name": "ember_core",
+      "blend_mode": "emissive",
+      "orientation": "billboard",
+      "z_order": 0,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.34, "scale_y": 0.34, "alpha": 0.95, "texture": "minecraft:textures/block/magma_block.png" },
+        { "tick": 3, "scale_x": 0.40, "scale_y": 0.40, "alpha": 1.0, "texture": "minecraft:textures/block/magma_block.png" },
+        { "tick": 6, "scale_x": 0.34, "scale_y": 0.34, "alpha": 0.95, "texture": "minecraft:textures/block/magma_block.png" }
+      ]
+    },
+    {
+      "name": "hot_glow",
+      "blend_mode": "emissive",
+      "orientation": "billboard",
+      "z_order": 1,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.18, "scale_y": 0.18, "alpha": 0.85, "rotation_deg": 0.0, "texture": "minecraft:textures/block/shroomlight.png" },
+        { "tick": 3, "scale_x": 0.26, "scale_y": 0.26, "alpha": 1.0, "rotation_deg": 45.0, "texture": "minecraft:textures/block/shroomlight.png" },
+        { "tick": 6, "scale_x": 0.18, "scale_y": 0.18, "alpha": 0.85, "rotation_deg": 90.0, "texture": "minecraft:textures/block/shroomlight.png" }
+      ]
+    }
+  ]
+}

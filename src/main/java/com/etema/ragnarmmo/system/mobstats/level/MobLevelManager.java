@@ -5,6 +5,7 @@ import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
 import com.etema.ragnarmmo.system.mobstats.config.SpeciesConfig;
 import com.etema.ragnarmmo.system.mobstats.util.ConfigUtils;
 import com.etema.ragnarmmo.system.mobstats.util.StructureUtils;
+import com.etema.ragnarmmo.system.mobstats.world.MobSpawnOverrides;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -204,13 +205,10 @@ public class MobLevelManager {
     }
 
     private int computeTierOffset(MobTier tier) {
-        int roll = rng.nextInt(100);
-        if (roll < 80)
-            return rng.nextInt(6) - 2; // NORMAL
-        else if (roll < 95)
-            return 3 + rng.nextInt(3); // ELITE
-        else
-            return 5 + rng.nextInt(3); // BOSS
+        return switch (tier) {
+            case NORMAL -> rng.nextInt(6) - 2;
+            case ELITE, MINI_BOSS, BOSS, MVP -> 3 + rng.nextInt(3);
+        };
     }
 
     private int computeMinByRules(LivingEntity mob) {
@@ -229,6 +227,8 @@ public class MobLevelManager {
         String entId = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString();
         min = Math.max(min, ConfigUtils.getMinLevelFor(
                 MobConfig.BOSS_MIN_LEVELS.get(), entId).orElse(1));
+
+        min = Math.max(min, MobSpawnOverrides.getMinimumLevel(mob).orElse(1));
 
         return min;
     }

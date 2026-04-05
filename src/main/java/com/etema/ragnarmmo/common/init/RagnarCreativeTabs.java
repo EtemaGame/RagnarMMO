@@ -1,7 +1,8 @@
 package com.etema.ragnarmmo.common.init;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.roitems.DaggerItems;
+import com.etema.ragnarmmo.roitems.RagnarWeaponItems;
+import com.etema.ragnarmmo.roitems.UtilityItems;
 import com.etema.ragnarmmo.roitems.ZenyItems;
 import com.etema.ragnarmmo.system.loot.cards.RagnarCardItems;
 import net.minecraft.core.registries.Registries;
@@ -29,9 +30,15 @@ public final class RagnarCreativeTabs {
                         var copper = ZenyItems.COPPER_ZENY.get();
                         var silver = ZenyItems.SILVER_ZENY.get();
                         var gold = ZenyItems.GOLD_ZENY.get();
+                        var blueGemstone = UtilityItems.BLUE_GEMSTONE.get();
+                        var oridecon = UtilityItems.ORIDECON.get();
+                        var elunium = UtilityItems.ELUNIUM.get();
                         if (copper != null) output.accept(copper);
                         if (silver != null) output.accept(silver);
                         if (gold != null) output.accept(gold);
+                        if (blueGemstone != null) output.accept(blueGemstone);
+                        if (oridecon != null) output.accept(oridecon);
+                        if (elunium != null) output.accept(elunium);
 
                         // Cards
                         var card = RagnarCardItems.CARD.get();
@@ -43,24 +50,10 @@ public final class RagnarCreativeTabs {
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.ragnarmmo.weapons"))
                     .icon(() -> {
-                        var icon = DaggerItems.GLACIAL_SHARD.get();
+                        var icon = RagnarWeaponItems.tabIcon() != null ? RagnarWeaponItems.tabIcon().get() : null;
                         return new ItemStack(icon != null ? icon : Items.IRON_SWORD);
                     })
-                    .displayItems((params, output) -> {
-                        // Custom Daggers
-                        output.accept(DaggerItems.GLACIAL_SHARD.get());
-                        output.accept(DaggerItems.VOLCANIC_TOOTH.get());
-                        output.accept(DaggerItems.GALE_DIRK.get());
-                        output.accept(DaggerItems.QUAKE_STILETTO.get());
-                        output.accept(DaggerItems.VEIN_SEEKER.get());
-                        output.accept(DaggerItems.SHADOWS_EMBRACE.get());
-                        output.accept(DaggerItems.MAMBAS_KISS.get());
-                        output.accept(DaggerItems.GHOSTLY_STING.get());
-                        output.accept(DaggerItems.VALKYRIES_THORN.get());
-                        output.accept(DaggerItems.ABYSSAL_FANG.get());
-                        output.accept(DaggerItems.TWILIGHT_CARVER.get());
-                        output.accept(DaggerItems.OATHBREAKER.get());
-                    })
+                    .displayItems((params, output) -> RagnarWeaponItems.allWeapons().forEach(item -> output.accept(item.get())))
                     .build());
 
     public static void register(IEventBus modBus) {

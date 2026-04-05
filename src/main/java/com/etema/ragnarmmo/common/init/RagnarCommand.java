@@ -3,6 +3,8 @@ package com.etema.ragnarmmo.common.init;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.common.command.RagnarAdminCommands;
 import com.etema.ragnarmmo.skill.job.merchant.CartCommands;
+import com.etema.ragnarmmo.skill.job.acolyte.MemoCommands;
+import com.etema.ragnarmmo.system.mobstats.commands.MobStatsCommand;
 import com.etema.ragnarmmo.system.stats.commands.ExpCommands;
 import com.etema.ragnarmmo.system.stats.commands.StatsCommands;
 import com.etema.ragnarmmo.system.stats.party.PartyCommands;
@@ -18,9 +20,11 @@ public class RagnarCommand {
                 CommandNode<CommandSourceStack> ragnarNode = dispatcher.register(Commands.literal("ragnar")
                                 .then(StatsCommands.createNode())
                                 .then(CartCommands.createNode())
+                                .then(MemoCommands.createNode())
                                 .then(ExpCommands.createExpNode())
                                 .then(ExpCommands.createSetNode())
                                 .then(PartyCommands.createNode())
+                                .then(MobStatsCommand.createNode())
                                 .then(RagnarAdminCommands.createNode()));
 
                 if (RagnarConfigs.SERVER.commands.enableLegacyAliases.get()) {
@@ -33,6 +37,8 @@ public class RagnarCommand {
                                 registerAlias(dispatcher, "pc", partyNode.getChild("chat"));
                         }
                 }
+
+                registerAlias(dispatcher, "memo", ragnarNode.getChild("memo"));
         }
 
         private static void registerAlias(

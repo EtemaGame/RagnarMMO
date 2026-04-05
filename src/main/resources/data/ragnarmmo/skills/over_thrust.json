@@ -24,5 +24,5 @@
         "grid_x": 7,
         "grid_y": 4
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.OverThrustSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.blacksmith.OverThrustSkillEffect"
 }

@@ -1,12 +1,12 @@
 {
     "category": "BATTLE",
-    "name": "Void Walker",
-    "description": "Defeat 25 Endermen.",
+    "name": "achievement.ragnarmmo.enderman_slayer.name",
+    "description": "achievement.ragnarmmo.enderman_slayer.desc",
     "trigger_type": "kill_mob",
     "trigger_id": "minecraft:enderman",
-    "required_amount": 25,
+    "required_amount": 10,
     "points": 30,
-    "title": "Void Slayer",
+    "title": "title.ragnarmmo.void_slayer",
     "rewards": {
         "minecraft:ender_pearl": 5
     }

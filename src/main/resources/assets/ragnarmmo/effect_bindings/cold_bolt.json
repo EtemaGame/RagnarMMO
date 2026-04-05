@@ -1,0 +1,9 @@
+{
+  "skill_id": "ragnarmmo:cold_bolt",
+  "bindings": [
+    { "phase": "projectile_tick", "effect": "ragnarmmo:projectiles/cold_bolt_travel" },
+    { "phase": "projectile_tick", "effect": "ragnarmmo:projectiles/cold_bolt_trail_particles" },
+    { "phase": "impact", "effect": "ragnarmmo:impact/cold_bolt_burst" },
+    { "phase": "impact", "effect": "ragnarmmo:impact/cold_bolt_impact_particles" }
+  ]
+}

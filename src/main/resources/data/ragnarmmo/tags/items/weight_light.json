@@ -1,7 +1,10 @@
 {
     "replace": false,
     "values": [
-        "#minecraft:seeds",
+        {
+            "id": "#minecraft:seeds",
+            "required": false
+        },
         "#minecraft:saplings",
         "#minecraft:small_flowers",
         "#minecraft:tall_flowers",
@@ -182,12 +185,27 @@
         "minecraft:dragon_breath",
         "minecraft:totem_of_undying",
         "minecraft:spawner",
-        "#minecraft:spawn_eggs",
+        {
+            "id": "#minecraft:spawn_eggs",
+            "required": false
+        },
         "#minecraft:trim_templates",
-        "minecraft:pottery_sherd_archer",
-        "minecraft:pottery_sherd_prize",
-        "minecraft:pottery_sherd_arms_up",
-        "minecraft:pottery_sherd_skull",
+        {
+            "id": "minecraft:pottery_sherd_archer",
+            "required": false
+        },
+        {
+            "id": "minecraft:pottery_sherd_prize",
+            "required": false
+        },
+        {
+            "id": "minecraft:pottery_sherd_arms_up",
+            "required": false
+        },
+        {
+            "id": "minecraft:pottery_sherd_skull",
+            "required": false
+        },
         "#minecraft:decorated_pot_sherds"
     ]
 }

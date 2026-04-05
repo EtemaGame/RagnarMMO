@@ -77,6 +77,28 @@ public final class ExpTable {
         return Math.min(1.0f, (float) currentExp / needed);
     }
 
+    public static int applyBaseExpRate(int rawExp) {
+        return applyGainMultiplier(rawExp, RagnarConfigs.SERVER.progression.expGlobalMultiplier.get());
+    }
+
+    public static int applyJobExpRate(int rawExp) {
+        return applyGainMultiplier(rawExp, RagnarConfigs.SERVER.progression.jobExpGlobalMultiplier.get());
+    }
+
+    public static int computeDeathPenaltyLoss(int currentExp, double penaltyRate) {
+        if (currentExp <= 0 || penaltyRate <= 0.0) {
+            return 0;
+        }
+        return Math.max(0, (int) Math.round(currentExp * penaltyRate));
+    }
+
+    private static int applyGainMultiplier(int rawExp, double multiplier) {
+        if (rawExp <= 0) {
+            return 0;
+        }
+        return Math.max(1, (int) Math.round(rawExp * multiplier));
+    }
+
     private static int applyCustomCurve(int level, String curveId,
             java.util.function.Function<String, IntUnaryOperator> resolver) {
         if (curveId != null) {

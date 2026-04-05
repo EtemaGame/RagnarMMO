@@ -8,6 +8,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 
+import java.util.Set;
+
 public class VulturesEyeSkillEffect implements ISkillEffect {
 
     private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "vultures_eye");
@@ -15,6 +17,11 @@ public class VulturesEyeSkillEffect implements ISkillEffect {
     @Override
     public ResourceLocation getSkillId() {
         return ID;
+    }
+
+    @Override
+    public Set<TriggerType> getSupportedTriggers() {
+        return Set.of(TriggerType.OFFENSIVE_HURT);
     }
 
     @Override

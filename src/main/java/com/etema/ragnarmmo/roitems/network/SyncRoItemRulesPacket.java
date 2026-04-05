@@ -11,6 +11,7 @@ import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.roitems.data.RoItemRule;
 import com.etema.ragnarmmo.roitems.data.RoItemRuleSet;
+import com.etema.ragnarmmo.system.loot.cards.CardEquipType;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -26,20 +27,27 @@ public class SyncRoItemRulesPacket {
 
     private final Map<ResourceLocation, RoItemRule> itemRules;
     private final Map<ResourceLocation, RoItemRule> tagRules;
+    private final Map<String, Map<CardEquipType, RoItemRule>> modTypeRules;
+    private final Map<CardEquipType, RoItemRule> fallbackRules;
 
     public SyncRoItemRulesPacket(RoItemRuleSet ruleSet) {
-        this.itemRules = new HashMap<>();
-        this.tagRules = new HashMap<>();
-
-        // Copy item rules
-        // We need to iterate through the rule set - but RoItemRuleSet doesn't expose byItemId directly
-        // We'll need to add a method or work around this
-        // For now, let's serialize what we can access
+        this(ruleSet.getItemRules(), ruleSet.getTagRules(), ruleSet.getModTypeRules(), ruleSet.getFallbackRules());
     }
 
-    public SyncRoItemRulesPacket(Map<ResourceLocation, RoItemRule> itemRules, Map<ResourceLocation, RoItemRule> tagRules) {
-        this.itemRules = itemRules;
-        this.tagRules = tagRules;
+    public SyncRoItemRulesPacket(Map<ResourceLocation, RoItemRule> itemRules,
+                                 Map<ResourceLocation, RoItemRule> tagRules,
+                                 Map<String, Map<CardEquipType, RoItemRule>> modTypeRules,
+                                 Map<CardEquipType, RoItemRule> fallbackRules) {
+        this.itemRules = new HashMap<>(itemRules);
+        this.tagRules = new HashMap<>(tagRules);
+        this.modTypeRules = new HashMap<>();
+        modTypeRules.forEach((modId, rules) -> {
+            Map<CardEquipType, RoItemRule> byType = new EnumMap<>(CardEquipType.class);
+            byType.putAll(rules);
+            this.modTypeRules.put(modId, byType);
+        });
+        this.fallbackRules = new EnumMap<>(CardEquipType.class);
+        this.fallbackRules.putAll(fallbackRules);
     }
 
     public static void encode(SyncRoItemRulesPacket msg, FriendlyByteBuf buf) {
@@ -56,6 +64,22 @@ public class SyncRoItemRulesPacket {
             buf.writeResourceLocation(entry.getKey());
             encodeRule(buf, entry.getValue());
         }
+
+        buf.writeVarInt(msg.modTypeRules.size());
+        for (var modEntry : msg.modTypeRules.entrySet()) {
+            buf.writeUtf(modEntry.getKey());
+            buf.writeVarInt(modEntry.getValue().size());
+            for (var typeEntry : modEntry.getValue().entrySet()) {
+                buf.writeEnum(typeEntry.getKey());
+                encodeRule(buf, typeEntry.getValue());
+            }
+        }
+
+        buf.writeVarInt(msg.fallbackRules.size());
+        for (var entry : msg.fallbackRules.entrySet()) {
+            buf.writeEnum(entry.getKey());
+            encodeRule(buf, entry.getValue());
+        }
     }
 
     private static void encodeRule(FriendlyByteBuf buf, RoItemRule rule) {
@@ -70,6 +94,9 @@ public class SyncRoItemRulesPacket {
 
         // cardSlots
         buf.writeVarInt(rule.cardSlots());
+
+        // showTooltip
+        buf.writeBoolean(rule.showTooltip());
 
         // attributeBonuses
         Map<StatKeys, Integer> bonuses = rule.attributeBonuses();
@@ -106,7 +133,27 @@ public class SyncRoItemRulesPacket {
             tagRules.put(id, rule);
         }
 
-        return new SyncRoItemRulesPacket(itemRules, tagRules);
+        int modCount = buf.readVarInt();
+        Map<String, Map<CardEquipType, RoItemRule>> modTypeRules = new HashMap<>();
+        for (int i = 0; i < modCount; i++) {
+            String modId = buf.readUtf();
+            int typeCount = buf.readVarInt();
+            Map<CardEquipType, RoItemRule> byType = new EnumMap<>(CardEquipType.class);
+            for (int j = 0; j < typeCount; j++) {
+                CardEquipType equipType = buf.readEnum(CardEquipType.class);
+                byType.put(equipType, decodeRule(buf));
+            }
+            modTypeRules.put(modId, byType);
+        }
+
+        int fallbackCount = buf.readVarInt();
+        Map<CardEquipType, RoItemRule> fallbackRules = new EnumMap<>(CardEquipType.class);
+        for (int i = 0; i < fallbackCount; i++) {
+            CardEquipType equipType = buf.readEnum(CardEquipType.class);
+            fallbackRules.put(equipType, decodeRule(buf));
+        }
+
+        return new SyncRoItemRulesPacket(itemRules, tagRules, modTypeRules, fallbackRules);
     }
 
     private static RoItemRule decodeRule(FriendlyByteBuf buf) {
@@ -121,6 +168,8 @@ public class SyncRoItemRulesPacket {
 
         // cardSlots
         int cardSlots = buf.readVarInt();
+
+        boolean showTooltip = buf.readBoolean();
 
         // attributeBonuses
         int bonusCount = buf.readVarInt();
@@ -138,14 +187,14 @@ public class SyncRoItemRulesPacket {
             jobs.add(buf.readEnum(JobType.class));
         }
 
-        return new RoItemRule(displayName, bonuses, requiredBaseLevel, jobs, cardSlots);
+        return new RoItemRule(displayName, bonuses, requiredBaseLevel, jobs, cardSlots, showTooltip);
     }
 
     public static void handle(SyncRoItemRulesPacket msg, Supplier<NetworkEvent.Context> ctxSup) {
         var ctx = ctxSup.get();
         ctx.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
                 () -> () -> com.etema.ragnarmmo.client.ClientPacketHandler.handleRoItemRulesSync(
-                        msg.itemRules, msg.tagRules)));
+                        msg.itemRules, msg.tagRules, msg.modTypeRules, msg.fallbackRules)));
         ctx.setPacketHandled(true);
     }
 
@@ -155,5 +204,13 @@ public class SyncRoItemRulesPacket {
 
     public Map<ResourceLocation, RoItemRule> getTagRules() {
         return tagRules;
+    }
+
+    public Map<String, Map<CardEquipType, RoItemRule>> getModTypeRules() {
+        return modTypeRules;
+    }
+
+    public Map<CardEquipType, RoItemRule> getFallbackRules() {
+        return fallbackRules;
     }
 }

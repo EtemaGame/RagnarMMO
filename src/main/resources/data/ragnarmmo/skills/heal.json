@@ -14,7 +14,8 @@
         "base_cost": 10,
         "cost_per_level": 3
     },
-    "cooldown_ticks": 20,
+    "cooldown_ticks": 0,
+    "cast_delay_ticks": 20,
     "jobs": [
         "ACOLYTE"
     ],
@@ -23,5 +24,8 @@
         "grid_x": 0,
         "grid_y": 0
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.HealSkillEffect"
+    "reference": {
+        "notes": "Heal: 13-40 SP by level and 1.0 sec skill delay. On Undead, official RO damage is half of the heal amount."
+    },
+    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.HealSkillEffect"
 }

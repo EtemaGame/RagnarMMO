@@ -102,10 +102,26 @@ public interface ISkillEffect {
     }
 
     /**
+     * Get the skill delay (global cooldown) in ticks after execution.
+     * Default is 0 (uses value from skill definition).
+     */
+    default int getCastDelay(int level) {
+        return 0;
+    }
+
+    /**
      * Whether this skill's cast can be interrupted by movement or damage.
      * Default is true.
      */
     default boolean isInterruptible() {
         return true;
+    }
+
+    /**
+     * Get the resource cost (SP/Mana) for this skill at a given level.
+     * @param defaultCost The cost calculated from the skill definition.
+     */
+    default int getResourceCost(int level, int defaultCost) {
+        return defaultCost;
     }
 }

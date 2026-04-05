@@ -17,6 +17,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Blitz Beat — Active / Passive Proc
@@ -35,6 +36,11 @@ public class BlitzBeatSkillEffect implements ISkillEffect {
 
     @Override
     public ResourceLocation getSkillId() { return ID; }
+
+    @Override
+    public Set<TriggerType> getSupportedTriggers() {
+        return Set.of(TriggerType.OFFENSIVE_HURT);
+    }
 
     @Override
     public void execute(ServerPlayer player, int level) {

@@ -150,6 +150,7 @@ public final class RagnarConfigs {
                 public final MobStats mobstats;
                 public final Logging logging;
                 public final Zeny zeny;
+                public final Refine refine;
 
                 Server(ForgeConfigSpec.Builder builder) {
                         this.commands = new Commands(builder);
@@ -159,6 +160,7 @@ public final class RagnarConfigs {
                         this.mobstats = new MobStats(builder);
                         this.logging = new Logging(builder);
                         this.zeny = new Zeny(builder);
+                        this.refine = new Refine(builder);
                 }
 
                 public static final class Commands {
@@ -197,12 +199,14 @@ public final class RagnarConfigs {
                 public static final class Progression {
                         public final ForgeConfigSpec.DoubleValue expGlobalMultiplier;
                         public final ForgeConfigSpec.DoubleValue jobExpGlobalMultiplier;
+                        public final ForgeConfigSpec.DoubleValue baseExpDeathPenaltyRate;
+                        public final ForgeConfigSpec.DoubleValue jobExpDeathPenaltyRate;
+                        public final ForgeConfigSpec.IntValue secondJobChangeMinJobLevel;
+                        public final ForgeConfigSpec.BooleanValue usePreRenewalStatPointCurve;
                         public final ForgeConfigSpec.IntValue baseStatPoints;
                         public final ForgeConfigSpec.IntValue pointsPerLevel;
                         public final ForgeConfigSpec.DoubleValue skillToBaseExpMultiplier;
                         public final ForgeConfigSpec.DoubleValue skillToJobExpMultiplier;
-                        public final ForgeConfigSpec.DoubleValue lifePointsToBaseExpMultiplier;
-                        public final ForgeConfigSpec.DoubleValue lifePointsToJobExpMultiplier;
 
                         Progression(ForgeConfigSpec.Builder builder) {
                                 builder.comment("Experience and stat point progression").push("progression");
@@ -215,6 +219,22 @@ public final class RagnarConfigs {
                                                 .comment("Global multiplier for all job EXP gains")
                                                 .defineInRange("job_exp_global_multiplier", 1.0, 0.01, 100.0);
 
+                                baseExpDeathPenaltyRate = builder
+                                                .comment("Base EXP lost on death as a fraction. 0.05 = 5%, 0 = disabled")
+                                                .defineInRange("base_exp_death_penalty_rate", 0.05, 0.0, 1.0);
+
+                                jobExpDeathPenaltyRate = builder
+                                                .comment("Job EXP lost on death as a fraction. 0.05 = 5%, 0 = disabled")
+                                                .defineInRange("job_exp_death_penalty_rate", 0.05, 0.0, 1.0);
+
+                                secondJobChangeMinJobLevel = builder
+                                                .comment("Minimum first-class Job Level required to promote into a second class")
+                                                .defineInRange("second_job_change_min_job_level", 40, 1, 50);
+
+                                usePreRenewalStatPointCurve = builder
+                                                .comment("If true, Base Level grants classic pre-renewal status points: floor(level / 5) + 3")
+                                                .define("use_pre_renewal_stat_point_curve", true);
+
                                 skillToBaseExpMultiplier = builder
                                                 .comment("Multiplier for skill XP contributing to base level")
                                                 .defineInRange("skill_to_base_exp_multiplier", 0.5, 0.0, 10.0);
@@ -223,20 +243,12 @@ public final class RagnarConfigs {
                                                 .comment("Multiplier for skill XP contributing to job level")
                                                 .defineInRange("skill_to_job_exp_multiplier", 0.5, 0.0, 10.0);
 
-                                lifePointsToBaseExpMultiplier = builder
-                                                .comment("Multiplier for life skill points contributing to base level")
-                                                .defineInRange("life_points_to_base_exp_multiplier", 2.0, 0.0, 100.0);
-
-                                lifePointsToJobExpMultiplier = builder
-                                                .comment("Multiplier for life skill points contributing to job level")
-                                                .defineInRange("life_points_to_job_exp_multiplier", 2.0, 0.0, 100.0);
-
                                 baseStatPoints = builder
-                                                .comment("Base stat points granted to new characters")
-                                                .defineInRange("base_stat_points", 20, 0, 500);
+                                                .comment("Base stat points granted to new characters. Pre-renewal default is 48")
+                                                .defineInRange("base_stat_points", 48, 0, 500);
 
                                 pointsPerLevel = builder
-                                                .comment("Stat points gained per level up")
+                                                .comment("Fallback stat points gained per Base Level when the pre-renewal curve is disabled")
                                                 .defineInRange("points_per_level", 3, 0, 50);
 
                                 builder.pop();
@@ -262,8 +274,8 @@ public final class RagnarConfigs {
                                                 .defineInRange("max_job_level", 50, 1, 9999);
 
                                 maxStatValue = builder
-                                                .comment("Maximum value for any stat")
-                                                .defineInRange("max_stat_value", 999, 99, 9999);
+                                                .comment("Maximum playable value for any base stat. Pre-renewal default is 99")
+                                                .defineInRange("max_stat_value", 99, 99, 9999);
 
                                 noviceMaxLevel = builder
                                                 .comment("Maximum level for Novice class")
@@ -328,14 +340,34 @@ public final class RagnarConfigs {
 
                 public static final class Logging {
                         public final ForgeConfigSpec.BooleanValue debug;
+                        public final ForgeConfigSpec.BooleanValue debugCombat;
+                        public final ForgeConfigSpec.BooleanValue debugPlayerData;
+                        public final ForgeConfigSpec.BooleanValue debugMobSpawns;
+                        public final ForgeConfigSpec.BooleanValue debugBossWorld;
                         public final ForgeConfigSpec.IntValue warnRateLimitSeconds;
 
                         Logging(ForgeConfigSpec.Builder builder) {
                                 builder.comment("Logging and debug options").push("logging");
 
                                 debug = builder
-                                                .comment("Enable debug logging")
+                                                .comment("Master switch for gameplay debug logging")
                                                 .define("debug", false);
+
+                                debugCombat = builder
+                                                .comment("Log combat resolution: miss, hit, crit, damage and mitigation")
+                                                .define("debug_combat", false);
+
+                                debugPlayerData = builder
+                                                .comment("Log player state and sync activity: joins, exp, level ups and sync masks")
+                                                .define("debug_player_data", false);
+
+                                debugMobSpawns = builder
+                                                .comment("Log mob stat generation, tiers, levels and spawn-side scaling")
+                                                .define("debug_mob_spawns", false);
+
+                                debugBossWorld = builder
+                                                .comment("Log boss world state: registration, deaths, cooldowns and controlled spawns")
+                                                .define("debug_boss_world", false);
 
                                 warnRateLimitSeconds = builder
                                                 .comment("Rate limit for warning messages (seconds)")
@@ -390,6 +422,70 @@ public final class RagnarConfigs {
                                 villagerPriceMultiplier = builder
                                                 .comment("Villager prices in Zeny = emerald_count * this value")
                                                 .defineInRange("villager_price_multiplier", 10, 1, 100000);
+
+                                builder.pop();
+                        }
+                }
+
+                public static final class Refine {
+                        public final ForgeConfigSpec.BooleanValue enabled;
+                        public final ForgeConfigSpec.IntValue safeRefineLevel;
+                        public final ForgeConfigSpec.IntValue weaponBaseCost;
+                        public final ForgeConfigSpec.IntValue armorBaseCost;
+                        public final ForgeConfigSpec.IntValue costPerLevel;
+                        public final ForgeConfigSpec.DoubleValue weaponSuccessAfterSafe;
+                        public final ForgeConfigSpec.DoubleValue armorSuccessAfterSafe;
+                        public final ForgeConfigSpec.DoubleValue weaponSuccessPenaltyPerLevel;
+                        public final ForgeConfigSpec.DoubleValue armorSuccessPenaltyPerLevel;
+                        public final ForgeConfigSpec.DoubleValue minSuccessChance;
+                        public final ForgeConfigSpec.DoubleValue researchOrideconBonusPerLevel;
+
+                        Refine(ForgeConfigSpec.Builder builder) {
+                                builder.comment("RO-style refine settings").push("refine");
+
+                                enabled = builder
+                                                .comment("Enable the refine system for weapons and armor")
+                                                .define("enabled", true);
+
+                                safeRefineLevel = builder
+                                                .comment("Refine levels up to this target are safe and cannot fail")
+                                                .defineInRange("safe_refine_level", 4, 0, 10);
+
+                                weaponBaseCost = builder
+                                                .comment("Base zeny cost for weapon refine attempts")
+                                                .defineInRange("weapon_base_cost", 180, 0, 1_000_000);
+
+                                armorBaseCost = builder
+                                                .comment("Base zeny cost for armor refine attempts")
+                                                .defineInRange("armor_base_cost", 140, 0, 1_000_000);
+
+                                costPerLevel = builder
+                                                .comment("Additional zeny cost per next refine level")
+                                                .defineInRange("cost_per_level", 120, 0, 1_000_000);
+
+                                weaponSuccessAfterSafe = builder
+                                                .comment("Weapon refine success chance for the first unsafe attempt")
+                                                .defineInRange("weapon_success_after_safe", 0.75, 0.0, 1.0);
+
+                                armorSuccessAfterSafe = builder
+                                                .comment("Armor refine success chance for the first unsafe attempt")
+                                                .defineInRange("armor_success_after_safe", 0.85, 0.0, 1.0);
+
+                                weaponSuccessPenaltyPerLevel = builder
+                                                .comment("Weapon refine success penalty applied per unsafe level after the first")
+                                                .defineInRange("weapon_success_penalty_per_level", 0.10, 0.0, 1.0);
+
+                                armorSuccessPenaltyPerLevel = builder
+                                                .comment("Armor refine success penalty applied per unsafe level after the first")
+                                                .defineInRange("armor_success_penalty_per_level", 0.08, 0.0, 1.0);
+
+                                minSuccessChance = builder
+                                                .comment("Minimum success chance for unsafe refine attempts")
+                                                .defineInRange("min_success_chance", 0.25, 0.0, 1.0);
+
+                                researchOrideconBonusPerLevel = builder
+                                                .comment("Extra weapon refine success chance per level of Research Oridecon")
+                                                .defineInRange("research_oridecon_bonus_per_level", 0.02, 0.0, 0.5);
 
                                 builder.pop();
                         }

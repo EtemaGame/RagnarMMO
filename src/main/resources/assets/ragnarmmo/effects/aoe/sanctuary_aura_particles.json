@@ -1,0 +1,16 @@
+{
+  "id": "ragnarmmo:aoe/sanctuary_aura_particles",
+  "type": "particle_emitter",
+  "particle": "minecraft:glow",
+  "shape": "ring",
+  "duration_ticks": 20,
+  "loop": true,
+  "emit_interval_ticks": 4,
+  "count": 10,
+  "radius": 3.2,
+  "rotation_per_tick_deg": 5.0,
+  "offset": [0.0, 0.08, 0.0],
+  "spread": [0.06, 0.02, 0.06],
+  "base_velocity": [0.0, 0.015, 0.0],
+  "random_velocity": [0.01, 0.015, 0.01]
+}

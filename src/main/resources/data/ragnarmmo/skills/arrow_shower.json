@@ -26,5 +26,5 @@
         "grid_x": 1,
         "grid_y": 1
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.archer.ArrowShowerSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.archer.ArrowShowerSkillEffect"
 }

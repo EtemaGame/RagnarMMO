@@ -4,6 +4,7 @@ import com.etema.ragnarmmo.client.ui.SkillTreeAdapter.SkillNodeWrapper;
 import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.api.lifeskills.LifeSkillType;
 import com.etema.ragnarmmo.skill.api.SkillTier;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.system.stats.net.PacketUpgradeSkill;
@@ -298,14 +299,93 @@ public class SkillsScreen extends Screen {
         if (pendingUpgrades.isEmpty())
             return;
 
-        for (var entry : pendingUpgrades.entrySet()) {
-            ResourceLocation skillId = entry.getKey();
-            int points = entry.getValue();
-            for (int i = 0; i < points; i++) {
+        var player = Minecraft.getInstance().player;
+        if (player == null) {
+            return;
+        }
+
+        PlayerSkillsProvider.get(player).ifPresent(skillManager -> {
+            List<ResourceLocation> packetOrder = buildUpgradePacketOrder(skillManager);
+            if (packetOrder.isEmpty()) {
+                return;
+            }
+
+            Map<ResourceLocation, Integer> scheduled = new HashMap<>();
+            for (ResourceLocation skillId : packetOrder) {
                 Network.sendToServer(new PacketUpgradeSkill(skillId));
+                scheduled.merge(skillId, 1, Integer::sum);
+            }
+
+            scheduled.forEach((skillId, sentCount) -> pendingUpgrades.computeIfPresent(skillId,
+                    (id, pending) -> pending > sentCount ? pending - sentCount : null));
+        });
+    }
+
+    private List<ResourceLocation> buildUpgradePacketOrder(
+            com.etema.ragnarmmo.skill.runtime.SkillManager skillManager) {
+        Map<ResourceLocation, Integer> remaining = new HashMap<>(pendingUpgrades);
+        Map<ResourceLocation, Integer> simulatedLevels = new HashMap<>();
+        for (ResourceLocation skillId : remaining.keySet()) {
+            simulatedLevels.put(skillId, skillManager.getSkillLevel(skillId));
+        }
+
+        List<ResourceLocation> preferredOrder = new ArrayList<>();
+        for (SkillNodeWrapper wrapper : visibleSkills) {
+            preferredOrder.add(wrapper.getSkillId());
+        }
+        remaining.keySet().stream()
+                .sorted(Comparator.comparing(ResourceLocation::toString))
+                .forEach(skillId -> {
+                    if (!preferredOrder.contains(skillId)) {
+                        preferredOrder.add(skillId);
+                    }
+                });
+
+        List<ResourceLocation> packetOrder = new ArrayList<>();
+        boolean progressed = true;
+        while (!remaining.isEmpty() && progressed) {
+            progressed = false;
+
+            for (ResourceLocation skillId : preferredOrder) {
+                int pending = remaining.getOrDefault(skillId, 0);
+                if (pending <= 0) {
+                    continue;
+                }
+
+                var defOpt = SkillRegistry.get(skillId);
+                if (defOpt.isEmpty()) {
+                    continue;
+                }
+
+                boolean requirementsMet = true;
+                for (var requirement : defOpt.get().getRequirements().entrySet()) {
+                    ResourceLocation reqId = requirement.getKey();
+                    int reqLevel = requirement.getValue();
+                    int currentLevel = simulatedLevels.containsKey(reqId)
+                            ? simulatedLevels.get(reqId)
+                            : skillManager.getSkillLevel(reqId);
+                    if (currentLevel < reqLevel) {
+                        requirementsMet = false;
+                        break;
+                    }
+                }
+
+                if (!requirementsMet) {
+                    continue;
+                }
+
+                packetOrder.add(skillId);
+                simulatedLevels.put(skillId, simulatedLevels.getOrDefault(skillId, skillManager.getSkillLevel(skillId)) + 1);
+                if (pending == 1) {
+                    remaining.remove(skillId);
+                } else {
+                    remaining.put(skillId, pending - 1);
+                }
+                progressed = true;
             }
         }
-        pendingUpgrades.clear();
+
+        return packetOrder;
     }
 
     /**
@@ -436,7 +516,6 @@ public class SkillsScreen extends Screen {
                 var lifeManager = com.etema.ragnarmmo.system.lifeskills.LifeSkillCapability.get(player).orElse(null);
                 if (lifeManager != null) {
                     renderLifeSkillTreeLocal(g, lifeManager, 16, 54, mxLocal, myLocal + scrollOffset);
-                    renderLifeFooterInfoLocal(g, lifeManager);
                     // compute tooltip in LOCAL; render later
                     this.deferredTooltip = buildLifeTooltipLocal(lifeManager, 16, 54, mxLocal, myLocal + scrollOffset);
                 }
@@ -448,7 +527,6 @@ public class SkillsScreen extends Screen {
                         JobType job = JobType.fromId(stats.getJobId());
                         renderSkillTreeLocal(g, skillManager, job, 16, 54, mxLocal, myLocal + scrollOffset);
                         this.deferredTooltip = buildSkillTooltipLocal(skillManager, 16, 54, mxLocal, myLocal + scrollOffset);
-                        renderFooterInfoLocal(g, stats);
                     });
                 });
             }
@@ -456,6 +534,17 @@ public class SkillsScreen extends Screen {
 
         g.pose().popPose();
         RenderSystem.disableScissor();
+
+        if (currentTab.isLifeTab()) {
+            if (player != null) {
+                var lifeManager = com.etema.ragnarmmo.system.lifeskills.LifeSkillCapability.get(player).orElse(null);
+                if (lifeManager != null) {
+                    renderLifeFooterInfoLocal(g, lifeManager);
+                }
+            }
+        } else if (player != null) {
+            com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(player).ifPresent(stats -> renderFooterInfoLocal(g, stats));
+        }
 
         // Manual buttons (LOCAL)
         renderButtonsLocal(g, player, mxLocal, myLocal);
@@ -528,9 +617,14 @@ public class SkillsScreen extends Screen {
                     applyRect.contains(mx, my), applyActive);
         }
 
-        // Change class always visible (you can gate it by level/job etc if you want)
-        drawButtonLocal(g, BTN_CHANGE_CLASS, Component.translatable("screen.ragnarmmo.button.change_class"),
-                BTN_CHANGE_CLASS.contains(mx, my), true);
+        if (player != null) {
+            com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(player).ifPresent(stats -> {
+                if (JobType.fromId(stats.getJobId()).hasPromotions()) {
+                    drawButtonLocal(g, BTN_CHANGE_CLASS, Component.translatable("screen.ragnarmmo.button.change_class"),
+                            BTN_CHANGE_CLASS.contains(mx, my), true);
+                }
+            });
+        }
     }
 
     private void drawButtonLocal(GuiGraphics g, Rect r, Component label, boolean hovered, boolean enabled) {
@@ -612,7 +706,7 @@ public class SkillsScreen extends Screen {
             g.renderOutline(x, y, CELL_SIZE, CELL_SIZE, GuiConstants.COLOR_PANEL_BORDER);
 
             // Icon
-            ResourceLocation texture = new ResourceLocation("ragnarmmo", "textures/gui/skills/" + wrapper.getDefinition().getTextureName() + ".png");
+            ResourceLocation texture = SkillIconResolver.resolveSkillTexture(wrapper.getDefinition());
             RenderSystem.enableBlend();
 
             if (!requirementsMet)
@@ -620,13 +714,8 @@ public class SkillsScreen extends Screen {
             else
                 RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-            int iconOffset = (CELL_SIZE - ICON_SIZE) / 2;
-            float scale = ICON_SIZE / 64.0f;
-            g.pose().pushPose();
-            g.pose().translate(x + iconOffset, y + iconOffset, 0);
-            g.pose().scale(scale, scale, 1.0f);
-            g.blit(texture, 0, 0, 0, 0, 64, 64, 64, 64);
-            g.pose().popPose();
+            drawSkillIconLocal(g, x, y, texture, SkillIconResolver.getFallbackLabel(wrapper.getDefinition()),
+                    requirementsMet);
 
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
@@ -740,13 +829,28 @@ public class SkillsScreen extends Screen {
                 }
                 tooltipLines.add(lvlLine.withStyle(ChatFormatting.WHITE));
 
-                tooltipLines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.cost",
-                        wrapper.getDefinition().getUpgradeCost())
-                        .withStyle(ChatFormatting.GRAY));
+                boolean canSpendPoints = wrapper.getDefinition().canUpgradeWithPoints();
+                if (canSpendPoints) {
+                    tooltipLines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.cost",
+                            wrapper.getDefinition().getUpgradeCost())
+                            .withStyle(ChatFormatting.GRAY));
+                } else {
+                    tooltipLines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.auto_unlock")
+                            .withStyle(ChatFormatting.GRAY));
+                }
                 tooltipLines
                         .add(Component.translatable("screen.ragnarmmo.skills.tooltip.primary",
                                 wrapper.getDefinition().getScalingStat())
                                 .withStyle(ChatFormatting.GRAY));
+
+                tooltipLines.add(Component.literal(""));
+                String descKey = wrapper.getDefinition().getTranslationKey() + ".desc";
+                if (net.minecraft.client.resources.language.I18n.exists(descKey)) {
+                    String descText = net.minecraft.client.resources.language.I18n.get(descKey);
+                    for (String line : descText.split("\n")) {
+                        tooltipLines.add(Component.literal(line).withStyle(ChatFormatting.GRAY));
+                    }
+                }
 
                 var requirements = wrapper.getRequirements();
                 if (!requirements.isEmpty()) {
@@ -774,6 +878,14 @@ public class SkillsScreen extends Screen {
                 if (!requirementsMet) {
                     tooltipLines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.locked")
                             .withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
+                } else if (!canSpendPoints) {
+                    if (baseLevel > 0) {
+                        tooltipLines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.unlocked")
+                                .withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
+                    } else {
+                        tooltipLines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.auto_unlock")
+                                .withStyle(ChatFormatting.YELLOW));
+                    }
                 } else if (isMaxed) {
                     tooltipLines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.maxed")
                             .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
@@ -786,7 +898,7 @@ public class SkillsScreen extends Screen {
                             .withStyle(ChatFormatting.GREEN));
                 }
 
-                boolean canUpgrade = totalLevel < maxLevel && currentPoints > 0 && requirementsMet;
+                boolean canUpgrade = canSpendPoints && totalLevel < maxLevel && currentPoints > 0 && requirementsMet;
                 if (canUpgrade)
                     tooltipLines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.left_click")
                             .withStyle(ChatFormatting.GREEN));
@@ -835,18 +947,12 @@ public class SkillsScreen extends Screen {
             g.fill(x, y, x + CELL_SIZE, y + CELL_SIZE, bgColor);
             g.renderOutline(x, y, CELL_SIZE, CELL_SIZE, GuiConstants.COLOR_PANEL_BORDER);
 
-            ResourceLocation texture = new ResourceLocation("ragnarmmo", "textures/gui/skills/" + type.getTextureName() + ".png");
+            ResourceLocation texture = SkillIconResolver.resolveLifeSkillTexture(type);
 
             RenderSystem.enableBlend();
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-            int iconOffset = (CELL_SIZE - ICON_SIZE) / 2;
-            float scale = ICON_SIZE / 64.0f;
-            g.pose().pushPose();
-            g.pose().translate(x + iconOffset, y + iconOffset, 0);
-            g.pose().scale(scale, scale, 1.0f);
-            g.blit(texture, 0, 0, 0, 0, 64, 64, 64, 64);
-            g.pose().popPose();
+            drawSkillIconLocal(g, x, y, texture, SkillIconResolver.getFallbackLabel(type), true);
 
             if (isMaxed) {
                 g.renderOutline(x, y, CELL_SIZE, CELL_SIZE, GuiConstants.COLOR_MAXED);
@@ -915,7 +1021,8 @@ public class SkillsScreen extends Screen {
 
         int baseY = Math.max(8, FOOTER_Y - 22);
 
-        int spX = 8;
+        // Keep the footer inside the content scissor so the first glyph doesn't get clipped.
+        int spX = 16;
         int spY = baseY;
 
         String avgStr = String.format("%.1f", avg);
@@ -970,6 +1077,15 @@ public class SkillsScreen extends Screen {
                                 .withStyle(ChatFormatting.GRAY));
 
                 tooltipLines.add(Component.literal(""));
+                String descKey = type.getTranslationKey().replace("lifeskill", "skill") + ".desc";
+                if (net.minecraft.client.resources.language.I18n.exists(descKey)) {
+                    String descText = net.minecraft.client.resources.language.I18n.get(descKey);
+                    for (String line : descText.split("\n")) {
+                        tooltipLines.add(Component.literal(line).withStyle(ChatFormatting.GRAY));
+                    }
+                }
+
+                tooltipLines.add(Component.literal(""));
                 if (isMaxed) {
                     tooltipLines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.maxed")
                             .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
@@ -1019,13 +1135,17 @@ public class SkillsScreen extends Screen {
             return true;
         }
 
-        if (BTN_CHANGE_CLASS.contains(mx, my)) {
-            if (this.minecraft != null) {
-                // If your JobSelectionScreen ctor differs, adjust this line only.
-                this.minecraft.setScreen(new JobSelectionScreen(this));
+        if (BTN_CHANGE_CLASS.contains(mx, my) && player != null) {
+            boolean canChangeClass = com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(player)
+                    .map(stats -> JobType.fromId(stats.getJobId()).hasPromotions())
+                    .orElse(false);
+            if (canChangeClass) {
+                if (this.minecraft != null) {
+                    this.minecraft.setScreen(new JobSelectionScreen(this));
+                }
+                playClickSound(1.0f);
+                return true;
             }
-            playClickSound(1.0f);
-            return true;
         }
 
         if (showApplyReset) {
@@ -1106,8 +1226,10 @@ public class SkillsScreen extends Screen {
                     int totalLevel = baseLevel + pending;
                     int maxLevel = wrapper.getDefinition().getMaxLevel();
 
+                    boolean canSpendPoints = wrapper.getDefinition().canUpgradeWithPoints();
+
                     if (button == 0) { // Left click upgrade
-                        if (totalLevel < maxLevel && currentPoints > 0
+                        if (canSpendPoints && totalLevel < maxLevel && currentPoints > 0
                                 && checkRequirements(skillManager, wrapper, pendingUpgrades)) {
                             pendingUpgrades.put(skillId, pending + 1);
                             playClickSound(1.0f);
@@ -1133,6 +1255,37 @@ public class SkillsScreen extends Screen {
         Minecraft.getInstance().getSoundManager()
                 .play(net.minecraft.client.resources.sounds.SimpleSoundInstance
                         .forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, pitch));
+    }
+
+    private void drawSkillIconLocal(GuiGraphics g, int cellX, int cellY, ResourceLocation texture,
+            String fallbackLabel, boolean enabled) {
+        int iconOffset = (CELL_SIZE - ICON_SIZE) / 2;
+        int iconX = cellX + iconOffset;
+        int iconY = cellY + iconOffset;
+
+        if (texture != null) {
+            float scale = ICON_SIZE / 64.0f;
+            g.pose().pushPose();
+            g.pose().translate(iconX, iconY, 0);
+            g.pose().scale(scale, scale, 1.0f);
+            g.blit(texture, 0, 0, 0, 0, 64, 64, 64, 64);
+            g.pose().popPose();
+            return;
+        }
+
+        int bg = enabled ? 0xFF1F1F1F : 0xFF171717;
+        int border = enabled ? 0xFF777777 : 0xFF4D4D4D;
+        int textColor = enabled ? 0xFFE6E6E6 : 0xFF8A8A8A;
+        g.fill(iconX, iconY, iconX + ICON_SIZE, iconY + ICON_SIZE, bg);
+        g.renderOutline(iconX, iconY, ICON_SIZE, ICON_SIZE, border);
+
+        String label = fallbackLabel == null || fallbackLabel.isBlank() ? "?" : fallbackLabel;
+        g.pose().pushPose();
+        g.pose().translate(iconX + ICON_SIZE / 2.0f, iconY + ICON_SIZE / 2.0f, 0);
+        g.pose().scale(0.75f, 0.75f, 1.0f);
+        int textWidth = this.font.width(label);
+        g.drawString(this.font, label, -textWidth / 2, -4, textColor, false);
+        g.pose().popPose();
     }
 
     private boolean checkRequirements(com.etema.ragnarmmo.skill.runtime.SkillManager manager, SkillNodeWrapper wrapper,

@@ -130,6 +130,23 @@ public class LifeSkillProgress {
     }
 
     /**
+     * Mark a persistent discovery flag.
+     *
+     * <p>Returns true only the first time a key is seen. Used for exploration
+     * regions and other one-time discoveries that must persist across sessions.</p>
+     */
+    public boolean markUniqueDiscovery(String key) {
+        if (key == null || key.isBlank()) {
+            return false;
+        }
+        if (blockCounters.containsKey(key)) {
+            return false;
+        }
+        blockCounters.put(key, 1);
+        return true;
+    }
+
+    /**
      * Check if player has a pending perk choice.
      * A perk choice is pending every PERK_INTERVAL levels if not chosen.
      */

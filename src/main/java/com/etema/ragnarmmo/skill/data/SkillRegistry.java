@@ -164,6 +164,15 @@ public final class SkillRegistry {
         return getEffect(new ResourceLocation(DEFAULT_NAMESPACE, skillId.toLowerCase(Locale.ROOT)));
     }
 
+    /**
+     * Get all registered skill effects.
+     *
+     * @return Unmodifiable collection of all effect implementations
+     */
+    public static Collection<ISkillEffect> getAllEffects() {
+        return Collections.unmodifiableCollection(EFFECTS.values());
+    }
+
     // === Registration (internal use) ===
 
     /**
@@ -183,8 +192,6 @@ public final class SkillRegistry {
         SkillDefinition existing = SKILLS.put(id, definition);
         if (existing != null) {
             LOGGER.warn("Skill {} was overwritten by a new definition", id);
-        } else {
-            LOGGER.debug("Registered skill: {}", id);
         }
     }
 

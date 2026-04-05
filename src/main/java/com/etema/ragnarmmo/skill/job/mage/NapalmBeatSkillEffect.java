@@ -1,91 +1,96 @@
 package com.etema.ragnarmmo.skill.job.mage;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
-import com.etema.ragnarmmo.entity.aoe.NapalmBeatAoe;
+import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
+import com.etema.ragnarmmo.skill.job.mage.MageTargetUtil;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
 /**
- * Napalm Beat — Active (Ghost property AOE)
+ * Napalm Beat — Ghost property splash attack.
+ * Causes damage to enemies within a 9 cell area (3x3 / 1.5 radius) around the target.
+ * Non-linear SP cost and Cast Delay scaling.
  */
 public class NapalmBeatSkillEffect implements ISkillEffect {
 
     private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "napalm_beat");
 
     @Override
-    public ResourceLocation getSkillId() { return ID; }
+    public ResourceLocation getSkillId() {
+        return ID;
+    }
+
+    @Override
+    public int getResourceCost(int level, int defaultCost) {
+        // Lv 1-3: 9
+        // Lv 4-6: 12
+        // Lv 7-9: 15
+        // Lv 10: 18
+        if (level >= 10) return 18;
+        if (level >= 7) return 15;
+        if (level >= 4) return 12;
+        return 9;
+    }
+
+    @Override
+    public int getCastDelay(int level) {
+        // Lv 1-3: 1.0s (20t)
+        // Lv 4-5: 0.9s (18t)
+        // Lv 6-7: 0.8s (16t)
+        // Lv 8: 0.7s (14t)
+        // Lv 9: 0.6s (12t)
+        // Lv 10: 0.5s (10t)
+        return switch (level) {
+            case 1, 2, 3 -> 20;
+            case 4, 5 -> 18;
+            case 6, 7 -> 16;
+            case 8 -> 14;
+            case 9 -> 12;
+            case 10 -> 10;
+            default -> 20;
+        };
+    }
 
     @Override
     public void execute(ServerPlayer player, int level) {
         if (level <= 0) return;
 
-        // RO: Napalm Beat deals (70 + 10 * level)% MATK to all enemies in the area
-        float damage = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByMATK(player, 70.0f + (level * 10.0f));
-        float radius = 2.0f + (level * 0.1f);
+        LivingEntity mainTarget = MageTargetUtil.raycast(player, 10.0);
+        if (mainTarget == null) return;
 
-        LivingEntity target = getTarget(player);
-        Vec3 strikePos;
+        // Damage: 0.8 + (level-1)*0.1 MATK
+        float matkPercent = 80.0f + (level - 1) * 10.0f;
+        float damage = SkillDamageHelper.scaleByMATK(player, matkPercent);
 
-        if (target != null) {
-            strikePos = target.position();
-        } else {
-            // Raytrace if no target
-            HitResult ray = player.pick(10.0D, 0.0F, false);
-            strikePos = ray.getLocation();
+        // Visuals on primary target
+        if (player.level() instanceof ServerLevel sl) {
+            sl.sendParticles(ParticleTypes.WITCH, mainTarget.getX(), mainTarget.getY() + 1.0, mainTarget.getZ(), 20, 0.2, 0.4, 0.2, 0.05);
+            sl.sendParticles(ParticleTypes.SOUL, mainTarget.getX(), mainTarget.getY() + 1.0, mainTarget.getZ(), 5, 0.3, 0.3, 0.3, 0.02);
+            sl.playSound(null, mainTarget.getX(), mainTarget.getY(), mainTarget.getZ(), 
+                    SoundEvents.GENERIC_EXPLODE, net.minecraft.sounds.SoundSource.PLAYERS, 0.6f, 1.5f);
         }
 
-        // Initial Casting Phase (10 ticks)
-        for (int t = 0; t < 10; t++) {
-            final int tick = t;
-            com.etema.ragnarmmo.skill.runtime.SkillSequencer.schedule(t, () -> {
-                if (player.level() instanceof net.minecraft.server.level.ServerLevel sl) {
-                    double radius_circle = 1.0;
-                    for (int j = 0; j < 8; j++) {
-                        double angle = (tick * 0.5) + (j * Math.PI * 2 / 8.0);
-                        double dx = Math.cos(angle) * radius_circle;
-                        double dz = Math.sin(angle) * radius_circle;
-                        sl.sendParticles(net.minecraft.core.particles.ParticleTypes.WITCH, player.getX() + dx, player.getY() + 0.1, player.getZ() + dz, 1, 0, 0, 0, 0);
-                    }
-                }
-            });
-        }
+        // Area Damage (~1.5 block radius = approx 3x3 cells)
+        AABB area = mainTarget.getBoundingBox().inflate(1.5);
+        List<Entity> targets = player.level().getEntities(player, area, e -> e instanceof LivingEntity && e.isAlive());
 
-        // Spawn Napalm Beat AOE entity with delay
-        com.etema.ragnarmmo.skill.runtime.SkillSequencer.schedule(10, () -> {
-            NapalmBeatAoe aoe = new NapalmBeatAoe(player.level(), player, radius, damage, 40); // 2 second duration
-            aoe.setPos(strikePos.x, strikePos.y, strikePos.z);
-            player.level().addFreshEntity(aoe);
-        });
-    }
-
-    private LivingEntity getTarget(ServerPlayer player) {
-        Vec3 start = player.getEyePosition();
-        Vec3 look = player.getLookAngle();
-        Vec3 end = start.add(look.scale(10.0));
-
-        AABB searchBox = player.getBoundingBox().inflate(10.0);
-        List<LivingEntity> possibleTargets = player.level().getEntitiesOfClass(LivingEntity.class, searchBox,
-                e -> e != player && e.isAlive());
-
-        LivingEntity closestTarget = null;
-        double closestDist = Double.MAX_VALUE;
-
-        for (LivingEntity e : possibleTargets) {
-            AABB targetBox = e.getBoundingBox().inflate(0.5);
-            if (targetBox.clip(start, end).isPresent()) {
-                double dist = start.distanceToSqr(e.position());
-                if (dist < closestDist) {
-                    closestDist = dist;
-                    closestTarget = e;
+        for (Entity target : targets) {
+            if (target instanceof LivingEntity living) {
+                SkillDamageHelper.dealSkillDamage(living, player.level().damageSources().magic(), damage);
+                
+                // Small splash visual for extra targets
+                if (player.level() instanceof ServerLevel sl && living != mainTarget) {
+                    sl.sendParticles(ParticleTypes.WITCH, living.getX(), living.getY() + 1.0, living.getZ(), 8, 0.1, 0.2, 0.1, 0.01);
                 }
             }
         }
-        return closestTarget;
     }
 }

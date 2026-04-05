@@ -1,6 +1,8 @@
 package com.etema.ragnarmmo.skill.job.acolyte;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,19 +27,21 @@ public class HolyLightSkillEffect implements ISkillEffect {
         if (level <= 0)
             return;
 
-        // Holy Light is a Quest Skill in RO, max level 1. Deals 125% MATK holy damage.
-
+        var defOpt = SkillRegistry.get(ID);
         LivingEntity target = getTarget(player);
-        // Allow shooting even if target is null
-
-        final float baseDamage = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByMATK(player, 125.0f);
+        final float damagePercent = defOpt
+                .map(def -> (float) def.getLevelDouble("damage_percent", level, 125.0))
+                .orElse(125.0f);
+        final float baseDamage = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByMATK(player, damagePercent);
 
         // Initial Casting Phase (8 ticks of particles)
         for (int t = 0; t < 8; t++) {
+            final int tick = t;
             com.etema.ragnarmmo.skill.runtime.SkillSequencer.schedule(t, () -> {
                 if (player.level() instanceof net.minecraft.server.level.ServerLevel sl) {
                     sl.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.2, player.getZ(), 3, 0.2, 0.2, 0.2, 0.05);
                     sl.sendParticles(ParticleTypes.FLASH, player.getX(), player.getY() + 0.1, player.getZ(), 1, 0, 0, 0, 0);
+                    SkillVisualFx.spawnRotatingRing(sl, player.position(), 0.85, 0.15, ParticleTypes.GLOW, 8, tick * 0.35);
                 }
             });
         }
@@ -53,11 +57,12 @@ public class HolyLightSkillEffect implements ISkillEffect {
                 shootDir = player.getLookAngle();
             }
 
-            com.etema.ragnarmmo.entity.projectile.AbstractMagicProjectile projectile = 
-                new com.etema.ragnarmmo.entity.projectile.AbstractMagicProjectile(player.level(), player, baseDamage, ParticleTypes.END_ROD);
+            com.etema.ragnarmmo.entity.projectile.MagicProjectileEntity projectile =
+                new com.etema.ragnarmmo.entity.projectile.MagicProjectileEntity(player.level(), player, baseDamage, ParticleTypes.END_ROD);
             
+            projectile.setSkillId(ID);
             projectile.setSecondaryParticle(ParticleTypes.INSTANT_EFFECT);
-            projectile.setProjectileType("firebolt"); // Placeholder for Holy Light
+            projectile.setProjectileType("holy_light");
             projectile.setHoming(false);
             projectile.setGravity(0.0f);
             
@@ -65,13 +70,15 @@ public class HolyLightSkillEffect implements ISkillEffect {
             projectile.shoot(shootDir.x, shootDir.y, shootDir.z, 2.5f, 0.0f); // Very fast, pinpoint accurate
             
             projectile.setOnHitEffect(result -> {
-                player.level().playSound(null, result.getLocation().x, result.getLocation().y, result.getLocation().z,
+                Vec3 impact = result != null ? result.getLocation() : projectile.position();
+                player.level().playSound(null, impact.x, impact.y, impact.z,
                         net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.5f);
 
                 if (player.level() instanceof net.minecraft.server.level.ServerLevel sl) {
-                    sl.sendParticles(ParticleTypes.FLASH, result.getLocation().x, result.getLocation().y, result.getLocation().z, 1, 0, 0, 0, 0);
-                    sl.sendParticles(ParticleTypes.ENCHANTED_HIT, result.getLocation().x, result.getLocation().y, result.getLocation().z,
+                    sl.sendParticles(ParticleTypes.FLASH, impact.x, impact.y, impact.z, 1, 0, 0, 0, 0);
+                    sl.sendParticles(ParticleTypes.ENCHANTED_HIT, impact.x, impact.y, impact.z,
                             40, 0.3, 0.3, 0.3, 0.1);
+                    SkillVisualFx.spawnVerticalCross(sl, impact, 0.0, 1.5, 0.35, ParticleTypes.END_ROD, ParticleTypes.GLOW);
                 }
             });
 

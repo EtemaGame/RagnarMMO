@@ -1,0 +1,11 @@
+{
+    "skill_id": "ragnarmmo:fire_wall",
+    "texture": "minecraft:textures/block/fire_0.png",
+    "type": "sprite",
+    "columns": 1,
+    "rows": 1,
+    "size": 1.9,
+    "animation_fps": 12,
+    "billboard": true,
+    "render_type": "translucent_emissive"
+}

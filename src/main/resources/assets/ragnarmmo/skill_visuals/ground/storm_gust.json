@@ -1,0 +1,11 @@
+{
+    "skill_id": "ragnarmmo:storm_gust",
+    "texture": "minecraft:textures/block/packed_ice.png",
+    "type": "sprite",
+    "columns": 1,
+    "rows": 1,
+    "size": 3.0,
+    "animation_fps": 8,
+    "billboard": true,
+    "render_type": "translucent"
+}

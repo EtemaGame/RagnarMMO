@@ -14,6 +14,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -45,8 +47,6 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         profiler.push("skill_loader");
 
         SkillRegistry.clear();
-        Map<ResourceLocation, SkillDefinition> loadedFromJson = new HashMap<>();
-        Set<String> jsonSkillIds = new HashSet<>();
 
         // Phase 1: Load from JSON files
         int jsonCount = 0;
@@ -65,8 +65,7 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
             try {
                 SkillDefinition def = parseSkillJson(fileId, element.getAsJsonObject());
                 if (def != null) {
-                    loadedFromJson.put(def.getId(), def);
-                    jsonSkillIds.add(def.getId().getPath());
+                    SkillRegistry.register(def);
                     jsonCount++;
                 }
             } catch (Exception e) {
@@ -80,10 +79,10 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         // Phase 2: Load remaining skills from legacy enum (fallback)
         int legacyCount = 0;
         for (SkillType type : SkillType.values()) {
-            String skillId = type.getId();
-            if (!jsonSkillIds.contains(skillId)) {
+            ResourceLocation legacyId = ResourceLocation.fromNamespaceAndPath(SkillRegistry.getDefaultNamespace(), type.getId());
+            if (!SkillRegistry.contains(legacyId)) {
                 SkillDefinition def = convertFromLegacyEnum(type);
-                loadedFromJson.put(def.getId(), def);
+                SkillRegistry.register(def);
                 legacyCount++;
             }
         }
@@ -92,15 +91,10 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
             LOGGER.info("Loaded {} skills from legacy enum (not in JSON)", legacyCount);
         }
 
-        // Phase 3: Register all skills
-        for (SkillDefinition def : loadedFromJson.values()) {
-            SkillRegistry.register(def);
-        }
-
-        // Phase 3.5: Auto-register effects from effect_class
+        // Phase 3: Auto-register effects from effect_class
         int effectCount = 0;
         int effectErrors = 0;
-        for (SkillDefinition def : loadedFromJson.values()) {
+        for (SkillDefinition def : SkillRegistry.getAll()) {
             String effectIdentifier = def.getEffectClass();
             if (effectIdentifier == null || effectIdentifier.isEmpty()) {
                 continue;
@@ -187,8 +181,9 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         }
 
         // Requirements
-        Map<ResourceLocation, Integer> requirements = new HashMap<>();
+        Map<ResourceLocation, Integer> requirements = null;
         if (json.has("requirements") && json.get("requirements").isJsonObject()) {
+            requirements = new HashMap<>();
             JsonObject reqs = json.getAsJsonObject("requirements");
             for (Map.Entry<String, JsonElement> req : reqs.entrySet()) {
                 ResourceLocation reqId = ResourceLocation.tryParse(req.getKey());
@@ -199,8 +194,9 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         }
 
         // Jobs
-        Set<String> allowedJobs = new HashSet<>();
+        Set<String> allowedJobs = null;
         if (json.has("jobs") && json.get("jobs").isJsonArray()) {
+            allowedJobs = new HashSet<>();
             for (JsonElement jobEl : json.getAsJsonArray("jobs")) {
                 if (jobEl.isJsonPrimitive()) {
                     allowedJobs.add(jobEl.getAsString().toUpperCase(Locale.ROOT));
@@ -232,6 +228,9 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         // Effect
         String effectClass = getStringOrDefault(json, "effect_class", null);
 
+        SkillReference reference = parseReference(json);
+        Map<Integer, SkillLevelData> levelData = parseLevelData(json);
+
         return SkillDefinition.builder(id)
                 .displayName(displayName)
                 .category(category)
@@ -256,7 +255,67 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
                 .gridY(gridY)
                 .icon(icon)
                 .effectClass(effectClass)
+                .reference(reference)
+                .levelData(levelData)
                 .build();
+    }
+
+    private SkillReference parseReference(JsonObject json) {
+        if (!json.has("reference") || !json.get("reference").isJsonObject()) {
+            return null;
+        }
+
+        JsonObject ref = json.getAsJsonObject("reference");
+        String sourceName = getStringOrDefault(ref, "source_name", "");
+        String sourceUrl = getStringOrDefault(ref, "source_url", "");
+        String notes = getStringOrDefault(ref, "notes", "");
+        return new SkillReference(sourceName, sourceUrl, notes);
+    }
+
+    private Map<Integer, SkillLevelData> parseLevelData(JsonObject json) {
+        if (!json.has("level_data") || !json.get("level_data").isJsonObject()) {
+            return Map.of();
+        }
+
+        Map<Integer, SkillLevelData> parsed = new HashMap<>();
+        JsonObject levels = json.getAsJsonObject("level_data");
+
+        for (Map.Entry<String, JsonElement> entry : levels.entrySet()) {
+            if (!entry.getValue().isJsonObject()) {
+                continue;
+            }
+
+            int level;
+            try {
+                level = Integer.parseInt(entry.getKey());
+            } catch (NumberFormatException ignored) {
+                continue;
+            }
+
+            JsonObject levelJson = entry.getValue().getAsJsonObject();
+            Map<String, Double> numericValues = new HashMap<>();
+            Map<String, String> stringValues = new HashMap<>();
+            Map<String, Boolean> booleanValues = new HashMap<>();
+
+            for (Map.Entry<String, JsonElement> valueEntry : levelJson.entrySet()) {
+                JsonElement value = valueEntry.getValue();
+                if (!value.isJsonPrimitive()) {
+                    continue;
+                }
+
+                if (value.getAsJsonPrimitive().isNumber()) {
+                    numericValues.put(valueEntry.getKey(), value.getAsDouble());
+                } else if (value.getAsJsonPrimitive().isBoolean()) {
+                    booleanValues.put(valueEntry.getKey(), value.getAsBoolean());
+                } else if (value.getAsJsonPrimitive().isString()) {
+                    stringValues.put(valueEntry.getKey(), value.getAsString());
+                }
+            }
+
+            parsed.put(level, new SkillLevelData(numericValues, stringValues, booleanValues));
+        }
+
+        return parsed;
     }
 
     /**
@@ -300,7 +359,6 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
             }
         }
 
-        LOGGER.debug("Applied family {} defaults to skill", familyId);
         return merged;
     }
 
@@ -344,7 +402,7 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
     // === Legacy enum conversion ===
 
     private SkillDefinition convertFromLegacyEnum(SkillType type) {
-        ResourceLocation id = new ResourceLocation("ragnarmmo", type.getId());
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath("ragnarmmo", type.getId());
         String name = type.name();
 
         // Derive category from name pattern
@@ -392,7 +450,7 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
     private SkillTier deriveTier(String name) {
         if (isLifeSkillName(name))
             return SkillTier.LIFE;
-        if (name.equals("FIRST_AID") || name.equals("SURVIVAL_INSTINCT")) {
+        if (name.equals("FIRST_AID") || name.equals("BASIC_SKILL") || name.equals("PLAY_DEAD")) {
             return SkillTier.NOVICE;
         }
         return SkillTier.FIRST;
@@ -506,12 +564,12 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
 
         return switch (type) {
             case FIRST_AID -> basePkg + "novice.FirstAidSkillEffect";
-            case SURVIVAL_INSTINCT -> basePkg + "novice.SurvivalInstinctSkillEffect";
+            case BASIC_SKILL -> basePkg + "novice.BasicSkillEffect";
+            case PLAY_DEAD -> basePkg + "novice.PlayDeadSkillEffect";
             case SWORD_MASTERY -> basePkg + "swordman.SwordMasterySkillEffect";
             case TWO_HAND_MASTERY -> basePkg + "swordman.TwoHandMasterySkillEffect";
             case BASH -> basePkg + "swordman.BashSkillEffect";
-
-            // Add more mappings here as needed
+            case MAGNUM_BREAK -> basePkg + "swordman.MagnumBreakSkillEffect";
             case PROVOKE -> basePkg + "swordman.ProvokeSkillEffect";
             case ONE_HAND_MASTERY -> basePkg + "swordman.OneHandMasterySkillEffect";
             case ENDURANCE -> basePkg + "swordman.EnduranceSkillEffect";
@@ -542,6 +600,15 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         @SubscribeEvent
         public static void onAddReloadListeners(AddReloadListenerEvent event) {
             event.addListener(INSTANCE);
+        }
+    }
+
+    @Mod.EventBusSubscriber(modid = RagnarMMO.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class ClientEvents {
+
+        @SubscribeEvent
+        public static void onRegisterClientReloadListeners(RegisterClientReloadListenersEvent event) {
+            event.registerReloadListener(INSTANCE);
         }
     }
 }

@@ -1,0 +1,11 @@
+{
+    "skill_id": "ragnarmmo:pneuma",
+    "texture": "minecraft:textures/block/white_stained_glass.png",
+    "type": "sprite",
+    "columns": 1,
+    "rows": 1,
+    "size": 2.6,
+    "animation_fps": 4,
+    "billboard": false,
+    "render_type": "translucent"
+}

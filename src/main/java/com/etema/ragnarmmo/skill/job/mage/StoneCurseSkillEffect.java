@@ -1,5 +1,7 @@
 package com.etema.ragnarmmo.skill.job.mage;
 
+import com.etema.ragnarmmo.entity.effect.StatusOverlayEntity;
+import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -15,8 +17,9 @@ import net.minecraft.world.level.block.Blocks;
 
 /**
  * Stone Curse — Active (Earth/Status)
- * RO: Turns a target to stone (Petrify status), making them immobile but invincible.
- *     Chance of success: (40 + 5×level)%. Doesn't work against Boss monsters.
+ * RO-inspired petrify approximation.
+ * Chance now follows the shared table: 24% at Lv1 up to 60% at Lv10.
+ * Does not work against Boss or Undead monsters.
  *
  * Minecraft:
  *  - On hit, applies:
@@ -25,7 +28,6 @@ import net.minecraft.world.level.block.Blocks;
  *    - DAMAGE_RESISTANCE 4 (target becomes nearly invincible while petrified)
  *  - Visual: BLOCK (cobblestone) particles burst from the target + stone-cracking sounds.
  *  - Duration: 2 + level seconds (short but impactful).
- *  - Does not work on Bosses (MobTier check would need MobTier data).
  */
 public class StoneCurseSkillEffect implements ISkillEffect {
 
@@ -41,8 +43,14 @@ public class StoneCurseSkillEffect implements ISkillEffect {
         LivingEntity target = MageTargetUtil.raycast(player, 12.0);
         if (target == null) return;
 
-        // Petrify chance: 40% + 5% per level
-        float chance = 0.40f + (0.05f * level);
+        if (target.getMobType() == net.minecraft.world.entity.MobType.UNDEAD ||
+            com.etema.ragnarmmo.system.mobstats.util.MobUtils.isMVPBoss(target)) {
+            player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.ragnarmmo.skill_blocked_type")
+                    .withStyle(net.minecraft.ChatFormatting.GRAY));
+            return;
+        }
+
+        float chance = 0.24f + ((level - 1) * 0.04f);
         if (player.getRandom().nextFloat() > chance) {
             player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§7Stone Curse §cfailed§7."));
             // Still show a small miss particle
@@ -60,6 +68,9 @@ public class StoneCurseSkillEffect implements ISkillEffect {
         target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, durationTicks, 2, false, true, false));
         // Near-invincibility while petrified (like RO stone status)
         target.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, durationTicks, 4, false, false, true));
+        if (player.level() instanceof ServerLevel overlayLevel) {
+            StatusOverlayEntity.spawnOrRefresh(overlayLevel, target, StatusOverlayEntity.Variant.STONE, durationTicks);
+        }
 
         // Sound: stone cracking
         player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
@@ -75,6 +86,7 @@ public class StoneCurseSkillEffect implements ISkillEffect {
             sl.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.STONE.defaultBlockState()),
                     target.getX(), target.getY() + 0.5, target.getZ(),
                     20, 0.3, 0.3, 0.3, 0.08);
+            SkillVisualFx.spawnAuraColumn(sl, target, ParticleTypes.ASH, ParticleTypes.SMOKE, 4, 0.45, target.getBbHeight());
         }
     }
 }

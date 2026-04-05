@@ -1,0 +1,15 @@
+{
+  "id": "ragnarmmo:aoe/pneuma_loop",
+  "type": "sprite_sheet",
+  "texture": "minecraft:textures/block/white_stained_glass.png",
+  "columns": 1,
+  "rows": 1,
+  "frame_count": 1,
+  "fps": 4,
+  "duration_ticks": 20,
+  "loop": true,
+  "size": 2.6,
+  "orientation": "ground",
+  "offset": [0.0, 0.02, 0.0],
+  "render_type": "translucent"
+}

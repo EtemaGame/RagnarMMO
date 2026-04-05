@@ -1,0 +1,13 @@
+{
+    "category": "QUEST",
+    "name": "achievement.ragnarmmo.archer_class.name",
+    "description": "achievement.ragnarmmo.archer_class.desc",
+    "trigger_type": "pickup_item",
+    "trigger_id": "minecraft:bow",
+    "required_amount": 1,
+    "points": 20,
+    "title": "title.ragnarmmo.the_marksman",
+    "rewards": {
+        "minecraft:arrow": 64
+    }
+}

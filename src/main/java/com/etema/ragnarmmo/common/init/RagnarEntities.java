@@ -83,6 +83,32 @@ public final class RagnarEntities {
                     .updateInterval(1)
                     .build("sanctuary_aoe"));
 
+    public static final RegistryObject<EntityType<com.etema.ragnarmmo.entity.aoe.WarpPortalAoe>> WARP_PORTAL_AOE =
+            ENTITIES.register("warp_portal_aoe",
+                    () -> EntityType.Builder.<com.etema.ragnarmmo.entity.aoe.WarpPortalAoe>of(
+                                    com.etema.ragnarmmo.entity.aoe.WarpPortalAoe::new, MobCategory.MISC)
+                            .sized(2.5f, 1.0f)
+                            .clientTrackingRange(10)
+                            .updateInterval(1)
+                            .build("warp_portal_aoe"));
+
+    public static final RegistryObject<EntityType<com.etema.ragnarmmo.entity.aoe.PneumaAoe>> PNEUMA_AOE =
+            ENTITIES.register("pneuma_aoe",
+                    () -> EntityType.Builder.<com.etema.ragnarmmo.entity.aoe.PneumaAoe>of(
+                                    com.etema.ragnarmmo.entity.aoe.PneumaAoe::new, MobCategory.MISC)
+                            .sized(3.0f, 1.0f)
+                            .clientTrackingRange(10)
+                            .updateInterval(1)
+                            .build("pneuma_aoe"));
+
+    public static final RegistryObject<EntityType<com.etema.ragnarmmo.entity.effect.StatusOverlayEntity>> STATUS_OVERLAY =
+            ENTITIES.register("status_overlay", () -> EntityType.Builder.<com.etema.ragnarmmo.entity.effect.StatusOverlayEntity>of(
+                            com.etema.ragnarmmo.entity.effect.StatusOverlayEntity::new, MobCategory.MISC)
+                    .sized(0.1f, 0.1f)
+                    .clientTrackingRange(10)
+                    .updateInterval(1)
+                    .build("status_overlay"));
+
     public static void register(IEventBus modBus) {
         ENTITIES.register(modBus);
     }

@@ -1,0 +1,30 @@
+{
+  "id": "ragnarmmo:impact/soul_strike_burst",
+  "type": "layered",
+  "duration_ticks": 10,
+  "loop": false,
+  "layers": [
+    {
+      "name": "soul_ring",
+      "blend_mode": "translucent",
+      "orientation": "billboard",
+      "z_order": 0,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.20, "scale_y": 0.20, "alpha": 0.90, "texture": "minecraft:textures/block/soul_sand.png" },
+        { "tick": 5, "scale_x": 0.56, "scale_y": 0.56, "alpha": 0.45, "texture": "minecraft:textures/block/soul_sand.png" },
+        { "tick": 10, "scale_x": 0.86, "scale_y": 0.86, "alpha": 0.0, "texture": "minecraft:textures/block/soul_sand.png" }
+      ]
+    },
+    {
+      "name": "soul_glow",
+      "blend_mode": "emissive",
+      "orientation": "billboard",
+      "z_order": 1,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.16, "scale_y": 0.16, "alpha": 1.0, "texture": "minecraft:textures/block/sculk_vein.png" },
+        { "tick": 5, "scale_x": 0.40, "scale_y": 0.40, "alpha": 0.55, "texture": "minecraft:textures/block/sculk_vein.png" },
+        { "tick": 10, "scale_x": 0.70, "scale_y": 0.70, "alpha": 0.0, "texture": "minecraft:textures/block/sculk_vein.png" }
+      ]
+    }
+  ]
+}

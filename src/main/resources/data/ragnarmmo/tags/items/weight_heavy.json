@@ -166,7 +166,10 @@
         "minecraft:smooth_quartz",
         "minecraft:smooth_quartz_slab",
         "minecraft:smooth_quartz_stairs",
-        "#minecraft:concrete",
+        {
+            "id": "#minecraft:concrete",
+            "required": false
+        },
         "#minecraft:coal_ores",
         "#minecraft:iron_ores",
         "#minecraft:copper_ores",
@@ -267,6 +270,9 @@
         "minecraft:diamond_hoe",
         "minecraft:elytra",
         "minecraft:respawn_anchor",
-        "#minecraft:shulker_boxes"
+        {
+            "id": "#minecraft:shulker_boxes",
+            "required": false
+        }
     ]
 }

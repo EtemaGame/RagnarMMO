@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.entity.aoe;
 
+import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -27,7 +28,7 @@ public class StormGustAoe extends AoeEntity {
 
     @Override
     public void applyEffect(LivingEntity target) {
-        target.hurt(this.damageSources().magic(), this.damage);
+        SkillDamageHelper.dealSkillDamage(target, this.damageSources().magic(), this.damage);
         target.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 40, 1));
     }
 

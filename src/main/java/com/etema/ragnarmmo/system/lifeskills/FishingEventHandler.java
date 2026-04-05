@@ -47,7 +47,7 @@ public class FishingEventHandler {
                             10,
                             2);
                     if (pointsAwarded > 0) {
-                        levelsGained += progress.addPoints(pointsAwarded);
+                        levelsGained += manager.addPoints(LifeSkillType.FISHING, pointsAwarded);
                         totalPoints += pointsAwarded;
                     }
                     continue;
@@ -61,13 +61,13 @@ public class FishingEventHandler {
                             source.getThreshold(),
                             source.getPoints());
                     if (pointsAwarded > 0) {
-                        levelsGained += progress.addPoints(pointsAwarded);
+                        levelsGained += manager.addPoints(LifeSkillType.FISHING, pointsAwarded);
                         totalPoints += pointsAwarded;
                     }
                 } else {
                     // Direct points per catch
                     pointsAwarded = source.getPoints() * stack.getCount();
-                    levelsGained += progress.addPoints(pointsAwarded);
+                    levelsGained += manager.addPoints(LifeSkillType.FISHING, pointsAwarded);
                     totalPoints += pointsAwarded;
                 }
             }

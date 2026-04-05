@@ -2,8 +2,10 @@
     "id": "zombie_card",
     "displayName": "Zombie Card",
     "mobId": "minecraft:zombie",
+    "equipType": "weapon",
     "modifiers": {
-        "ragnarmmo:vit": 1.0
+        "ragnarmmo:vit": 1.0,
+        "ragnarmmo:damage_vs_race_undead": 0.15
     },
     "dropRate": 0.01,
     "modelId": 71

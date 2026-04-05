@@ -37,7 +37,7 @@ public class FireBoltProjectile extends AbstractMagicProjectile {
         if (level() instanceof ServerLevel sl) {
             sl.sendParticles(ParticleTypes.FLAME, x, y, z, 20, 0.3, 0.3, 0.3, 0.1);
             sl.sendParticles(ParticleTypes.LARGE_SMOKE, x, y, z, 5, 0.2, 0.2, 0.2, 0.05);
-            level().playSound(null, x, y, z, SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1.0f, 1.2f);
+            level().playSound(null, x, y, z, com.etema.ragnarmmo.common.init.RagnarSounds.BOLT_HIT.get(), SoundSource.PLAYERS, 1.0f, 1.2f);
         }
     }
 
@@ -48,6 +48,6 @@ public class FireBoltProjectile extends AbstractMagicProjectile {
 
     @Override
     public Optional<SoundEvent> getImpactSound() {
-        return Optional.of(SoundEvents.FIRECHARGE_USE);
+        return Optional.of(com.etema.ragnarmmo.common.init.RagnarSounds.BOLT_HIT.get());
     }
 }

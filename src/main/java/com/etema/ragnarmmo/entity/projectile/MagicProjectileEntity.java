@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.entity.projectile;
 
+import com.etema.ragnarmmo.common.net.effects.SkillEffectsNetwork;
 import com.etema.ragnarmmo.entity.IVisualSkillEntity;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -28,6 +29,10 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
 
     @Override
     public ResourceLocation getSkillId() {
+        ResourceLocation derived = deriveSkillId(getProjectileType());
+        if (derived != null) {
+            return derived;
+        }
         return skillId;
     }
 
@@ -113,6 +118,19 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
         }
     }
 
+    private ResourceLocation deriveSkillId(String type) {
+        return switch (type) {
+            case "fireball" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "fire_ball");
+            case "holy_light" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "holy_light");
+            case "firebolt" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "fire_bolt");
+            case "icebolt" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "cold_bolt");
+            case "lightningbolt" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "lightning_bolt");
+            case "napalm_beat" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "napalm_beat");
+            case "soul_strike" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "soul_strike");
+            default -> null;
+        };
+    }
+
     public ParticleOptions getParticle() {
         if (!this.level().isClientSide) return serverParticle;
         
@@ -177,6 +195,7 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
                 if (this.onHitEffect != null) {
                     this.onHitEffect.accept(null);
                 }
+                SkillEffectsNetwork.sendImpact(this, getSkillId(), result);
                 this.discard();
             }
         } else {
@@ -223,6 +242,7 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
             if (this.onHitEffect != null) {
                 this.onHitEffect.accept(result);
             }
+            SkillEffectsNetwork.sendImpact(this, getSkillId(), result);
         }
         this.discard();
     }

@@ -14,7 +14,8 @@
         "base_cost": 15,
         "cost_per_level": 3
     },
-    "cooldown_ticks": 40,
+    "cooldown_ticks": 0,
+    "cast_delay_ticks": 20,
     "jobs": [
         "ACOLYTE"
     ],
@@ -26,5 +27,20 @@
         "grid_x": 4,
         "grid_y": 0
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.IncreaseAgiSkillEffect"
+    "reference": {
+        "notes": "Increase AGI: 18-45 SP, 15 HP per cast, 1.0 sec skill delay, 60-240 sec duration, +3 to +12 AGI by level."
+    },
+    "level_data": {
+        "1": { "sp_cost": 18, "hp_cost": 15, "effect_amplifier": 2, "duration_ticks": 1200 },
+        "2": { "sp_cost": 21, "hp_cost": 15, "effect_amplifier": 3, "duration_ticks": 1600 },
+        "3": { "sp_cost": 24, "hp_cost": 15, "effect_amplifier": 4, "duration_ticks": 2000 },
+        "4": { "sp_cost": 27, "hp_cost": 15, "effect_amplifier": 5, "duration_ticks": 2400 },
+        "5": { "sp_cost": 30, "hp_cost": 15, "effect_amplifier": 6, "duration_ticks": 2800 },
+        "6": { "sp_cost": 33, "hp_cost": 15, "effect_amplifier": 7, "duration_ticks": 3200 },
+        "7": { "sp_cost": 36, "hp_cost": 15, "effect_amplifier": 8, "duration_ticks": 3600 },
+        "8": { "sp_cost": 39, "hp_cost": 15, "effect_amplifier": 9, "duration_ticks": 4000 },
+        "9": { "sp_cost": 42, "hp_cost": 15, "effect_amplifier": 10, "duration_ticks": 4400 },
+        "10": { "sp_cost": 45, "hp_cost": 15, "effect_amplifier": 11, "duration_ticks": 4800 }
+    },
+    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.IncreaseAgiSkillEffect"
 }

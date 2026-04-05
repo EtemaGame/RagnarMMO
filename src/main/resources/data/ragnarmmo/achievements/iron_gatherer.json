@@ -1,12 +1,12 @@
 {
     "category": "ADVENTURE",
-    "name": "Iron Gatherer",
-    "description": "Collect 64 Iron Ingots.",
+    "name": "achievement.ragnarmmo.iron_gatherer.name",
+    "description": "achievement.ragnarmmo.iron_gatherer.desc",
     "trigger_type": "pickup_item",
     "trigger_id": "minecraft:iron_ingot",
     "required_amount": 64,
-    "points": 20,
-    "title": "Iron Monger",
+    "points": 15,
+    "title": "title.ragnarmmo.the_blacksmith",
     "rewards": {
         "minecraft:iron_block": 1
     }

@@ -1,6 +1,6 @@
 {
   "parent": "ragnarmmo:item/daggers/base_dagger",
   "textures": {
-    "layer0": "ragnarmmo:item/weapons/volcanic_tooth"
+    "layer0": "ragnarmmo:item/weapons/daggers/volcanic_tooth"
   }
 }

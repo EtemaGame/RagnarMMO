@@ -21,5 +21,5 @@
         "grid_x": 0,
         "grid_y": 1
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.merchant.DiscountSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.merchant.DiscountSkillEffect"
 }

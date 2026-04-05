@@ -1,0 +1,7 @@
+{
+  "skill_id": "ragnarmmo:soul_strike",
+  "bindings": [
+    { "phase": "projectile_tick", "effect": "ragnarmmo:projectiles/soul_strike_travel" },
+    { "phase": "impact", "effect": "ragnarmmo:impact/soul_strike_burst" }
+  ]
+}

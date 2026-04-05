@@ -1,0 +1,11 @@
+{
+    "skill_id": "ragnarmmo:warp_portal",
+    "texture": "minecraft:textures/block/nether_portal.png",
+    "type": "sprite",
+    "columns": 1,
+    "rows": 1,
+    "size": 2.6,
+    "animation_fps": 8,
+    "billboard": false,
+    "render_type": "translucent"
+}

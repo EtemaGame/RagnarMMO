@@ -1,9 +1,9 @@
 package com.etema.ragnarmmo.system.stats.commands;
 
 import com.etema.ragnarmmo.common.command.CommandUtil;
-import com.etema.ragnarmmo.common.net.Network;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
-import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket;
+import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService;
 import com.etema.ragnarmmo.system.stats.progression.ExpTable;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -62,7 +62,7 @@ public final class ExpCommands {
         int[] result = {0};
         player.getCapability(PlayerStatsProvider.CAP).ifPresent(stats -> {
             int lvBefore = stats.getLevel();
-            stats.addExpAndProcessLevelUps(amount, 5, ExpTable::expToNext);
+            stats.addExpAndProcessLevelUps(amount, RagnarConfigs.SERVER.progression.pointsPerLevel.get(), ExpTable::expToNext);
             sync(player, stats);
             if (stats.getLevel() > lvBefore) {
                 sendOk(player, "✦ +" + amount + " base XP  →  Level " + stats.getLevel()
@@ -129,7 +129,7 @@ public final class ExpCommands {
 
     private static void sync(ServerPlayer player,
             com.etema.ragnarmmo.common.api.stats.IPlayerStats stats) {
-        Network.sendToPlayer(player, new PlayerStatsSyncPacket(stats));
+        PlayerStatsSyncService.sync(player, stats);
     }
 
     private static void sendOk(ServerPlayer player, String text) {

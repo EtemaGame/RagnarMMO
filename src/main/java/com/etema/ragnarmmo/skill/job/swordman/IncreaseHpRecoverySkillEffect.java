@@ -4,18 +4,22 @@ import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.event.TickEvent;
+
+import java.util.Set;
 
 /**
  * Increase HP Recovery — Passive
  * RO: +5 HP regen per level while resting + boosts HP from healing items.
  *
- * Minecraft: Every 20 ticks (1 second), heal a small amount of HP if the player
- * is not in combat (not hurt recently). The heal scales with the skill level.
- *
- * "Not in combat" is approximated by checking hurtTime == 0.
- * The 10% food healing bonus is handled separately in SkillEffectHandler via
- * onItemUseFinish, but here we also provide the passive regen.
+ * Minecraft adaptation:
+ *  - Every 10 seconds, heals while standing still.
+ *  - Regen formula follows the shared table:
+ *    (5 x level) + (0.2% Max HP x level).
+ *  - Healing consumables get +10% restorative value per level.
  */
 public class IncreaseHpRecoverySkillEffect implements ISkillEffect {
 
@@ -27,16 +31,51 @@ public class IncreaseHpRecoverySkillEffect implements ISkillEffect {
     }
 
     @Override
+    public Set<TriggerType> getSupportedTriggers() {
+        return Set.of(TriggerType.PERIODIC_TICK, TriggerType.ITEM_USE_FINISH);
+    }
+
+    @Override
     public void onPeriodicTick(TickEvent.PlayerTickEvent event, ServerPlayer player, int level) {
+        if (level <= 0) return;
+        if (player.tickCount % 200 != 0) return;
+        if (player.getHealth() >= player.getMaxHealth()) return;
+        if (player.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4 || !player.onGround()) return;
+
+        float healAmount = (5.0f * level) + (float) (player.getMaxHealth() * (0.002 * level));
+        player.heal(healAmount);
+
+        if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.HEART,
+                    player.getX(), player.getY() + 1.8, player.getZ(),
+                    3, 0.2, 0.2, 0.2, 0.01);
+        }
+    }
+
+    @Override
+    public void onItemUseFinish(net.minecraftforge.event.entity.living.LivingEntityUseItemEvent.Finish event, ServerPlayer player, int level) {
         if (level <= 0) return;
         if (player.getHealth() >= player.getMaxHealth()) return;
 
-        // Only regen if not hurt recently (approximates "resting" state)
-        if (player.hurtTime > 0) return;
+        ItemStack stack = event.getItem();
+        float bonusHeal = 0.0f;
 
-        // +0.5 HP per level per second (10 ticks intervals = every 0.5s)
-        // Scales to 5 HP/s at level 10
-        float healAmount = 0.5f * level;
-        player.heal(healAmount);
+        if (stack.isEdible()) {
+            var food = stack.getFoodProperties(player);
+            if (food != null) {
+                bonusHeal += (float) (food.getNutrition() * (0.10 * level));
+            }
+        }
+
+        for (MobEffectInstance effect : PotionUtils.getMobEffects(stack)) {
+            if (effect.getEffect() == MobEffects.HEAL) {
+                float baseHeal = 4.0f * (1 << effect.getAmplifier());
+                bonusHeal += (float) (baseHeal * (0.10 * level));
+            }
+        }
+
+        if (bonusHeal > 0.0f) {
+            player.heal(bonusHeal);
+        }
     }
 }

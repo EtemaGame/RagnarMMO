@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.system.stats.capability;
 
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
+import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
 import com.etema.ragnarmmo.system.stats.RagnarStats;
 
 import net.minecraft.core.Direction;
@@ -34,6 +35,7 @@ public class PlayerStatsProvider
     @SubscribeEvent
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> evt) {
         if (evt.getObject() instanceof Player player) {
+            RagnarDebugLog.playerData("ATTACH_CAP player={}", playerName(player));
             evt.addCapability(new ResourceLocation(RagnarStats.MOD_ID, "player_stats"),
                     new PlayerStatsProvider(player));
         }
@@ -54,6 +56,14 @@ public class PlayerStatsProvider
                 IPlayerStats cur = newOpt.resolve().get();
                 cur.deserializeNBT(old.serializeNBT());
                 cur.markDirty();
+                RagnarDebugLog.playerData(
+                        "CLONE player={} wasDeath={} baseLv={} jobLv={} exp={} jobExp={}",
+                        playerName(e.getEntity()),
+                        e.isWasDeath(),
+                        cur.getLevel(),
+                        cur.getJobLevel(),
+                        cur.getExp(),
+                        cur.getJobExp());
             } else {
                 com.etema.ragnarmmo.RagnarMMO.LOGGER.error("Failed to clone PlayerStats: caps missing! (Old: {}, New: {})", 
                     oldOpt.isPresent(), newOpt.isPresent());
@@ -99,14 +109,26 @@ public class PlayerStatsProvider
 
     private static void syncToClient(ServerPlayer player) {
         player.getCapability(CAP).ifPresent(stats -> {
-            com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
-                    new com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket(stats));
-            // Also sync derived stats
-            var derived = com.etema.ragnarmmo.system.stats.compute.StatComputer.compute(
-                    player, stats, 0, 1.0, 0, player.getArmorValue(), 1.0);
-            com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
-                    new com.etema.ragnarmmo.system.stats.net.DerivedStatsSyncPacket(derived));
+            RagnarDebugLog.playerData("SYNC_TRIGGER player={} reason=provider_hook", playerName(player));
+            com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService.sync(player, stats);
         });
+    }
+
+    private static String playerName(Player player) {
+        if (player == null) {
+            return "null";
+        }
+
+        var profile = player.getGameProfile();
+        if (profile != null) {
+            String name = profile.getName();
+            if (name != null && !name.isBlank()) {
+                return name;
+            }
+        }
+
+        String uuid = player.getStringUUID();
+        return (uuid == null || uuid.isBlank()) ? "unknown" : uuid;
     }
 
     @Override

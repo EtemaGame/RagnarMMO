@@ -26,5 +26,5 @@
         "grid_x": 3,
         "grid_y": 0
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.swordman.EndureSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.swordman.EndureSkillEffect"
 }

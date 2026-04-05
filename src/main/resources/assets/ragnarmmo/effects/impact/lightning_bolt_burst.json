@@ -1,0 +1,30 @@
+{
+  "id": "ragnarmmo:impact/lightning_bolt_burst",
+  "type": "layered",
+  "duration_ticks": 6,
+  "loop": false,
+  "layers": [
+    {
+      "name": "spark_flash",
+      "blend_mode": "emissive",
+      "orientation": "billboard",
+      "z_order": 0,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.16, "scale_y": 0.16, "alpha": 1.0, "texture": "minecraft:textures/block/glowstone.png" },
+        { "tick": 2, "scale_x": 0.52, "scale_y": 0.52, "alpha": 0.65, "texture": "minecraft:textures/block/glowstone.png" },
+        { "tick": 6, "scale_x": 0.90, "scale_y": 0.90, "alpha": 0.0, "texture": "minecraft:textures/block/glowstone.png" }
+      ]
+    },
+    {
+      "name": "spark_shard",
+      "blend_mode": "emissive",
+      "orientation": "billboard",
+      "z_order": 1,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.10, "scale_y": 0.34, "alpha": 0.95, "texture": "minecraft:textures/block/yellow_stained_glass.png" },
+        { "tick": 2, "scale_x": 0.22, "scale_y": 0.68, "alpha": 0.50, "texture": "minecraft:textures/block/yellow_stained_glass.png" },
+        { "tick": 6, "scale_x": 0.34, "scale_y": 0.90, "alpha": 0.0, "texture": "minecraft:textures/block/yellow_stained_glass.png" }
+      ]
+    }
+  ]
+}

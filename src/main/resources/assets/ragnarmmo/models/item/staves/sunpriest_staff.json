@@ -1,0 +1,6 @@
+{
+  "parent": "ragnarmmo:item/staves/base_staff",
+  "textures": {
+    "layer0": "ragnarmmo:item/weapons/staves/sunpriest_staff"
+  }
+}

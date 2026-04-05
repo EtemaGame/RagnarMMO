@@ -1,46 +1,61 @@
 package com.etema.ragnarmmo.skill.job.acolyte;
 
-import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.entity.aoe.PneumaAoe;
+import com.etema.ragnarmmo.skill.execution.aoe.GroundAoEPersistentEffect;
+import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
-/**
- * Pneuma — Active (Acolyte)
- * RO: Creates a 3x3 cell safety zone that blocks ranged attacks.
- * MC: Grants a temporary "projectile shield" by storing an expiry timestamp
- *     in PersistentData. A Forge SkillEvents hook cancels the next incoming
- *     projectile (arrow, fireball, snowball, etc.) while the shield is active.
- *     Duration: (5 + level * 2) seconds.
- */
-public class PneumaSkillEffect implements ISkillEffect {
+public class PneumaSkillEffect extends GroundAoEPersistentEffect {
 
     private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "pneuma");
 
-    @Override
-    public ResourceLocation getSkillId() { return ID; }
+    public PneumaSkillEffect() {
+        super(ID);
+    }
 
     @Override
-    public void execute(ServerPlayer player, int level) {
-        if (level <= 0) return;
+    protected double getRange(int level) {
+        return 6.0;
+    }
 
-        int durationSec = 5 + level * 2;
-        long expiry = player.level().getGameTime() + (long) durationSec * 20;
-        player.getPersistentData().putLong("pneuma_expiry", expiry);
+    @Override
+    protected void playCastVisuals(LivingEntity user, Vec3 pos, int level) {
+        user.level().playSound(null, user.getX(), user.getY(), user.getZ(),
+                SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0f, 1.25f);
+        if (user.level() instanceof ServerLevel serverLevel) {
+            SkillVisualFx.spawnRing(serverLevel, pos, 1.25, 0.08, ParticleTypes.END_ROD, 10);
+            SkillVisualFx.spawnRing(serverLevel, pos, 0.9, 0.22, ParticleTypes.CLOUD, 8);
+        }
+    }
 
-        if (player.level() instanceof ServerLevel sl) {
-            sl.sendParticles(ParticleTypes.ENCHANTED_HIT,
-                    player.getX(), player.getY() + 1.0, player.getZ(),
-                    20, 0.5, 0.8, 0.5, 0.05);
-            sl.playSound(null, player.getX(), player.getY(), player.getZ(),
-                    SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0f, 1.3f);
+    @Override
+    protected void spawnAoE(LivingEntity user, Vec3 pos, int level) {
+        if (!(user.level() instanceof ServerLevel serverLevel)) {
+            return;
         }
 
-        player.sendSystemMessage(Component.literal(
-                "§e✦ Pneuma §factive — Escudo de proyectiles " + durationSec + "s."));
+        Vec3 center = new Vec3(pos.x, Math.floor(pos.y) + 0.05, pos.z);
+        boolean occupied = !serverLevel.getEntitiesOfClass(PneumaAoe.class,
+                new net.minecraft.world.phys.AABB(center.x - 1.8, center.y - 1.0, center.z - 1.8,
+                        center.x + 1.8, center.y + 1.5, center.z + 1.8),
+                aoe -> aoe.position().distanceToSqr(center) <= 2.25)
+                .isEmpty();
+        if (occupied) {
+            if (user instanceof net.minecraft.server.level.ServerPlayer player) {
+                player.sendSystemMessage(Component.literal("§7Pneuma ya está cubriendo esa zona."));
+            }
+            return;
+        }
+
+        PneumaAoe aoe = new PneumaAoe(serverLevel, user, 1.6f, 200);
+        aoe.setPos(center.x, center.y, center.z);
+        serverLevel.addFreshEntity(aoe);
     }
 }

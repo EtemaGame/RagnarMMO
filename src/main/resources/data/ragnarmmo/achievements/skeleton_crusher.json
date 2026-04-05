@@ -1,14 +1,14 @@
 {
     "category": "BATTLE",
-    "name": "Skeleton Crusher",
-    "description": "Defeat 50 Skeletons.",
+    "name": "achievement.ragnarmmo.skeleton_crusher.name",
+    "description": "achievement.ragnarmmo.skeleton_crusher.desc",
     "trigger_type": "kill_mob",
     "trigger_id": "minecraft:skeleton",
     "required_amount": 50,
     "points": 20,
-    "title": "Bone Crusher",
+    "title": "title.ragnarmmo.bone_collector",
     "rewards": {
-        "minecraft:bone": 20,
-        "minecraft:iron_nugget": 5
+        "minecraft:bone": 32,
+        "minecraft:arrow": 32
     }
 }

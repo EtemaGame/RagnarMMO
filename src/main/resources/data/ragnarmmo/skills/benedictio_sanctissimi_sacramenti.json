@@ -27,5 +27,5 @@
         "grid_x": 3,
         "grid_y": 5
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.priest.BenedictioSanctissimiSacramentiSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.priest.BenedictioSanctissimiSacramentiSkillEffect"
 }

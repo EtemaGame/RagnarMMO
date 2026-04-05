@@ -8,6 +8,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraftforge.event.TickEvent;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -21,6 +22,11 @@ public class FishingSkillEffect implements ISkillEffect {
     @Override
     public ResourceLocation getSkillId() {
         return new ResourceLocation("ragnarmmo", "fishing");
+    }
+
+    @Override
+    public Set<TriggerType> getSupportedTriggers() {
+        return Set.of(TriggerType.PERIODIC_TICK);
     }
 
     /**

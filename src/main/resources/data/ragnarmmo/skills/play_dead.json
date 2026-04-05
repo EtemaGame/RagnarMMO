@@ -1,0 +1,32 @@
+{
+    "id": "ragnarmmo:play_dead",
+    "display_name": "Play Dead",
+    "category": "CLASS_ACTIVE",
+    "tier": "NOVICE",
+    "usage": "ACTIVE",
+    "scaling_stat": "VIT",
+    "xp_multiplier": 1.0,
+    "costs": {
+        "base_cost": 5,
+        "cost_per_level": 0
+    },
+    "cooldown_ticks": 200,
+    "cast_time_ticks": 0,
+    "interruptible": true,
+    "progression": {
+        "max_level": 1,
+        "upgrade_cost": 0,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": false
+    },
+    "requirements": {
+        "ragnarmmo:basic_skill": 7
+    },
+    "jobs": [],
+    "ui": {
+        "texture": "common/common_survival_instinct",
+        "grid_x": 2,
+        "grid_y": 0
+    },
+    "effect_class": "com.etema.ragnarmmo.skill.job.novice.PlayDeadSkillEffect"
+}

@@ -3,9 +3,7 @@ package com.etema.ragnarmmo.system.stats.party;
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.net.Network;
-import com.etema.ragnarmmo.system.stats.compute.StatComputer;
-import com.etema.ragnarmmo.system.stats.net.DerivedStatsSyncPacket;
-import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket;
+import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService;
 import com.etema.ragnarmmo.system.stats.party.net.PartyMemberData;
 import com.etema.ragnarmmo.system.stats.party.net.PartyMemberUpdateS2CPacket;
 import com.etema.ragnarmmo.system.stats.progression.ExpTable;
@@ -96,14 +94,14 @@ public class PartyXpService {
     private static void giveXpToMember(ServerPlayer member, int xp, String killerName) {
         RagnarCoreAPI.get(member).ifPresent(stats -> {
             int pointsPerLevel = RagnarConfigs.SERVER.progression.pointsPerLevel.get();
+            int baseAward = ExpTable.applyBaseExpRate(xp);
+            int jobAward = ExpTable.applyJobExpRate(xp);
 
-            int levelsGained = stats.addExpAndProcessLevelUps(xp, pointsPerLevel, ExpTable::expToNext);
-            int jobLevelsGained = stats.addJobExpAndProcessLevelUps(xp, ExpTable::jobExpToNext);
-
-            stats.markDirty();
+            int levelsGained = stats.addExpAndProcessLevelUps(baseAward, pointsPerLevel, ExpTable::expToNext);
+            int jobLevelsGained = stats.addJobExpAndProcessLevelUps(jobAward, ExpTable::jobExpToNext);
 
             // Notify member
-            member.sendSystemMessage(Component.translatable("party.xp.shared", xp, killerName));
+            member.sendSystemMessage(Component.translatable("party.xp.shared", baseAward, killerName));
 
             if (levelsGained > 0) {
                 member.sendSystemMessage(Component.translatable("message.ragnarmmo.level_up", levelsGained));
@@ -112,11 +110,7 @@ public class PartyXpService {
                 member.sendSystemMessage(Component.translatable("message.ragnarmmo.job_level_up", jobLevelsGained));
             }
 
-            // Sync stats to client
-            Network.sendToPlayer(member, new PlayerStatsSyncPacket(stats));
-            // Sync derived stats
-            var derived = StatComputer.compute(member, stats, 0, 1.0, 0, member.getArmorValue(), 1.0);
-            Network.sendToPlayer(member, new DerivedStatsSyncPacket(derived));
+            PlayerStatsSyncService.sync(member, stats);
 
             // Send party member update to all party members for HUD
             updatePartyMemberHud(member);

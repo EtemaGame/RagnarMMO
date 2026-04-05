@@ -65,9 +65,9 @@ public class AchievementRegistry extends SimpleJsonResourceReloadListener {
                     String name = json.has("name") ? json.get("name").getAsString() : id;
                     String desc = json.has("description") ? json.get("description").getAsString() : "";
 
-                    String triggerType = json.has("triggerType") ? json.get("triggerType").getAsString() : "unknown";
-                    String triggerId = json.has("triggerId") ? json.get("triggerId").getAsString() : null;
-                    int requiredAmt = json.has("requiredAmount") ? json.get("requiredAmount").getAsInt() : 1;
+                    String triggerType = json.has("trigger_type") ? json.get("trigger_type").getAsString() : json.has("triggerType") ? json.get("triggerType").getAsString() : "unknown";
+                    String triggerId = json.has("trigger_id") ? json.get("trigger_id").getAsString() : json.has("triggerId") ? json.get("triggerId").getAsString() : null;
+                    int requiredAmt = json.has("required_amount") ? json.get("required_amount").getAsInt() : json.has("requiredAmount") ? json.get("requiredAmount").getAsInt() : 1;
                     int points = json.has("points") ? json.get("points").getAsInt() : 0;
                     String title = json.has("title") ? json.get("title").getAsString() : null;
 

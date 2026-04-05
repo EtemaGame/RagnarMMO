@@ -1,7 +1,11 @@
 package com.etema.ragnarmmo.skill.job.acolyte;
 
+import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.job.mage.SightMobEffect;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -26,25 +30,31 @@ public class RuwachSkillEffect implements ISkillEffect {
         if (level <= 0)
             return;
 
-        // Ruwach: Reveals hidden enemies and deals Holy damage equal to 145% MATK.
-        // For Minecraft, we apply a Glowing effect to nearby entities and deal magic
-        // damage.
-
         double radius = 5.0; // RO is 5x5 cells -> approx 5 blocks
         AABB area = player.getBoundingBox().inflate(radius);
 
-        List<Entity> nearby = player.level().getEntities(player, area, e -> e instanceof LivingEntity && e != player);
+        List<Entity> nearby = player.level().getEntities(player, area,
+                entity -> entity instanceof LivingEntity living
+                        && living != player
+                        && AcolyteTargetingHelper.isHostileTarget(player, living));
 
-        float baseDamage = 8.0f; // Roughly 145% multiplier of a base MATK
+        float damage = Math.max(SkillDamageHelper.MIN_ATK, SkillDamageHelper.scaleByATK(player, 145.0f));
+        int revealed = 0;
 
         for (Entity e : nearby) {
             LivingEntity target = (LivingEntity) e;
+            boolean hidden = target.isInvisible() || target.hasEffect(MobEffects.INVISIBILITY)
+                    || target.getPersistentData().contains(SightMobEffect.CLOAKED_TAG);
+            if (!hidden) {
+                continue;
+            }
 
-            // Damage enemy
-            target.hurt(player.damageSources().indirectMagic(null, player), baseDamage);
-
-            // Apply Glowing (revealing effect) for 10 seconds
+            target.getPersistentData().remove(SightMobEffect.CLOAKED_TAG);
+            target.setInvisible(false);
+            target.removeEffect(MobEffects.INVISIBILITY);
+            SkillDamageHelper.dealSkillDamage(target, player.damageSources().magic(), damage);
             target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 200, 0, false, false, true));
+            revealed++;
         }
 
         // VFX and SFX
@@ -59,6 +69,11 @@ public class RuwachSkillEffect implements ISkillEffect {
                 double z = player.getZ() + Math.sin(Math.toRadians(i)) * radius;
                 serverLevel.sendParticles(ParticleTypes.END_ROD, x, player.getY() + 0.5, z, 1, 0, 0, 0, 0);
             }
+        }
+
+        if (revealed == 0) {
+            player.sendSystemMessage(Component.literal("Ruwach no detectó enemigos ocultos.")
+                    .withStyle(ChatFormatting.GRAY));
         }
     }
 }

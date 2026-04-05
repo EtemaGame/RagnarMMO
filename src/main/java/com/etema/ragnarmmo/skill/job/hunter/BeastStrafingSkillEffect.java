@@ -11,6 +11,8 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
+import java.util.Set;
+
 /**
  * Beast Strafing — Passive
  * RO: Fires two additional arrows when attacking a Brute monster.
@@ -27,6 +29,11 @@ public class BeastStrafingSkillEffect implements ISkillEffect {
 
     @Override
     public ResourceLocation getSkillId() { return ID; }
+
+    @Override
+    public Set<TriggerType> getSupportedTriggers() {
+        return Set.of(TriggerType.OFFENSIVE_HURT);
+    }
 
     @Override
     public void onOffensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {

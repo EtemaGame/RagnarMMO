@@ -28,6 +28,12 @@ public class FireWallSkillEffect extends GroundAoEPersistentEffect {
     }
 
     @Override
+    public int getCastTime(int level) {
+        // 2s (40) down to 0.65s (13), decrement 0.15s (3) per level
+        return 40 - (level - 1) * 3;
+    }
+
+    @Override
     protected double getRange(int level) {
         return 2.5; // Wall distance from player
     }
@@ -46,12 +52,13 @@ public class FireWallSkillEffect extends GroundAoEPersistentEffect {
         Vec3 right = new Vec3(-forward.z, 0, forward.x);
         
         float damage = SkillDamageHelper.scaleByMATK(user, 50.0f);
-        int duration = 100; // 5 seconds
+        int duration = (5 + (level - 1)) * 20; // 5s to 14s
+        int maxHits = 3 + (level - 1); // 3 to 12 hits
 
-        // RO Style: 3 segments in a line perpendicular to center
+        // RO Style: 3 segments in a line perpendicular to caster's view
         for (int i = -1; i <= 1; i++) {
             Vec3 segmentPos = pos.add(right.scale(i));
-            FireWallAoe aoe = new FireWallAoe(sl, user, 0.7f, damage, duration);
+            FireWallAoe aoe = new FireWallAoe(sl, user, 0.7f, damage, duration, maxHits);
             aoe.setPos(segmentPos.x, segmentPos.y, segmentPos.z);
             sl.addFreshEntity(aoe);
         }

@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.combat.damage;
 
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
+import com.etema.ragnarmmo.roitems.runtime.WeaponStatHelper;
 import com.etema.ragnarmmo.system.stats.capability.PlayerStats;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,15 +22,24 @@ public final class SkillDamageHelper {
 
         int savedHurtTime = target.hurtTime;
         int savedHurtDuration = target.hurtDuration;
+        int savedInvulnerableTime = target.invulnerableTime;
 
         target.hurtTime = 0;
         target.hurtDuration = 0;
+        target.invulnerableTime = 0;
 
         boolean hit = target.hurt(source, amount);
 
         if (target.isAlive()) {
             target.hurtTime = Math.max(target.hurtTime, savedHurtTime);
             target.hurtDuration = Math.max(target.hurtDuration, savedHurtDuration);
+
+            // Skill multihits should not create a fresh 20-tick vanilla cooldown when
+            // the target was otherwise hittable. We only preserve a pre-existing
+            // invulnerability window if one already existed before this hit.
+            if (savedInvulnerableTime <= 0) {
+                target.invulnerableTime = 0;
+            }
         }
 
         return hit;
@@ -53,7 +63,8 @@ public final class SkillDamageHelper {
     public static float getMATK(LivingEntity entity) {
         if (entity instanceof Player player) {
             int intStat = getINT(player);
-            return intStat + (intStat * intStat) / 100.0f;
+            float weaponMatk = (float) WeaponStatHelper.getDisplayedMagicAttack(player.getMainHandItem());
+            return intStat + (intStat * intStat) / 100.0f + weaponMatk;
         }
         var attr = entity.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
         return attr != null ? (float) attr.getValue() : 2.0f;
@@ -110,7 +121,8 @@ public final class SkillDamageHelper {
         if (entity instanceof Player player) {
             int baseLv = getBaseLevel(player);
             int intStat = getINT(player);
-            return (float) (Math.floor((baseLv + intStat) / 8.0) * (4 + 8 * skillLevel));
+            double healMultiplier = Math.max(1.0, Math.floor((baseLv + intStat) / 8.0));
+            return (float) (healMultiplier * (4 + 8 * skillLevel));
         }
         return 4.0f + (skillLevel * 4.0f);
     }

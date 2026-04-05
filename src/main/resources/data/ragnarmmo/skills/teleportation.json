@@ -15,6 +15,10 @@
         "cost_per_level": -1
     },
     "cooldown_ticks": 20,
+    "level_data": {
+        "1": { "sp_cost": 10 },
+        "2": { "sp_cost": 9 }
+    },
     "jobs": [
         "ACOLYTE"
     ],
@@ -26,5 +30,5 @@
         "grid_x": 4,
         "grid_y": 0
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.TeleportationSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.TeleportationSkillEffect"
 }

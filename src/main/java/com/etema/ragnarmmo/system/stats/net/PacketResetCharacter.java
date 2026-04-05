@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.system.stats.net;
 
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
-import com.etema.ragnarmmo.common.net.Network;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
@@ -61,15 +61,10 @@ public class PacketResetCharacter {
                 // wait, I saw setBaseStatPointsGranted in the file view.
                 if (stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats implementation) {
                     implementation.setBaseStatPointsGranted(false);
-                    // This will trigger ensureBaseStatBaseline on next tick/update potentially
+                    implementation.ensureBaseStatBaseline(RagnarConfigs.SERVER.progression.baseStatPoints.get());
                 }
 
-                // Sync
-                Network.sendToPlayer(player, new PlayerStatsSyncPacket(stats));
-                // Sync derived stats
-                var derived = com.etema.ragnarmmo.system.stats.compute.StatComputer.compute(
-                        player, stats, 0, 1.0, 0, player.getArmorValue(), 1.0);
-                Network.sendToPlayer(player, new DerivedStatsSyncPacket(derived));
+                PlayerStatsSyncService.sync(player, stats);
             });
         });
         ctx.get().setPacketHandled(true);

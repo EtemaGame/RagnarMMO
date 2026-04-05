@@ -37,7 +37,7 @@ public class LightningBoltProjectile extends AbstractMagicProjectile {
         if (level() instanceof ServerLevel sl) {
             sl.sendParticles(ParticleTypes.FLASH, x, y, z, 1, 0, 0, 0, 0);
             sl.sendParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, 20, 0.2, 0.8, 0.2, 0.1);
-            level().playSound(null, x, y, z, SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 1.0f, 1.5f);
+            level().playSound(null, x, y, z, com.etema.ragnarmmo.common.init.RagnarSounds.BOLT_HIT.get(), SoundSource.PLAYERS, 1.0f, 1.5f);
         }
     }
 
@@ -48,6 +48,6 @@ public class LightningBoltProjectile extends AbstractMagicProjectile {
 
     @Override
     public Optional<SoundEvent> getImpactSound() {
-        return Optional.of(SoundEvents.LIGHTNING_BOLT_IMPACT);
+        return Optional.of(com.etema.ragnarmmo.common.init.RagnarSounds.BOLT_HIT.get());
     }
 }

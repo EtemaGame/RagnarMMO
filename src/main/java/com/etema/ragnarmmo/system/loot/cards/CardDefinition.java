@@ -20,6 +20,7 @@ public record CardDefinition(
         String mobId,
         Map<String, Double> modifiers,
         double dropRate,
+        CardEquipType equipType,
         String translationKey,
         int modelId) {
 }

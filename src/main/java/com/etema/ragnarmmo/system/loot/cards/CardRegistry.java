@@ -43,7 +43,8 @@ public final class CardRegistry {
     public void register(CardDefinition def) {
         byId.put(def.id(), def);
         byMob.computeIfAbsent(def.mobId(), k -> new ArrayList<>()).add(def);
-        LOGGER.debug("Registered card: {} (mob: {}, rate: {})", def.id(), def.mobId(), def.dropRate());
+        LOGGER.debug("Registered card: {} (mob: {}, rate: {}, equipType: {})",
+                def.id(), def.mobId(), def.dropRate(), def.equipType());
     }
 
     public int size() {

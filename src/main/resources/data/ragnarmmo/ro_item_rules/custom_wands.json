@@ -1,0 +1,74 @@
+{
+  "ragnarmmo:wands/moonring_wand": {
+    "requiredBaseLevel": 6,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 1,
+    "attributeBonuses": { "int": 1, "dex": 1 }
+  },
+  "ragnarmmo:wands/thunderbloom_wand": {
+    "requiredBaseLevel": 10,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 1,
+    "attributeBonuses": { "int": 2 }
+  },
+  "ragnarmmo:wands/sageglass_wand": {
+    "requiredBaseLevel": 12,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 1,
+    "attributeBonuses": { "int": 1, "dex": 1 }
+  },
+  "ragnarmmo:wands/suncoil_wand": {
+    "requiredBaseLevel": 14,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 1,
+    "attributeBonuses": { "int": 2, "luk": 1 }
+  },
+  "ragnarmmo:wands/frostthorn_wand": {
+    "requiredBaseLevel": 18,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 1, "dex": 2 }
+  },
+  "ragnarmmo:wands/duskroot_wand": {
+    "requiredBaseLevel": 22,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 2, "vit": 1 }
+  },
+  "ragnarmmo:wands/gilded_crook": {
+    "requiredBaseLevel": 26,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 1,
+    "attributeBonuses": { "int": 2, "dex": 1 }
+  },
+  "ragnarmmo:wands/arc_lattice_wand": {
+    "requiredBaseLevel": 30,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 1, "dex": 2, "luk": 1 }
+  },
+  "ragnarmmo:wands/whisperstem_wand": {
+    "requiredBaseLevel": 34,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 2, "luk": 1 }
+  },
+  "ragnarmmo:wands/ember_hook_wand": {
+    "requiredBaseLevel": 38,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 1,
+    "attributeBonuses": { "int": 3 }
+  },
+  "ragnarmmo:wands/starlit_switch": {
+    "requiredBaseLevel": 42,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 2, "dex": 2 }
+  },
+  "ragnarmmo:wands/runebriar_wand": {
+    "requiredBaseLevel": 46,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 3,
+    "attributeBonuses": { "int": 3, "dex": 1, "luk": 1 }
+  }
+}

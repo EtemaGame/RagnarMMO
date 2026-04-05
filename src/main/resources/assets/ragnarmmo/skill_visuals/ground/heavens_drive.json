@@ -1,0 +1,9 @@
+{
+    "skill_id": "ragnarmmo:heavens_drive",
+    "texture": "minecraft:textures/block/stone.png",
+    "type": "block",
+    "block": "minecraft:stone",
+    "size": 1.0,
+    "billboard": true,
+    "render_type": "cutout_no_cull"
+}

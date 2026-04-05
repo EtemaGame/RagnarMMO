@@ -11,6 +11,10 @@ public enum AchievementCategory {
     MEMORIAL_DUNGEON,
     GREAT;
 
+    public String getTranslationKey() {
+        return "category.ragnarmmo." + name().toLowerCase(java.util.Locale.ROOT);
+    }
+
     public static AchievementCategory fromString(String name) {
         try {
             return valueOf(name.toUpperCase(java.util.Locale.ROOT));

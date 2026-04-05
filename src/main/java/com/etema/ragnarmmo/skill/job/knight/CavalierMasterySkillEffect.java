@@ -7,6 +7,8 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
+import java.util.Set;
+
 /**
  * Cavalier Mastery — Passive
  * RO: Reduces the ASPD penalty for being mounted. At level 5 (max), removes
@@ -30,6 +32,11 @@ public class CavalierMasterySkillEffect implements ISkillEffect {
     @Override
     public ResourceLocation getSkillId() {
         return ID;
+    }
+
+    @Override
+    public Set<TriggerType> getSupportedTriggers() {
+        return Set.of(TriggerType.OFFENSIVE_HURT);
     }
 
     @Override

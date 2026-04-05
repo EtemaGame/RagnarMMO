@@ -22,5 +22,5 @@
         "grid_x": 2,
         "grid_y": 3
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.priest.SuffragiumSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.priest.SuffragiumSkillEffect"
 }

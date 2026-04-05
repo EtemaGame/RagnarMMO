@@ -1,0 +1,30 @@
+{
+  "id": "ragnarmmo:impact/fire_ball_burst",
+  "type": "layered",
+  "duration_ticks": 8,
+  "loop": false,
+  "layers": [
+    {
+      "name": "ember_flash",
+      "blend_mode": "emissive",
+      "orientation": "billboard",
+      "z_order": 0,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.30, "scale_y": 0.30, "alpha": 0.95, "texture": "minecraft:textures/block/magma_block.png" },
+        { "tick": 4, "scale_x": 0.75, "scale_y": 0.75, "alpha": 0.45, "texture": "minecraft:textures/block/magma_block.png" },
+        { "tick": 8, "scale_x": 1.05, "scale_y": 1.05, "alpha": 0.0, "texture": "minecraft:textures/block/magma_block.png" }
+      ]
+    },
+    {
+      "name": "hot_core",
+      "blend_mode": "emissive",
+      "orientation": "billboard",
+      "z_order": 1,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.18, "scale_y": 0.18, "alpha": 1.0, "texture": "minecraft:textures/block/shroomlight.png" },
+        { "tick": 3, "scale_x": 0.48, "scale_y": 0.48, "alpha": 0.6, "texture": "minecraft:textures/block/shroomlight.png" },
+        { "tick": 8, "scale_x": 0.82, "scale_y": 0.82, "alpha": 0.0, "texture": "minecraft:textures/block/shroomlight.png" }
+      ]
+    }
+  ]
+}

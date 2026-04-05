@@ -26,5 +26,20 @@
         "grid_x": 1,
         "grid_y": 1
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.BlessingSkillEffect"
+    "reference": {
+        "notes": "Blessing: +1 to +10 STR/DEX/INT, 28-64 SP, 60-240 sec duration by level."
+    },
+    "level_data": {
+        "1": { "sp_cost": 28, "duration_ticks": 1200 },
+        "2": { "sp_cost": 32, "duration_ticks": 1600 },
+        "3": { "sp_cost": 36, "duration_ticks": 2000 },
+        "4": { "sp_cost": 40, "duration_ticks": 2400 },
+        "5": { "sp_cost": 44, "duration_ticks": 2800 },
+        "6": { "sp_cost": 48, "duration_ticks": 3200 },
+        "7": { "sp_cost": 52, "duration_ticks": 3600 },
+        "8": { "sp_cost": 56, "duration_ticks": 4000 },
+        "9": { "sp_cost": 60, "duration_ticks": 4400 },
+        "10": { "sp_cost": 64, "duration_ticks": 4800 }
+    },
+    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.BlessingSkillEffect"
 }

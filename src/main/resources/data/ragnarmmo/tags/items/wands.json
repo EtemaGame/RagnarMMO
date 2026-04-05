@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "ragnarmmo:wands/moonring_wand",
+    "ragnarmmo:wands/thunderbloom_wand",
+    "ragnarmmo:wands/sageglass_wand",
+    "ragnarmmo:wands/suncoil_wand",
+    "ragnarmmo:wands/frostthorn_wand",
+    "ragnarmmo:wands/duskroot_wand",
+    "ragnarmmo:wands/gilded_crook",
+    "ragnarmmo:wands/arc_lattice_wand",
+    "ragnarmmo:wands/whisperstem_wand",
+    "ragnarmmo:wands/ember_hook_wand",
+    "ragnarmmo:wands/starlit_switch",
+    "ragnarmmo:wands/runebriar_wand"
+  ]
+}

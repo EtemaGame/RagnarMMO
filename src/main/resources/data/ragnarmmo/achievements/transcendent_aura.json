@@ -1,12 +1,12 @@
 {
-    "category": "BASIC",
-    "name": "Transcendent Aura",
-    "description": "Reach Base Level 99.",
+    "category": "GREAT",
+    "name": "achievement.ragnarmmo.transcendent_aura.name",
+    "description": "achievement.ragnarmmo.transcendent_aura.desc",
     "trigger_type": "level_up",
     "trigger_id": "base",
     "required_amount": 99,
-    "points": 50,
-    "title": "Aura Holder",
+    "points": 100,
+    "title": "title.ragnarmmo.the_awakened",
     "rewards": {
         "minecraft:nether_star": 1
     }

@@ -1,0 +1,7 @@
+{
+    "skill_id": "ragnarmmo:fire_bolt",
+    "layers": [
+        { "block": "minecraft:magma_block", "scale": [0.22, 0.22, 0.95] },
+        { "block": "minecraft:shroomlight", "scale": [0.12, 0.12, 1.12], "rotation_z": 45.0 }
+    ]
+}

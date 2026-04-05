@@ -1,10 +1,11 @@
 package com.etema.ragnarmmo.system.stats.net;
 
-import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.api.jobs.JobType;
+import com.etema.ragnarmmo.common.api.player.RoPlayerDataAccess;
 import com.etema.ragnarmmo.common.api.stats.ChangeReason;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.skill.api.SkillTier;
-import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skill.runtime.SkillManager;
 import com.etema.ragnarmmo.skill.data.SkillDefinition;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.network.FriendlyByteBuf;
@@ -16,6 +17,7 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public class PacketChangeJob {
+    private static final ResourceLocation BASIC_SKILL = new ResourceLocation("ragnarmmo", "basic_skill");
     private final String jobId;
 
     public PacketChangeJob(String jobId) {
@@ -36,12 +38,38 @@ public class PacketChangeJob {
             if (player == null)
                 return;
 
-            JobType job = JobType.fromId(jobId);
-            RagnarCoreAPI.get(player).ifPresent(stats -> {
+            JobType requestedJob = JobType.fromId(jobId);
+            RoPlayerDataAccess.get(player).ifPresent(data -> {
+                var stats = data.getStats();
+                SkillManager skills = (SkillManager) data.getSkills();
+                JobType currentJob = JobType.fromId(stats.getJobId());
+
+                if (!currentJob.canPromoteTo(requestedJob)) {
+                    player.sendSystemMessage(Component.translatable("message.ragnarmmo.invalid_job_change"));
+                    return;
+                }
+
                 // Validate requirements (Novice Job Level 10)
-                if ("ragnarmmo:novice".equals(stats.getJobId()) && stats.getJobLevel() < 10) {
+                if (currentJob == JobType.NOVICE && stats.getJobLevel() < 10) {
                     player.sendSystemMessage(Component.translatable("message.ragnarmmo.low_job_level"));
                     return;
+                }
+
+                if (currentJob == JobType.NOVICE) {
+                    int basicSkillLevel = skills.getSkillLevel(BASIC_SKILL);
+                    if (basicSkillLevel < 9) {
+                        player.sendSystemMessage(Component.translatable("message.ragnarmmo.low_basic_skill"));
+                        return;
+                    }
+                }
+
+                if (requestedJob.getTier() == 2) {
+                    int requiredJobLevel = RagnarConfigs.SERVER.progression.secondJobChangeMinJobLevel.get();
+                    if (stats.getJobLevel() < requiredJobLevel) {
+                        player.sendSystemMessage(
+                                Component.translatable("message.ragnarmmo.low_second_job_level", requiredJobLevel));
+                        return;
+                    }
                 }
 
                 // Validate Skill Points (Must be 0)
@@ -51,32 +79,24 @@ public class PacketChangeJob {
                 }
 
                 // Reset skills if changing from Novice
-                if ("ragnarmmo:novice".equals(stats.getJobId())) {
-                    PlayerSkillsProvider.get(player).ifPresent(skills -> {
-                        for (ResourceLocation skillId : SkillRegistry.getAllIds()) {
-                            SkillDefinition def = SkillRegistry.require(skillId);
-                            // Clear skills that aren't Novice or Life skills
-                            if (def.getTier() != SkillTier.NOVICE && def.getTier() != SkillTier.LIFE) {
-                                skills.setSkillLevel(skillId, 0, ChangeReason.SYSTEM);
-                            }
+                if (currentJob == JobType.NOVICE) {
+                    for (ResourceLocation skillId : SkillRegistry.getAllIds()) {
+                        SkillDefinition def = SkillRegistry.require(skillId);
+                        // Clear skills that aren't Novice or Life skills
+                        if (def.getTier() != SkillTier.NOVICE && def.getTier() != SkillTier.LIFE) {
+                            skills.setSkillLevel(skillId, 0, ChangeReason.SYSTEM);
                         }
-                    });
+                    }
                 }
 
-                stats.setJobId(job.getId());
-                // Reset levels to 1 as per RO mechanics
-                stats.setLevel(1);
+                stats.setJobId(requestedJob.getId());
                 stats.setJobLevel(1);
-                stats.setExp(0);
                 stats.setJobExp(0);
 
                 // Sync changes to both stats and skills
+                PlayerStatsSyncService.sync(player, stats);
                 com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
-                        new PlayerStatsSyncPacket(stats));
-                PlayerSkillsProvider.get(player).ifPresent(skills -> {
-                    com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
-                            new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(skills.serializeNBT()));
-                });
+                        new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(skills.serializeNBT()));
             });
         });
         ctx.get().setPacketHandled(true);

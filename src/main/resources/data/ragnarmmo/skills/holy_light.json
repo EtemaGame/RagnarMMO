@@ -14,6 +14,8 @@
         "base_cost": 15,
         "cost_per_level": 0
     },
+    "cooldown_ticks": 0,
+    "cast_delay_ticks": 40,
     "jobs": [
         "ACOLYTE"
     ],
@@ -23,5 +25,11 @@
         "grid_x": 0,
         "grid_y": 0
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.HolyLightSkillEffect"
+    "reference": {
+        "notes": "Holy Light: 125% MATK, 15 SP, 2.0 sec skill delay. Temporarily exposed for direct skill-point unlock in this adaptation."
+    },
+    "level_data": {
+        "1": { "damage_percent": 125, "sp_cost": 15 }
+    },
+    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.HolyLightSkillEffect"
 }

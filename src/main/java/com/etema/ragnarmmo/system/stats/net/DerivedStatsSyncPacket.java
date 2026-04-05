@@ -23,6 +23,7 @@ public class DerivedStatsSyncPacket {
     public final double criticalChance;
     public final double criticalDamageMultiplier;
     public final double flee;
+    public final double perfectDodge;
     public final double attackSpeed;
     public final double castTime;
     public final double globalCooldown;
@@ -44,6 +45,7 @@ public class DerivedStatsSyncPacket {
         this.criticalChance = d.criticalChance;
         this.criticalDamageMultiplier = d.criticalDamageMultiplier;
         this.flee = d.flee;
+        this.perfectDodge = d.perfectDodge;
         this.attackSpeed = d.attackSpeed;
         this.castTime = d.castTime;
         this.globalCooldown = d.globalCooldown;
@@ -60,7 +62,7 @@ public class DerivedStatsSyncPacket {
     public DerivedStatsSyncPacket(
             double physicalAttack, double physicalAttackMin, double physicalAttackMax,
             double magicAttack, double accuracy, double criticalChance,
-            double criticalDamageMultiplier, double flee, double attackSpeed,
+            double criticalDamageMultiplier, double flee, double perfectDodge, double attackSpeed,
             double castTime, double globalCooldown, double physicalDamageReduction,
             double magicDamageReduction, double maxHealth, double healthRegenPerSecond,
             double maxMana, double manaRegenPerSecond, double defense, double magicDefense) {
@@ -72,6 +74,7 @@ public class DerivedStatsSyncPacket {
         this.criticalChance = criticalChance;
         this.criticalDamageMultiplier = criticalDamageMultiplier;
         this.flee = flee;
+        this.perfectDodge = perfectDodge;
         this.attackSpeed = attackSpeed;
         this.castTime = castTime;
         this.globalCooldown = globalCooldown;
@@ -94,6 +97,7 @@ public class DerivedStatsSyncPacket {
         buf.writeDouble(m.criticalChance);
         buf.writeDouble(m.criticalDamageMultiplier);
         buf.writeDouble(m.flee);
+        buf.writeDouble(m.perfectDodge);
         buf.writeDouble(m.attackSpeed);
         buf.writeDouble(m.castTime);
         buf.writeDouble(m.globalCooldown);
@@ -115,6 +119,7 @@ public class DerivedStatsSyncPacket {
                 buf.readDouble(), buf.readDouble(), buf.readDouble(),
                 buf.readDouble(), buf.readDouble(), buf.readDouble(),
                 buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                buf.readDouble(),
                 buf.readDouble());
     }
 
@@ -138,6 +143,7 @@ public class DerivedStatsSyncPacket {
         d.criticalChance = this.criticalChance;
         d.criticalDamageMultiplier = this.criticalDamageMultiplier;
         d.flee = this.flee;
+        d.perfectDodge = this.perfectDodge;
         d.attackSpeed = this.attackSpeed;
         d.castTime = this.castTime;
         d.globalCooldown = this.globalCooldown;

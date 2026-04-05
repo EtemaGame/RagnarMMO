@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.skill.data.tree;
 
+import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.system.stats.RagnarStats;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -9,6 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -26,6 +29,7 @@ public class SkillTreeDataLoader extends SimpleJsonResourceReloadListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(SkillTreeDataLoader.class);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String DIRECTORY = "skill_trees";
+    public static final SkillTreeDataLoader INSTANCE = new SkillTreeDataLoader();
 
     public SkillTreeDataLoader() {
         super(GSON, DIRECTORY);
@@ -140,12 +144,19 @@ public class SkillTreeDataLoader extends SimpleJsonResourceReloadListener {
      */
     @Mod.EventBusSubscriber(modid = RagnarStats.MOD_ID)
     public static class Events {
-        private static final SkillTreeDataLoader INSTANCE = new SkillTreeDataLoader();
-
         @SubscribeEvent
         public static void onAddReloadListeners(AddReloadListenerEvent event) {
             event.addListener(INSTANCE);
             LOGGER.info("Registered skill tree data loader");
+        }
+    }
+
+    @Mod.EventBusSubscriber(modid = RagnarMMO.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class ClientEvents {
+        @SubscribeEvent
+        public static void onRegisterClientReloadListeners(RegisterClientReloadListenersEvent event) {
+            event.registerReloadListener(INSTANCE);
+            LOGGER.info("Registered client skill tree data loader");
         }
     }
 }

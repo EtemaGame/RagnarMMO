@@ -25,5 +25,5 @@
         "grid_x": 5,
         "grid_y": 4
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.WeaponPerfectionSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.blacksmith.WeaponPerfectionSkillEffect"
 }

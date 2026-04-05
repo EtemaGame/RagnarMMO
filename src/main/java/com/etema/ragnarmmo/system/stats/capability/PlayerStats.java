@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.system.stats.capability;
 
+import com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain;
 import com.etema.ragnarmmo.common.api.stats.ChangeReason;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.stats.StatAttributes;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.IntUnaryOperator;
 import com.etema.ragnarmmo.system.stats.progression.JobBonusService;
+import com.etema.ragnarmmo.system.stats.progression.StatPointProgression;
 
 public class PlayerStats implements IPlayerStats {
 
@@ -50,7 +52,7 @@ public class PlayerStats implements IPlayerStats {
     private int skillPoints = 0;
     private String jobId = "ragnarmmo:novice";
     private boolean baseStatPointsGranted = false;
-    private boolean dirty = true;
+    private int dirtyMask = RoPlayerSyncDomain.allMask();
 
     public PlayerStats() {
         for (var key : StatKeys.values()) {
@@ -142,7 +144,7 @@ public class PlayerStats implements IPlayerStats {
         if (get(key) != clamped) {
             stats.set(key, clamped);
             syncAttribute(key, clamped);
-            dirty = true;
+            markDirty(RoPlayerSyncDomain.STATS);
         }
     }
 
@@ -192,7 +194,7 @@ public class PlayerStats implements IPlayerStats {
             inst.addTransientModifier(new AttributeModifier(id, BONUS_NAMES.get(key), v,
                     AttributeModifier.Operation.ADDITION));
         }
-        dirty = true;
+        markDirty(RoPlayerSyncDomain.STATS);
     }
 
     @Override
@@ -207,7 +209,11 @@ public class PlayerStats implements IPlayerStats {
 
     @Override
     public void setMana(double v) {
-        mana = Math.max(0, Math.min(v, manaMax));
+        double clamped = Math.max(0, Math.min(v, manaMax));
+        if (Double.compare(mana, clamped) != 0) {
+            mana = clamped;
+            markDirty(RoPlayerSyncDomain.RESOURCES);
+        }
     }
 
     @Override
@@ -218,9 +224,19 @@ public class PlayerStats implements IPlayerStats {
     @Override
     public void setManaMaxClient(double v) {
         boolean wasFull = this.mana >= this.manaMax - 1e-4;
-        this.manaMax = v;
-        if (wasFull || mana > manaMax)
+        if (Double.compare(this.manaMax, v) != 0) {
+            this.manaMax = v;
+            if (wasFull || mana > manaMax) {
+                mana = manaMax;
+            }
+            markDirty(RoPlayerSyncDomain.RESOURCES);
+        } else if (wasFull || mana > manaMax) {
+            double previousMana = mana;
             mana = manaMax;
+            if (Double.compare(previousMana, mana) != 0) {
+                markDirty(RoPlayerSyncDomain.RESOURCES);
+            }
+        }
     }
 
     // ═══════════════════════════════════════════════
@@ -235,7 +251,11 @@ public class PlayerStats implements IPlayerStats {
     }
 
     public void setSP(double v) {
-        sp = Math.max(0, Math.min(v, spMax));
+        double clamped = Math.max(0, Math.min(v, spMax));
+        if (Double.compare(sp, clamped) != 0) {
+            sp = clamped;
+            markDirty(RoPlayerSyncDomain.RESOURCES);
+        }
     }
 
     public void addSP(double dv) {
@@ -244,9 +264,19 @@ public class PlayerStats implements IPlayerStats {
 
     public void setSPMaxClient(double v) {
         boolean wasFull = this.sp >= this.spMax - 1e-4;
-        this.spMax = v;
-        if (wasFull || sp > spMax)
+        if (Double.compare(this.spMax, v) != 0) {
+            this.spMax = v;
+            if (wasFull || sp > spMax) {
+                sp = spMax;
+            }
+            markDirty(RoPlayerSyncDomain.RESOURCES);
+        } else if (wasFull || sp > spMax) {
+            double previousSp = sp;
             sp = spMax;
+            if (Double.compare(previousSp, sp) != 0) {
+                markDirty(RoPlayerSyncDomain.RESOURCES);
+            }
+        }
     }
 
     // ═══════════════════════════════════════════════
@@ -281,13 +311,13 @@ public class PlayerStats implements IPlayerStats {
             if (mana < amount)
                 return false;
             mana -= amount;
-            dirty = true;
+            markDirty(RoPlayerSyncDomain.RESOURCES);
             return true;
         } else {
             if (sp < amount)
                 return false;
             sp -= amount;
-            dirty = true;
+            markDirty(RoPlayerSyncDomain.RESOURCES);
             return true;
         }
     }
@@ -302,7 +332,6 @@ public class PlayerStats implements IPlayerStats {
         } else {
             addSP(amount);
         }
-        dirty = true;
     }
 
     @Override
@@ -315,7 +344,7 @@ public class PlayerStats implements IPlayerStats {
         int clamped = clampLevel(lvl);
         if (level != clamped) {
             level = clamped;
-            dirty = true;
+            markDirty(RoPlayerSyncDomain.PROGRESSION);
         }
     }
 
@@ -331,8 +360,11 @@ public class PlayerStats implements IPlayerStats {
 
     @Override
     public void setExp(int e) {
-        exp = Math.max(0, e);
-        dirty = true;
+        int clamped = Math.max(0, e);
+        if (exp != clamped) {
+            exp = clamped;
+            markDirty(RoPlayerSyncDomain.PROGRESSION);
+        }
     }
 
     @Override
@@ -342,8 +374,11 @@ public class PlayerStats implements IPlayerStats {
 
     @Override
     public void setStatPoints(int pts) {
-        statPoints = Math.max(0, pts);
-        dirty = true;
+        int clamped = Math.max(0, pts);
+        if (statPoints != clamped) {
+            statPoints = clamped;
+            markDirty(RoPlayerSyncDomain.PROGRESSION);
+        }
     }
 
     @Override
@@ -356,7 +391,7 @@ public class PlayerStats implements IPlayerStats {
         int clamped = clampJobLevel(lvl);
         if (jobLevel != clamped) {
             jobLevel = clamped;
-            dirty = true;
+            markDirty(RoPlayerSyncDomain.PROGRESSION);
             JobBonusService.recomputeStats(owner, this);
         }
     }
@@ -373,8 +408,11 @@ public class PlayerStats implements IPlayerStats {
 
     @Override
     public void setJobExp(int e) {
-        jobExp = Math.max(0, e);
-        dirty = true;
+        int clamped = Math.max(0, e);
+        if (jobExp != clamped) {
+            jobExp = clamped;
+            markDirty(RoPlayerSyncDomain.PROGRESSION);
+        }
     }
 
     @Override
@@ -384,8 +422,11 @@ public class PlayerStats implements IPlayerStats {
 
     @Override
     public void setSkillPoints(int pts) {
-        skillPoints = Math.max(0, pts);
-        dirty = true;
+        int clamped = Math.max(0, pts);
+        if (skillPoints != clamped) {
+            skillPoints = clamped;
+            markDirty(RoPlayerSyncDomain.PROGRESSION);
+        }
     }
 
     @Override
@@ -412,7 +453,7 @@ public class PlayerStats implements IPlayerStats {
             // Re-clamp caps that depend on job.
             setLevel(level);
             setJobLevel(jobLevel);
-            dirty = true;
+            markDirty(RoPlayerSyncDomain.PROGRESSION, RoPlayerSyncDomain.RESOURCES);
             JobBonusService.recomputeStats(owner, this);
         }
     }
@@ -457,14 +498,15 @@ public class PlayerStats implements IPlayerStats {
                 break;
             }
             exp -= expToNext.applyAsInt(level);
+            int awardedStatPoints = StatPointProgression.pointsForLevelUp(level, pointsPerLevel);
             level++;
-            statPoints += Math.max(0, pointsPerLevel);
+            statPoints += awardedStatPoints;
             gained++;
             if (owner instanceof net.minecraft.server.level.ServerPlayer sp) {
                 com.etema.ragnarmmo.system.achievements.AchievementTriggerHandler.onPlayerLevelUp(sp, level, jobLevel);
             }
         }
-        dirty = true;
+        markDirty(RoPlayerSyncDomain.PROGRESSION);
         return gained;
     }
 
@@ -495,28 +537,45 @@ public class PlayerStats implements IPlayerStats {
             }
         }
         if (gained > 0 || add > 0) {
-            dirty = true;
+            markDirty(RoPlayerSyncDomain.PROGRESSION);
         }
         return gained;
     }
 
     @Override
     public void markDirty() {
-        dirty = true;
+        dirtyMask = RoPlayerSyncDomain.allMask();
     }
 
     @Override
     public boolean consumeDirty() {
-        boolean d = dirty;
-        dirty = false;
-        return d;
+        return consumeDirtyMask() != 0;
+    }
+
+    public void markDirty(RoPlayerSyncDomain... domains) {
+        if (domains == null || domains.length == 0) {
+            markDirty();
+            return;
+        }
+
+        for (RoPlayerSyncDomain domain : domains) {
+            if (domain != null) {
+                dirtyMask |= domain.bit();
+            }
+        }
+    }
+
+    public int consumeDirtyMask() {
+        int mask = dirtyMask;
+        dirtyMask = 0;
+        return mask;
     }
 
     public void ensureBaseStatBaseline(int basePoints) {
         if (!baseStatPointsGranted) {
             statPoints = Math.max(statPoints, Math.max(0, basePoints));
             baseStatPointsGranted = true;
-            dirty = true;
+            markDirty(RoPlayerSyncDomain.PROGRESSION);
         }
     }
 

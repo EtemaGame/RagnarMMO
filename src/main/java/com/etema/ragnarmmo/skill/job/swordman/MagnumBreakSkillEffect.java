@@ -1,18 +1,27 @@
 package com.etema.ragnarmmo.skill.job.swordman;
 
+import com.etema.ragnarmmo.common.init.RagnarMobEffects;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Magnum Break — Active (Fire AoE)
@@ -35,88 +44,139 @@ public class MagnumBreakSkillEffect implements ISkillEffect {
     }
 
     @Override
-    public void execute(ServerPlayer player, int level) {
+    public Set<TriggerType> getSupportedTriggers() {
+        return Set.of(TriggerType.OFFENSIVE_HURT);
+    }
+
+    @Override
+    public void execute(LivingEntity user, int level) {
         if (level <= 0) return;
 
-        // RO: Costs 30 SP + 15% Max HP
-        player.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).ifPresent(s -> {
-            s.consumeResource(30);
-        });
-        player.hurt(player.damageSources().magic(), player.getMaxHealth() * 0.15f);
+        var defOpt = SkillRegistry.get(ID);
+        if (user instanceof Player player) {
+            float hpCost = defOpt
+                    .map(def -> (float) def.getLevelDouble("hp_cost", level, defaultHpCost(level)))
+                    .orElse(defaultHpCost(level));
+            player.setHealth(Math.max(1.0f, player.getHealth() - hpCost));
+        }
 
-        // RO: (120 + 20 × level)% ATK fire AoE
-        float pct = 120f + (20f * level);
+        float pct = defOpt
+                .map(def -> (float) def.getLevelDouble("damage_percent", level, 100.0 + (20.0 * level)))
+                .orElse(100f + (20f * level));
         float baseDamage = Math.max(com.etema.ragnarmmo.combat.damage.SkillDamageHelper.MIN_ATK,
-                com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByATK(player, pct));
+                com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByATK(user, pct));
 
-        double radius = 4.0;
-        AABB area = player.getBoundingBox().inflate(radius);
-        List<Entity> nearby = player.level().getEntities(player, area,
-                e -> e instanceof LivingEntity && e != player && e.isAlive());
+        double radius = 2.5;
+        double hitMultiplier = defOpt
+                .map(def -> def.getLevelDouble("accuracy_multiplier", level, 1.0 + (0.10 * level)))
+                .orElse(1.0 + (0.10 * level));
+        int burnSeconds = defOpt
+                .map(def -> def.getLevelInt("burn_seconds", level, 3))
+                .orElse(3);
+        int buffDurationTicks = defOpt
+                .map(def -> def.getLevelInt("buff_duration_ticks", level, 200))
+                .orElse(200);
+        AABB area = user.getBoundingBox().inflate(radius);
+        List<Entity> nearby = user.level().getEntities(user, area,
+                e -> e instanceof LivingEntity && e != user && e.isAlive());
 
         for (Entity e : nearby) {
             LivingEntity target = (LivingEntity) e;
-            com.etema.ragnarmmo.combat.damage.SkillDamageHelper.dealSkillDamage(
-                    target, player.damageSources().playerAttack(player), baseDamage);
-            target.setSecondsOnFire(3);
+            if (!SwordmanCombatUtil.rollPhysicalSkillHit(user, target, 0.0, hitMultiplier)) {
+                if (user.level() instanceof ServerLevel sl) {
+                    sl.sendParticles(ParticleTypes.SMOKE,
+                            target.getX(), target.getY() + 1.0, target.getZ(),
+                            4, 0.15, 0.2, 0.15, 0.01);
+                }
+                continue;
+            }
 
-            // Knockback away from player
-            net.minecraft.world.phys.Vec3 knockDir = target.position().subtract(player.position()).normalize();
+            DamageSource damageSource = user instanceof Player p
+                    ? user.damageSources().playerAttack(p)
+                    : user.damageSources().mobAttack(user);
+            
+            SwordmanCombatUtil.withSkillDamageContext(user,
+                    () -> com.etema.ragnarmmo.combat.damage.SkillDamageHelper.dealSkillDamage(target, damageSource, baseDamage));
+            target.setSecondsOnFire(burnSeconds);
+
+            // Knockback away from caster
+            net.minecraft.world.phys.Vec3 knockDir = target.position().subtract(user.position()).normalize();
             target.knockback(1.0f, -knockDir.x, -knockDir.z);
         }
 
         // Grant +20% fire damage buff for 10 seconds via PersistentData
-        long buffUntil = player.level().getGameTime() + 200L; // 200 ticks = 10s
-        player.getPersistentData().putLong(FIRE_BUFF_TAG, buffUntil);
+        long buffUntil = user.level().getGameTime() + buffDurationTicks;
+        user.getPersistentData().putLong(FIRE_BUFF_TAG, buffUntil);
+        user.addEffect(new MobEffectInstance(RagnarMobEffects.MAGNUM_BREAK_FIRE.get(), buffDurationTicks, 0, false,
+                false, true));
 
-        // --- Sounds & Sounds ---
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0f, 1.0f);
+        // --- Sounds & Visuals ---
+        user.level().playSound(null, user.getX(), user.getY(), user.getZ(),
+                com.etema.ragnarmmo.common.init.RagnarSounds.MAGNUM_BREAK.get(), SoundSource.PLAYERS, 1.2f, 1.0f);
+        
+        user.level().playSound(null, user.getX(), user.getY(), user.getZ(),
+                SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.8f, 1.2f);
+
+        if (user.level() instanceof ServerLevel sl) {
+            sl.sendParticles(ParticleTypes.EXPLOSION_EMITTER, user.getX(), user.getY() + 1.0, user.getZ(), 1, 0, 0, 0, 0);
+            sl.sendParticles(ParticleTypes.EXPLOSION, user.getX(), user.getY() + 1.0, user.getZ(), 5, 0.5, 0.5, 0.5, 0.1);
+            sl.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.MAGMA_BLOCK.defaultBlockState()),
+                    user.getX(), user.getY() + 0.7, user.getZ(), 26, 0.8, 0.35, 0.8, 0.06);
+            SkillVisualFx.spawnRotatingRing(sl, user.position(), 1.1, 0.1, ParticleTypes.LAVA, 10, 0.0);
+        }
 
         // Visual expansion: 4 rings of fire for smoother RO "blast" feel
         for (int r = 1; r <= 4; r++) {
             final double currentR = radius * (r / 4.0);
-            com.etema.ragnarmmo.skill.runtime.SkillSequencer.schedule(r * 1, () -> {
-                if (player.level() instanceof ServerLevel serverLevel) {
+            com.etema.ragnarmmo.skill.runtime.SkillSequencer.schedule(r * 2, () -> {
+                if (user.level() instanceof ServerLevel serverLevel) {
                     // Circle particles
-                    for (int i = 0; i < 360; i += 8) {
+                    for (int i = 0; i < 360; i += 12) {
                         double rad = Math.toRadians(i);
-                        double x = player.getX() + Math.cos(rad) * currentR;
-                        double z = player.getZ() + Math.sin(rad) * currentR;
-                        serverLevel.sendParticles(ParticleTypes.FLAME, x, player.getY() + 0.1, z, 1, 0, 0.1, 0, 0.05);
+                        double x = user.getX() + Math.cos(rad) * currentR;
+                        double z = user.getZ() + Math.sin(rad) * currentR;
+                        serverLevel.sendParticles(ParticleTypes.FLAME, x, user.getY() + 0.1, z, 1, 0, 0.1, 0, 0.05);
                         if (currentR > 1.5) {
-                            serverLevel.sendParticles(ParticleTypes.SMALL_FLAME, x, player.getY() + 0.5, z, 1, 0.1, 0.2, 0.1, 0);
+                            serverLevel.sendParticles(ParticleTypes.SMALL_FLAME, x, user.getY() + 0.5, z, 1, 0.1, 0.2, 0.1, 0);
                         }
                     }
                     if (currentR >= radius) {
-                        serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE, player.getX(), player.getY() + 0.5, player.getZ(), 10, 1.0, 0.5, 1.0, 0.05);
+                        serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE, user.getX(), user.getY() + 0.5, user.getZ(), 10, 1.0, 0.5, 1.0, 0.05);
                     }
                 }
             });
-        }
-
-        if (player.level() instanceof ServerLevel sl) {
-            sl.sendParticles(ParticleTypes.EXPLOSION_EMITTER, player.getX(), player.getY() + 1.0, player.getZ(), 1, 0, 0, 0, 0);
         }
     }
 
     /**
      * Passive component: applies the +20% fire damage buff if active.
-     * Only triggers on offensive attacks.
      */
     @Override
     public void onOffensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
         if (level <= 0) return;
+        if (event.getSource().getDirectEntity() != player) return;
+        if (SwordmanCombatUtil.isSkillDamageContext(player)) return;
 
+        MobEffectInstance fireBuff = player.getEffect(RagnarMobEffects.MAGNUM_BREAK_FIRE.get());
         long fireUntil = player.getPersistentData().getLong(FIRE_BUFF_TAG);
-        if (fireUntil <= 0) return;
+        if (fireUntil <= 0 && fireBuff == null) return;
 
-        if (player.level().getGameTime() >= fireUntil) {
+        if (fireUntil > 0 && player.level().getGameTime() >= fireUntil) {
             player.getPersistentData().remove(FIRE_BUFF_TAG);
             return;
         }
 
         // +20% fire damage bonus while buff is active
         event.setAmount(event.getAmount() * 1.20f);
+    }
+
+    private float defaultHpCost(int level) {
+        return switch (level) {
+            case 1, 2 -> 20.0f;
+            case 3, 4 -> 19.0f;
+            case 5, 6 -> 18.0f;
+            case 7, 8 -> 17.0f;
+            default -> 16.0f;
+        };
     }
 }

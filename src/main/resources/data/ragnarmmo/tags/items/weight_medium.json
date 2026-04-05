@@ -49,11 +49,23 @@
         "minecraft:lightning_rod",
         "minecraft:glass",
         "minecraft:tinted_glass",
-        "#minecraft:stained_glass",
-        "#minecraft:stained_glass_panes",
+        {
+            "id": "#minecraft:stained_glass",
+            "required": false
+        },
+        {
+            "id": "#minecraft:stained_glass_panes",
+            "required": false
+        },
         "#minecraft:terracotta",
-        "#minecraft:glazed_terracotta",
-        "#minecraft:concrete_powder",
+        {
+            "id": "#minecraft:glazed_terracotta",
+            "required": false
+        },
+        {
+            "id": "#minecraft:concrete_powder",
+            "required": false
+        },
         "minecraft:hay_block",
         "minecraft:dried_kelp_block",
         "minecraft:moss_block",
@@ -75,9 +87,18 @@
         "minecraft:melon",
         "minecraft:sponge",
         "minecraft:wet_sponge",
-        "#minecraft:coral_blocks",
-        "#minecraft:corals",
-        "#minecraft:coral_fans",
+        {
+            "id": "#minecraft:coral_blocks",
+            "required": false
+        },
+        {
+            "id": "#minecraft:corals",
+            "required": false
+        },
+        {
+            "id": "#minecraft:coral_fans",
+            "required": false
+        },
         "minecraft:sea_lantern",
         "minecraft:conduit",
         "minecraft:turtle_helmet",

@@ -4,6 +4,7 @@ import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.roitems.data.RoItemRule;
 import com.etema.ragnarmmo.roitems.data.RoItemRuleLoader;
 import com.etema.ragnarmmo.roitems.data.RoItemRuleSet;
+import com.etema.ragnarmmo.system.loot.cards.CardEquipType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -19,9 +20,10 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Resolves an Item to its applicable RoItemRule.
  * Uses caching for performance and implements precedence logic:
- * 1. Exact item ID match (highest priority)
- * 2. Tag match (middle priority)
- * 3. Heuristic fallback (lowest priority)
+ * 1. Fallback by equipment type (lowest priority)
+ * 2. Namespace + equipment type profile
+ * 3. Tag match
+ * 4. Exact item ID match (highest priority)
  */
 public final class RoItemRuleResolver {
 
@@ -76,8 +78,6 @@ public final class RoItemRuleResolver {
         Map<StatKeys, Integer> mergedBonuses = new EnumMap<>(StatKeys.class);
         mergedBonuses.putAll(baseRule.attributeBonuses());
 
-        mergedBonuses.putAll(baseRule.attributeBonuses());
-
         for (String cardId : slottedCards) {
             var cardDef = com.etema.ragnarmmo.system.loot.cards.CardRegistry.getInstance().get(cardId);
             if (cardDef != null && cardDef.modifiers() != null) {
@@ -103,12 +103,13 @@ public final class RoItemRuleResolver {
                 mergedBonuses,
                 baseRule.requiredBaseLevel(),
                 baseRule.allowedJobs(),
-                baseRule.cardSlots());
+                baseRule.cardSlots(),
+                baseRule.showTooltip());
     }
 
     /**
      * Compute the rule for an item (not cached).
-     * Implements precedence: itemId > tags > heuristics
+     * Implements precedence: fallback < mod/type < tags < itemId
      */
     private static RoItemRule computeRule(Item item) {
         RoItemRuleSet ruleSet = RoItemRuleLoader.getRuleSet();
@@ -118,26 +119,35 @@ public final class RoItemRuleResolver {
             return RoItemRule.EMPTY;
         }
 
-        // 1. Check exact item ID match (highest priority)
-        RoItemRule byId = ruleSet.getByItemId(itemId);
-        if (byId != null) {
-            return byId;
-        }
+        CardEquipType equipType = RoEquipmentTypeResolver.resolve(new ItemStack(item));
+        RoItemRule resolved = RoItemRule.EMPTY;
 
-        // 2. Check tag matches
-        // If multiple tags match, use the first one found
-        // (In a more sophisticated system, you might combine or prioritize)
-        for (Map.Entry<ResourceLocation, RoItemRule> entry : ruleSet.getTagRules().entrySet()) {
-            TagKey<Item> tagKey = TagKey.create(Registries.ITEM, entry.getKey());
-            if (item.builtInRegistryHolder().is(tagKey)) {
-                return entry.getValue();
+        if (equipType != CardEquipType.ANY) {
+            RoItemRule fallbackRule = ruleSet.getFallback(equipType);
+            if (fallbackRule != null) {
+                resolved = RoItemRule.merge(resolved, fallbackRule);
+            }
+
+            RoItemRule byModAndType = ruleSet.getByModAndType(itemId.getNamespace(), equipType);
+            if (byModAndType != null) {
+                resolved = RoItemRule.merge(resolved, byModAndType);
             }
         }
 
-        // 3. Heuristic fallback DISABLED
-        // In "Identity per Item" mode, we do NOT generate fake rules.
-        // If an item has no rule, it has no RO stats/requirements.
-        return RoItemRule.EMPTY;
+        for (Map.Entry<ResourceLocation, RoItemRule> entry : ruleSet.getTagRules().entrySet()) {
+            TagKey<Item> tagKey = TagKey.create(Registries.ITEM, entry.getKey());
+            if (item.builtInRegistryHolder().is(tagKey)) {
+                resolved = RoItemRule.merge(resolved, entry.getValue());
+                break;
+            }
+        }
+
+        RoItemRule byId = ruleSet.getByItemId(itemId);
+        if (byId != null) {
+            resolved = RoItemRule.merge(resolved, byId);
+        }
+
+        return resolved != null ? resolved : RoItemRule.EMPTY;
     }
 
     /**

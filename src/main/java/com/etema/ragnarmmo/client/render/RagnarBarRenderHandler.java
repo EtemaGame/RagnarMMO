@@ -145,6 +145,12 @@ public class RagnarBarRenderHandler {
                 rank = MobInfoIntegration.getMobTier(entity).map(t -> t.name()).orElse("");
             }
 
+            if ("MINI_BOSS".equalsIgnoreCase(rank)) {
+                rank = "ELITE";
+            } else if ("MVP".equalsIgnoreCase(rank)) {
+                rank = "BOSS";
+            }
+
             String icon = "";
             if ("ELITE".equalsIgnoreCase(rank))
                 icon = "★ ";

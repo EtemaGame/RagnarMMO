@@ -4,6 +4,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -47,7 +48,8 @@ public interface ISkillDefinition {
     com.etema.ragnarmmo.skill.api.SkillCategory getCategory();
 
     /**
-     * @return The tier of this skill (NOVICE, FIRST, SECOND, THIRD, LIFE)
+     * @return The tier of this skill. Current core scope is NOVICE/FIRST/SECOND/LIFE;
+     *         additional tiers may exist as reserved future placeholders.
      */
     com.etema.ragnarmmo.skill.api.SkillTier getTier();
 
@@ -117,6 +119,27 @@ public interface ISkillDefinition {
     int getCastTimeTicks();
 
     /**
+     * @return Effective cooldown for a specific skill level.
+     */
+    default int getCooldownTicks(int level) {
+        return getCooldownTicks();
+    }
+
+    /**
+     * @return Effective cast delay for a specific skill level.
+     */
+    default int getCastDelayTicks(int level) {
+        return getCastDelayTicks();
+    }
+
+    /**
+     * @return Effective cast time for a specific skill level.
+     */
+    default int getCastTimeTicks(int level) {
+        return getCastTimeTicks();
+    }
+
+    /**
      * @return true if this skill's cast can be interrupted by damage
      */
     boolean isInterruptible();
@@ -183,4 +206,61 @@ public interface ISkillDefinition {
      * @return The fully qualified class name of the effect implementation, or null
      */
     String getEffectClass();
+
+    // === References & tuning ===
+
+    /**
+     * @return Optional reference source name for external balancing data.
+     */
+    default Optional<String> getReferenceSourceName() {
+        return Optional.empty();
+    }
+
+    /**
+     * @return Optional reference source URL for external balancing data.
+     */
+    default Optional<String> getReferenceSourceUrl() {
+        return Optional.empty();
+    }
+
+    /**
+     * @return Optional free-form notes describing how the skill was tuned.
+     */
+    default Optional<String> getReferenceNotes() {
+        return Optional.empty();
+    }
+
+    /**
+     * @return Immutable per-level tuning map loaded from datapacks.
+     */
+    default Map<Integer, com.etema.ragnarmmo.skill.data.SkillLevelData> getLevelDataMap() {
+        return Map.of();
+    }
+
+    default Optional<com.etema.ragnarmmo.skill.data.SkillLevelData> getLevelData(int level) {
+        return Optional.ofNullable(getLevelDataMap().get(level));
+    }
+
+    default int getLevelInt(String key, int level, int fallback) {
+        return getLevelData(level)
+                .flatMap(data -> data.getInt(key))
+                .orElse(fallback);
+    }
+
+    default double getLevelDouble(String key, int level, double fallback) {
+        return getLevelData(level)
+                .flatMap(data -> data.getNumber(key))
+                .orElse(fallback);
+    }
+
+    default Optional<String> getLevelString(String key, int level) {
+        return getLevelData(level)
+                .flatMap(data -> data.getString(key));
+    }
+
+    default boolean getLevelBoolean(String key, int level, boolean fallback) {
+        return getLevelData(level)
+                .flatMap(data -> data.getBoolean(key))
+                .orElse(fallback);
+    }
 }

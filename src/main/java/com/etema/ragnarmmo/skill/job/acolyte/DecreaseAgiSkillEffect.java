@@ -1,6 +1,9 @@
 package com.etema.ragnarmmo.skill.job.acolyte;
 
+import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.system.mobstats.util.MobUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -11,17 +14,12 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 /**
  * Decrease AGI — Active (Acolyte)
  * RO: Reduces target's FLEE and ASPD by lowering their AGI stat.
- * MC: Applies SLOWNESS II + MINING FATIGUE I to the targeted enemy for
- *     (30 + level * 10) seconds (max 130s at lv10).
+ * MC: Uses the RO success table, ignores Boss monsters, and applies
+ * Slowness / Mining Fatigue as an AGI reduction approximation.
  */
 public class DecreaseAgiSkillEffect implements ISkillEffect {
 
@@ -34,15 +32,47 @@ public class DecreaseAgiSkillEffect implements ISkillEffect {
     public void execute(ServerPlayer player, int level) {
         if (level <= 0) return;
 
-        LivingEntity target = getHostileTarget(player, 7.0);
+        LivingEntity target = AcolyteTargetingHelper.resolveHostileTarget(player, 8.0);
         if (target == null) {
             player.sendSystemMessage(Component.literal("§cDecrease AGI: §fNo hay objetivo válido."));
             return;
         }
 
-        int durationTicks = (30 + level * 10) * 20;
-        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, durationTicks, 1)); // SLOWNESS II
-        target.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, durationTicks, 0));      // MINING FATIGUE I
+        if (MobUtils.isMVPBoss(target)) {
+            player.sendSystemMessage(Component.literal("§7Decrease AGI no afecta a Boss monsters."));
+            return;
+        }
+
+        var defOpt = SkillRegistry.get(ID);
+        int durationTicks = defOpt
+                .map(def -> def.getLevelInt("duration_ticks", level, (20 + (level * 10)) * 20))
+                .orElse((20 + (level * 10)) * 20);
+        int agiReduction = defOpt
+                .map(def -> def.getLevelInt("agi_reduction", level, level + 2))
+                .orElse(level + 2);
+        float baseChance = defOpt
+                .map(def -> def.getLevelDouble("success_rate", level, 40.0 + (level * 2.0)))
+                .orElse(40.0 + (level * 2.0))
+                .floatValue();
+        float intBonus = Math.min(15.0f, SkillDamageHelper.getINT(player) * 0.15f);
+        float armorPenalty = (float) Math.min(12.0, (target.getArmorValue() * 0.8) +
+                (target.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS) * 1.5));
+        float finalChance = Math.max(5.0f, Math.min(95.0f, baseChance + intBonus - armorPenalty));
+
+        if ((player.getRandom().nextFloat() * 100.0f) > finalChance) {
+            if (player.level() instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.SMOKE, target.getX(), target.getY() + 1.0, target.getZ(),
+                        6, 0.2, 0.3, 0.2, 0.02);
+            }
+            player.sendSystemMessage(Component.literal("§7Decrease AGI falló sobre "
+                    + target.getDisplayName().getString() + "."));
+            return;
+        }
+
+        int slownessAmplifier = Math.max(0, Math.min(2, (agiReduction - 1) / 4));
+        int fatigueAmplifier = agiReduction >= 8 ? 1 : 0;
+        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, durationTicks, slownessAmplifier));
+        target.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, durationTicks, fatigueAmplifier));
 
         if (player.level() instanceof ServerLevel sl) {
             sl.sendParticles(ParticleTypes.FALLING_WATER,
@@ -53,24 +83,6 @@ public class DecreaseAgiSkillEffect implements ISkillEffect {
         }
 
         player.sendSystemMessage(Component.literal("§9↓ Decrease AGI §faplica Slowness a "
-                + target.getDisplayName().getString() + " por " + (30 + level * 10) + "s."));
-    }
-
-    private LivingEntity getHostileTarget(ServerPlayer player, double range) {
-        Vec3 start = player.getEyePosition();
-        Vec3 end = start.add(player.getLookAngle().scale(range));
-        AABB box = player.getBoundingBox().inflate(range);
-        List<LivingEntity> candidates = player.level().getEntitiesOfClass(
-                LivingEntity.class, box, e -> e != player && e.isAlive() && e instanceof Mob);
-        LivingEntity best = null;
-        double bestDist = Double.MAX_VALUE;
-        for (LivingEntity e : candidates) {
-            var hit = e.getBoundingBox().inflate(0.5).clip(start, end);
-            if (hit.isPresent()) {
-                double d = start.distanceToSqr(e.position());
-                if (d < bestDist) { bestDist = d; best = e; }
-            }
-        }
-        return best;
+                + target.getDisplayName().getString() + " por " + (durationTicks / 20) + "s."));
     }
 }

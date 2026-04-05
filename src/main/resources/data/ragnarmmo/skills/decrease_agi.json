@@ -14,7 +14,9 @@
         "base_cost": 15,
         "cost_per_level": 2
     },
-    "cooldown_ticks": 40,
+    "cooldown_ticks": 0,
+    "cast_delay_ticks": 20,
+    "cast_time_ticks": 20,
     "jobs": [
         "ACOLYTE"
     ],
@@ -26,5 +28,17 @@
         "grid_x": 2,
         "grid_y": 1
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.DecreaseAgiSkillEffect"
+    "level_data": {
+        "1": { "sp_cost": 27, "agi_reduction": 3, "success_rate": 42, "duration_ticks": 600 },
+        "2": { "sp_cost": 29, "agi_reduction": 4, "success_rate": 44, "duration_ticks": 800 },
+        "3": { "sp_cost": 31, "agi_reduction": 5, "success_rate": 46, "duration_ticks": 1000 },
+        "4": { "sp_cost": 33, "agi_reduction": 6, "success_rate": 48, "duration_ticks": 1200 },
+        "5": { "sp_cost": 35, "agi_reduction": 7, "success_rate": 50, "duration_ticks": 1400 },
+        "6": { "sp_cost": 37, "agi_reduction": 8, "success_rate": 52, "duration_ticks": 1600 },
+        "7": { "sp_cost": 39, "agi_reduction": 9, "success_rate": 54, "duration_ticks": 1800 },
+        "8": { "sp_cost": 41, "agi_reduction": 10, "success_rate": 56, "duration_ticks": 2000 },
+        "9": { "sp_cost": 43, "agi_reduction": 11, "success_rate": 58, "duration_ticks": 2200 },
+        "10": { "sp_cost": 45, "agi_reduction": 12, "success_rate": 60, "duration_ticks": 2400 }
+    },
+    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.DecreaseAgiSkillEffect"
 }

@@ -7,6 +7,7 @@ import com.etema.ragnarmmo.system.mobstats.network.MobStatsNetwork;
 import com.etema.ragnarmmo.system.lifeskills.LifeSkillsNetwork;
 import com.etema.ragnarmmo.roitems.network.RoItemsNetwork;
 import com.etema.ragnarmmo.system.achievements.network.AchievementNetwork;
+import com.etema.ragnarmmo.common.net.effects.SkillEffectsNetwork;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -69,6 +70,10 @@ public final class Network {
 
         public static void registerAchievementPackets() {
                 AchievementNetwork.register(CH, NEXT_ID);
+        }
+
+        public static void registerSkillEffectPackets() {
+                SkillEffectsNetwork.register(CH, NEXT_ID);
         }
 
         /* ─── Helpers ─── */

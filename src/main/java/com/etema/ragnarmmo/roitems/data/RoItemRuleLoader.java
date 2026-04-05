@@ -6,6 +6,7 @@ import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.roitems.network.SyncRoItemRulesPacket;
 import com.etema.ragnarmmo.roitems.runtime.RoItemRuleResolver;
+import com.etema.ragnarmmo.system.loot.cards.CardEquipType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -63,34 +64,17 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
             if (!jsonElement.isJsonObject())
                 return;
             JsonObject root = jsonElement.getAsJsonObject();
-
-            root.entrySet().forEach(entry -> {
-                try {
-                    String key = entry.getKey();
-                    boolean isTag = key.startsWith("#");
-                    String targetPath = isTag ? key.substring(1) : key;
-                    ResourceLocation targetId = new ResourceLocation(targetPath);
-
-                    if (!entry.getValue().isJsonObject())
-                        return;
-                    RoItemRule rule = parseRule(entry.getValue().getAsJsonObject());
-
-                    if (isTag) {
-                        ruleSet.addTagRule(targetId, rule);
-                    } else {
-                        ruleSet.addItemRule(targetId, rule);
-                    }
-                } catch (Exception e) {
-                    RagnarMMO.LOGGER.warn("Failed to parse RO item rule '{}' in {}: {}",
-                            entry.getKey(), location, e.getMessage());
-                }
-            });
+            parseLegacyItemAndTagRules(location, root);
+            parseModTypeRules(location, root);
+            parseFallbackRules(location, root);
         });
 
-        RagnarMMO.LOGGER.info("Loaded {} RO item rules ({} by item, {} by tag)",
+        RagnarMMO.LOGGER.info("Loaded {} RO item rules ({} by item, {} by tag, {} by mod/type, {} fallbacks)",
                 ruleSet.getTotalRuleCount(),
                 ruleSet.getItemRuleCount(),
-                ruleSet.getTagRuleCount());
+                ruleSet.getTagRuleCount(),
+                ruleSet.getModTypeRuleCount(),
+                ruleSet.getFallbackRuleCount());
 
         // Sync to all connected clients after reload
         syncToAllPlayers();
@@ -106,7 +90,9 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
 
         SyncRoItemRulesPacket packet = new SyncRoItemRulesPacket(
                 ruleSet.getItemRules(),
-                ruleSet.getTagRules()
+                ruleSet.getTagRules(),
+                ruleSet.getModTypeRules(),
+                ruleSet.getFallbackRules()
         );
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -121,7 +107,9 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
     public static void syncToPlayer(ServerPlayer player) {
         SyncRoItemRulesPacket packet = new SyncRoItemRulesPacket(
                 INSTANCE.ruleSet.getItemRules(),
-                INSTANCE.ruleSet.getTagRules()
+                INSTANCE.ruleSet.getTagRules(),
+                INSTANCE.ruleSet.getModTypeRules(),
+                INSTANCE.ruleSet.getFallbackRules()
         );
         Network.sendToPlayer(player, packet);
         RagnarMMO.LOGGER.debug("Synced RO item rules to player {}", player.getName().getString());
@@ -131,7 +119,9 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
      * Called on client to apply rules received from server.
      */
     public static void applyClientSync(Map<ResourceLocation, RoItemRule> itemRules,
-                                       Map<ResourceLocation, RoItemRule> tagRules) {
+                                       Map<ResourceLocation, RoItemRule> tagRules,
+                                       Map<String, Map<CardEquipType, RoItemRule>> modTypeRules,
+                                       Map<CardEquipType, RoItemRule> fallbackRules) {
         INSTANCE.ruleSet.clear();
         RoItemRuleResolver.clearCache();
 
@@ -141,11 +131,100 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
         for (var entry : tagRules.entrySet()) {
             INSTANCE.ruleSet.addTagRule(entry.getKey(), entry.getValue());
         }
+        for (var modEntry : modTypeRules.entrySet()) {
+            for (var typeEntry : modEntry.getValue().entrySet()) {
+                INSTANCE.ruleSet.addModTypeRule(modEntry.getKey(), typeEntry.getKey(), typeEntry.getValue());
+            }
+        }
+        for (var entry : fallbackRules.entrySet()) {
+            INSTANCE.ruleSet.addFallbackRule(entry.getKey(), entry.getValue());
+        }
 
-        RagnarMMO.LOGGER.info("Received {} RO item rules from server ({} by item, {} by tag)",
+        RagnarMMO.LOGGER.info("Received {} RO item rules from server ({} by item, {} by tag, {} by mod/type, {} fallbacks)",
                 INSTANCE.ruleSet.getTotalRuleCount(),
                 INSTANCE.ruleSet.getItemRuleCount(),
-                INSTANCE.ruleSet.getTagRuleCount());
+                INSTANCE.ruleSet.getTagRuleCount(),
+                INSTANCE.ruleSet.getModTypeRuleCount(),
+                INSTANCE.ruleSet.getFallbackRuleCount());
+    }
+
+    private void parseLegacyItemAndTagRules(ResourceLocation location, JsonObject root) {
+        root.entrySet().forEach(entry -> {
+            try {
+                String key = entry.getKey();
+                if ("modEquipmentTypes".equals(key) || "fallbacks".equals(key)) {
+                    return;
+                }
+
+                if (!entry.getValue().isJsonObject()) {
+                    return;
+                }
+
+                boolean isTag = key.startsWith("#");
+                String targetPath = isTag ? key.substring(1) : key;
+                ResourceLocation targetId = new ResourceLocation(targetPath);
+                RoItemRule rule = parseRule(entry.getValue().getAsJsonObject(), false);
+
+                if (isTag) {
+                    ruleSet.addTagRule(targetId, rule);
+                } else {
+                    ruleSet.addItemRule(targetId, rule);
+                }
+            } catch (Exception e) {
+                RagnarMMO.LOGGER.warn("Failed to parse RO item rule '{}' in {}: {}",
+                        entry.getKey(), location, e.getMessage());
+            }
+        });
+    }
+
+    private void parseModTypeRules(ResourceLocation location, JsonObject root) {
+        if (!root.has("modEquipmentTypes") || !root.get("modEquipmentTypes").isJsonObject()) {
+            return;
+        }
+
+        JsonObject modRules = root.getAsJsonObject("modEquipmentTypes");
+        modRules.entrySet().forEach(modEntry -> {
+            String modId = modEntry.getKey().trim().toLowerCase(Locale.ROOT);
+            if (!modEntry.getValue().isJsonObject()) {
+                return;
+            }
+
+            JsonObject typeRules = modEntry.getValue().getAsJsonObject();
+            typeRules.entrySet().forEach(typeEntry -> {
+                try {
+                    CardEquipType equipType = CardEquipType.fromString(typeEntry.getKey());
+                    if (equipType == CardEquipType.ANY || !typeEntry.getValue().isJsonObject()) {
+                        return;
+                    }
+                    RoItemRule rule = parseRule(typeEntry.getValue().getAsJsonObject(), true);
+                    ruleSet.addModTypeRule(modId, equipType, rule);
+                } catch (Exception e) {
+                    RagnarMMO.LOGGER.warn("Failed to parse RO mod/type rule '{}:{}' in {}: {}",
+                            modId, typeEntry.getKey(), location, e.getMessage());
+                }
+            });
+        });
+    }
+
+    private void parseFallbackRules(ResourceLocation location, JsonObject root) {
+        if (!root.has("fallbacks") || !root.get("fallbacks").isJsonObject()) {
+            return;
+        }
+
+        JsonObject fallbacks = root.getAsJsonObject("fallbacks");
+        fallbacks.entrySet().forEach(entry -> {
+            try {
+                CardEquipType equipType = CardEquipType.fromString(entry.getKey());
+                if (equipType == CardEquipType.ANY || !entry.getValue().isJsonObject()) {
+                    return;
+                }
+                RoItemRule rule = parseRule(entry.getValue().getAsJsonObject(), true);
+                ruleSet.addFallbackRule(equipType, rule);
+            } catch (Exception e) {
+                RagnarMMO.LOGGER.warn("Failed to parse RO fallback rule '{}' in {}: {}",
+                        entry.getKey(), location, e.getMessage());
+            }
+        });
     }
 
     /**
@@ -162,10 +241,11 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
      * "cardSlots": 3
      * }
      */
-    private RoItemRule parseRule(JsonObject json) {
+    private RoItemRule parseRule(JsonObject json, boolean defaultShowTooltip) {
         String displayName = getStringOrNull(json, "displayName");
         int requiredBaseLevel = getIntOrDefault(json, "requiredBaseLevel", 0);
         int cardSlots = getIntOrDefault(json, "cardSlots", 0);
+        boolean showTooltip = getBooleanOrDefault(json, "showTooltip", defaultShowTooltip);
 
         // Parse attribute bonuses
         Map<StatKeys, Integer> attributeBonuses = new EnumMap<>(StatKeys.class);
@@ -192,7 +272,7 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
             });
         }
 
-        return new RoItemRule(displayName, attributeBonuses, requiredBaseLevel, allowedJobs, cardSlots);
+        return new RoItemRule(displayName, attributeBonuses, requiredBaseLevel, allowedJobs, cardSlots, showTooltip);
 
     }
 
@@ -206,6 +286,13 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
     private int getIntOrDefault(JsonObject json, String key, int defaultValue) {
         if (json.has(key) && json.get(key).isJsonPrimitive()) {
             return json.get(key).getAsInt();
+        }
+        return defaultValue;
+    }
+
+    private boolean getBooleanOrDefault(JsonObject json, String key, boolean defaultValue) {
+        if (json.has(key) && json.get(key).isJsonPrimitive()) {
+            return json.get(key).getAsBoolean();
         }
         return defaultValue;
     }

@@ -1,0 +1,16 @@
+{
+  "id": "ragnarmmo:impact/cold_bolt_impact_particles",
+  "type": "particle_emitter",
+  "particle": "minecraft:snowflake",
+  "shape": "sphere",
+  "duration_ticks": 7,
+  "loop": false,
+  "emit_interval_ticks": 2,
+  "count": 8,
+  "radius": 0.14,
+  "radial_velocity": 0.045,
+  "offset": [0.0, 0.02, 0.0],
+  "spread": [0.03, 0.03, 0.03],
+  "base_velocity": [0.0, 0.01, 0.0],
+  "random_velocity": [0.02, 0.02, 0.02]
+}

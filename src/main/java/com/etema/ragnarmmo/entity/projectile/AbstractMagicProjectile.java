@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.entity.projectile;
 
+import com.etema.ragnarmmo.common.net.effects.SkillEffectsNetwork;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -111,6 +112,13 @@ public class AbstractMagicProjectile extends Projectile {
         }
 
         Vec3 movement = getDeltaMovement();
+        if (movement.lengthSqr() > 1.0E-6) {
+            this.yRotO = this.getYRot();
+            this.xRotO = this.getXRot();
+            double horizontalDist = movement.horizontalDistance();
+            this.setYRot((float) (Math.atan2(movement.x, movement.z) * (180.0D / Math.PI)));
+            this.setXRot((float) (Math.atan2(movement.y, horizontalDist) * (180.0D / Math.PI)));
+        }
         setPos(getX() + movement.x, getY() + movement.y, getZ() + movement.z);
         checkInsideBlocks();
 
@@ -151,6 +159,7 @@ public class AbstractMagicProjectile extends Projectile {
             if (hit instanceof LivingEntity living && !hit.getUUID().equals(ownerUUID)) {
                 impactParticles(hit.getX(), hit.getY() + hit.getBbHeight() / 2.0, hit.getZ());
                 applyEffect(living);
+                SkillEffectsNetwork.sendImpact(this, getSkillId(), result);
                 discard();
             }
         }
@@ -162,6 +171,7 @@ public class AbstractMagicProjectile extends Projectile {
         if (!level().isClientSide) {
             Vec3 pos = result.getLocation();
             impactParticles(pos.x, pos.y, pos.z);
+            SkillEffectsNetwork.sendImpact(this, getSkillId(), result);
             discard();
         }
     }
@@ -196,6 +206,32 @@ public class AbstractMagicProjectile extends Projectile {
 
     // Compat getters
     public float getDamage() { return damage; }
-    public ResourceLocation getSkillId() { return null; } // Optional: add if needed
+    public ResourceLocation getSkillId() {
+        if (this instanceof FireBoltProjectile) {
+            return ResourceLocation.fromNamespaceAndPath("ragnarmmo", "fire_bolt");
+        }
+        if (this instanceof IceBoltProjectile) {
+            return ResourceLocation.fromNamespaceAndPath("ragnarmmo", "cold_bolt");
+        }
+        if (this instanceof LightningBoltProjectile) {
+            return ResourceLocation.fromNamespaceAndPath("ragnarmmo", "lightning_bolt");
+        }
+        if (this instanceof SoulStrikeProjectile) {
+            return ResourceLocation.fromNamespaceAndPath("ragnarmmo", "soul_strike");
+        }
+        if (projectileType == null || projectileType.isBlank()) {
+            return null;
+        }
+        return switch (projectileType) {
+            case "fireball" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "fire_ball");
+            case "holy_light" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "holy_light");
+            case "firebolt" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "fire_bolt");
+            case "icebolt" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "cold_bolt");
+            case "lightningbolt" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "lightning_bolt");
+            case "napalm_beat" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "napalm_beat");
+            case "soul_strike" -> ResourceLocation.fromNamespaceAndPath("ragnarmmo", "soul_strike");
+            default -> null;
+        };
+    }
     public int getSkillLevel() { return 0; }
 }

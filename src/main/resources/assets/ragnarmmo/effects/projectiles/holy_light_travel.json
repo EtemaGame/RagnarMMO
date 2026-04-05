@@ -1,0 +1,30 @@
+{
+  "id": "ragnarmmo:projectiles/holy_light_travel",
+  "type": "layered",
+  "duration_ticks": 6,
+  "loop": true,
+  "layers": [
+    {
+      "name": "holy_core",
+      "blend_mode": "emissive",
+      "orientation": "velocity",
+      "z_order": 0,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.14, "scale_y": 0.44, "alpha": 1.0, "texture": "minecraft:textures/block/sea_lantern.png" },
+        { "tick": 3, "scale_x": 0.18, "scale_y": 0.52, "alpha": 1.0, "texture": "minecraft:textures/block/sea_lantern.png" },
+        { "tick": 6, "scale_x": 0.14, "scale_y": 0.44, "alpha": 1.0, "texture": "minecraft:textures/block/sea_lantern.png" }
+      ]
+    },
+    {
+      "name": "holy_blade",
+      "blend_mode": "emissive",
+      "orientation": "velocity",
+      "z_order": 1,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.08, "scale_y": 0.56, "alpha": 0.92, "rotation_deg": 45.0, "texture": "minecraft:textures/block/smooth_quartz.png" },
+        { "tick": 3, "scale_x": 0.10, "scale_y": 0.64, "alpha": 1.0, "rotation_deg": 90.0, "texture": "minecraft:textures/block/smooth_quartz.png" },
+        { "tick": 6, "scale_x": 0.08, "scale_y": 0.56, "alpha": 0.92, "rotation_deg": 135.0, "texture": "minecraft:textures/block/smooth_quartz.png" }
+      ]
+    }
+  ]
+}

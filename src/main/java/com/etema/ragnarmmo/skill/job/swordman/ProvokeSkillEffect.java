@@ -1,12 +1,14 @@
 package com.etema.ragnarmmo.skill.job.swordman;
 
+import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.combat.aggro.AggroManager;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
+import com.etema.ragnarmmo.system.mobstats.util.MobUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -35,44 +37,61 @@ public class ProvokeSkillEffect implements ISkillEffect {
     }
 
     @Override
-    public void execute(ServerPlayer player, int level) {
+    public void execute(LivingEntity user, int level) {
         if (level <= 0)
             return;
 
-        LivingEntity target = getTarget(player);
-        if (target == null || target == player)
+
+        LivingEntity target = getTarget(user);
+        if (target == null || target == user)
             return;
 
-        // RO: Provoke does not work on Undead monsters
-        if (target.getMobType() == net.minecraft.world.entity.MobType.UNDEAD) {
-            player.sendSystemMessage(
-                net.minecraft.network.chat.Component.literal("§cProvoke failed — target is Undead."));
+        if (target.getMobType() == net.minecraft.world.entity.MobType.UNDEAD || MobUtils.isMVPBoss(target)) {
+            if (user instanceof Player player) {
+                player.sendSystemMessage(
+                    net.minecraft.network.chat.Component.translatable("message.ragnarmmo.skill_blocked_type")
+                            .withStyle(net.minecraft.ChatFormatting.GRAY));
+            }
             return;
         }
 
         // Provoke only works on Mob entities (not other players)
         if (!(target instanceof Mob mob)) {
-            player.sendSystemMessage(
-                net.minecraft.network.chat.Component.literal("§cProvoke failed — target cannot be taunted."));
+            if (user instanceof Player player) {
+                player.sendSystemMessage(
+                    net.minecraft.network.chat.Component.literal("§cProvoke failed — target cannot be taunted."));
+            }
             return;
         }
 
-        // Duration: scales with level. Level 1 = 20s, Level 10 = 40s
-        int durationTicks = (20 + level * 2) * 20;
+        user.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
+
+        int durationTicks = 30 * 20;
+        double baseChance = 0.53 + ((level - 1) * 0.03);
+        int levelDiff = SwordmanCombatUtil.estimateLevel(user) - SwordmanCombatUtil.estimateLevel(target);
+        double successChance = Mth.clamp(baseChance + (levelDiff * 0.01), 0.05, 0.95);
+
+        if (user.getRandom().nextDouble() > successChance) {
+            if (user instanceof Player player) {
+                player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§7Provoke §cfailed§7."));
+            }
+            if (user.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.SMOKE,
+                        target.getX(), target.getY() + 1.3, target.getZ(),
+                        6, 0.2, 0.2, 0.2, 0.01);
+            }
+            return;
+        }
 
         // --- 1. AGGRO: Force the mob to retarget the casting player ---
-        AggroManager.applyAggro(mob, player, durationTicks);
-        mob.setTarget(player); // Immediate retarget
+        AggroManager.applyAggro(mob, user, durationTicks);
+        mob.setTarget(user); // Immediate retarget
 
         // --- 2. DEF REDUCTION & ATK BUFF ---
-        // RO Formulas:
-        // DEF Reduction: 10% + 3% * level (max 40%)
-        // ATK Increase: 100% + (2 * level + 3)% (max 123%)
-        
         var armorAttr = mob.getAttribute(Attributes.ARMOR);
         if (armorAttr != null) {
             armorAttr.removeModifier(PROVOKE_DEF_DEBUFF_UUID); 
-            double defReduction = -(0.10 + 0.03 * level);
+            double defReduction = -(0.05 + 0.05 * level);
             armorAttr.addTransientModifier(new AttributeModifier(
                 PROVOKE_DEF_DEBUFF_UUID,
                 PROVOKE_DEF_DEBUFF_NAME,
@@ -84,9 +103,7 @@ public class ProvokeSkillEffect implements ISkillEffect {
         var atkAttr = mob.getAttribute(Attributes.ATTACK_DAMAGE);
         if (atkAttr != null) {
             atkAttr.removeModifier(PROVOKE_ATK_BUFF_UUID);
-            // Increase is calculated as a multiplier to the total. 
-            // 123% total = +23% addition to the multiplier.
-            double atkIncrease = (2.0 * level + 3.0) / 100.0;
+            double atkIncrease = (2.0 + (3.0 * level)) / 100.0;
             atkAttr.addTransientModifier(new AttributeModifier(
                 PROVOKE_ATK_BUFF_UUID,
                 PROVOKE_ATK_BUFF_NAME,
@@ -95,32 +112,35 @@ public class ProvokeSkillEffect implements ISkillEffect {
             ));
         }
 
-        // Store expiry time so AggroEvents can clean up both modifiers
         mob.getPersistentData().putLong(PROVOKE_UNTIL_TAG,
             mob.level().getGameTime() + durationTicks);
 
         // --- 3. FEEDBACK ---
-        player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-                SoundEvents.ILLUSIONER_CAST_SPELL, SoundSource.PLAYERS, 1.0f, 0.5f);
+        user.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                RagnarSounds.PROVOKE.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
 
-        if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+        if (user.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.ANGRY_VILLAGER,
-                    target.getX(), target.getY() + 2.0, target.getZ(),
-                    8, 0.4, 0.3, 0.4, 0.0);
+                    target.getX(), target.getY() + 1.8, target.getZ(),
+                    15, 0.3, 0.2, 0.3, 0.0);
             serverLevel.sendParticles(ParticleTypes.DAMAGE_INDICATOR,
-                    target.getX(), target.getY() + 1.0, target.getZ(),
-                    5, 0.3, 0.2, 0.3, 0.0);
+                    target.getX(), target.getY() + 1.2, target.getZ(),
+                    8, 0.2, 0.2, 0.2, 0.0);
+            SkillVisualFx.spawnRotatingRing(serverLevel, target.position(), 0.8, target.getBbHeight() + 0.15,
+                    ParticleTypes.ANGRY_VILLAGER, 7, 0.0);
+            SkillVisualFx.spawnFrontArc(serverLevel, user, 2.0, 1.8, 1.2,
+                    ParticleTypes.DAMAGE_INDICATOR, ParticleTypes.SMOKE, 7);
         }
     }
 
-    private LivingEntity getTarget(Player player) {
-        Vec3 start = player.getEyePosition();
-        Vec3 look = player.getLookAngle();
+    private LivingEntity getTarget(LivingEntity user) {
+        Vec3 start = user.getEyePosition();
+        Vec3 look = user.getLookAngle();
         Vec3 end = start.add(look.scale(5.0)); // 5-block range for Provoke
-        AABB searchBox = player.getBoundingBox().inflate(5.0);
+        AABB searchBox = user.getBoundingBox().inflate(5.0);
 
-        List<LivingEntity> possibleTargets = player.level().getEntitiesOfClass(LivingEntity.class, searchBox,
-                e -> e != player && e.isAlive());
+        List<LivingEntity> possibleTargets = user.level().getEntitiesOfClass(LivingEntity.class, searchBox,
+                e -> e != user && e.isAlive());
 
         LivingEntity closestTarget = null;
         double closestDist = Double.MAX_VALUE;

@@ -1,13 +1,13 @@
 {
     "category": "ADVENTURE",
-    "name": "Diamond Discovery!",
-    "description": "Collect your first Diamond.",
+    "name": "achievement.ragnarmmo.diamond_discovery.name",
+    "description": "achievement.ragnarmmo.diamond_discovery.desc",
     "trigger_type": "pickup_item",
     "trigger_id": "minecraft:diamond",
     "required_amount": 1,
-    "points": 30,
-    "title": "Lucky",
+    "points": 50,
+    "title": "title.ragnarmmo.treasure_hunter",
     "rewards": {
-        "minecraft:emerald": 5
+        "minecraft:experience_bottle": 5
     }
 }

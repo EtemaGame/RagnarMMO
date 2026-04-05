@@ -1,18 +1,18 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    { "item": "ragnarmmo:silver_zeny" },
-    { "item": "ragnarmmo:silver_zeny" },
-    { "item": "ragnarmmo:silver_zeny" },
-    { "item": "ragnarmmo:silver_zeny" },
-    { "item": "ragnarmmo:silver_zeny" },
-    { "item": "ragnarmmo:silver_zeny" },
-    { "item": "ragnarmmo:silver_zeny" },
-    { "item": "ragnarmmo:silver_zeny" },
-    { "item": "ragnarmmo:silver_zeny" }
+    { "item": "ragnarmmo:zeny/silver_zeny" },
+    { "item": "ragnarmmo:zeny/silver_zeny" },
+    { "item": "ragnarmmo:zeny/silver_zeny" },
+    { "item": "ragnarmmo:zeny/silver_zeny" },
+    { "item": "ragnarmmo:zeny/silver_zeny" },
+    { "item": "ragnarmmo:zeny/silver_zeny" },
+    { "item": "ragnarmmo:zeny/silver_zeny" },
+    { "item": "ragnarmmo:zeny/silver_zeny" },
+    { "item": "ragnarmmo:zeny/silver_zeny" }
   ],
   "result": {
-    "item": "ragnarmmo:gold_zeny",
+    "item": "ragnarmmo:zeny/gold_zeny",
     "count": 1
   }
 }

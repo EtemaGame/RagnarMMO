@@ -19,5 +19,5 @@
         "grid_x": 0,
         "grid_y": 1
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.swordman.IncreaseHpRecoverySkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.swordman.IncreaseHpRecoverySkillEffect"
 }

@@ -1,0 +1,13 @@
+{
+    "category": "QUEST",
+    "name": "achievement.ragnarmmo.knight_class.name",
+    "description": "achievement.ragnarmmo.knight_class.desc",
+    "trigger_type": "pickup_item",
+    "trigger_id": "minecraft:iron_chestplate",
+    "required_amount": 1,
+    "points": 20,
+    "title": "title.ragnarmmo.the_defender",
+    "rewards": {
+        "minecraft:shield": 1
+    }
+}

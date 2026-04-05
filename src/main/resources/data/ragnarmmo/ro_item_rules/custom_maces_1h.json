@@ -1,0 +1,74 @@
+{
+  "ragnarmmo:maces_1h/ember_flail": {
+    "requiredBaseLevel": 8,
+    "allowedJobs": ["ACOLYTE", "MERCHANT"],
+    "cardSlots": 1,
+    "attributeBonuses": { "str": 1, "vit": 1 }
+  },
+  "ragnarmmo:maces_1h/catacomb_breaker": {
+    "requiredBaseLevel": 12,
+    "allowedJobs": ["ACOLYTE", "MERCHANT"],
+    "cardSlots": 1,
+    "attributeBonuses": { "vit": 2 }
+  },
+  "ragnarmmo:maces_1h/grave_blackjack": {
+    "requiredBaseLevel": 16,
+    "allowedJobs": ["ACOLYTE", "MERCHANT"],
+    "cardSlots": 1,
+    "attributeBonuses": { "str": 1, "dex": 1 }
+  },
+  "ragnarmmo:maces_1h/meteor_star": {
+    "requiredBaseLevel": 20,
+    "allowedJobs": ["ACOLYTE", "MERCHANT"],
+    "cardSlots": 1,
+    "attributeBonuses": { "str": 2 }
+  },
+  "ragnarmmo:maces_1h/hallowed_censer": {
+    "requiredBaseLevel": 22,
+    "allowedJobs": ["ACOLYTE", "MERCHANT"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 1, "vit": 1 }
+  },
+  "ragnarmmo:maces_1h/sunburst_pernach": {
+    "requiredBaseLevel": 26,
+    "allowedJobs": ["ACOLYTE", "MERCHANT"],
+    "cardSlots": 2,
+    "attributeBonuses": { "str": 1, "vit": 2 }
+  },
+  "ragnarmmo:maces_1h/storm_morningstar": {
+    "requiredBaseLevel": 30,
+    "allowedJobs": ["ACOLYTE", "MERCHANT"],
+    "cardSlots": 1,
+    "attributeBonuses": { "str": 2, "dex": 1 }
+  },
+  "ragnarmmo:maces_1h/pilgrim_maul": {
+    "requiredBaseLevel": 32,
+    "allowedJobs": ["ACOLYTE", "MERCHANT"],
+    "cardSlots": 2,
+    "attributeBonuses": { "vit": 2, "luk": 1 }
+  },
+  "ragnarmmo:maces_1h/frost_mallet": {
+    "requiredBaseLevel": 36,
+    "allowedJobs": ["ACOLYTE", "MERCHANT"],
+    "cardSlots": 2,
+    "attributeBonuses": { "vit": 1, "int": 1, "dex": 1 }
+  },
+  "ragnarmmo:maces_1h/obsidian_beater": {
+    "requiredBaseLevel": 38,
+    "allowedJobs": ["ACOLYTE", "MERCHANT"],
+    "cardSlots": 1,
+    "attributeBonuses": { "str": 2, "vit": 1 }
+  },
+  "ragnarmmo:maces_1h/oracle_ram": {
+    "requiredBaseLevel": 42,
+    "allowedJobs": ["ACOLYTE", "MERCHANT"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 2, "vit": 1 }
+  },
+  "ragnarmmo:maces_1h/gilded_comet": {
+    "requiredBaseLevel": 46,
+    "allowedJobs": ["ACOLYTE", "MERCHANT"],
+    "cardSlots": 3,
+    "attributeBonuses": { "str": 2, "vit": 2 }
+  }
+}

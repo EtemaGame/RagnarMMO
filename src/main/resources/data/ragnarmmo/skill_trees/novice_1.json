@@ -7,13 +7,18 @@
   },
   "skills": [
     {
-      "id": "ragnarmmo:first_aid",
+      "id": "ragnarmmo:basic_skill",
       "x": 0,
       "y": 0
     },
     {
-      "id": "ragnarmmo:survival_instinct",
-      "x": 3,
+      "id": "ragnarmmo:first_aid",
+      "x": 1,
+      "y": 0
+    },
+    {
+      "id": "ragnarmmo:play_dead",
+      "x": 2,
       "y": 0
     }
   ]

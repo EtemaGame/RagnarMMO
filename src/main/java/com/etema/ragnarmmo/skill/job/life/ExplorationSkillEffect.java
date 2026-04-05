@@ -8,6 +8,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.event.TickEvent;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -21,6 +22,11 @@ public class ExplorationSkillEffect implements ISkillEffect {
     @Override
     public ResourceLocation getSkillId() {
         return new ResourceLocation("ragnarmmo", "exploration");
+    }
+
+    @Override
+    public Set<TriggerType> getSupportedTriggers() {
+        return Set.of(TriggerType.PERIODIC_TICK);
     }
 
     /**

@@ -30,5 +30,6 @@
                "grid_x":  3,
                "grid_y":  1
            },
-    "effect_class":  "com.etema.ragnarmmo.system.skills.life.FishingSkillEffect"
+    "effect_class":  "com.etema.ragnarmmo.skill.job.life.FishingSkillEffect"
 }
+

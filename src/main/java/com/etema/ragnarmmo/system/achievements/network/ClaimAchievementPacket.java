@@ -55,7 +55,7 @@ public class ClaimAchievementPacket {
 
                             // Sync state
                             com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
-                                    new SyncAchievementsPacket((net.minecraft.nbt.CompoundTag) cap.serializeNBT()));
+                                    new SyncAchievementsPacket(player.getId(), (net.minecraft.nbt.CompoundTag) cap.serializeNBT()));
                         }
                     }
                 });

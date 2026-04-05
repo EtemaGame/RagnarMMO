@@ -1,8 +1,15 @@
 package com.etema.ragnarmmo.client;
 
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
+import com.etema.ragnarmmo.client.effects.EffectTriggerPhase;
+import com.etema.ragnarmmo.client.effects.EffectVec3;
+import com.etema.ragnarmmo.client.effects.runtime.EffectContext;
+import com.etema.ragnarmmo.client.effects.runtime.SkillEffectSpawner;
+import com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain;
+import net.minecraft.resources.ResourceLocation;
 import com.etema.ragnarmmo.common.api.lifeskills.LifeSkillType;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
+import com.etema.ragnarmmo.system.achievements.capability.PlayerAchievementsProvider;
 import com.etema.ragnarmmo.system.lifeskills.LifeSkillCapability;
 import com.etema.ragnarmmo.system.lifeskills.LifeSkillClientHandler;
 import com.etema.ragnarmmo.system.lifeskills.LifeSkillProgress;
@@ -17,6 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -39,6 +47,24 @@ public final class ClientPacketHandler {
     private ClientPacketHandler() {
     }
 
+    public static void openCardCompoundScreen(int slotIndex, net.minecraft.world.item.ItemStack stack) {
+        Minecraft.getInstance().setScreen(new com.etema.ragnarmmo.client.ui.CardCompoundScreen(slotIndex, stack));
+    }
+
+    public static void handleAchievementsSync(int entityId, CompoundTag tag) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) {
+            return;
+        }
+
+        Entity entity = mc.level.getEntity(entityId);
+        if (entity != null) {
+            entity.getCapability(PlayerAchievementsProvider.PLAYER_ACHIEVEMENTS).ifPresent(cap -> {
+                cap.deserializeNBT(tag);
+            });
+        }
+    }
+
     // ═══════════════════════════════════════════════
     // PlayerStatsSyncPacket
     // ═══════════════════════════════════════════════
@@ -49,25 +75,33 @@ public final class ClientPacketHandler {
             return;
 
         RagnarCoreAPI.get(p).ifPresent(s -> {
-            s.setMana(msg.mana);
-            s.setManaMaxClient(msg.manaMax);
-            if (s instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps) {
-                ps.setSP(msg.sp);
-                ps.setSPMaxClient(msg.spMax);
+            if (RoPlayerSyncDomain.includes(msg.syncMask, RoPlayerSyncDomain.RESOURCES)) {
+                s.setMana(msg.mana);
+                s.setManaMaxClient(msg.manaMax);
+                if (s instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps) {
+                    ps.setSP(msg.sp);
+                    ps.setSPMaxClient(msg.spMax);
+                }
             }
-            s.setLevel(msg.level);
-            s.setExp(msg.exp);
-            s.setStatPoints(msg.statPoints);
-            s.setJobLevel(msg.jobLevel);
-            s.setJobExp(msg.jobExp);
-            s.setSkillPoints(msg.skillPoints);
-            s.setJobId(msg.jobId);
-            s.setSTR(msg.str);
-            s.setAGI(msg.agi);
-            s.setVIT(msg.vit);
-            s.setINT(msg.intelligence);
-            s.setDEX(msg.dex);
-            s.setLUK(msg.luk);
+
+            if (RoPlayerSyncDomain.includes(msg.syncMask, RoPlayerSyncDomain.PROGRESSION)) {
+                s.setJobId(msg.jobId);
+                s.setLevel(msg.level);
+                s.setExp(msg.exp);
+                s.setStatPoints(msg.statPoints);
+                s.setJobLevel(msg.jobLevel);
+                s.setJobExp(msg.jobExp);
+                s.setSkillPoints(msg.skillPoints);
+            }
+
+            if (RoPlayerSyncDomain.includes(msg.syncMask, RoPlayerSyncDomain.STATS)) {
+                s.setSTR(msg.str);
+                s.setAGI(msg.agi);
+                s.setVIT(msg.vit);
+                s.setINT(msg.intelligence);
+                s.setDEX(msg.dex);
+                s.setLUK(msg.luk);
+            }
         });
     }
 
@@ -131,7 +165,7 @@ public final class ClientPacketHandler {
             if (skillId.contains(":")) {
                 id = net.minecraft.resources.ResourceLocation.tryParse(skillId);
             } else {
-                id = new net.minecraft.resources.ResourceLocation("ragnarmmo", skillId.toLowerCase());
+                id = ResourceLocation.fromNamespaceAndPath("ragnarmmo", skillId.toLowerCase());
             }
         }
         ClientCastManager.getInstance().updateCast(id, currentTicks, totalTicks);
@@ -159,6 +193,8 @@ public final class ClientPacketHandler {
             stats.setDefenseMultiplier(defMult);
             stats.setSpeedMultiplier(spdMult);
             stats.setInitialized(true);
+            
+            com.etema.ragnarmmo.system.mobstats.util.MobAttributeHelper.applyAttributes(living, stats);
         });
     }
 
@@ -264,7 +300,25 @@ public final class ClientPacketHandler {
     // ═══════════════════════════════════════════════
     public static void handleRoItemRulesSync(
             java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.roitems.data.RoItemRule> itemRules,
-            java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.roitems.data.RoItemRule> tagRules) {
-        com.etema.ragnarmmo.roitems.data.RoItemRuleLoader.applyClientSync(itemRules, tagRules);
+            java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.roitems.data.RoItemRule> tagRules,
+            java.util.Map<String, java.util.Map<com.etema.ragnarmmo.system.loot.cards.CardEquipType, com.etema.ragnarmmo.roitems.data.RoItemRule>> modTypeRules,
+            java.util.Map<com.etema.ragnarmmo.system.loot.cards.CardEquipType, com.etema.ragnarmmo.roitems.data.RoItemRule> fallbackRules) {
+        com.etema.ragnarmmo.roitems.data.RoItemRuleLoader.applyClientSync(itemRules, tagRules, modTypeRules, fallbackRules);
+    }
+
+    // ═══════════════════════════════════════════════
+    // SkillPhaseWorldEffectPacket
+    // ═══════════════════════════════════════════════
+    public static void handleSkillPhaseWorldEffect(ResourceLocation skillId, EffectTriggerPhase phase, Vec3 position,
+            Vec3 normal, float scaleMultiplier, int durationOverrideTicks) {
+        EffectContext.Builder context = EffectContext.builder()
+                .normal(new EffectVec3((float) normal.x, (float) normal.y, (float) normal.z))
+                .scaleMultiplier(scaleMultiplier);
+
+        if (durationOverrideTicks > 0) {
+            context.durationOverrideTicks(durationOverrideTicks);
+        }
+
+        SkillEffectSpawner.spawnWorldPhaseEffects(position, skillId, phase, context.build());
     }
 }

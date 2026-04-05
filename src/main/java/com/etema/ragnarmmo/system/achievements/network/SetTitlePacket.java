@@ -56,7 +56,7 @@ public class SetTitlePacket {
         // Broadcast the new title to all tracking entities to update their rendered
         // nameplate
         com.etema.ragnarmmo.common.net.Network.sendTrackingEntityAndSelf(player,
-                new SyncAchievementsPacket((net.minecraft.nbt.CompoundTag) cap.serializeNBT()));
+                new SyncAchievementsPacket(player.getId(), (net.minecraft.nbt.CompoundTag) cap.serializeNBT()));
         player.refreshDisplayName();
     }
 }

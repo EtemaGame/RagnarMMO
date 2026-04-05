@@ -1,0 +1,30 @@
+{
+  "id": "ragnarmmo:impact/cold_bolt_burst",
+  "type": "layered",
+  "duration_ticks": 7,
+  "loop": false,
+  "layers": [
+    {
+      "name": "frost_flash",
+      "blend_mode": "emissive",
+      "orientation": "billboard",
+      "z_order": 0,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.22, "scale_y": 0.22, "alpha": 0.95, "texture": "minecraft:textures/block/blue_ice.png" },
+        { "tick": 3, "scale_x": 0.62, "scale_y": 0.62, "alpha": 0.50, "texture": "minecraft:textures/block/blue_ice.png" },
+        { "tick": 7, "scale_x": 0.94, "scale_y": 0.94, "alpha": 0.0, "texture": "minecraft:textures/block/blue_ice.png" }
+      ]
+    },
+    {
+      "name": "ice_shard_cross",
+      "blend_mode": "emissive",
+      "orientation": "billboard",
+      "z_order": 1,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.12, "scale_y": 0.34, "alpha": 1.0, "rotation_deg": 45.0, "texture": "minecraft:textures/block/packed_ice.png" },
+        { "tick": 3, "scale_x": 0.22, "scale_y": 0.66, "alpha": 0.60, "rotation_deg": 95.0, "texture": "minecraft:textures/block/packed_ice.png" },
+        { "tick": 7, "scale_x": 0.32, "scale_y": 0.92, "alpha": 0.0, "rotation_deg": 145.0, "texture": "minecraft:textures/block/packed_ice.png" }
+      ]
+    }
+  ]
+}

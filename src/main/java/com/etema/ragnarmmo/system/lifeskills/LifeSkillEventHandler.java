@@ -76,14 +76,14 @@ public class LifeSkillEventHandler {
                         source.getThreshold(),
                         source.getPoints());
                 if (pointsAwarded > 0) {
-                    levelsGained = progress.addPoints(pointsAwarded);
+                    levelsGained = manager.addPoints(skill, pointsAwarded);
                 } else {
                     levelsGained = 0;
                 }
             } else {
                 // Direct points per block
                 pointsAwarded = source.getPoints();
-                levelsGained = progress.addPoints(pointsAwarded);
+                levelsGained = manager.addPoints(skill, pointsAwarded);
             }
 
             // Send updates to client

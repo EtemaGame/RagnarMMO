@@ -15,10 +15,14 @@ public final class CoreModule {
     public static void init(IEventBus modBus) {
         RagnarAttributes.register(modBus);
         com.etema.ragnarmmo.common.init.RagnarEntities.register(modBus);
+        com.etema.ragnarmmo.common.init.RagnarSounds.register(modBus);
+        com.etema.ragnarmmo.common.init.RagnarMobEffects.register(modBus);
+        com.etema.ragnarmmo.common.init.RagnarParticles.register(modBus);
 
         // Register RO item packets for rule syncing
         Network.registerRoItemPackets();
         Network.registerAchievementPackets();
+        Network.registerSkillEffectPackets();
 
         // Register unified configs (only 2 files)
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, RagnarConfigs.CLIENT_SPEC,

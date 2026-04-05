@@ -1,0 +1,44 @@
+{
+  "fallbacks": {
+    "weapon": {
+      "showTooltip": true
+    },
+    "armor": {
+      "showTooltip": true
+    },
+    "headgear": {
+      "showTooltip": true
+    },
+    "shoes": {
+      "showTooltip": true
+    },
+    "garment": {
+      "showTooltip": true
+    },
+    "accessory": {
+      "showTooltip": true
+    }
+  },
+  "modEquipmentTypes": {
+    "minecraft": {
+      "weapon": {
+        "showTooltip": true
+      },
+      "armor": {
+        "showTooltip": true
+      },
+      "headgear": {
+        "showTooltip": true
+      },
+      "shoes": {
+        "showTooltip": true
+      },
+      "garment": {
+        "showTooltip": true
+      },
+      "accessory": {
+        "showTooltip": true
+      }
+    }
+  }
+}

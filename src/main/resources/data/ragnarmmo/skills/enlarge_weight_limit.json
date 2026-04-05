@@ -19,5 +19,5 @@
         "grid_x": 0,
         "grid_y": 0
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.merchant.EnlargeWeightLimitSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.merchant.EnlargeWeightLimitSkillEffect"
 }

@@ -1,17 +1,19 @@
 package com.etema.ragnarmmo.skill.job.acolyte;
 
-import com.etema.ragnarmmo.common.api.stats.StatKeys;
+import com.etema.ragnarmmo.common.init.RagnarMobEffects;
+import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 
 public class IncreaseAgiSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "increase_agi");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "increase_agi");
 
     @Override
     public ResourceLocation getSkillId() {
@@ -23,14 +25,17 @@ public class IncreaseAgiSkillEffect implements ISkillEffect {
         if (level <= 0)
             return;
 
-        // Increase AGI: Temporarily increases AGI by (2 + level) and increases movement
-        // speed.
-        // Duration: 40 + 20 * level seconds.
-        // Applied to self for now.
-
-        int agiBonus = level; // RO: +1 per Skill Level.
-        int durationTicks = (40 + 20 * level) * 20; // RO: 40 + 20*level seconds.
-        int speedLevel = level >= 6 ? 1 : 0;
+        LivingEntity target = AcolyteTargetingHelper.resolveSupportTarget(player, 6.0);
+        var defOpt = SkillRegistry.get(ID);
+        int durationTicks = defOpt
+                .map(def -> def.getLevelInt("duration_ticks", level, (40 + 20 * level) * 20))
+                .orElse((40 + 20 * level) * 20);
+        int amplifier = defOpt
+                .map(def -> def.getLevelInt("effect_amplifier", level, level + 1))
+                .orElse(level + 1);
+        float hpCost = defOpt
+                .map(def -> (float) def.getLevelDouble("hp_cost", level, 15.0))
+                .orElse(15.0f);
 
         // Initial Casting Phase (Magic Circle)
         for (int t = 0; t < 10; t++) {
@@ -44,29 +49,31 @@ public class IncreaseAgiSkillEffect implements ISkillEffect {
                         double dz = Math.sin(angle) * radius_circle;
                         sl.sendParticles(ParticleTypes.END_ROD, player.getX() + dx, player.getY() + 0.1, player.getZ() + dz, 1, 0, 0, 0, 0);
                     }
+                    SkillVisualFx.spawnRotatingRing(sl, player.position(), 0.9, 0.8, ParticleTypes.CLOUD, 8, tick * 0.5);
                 }
             });
         }
 
         com.etema.ragnarmmo.skill.runtime.SkillSequencer.schedule(10, () -> {
-            com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(player).ifPresent(stats -> {
-                stats.addBonus(StatKeys.AGI, agiBonus);
-            });
-
-            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, durationTicks, speedLevel, false, false, true));
+            LivingEntity finalTarget = target.isAlive() ? target : player;
+            if (hpCost > 0.0f) {
+                player.setHealth(Math.max(1.0f, player.getHealth() - hpCost));
+            }
+            finalTarget.addEffect(new MobEffectInstance(RagnarMobEffects.INCREASE_AGI.get(), durationTicks, amplifier));
 
             // SFX
-            player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                    net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE, net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.5f);
+            player.level().playSound(null, finalTarget.getX(), finalTarget.getY(), finalTarget.getZ(),
+                    RagnarSounds.INCREASE_AGI.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.0f);
 
             // RO Style: High-speed agility aura (rising quickly)
             if (player.level() instanceof net.minecraft.server.level.ServerLevel sl) {
                 for (int i = 0; i < 20; i++) {
                     double ox = (player.getRandom().nextDouble() - 0.5) * 0.6;
                     double oz = (player.getRandom().nextDouble() - 0.5) * 0.6;
-                    sl.sendParticles(ParticleTypes.ENCHANTED_HIT, player.getX() + ox, player.getY(), player.getZ() + oz, 1, 0, 0.4, 0, 0.2);
-                    sl.sendParticles(ParticleTypes.CLOUD, player.getX() + ox, player.getY() + 0.5, player.getZ() + oz, 1, 0, 0.2, 0, 0.1);
+                    sl.sendParticles(ParticleTypes.ENCHANTED_HIT, finalTarget.getX() + ox, finalTarget.getY(), finalTarget.getZ() + oz, 1, 0, 0.4, 0, 0.2);
+                    sl.sendParticles(ParticleTypes.CLOUD, finalTarget.getX() + ox, finalTarget.getY() + 0.5, finalTarget.getZ() + oz, 1, 0, 0.2, 0, 0.1);
                 }
+                SkillVisualFx.spawnAuraColumn(sl, finalTarget, ParticleTypes.CLOUD, ParticleTypes.GLOW, 4, 0.8, 1.8);
             }
         });
     }

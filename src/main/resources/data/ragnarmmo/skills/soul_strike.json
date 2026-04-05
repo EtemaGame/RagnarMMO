@@ -26,5 +26,5 @@
         "grid_x": 0,
         "grid_y": 1
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.mage.SoulStrikeSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.mage.SoulStrikeSkillEffect"
 }

@@ -11,6 +11,8 @@ import net.minecraft.nbt.Tag;
 public final class RoItemNbtHelper {
 
     public static final String TAG_SLOTTED_CARDS = "RoSlottedCards";
+    public static final String TAG_REFINE_LEVEL = "RoRefineLevel";
+    public static final int MAX_REFINE_LEVEL = 10;
 
 
 
@@ -55,5 +57,35 @@ public final class RoItemNbtHelper {
         }
 
         cardList.add(StringTag.valueOf(cardId));
+    }
+
+    public static int getRefineLevel(ItemStack stack) {
+        if (!stack.hasTag() || !stack.getTag().contains(TAG_REFINE_LEVEL, Tag.TAG_INT)) {
+            return 0;
+        }
+        return clampRefine(stack.getTag().getInt(TAG_REFINE_LEVEL));
+    }
+
+    public static void setRefineLevel(ItemStack stack, int level) {
+        if (stack.isEmpty()) {
+            return;
+        }
+        int clamped = clampRefine(level);
+        CompoundTag tag = stack.getOrCreateTag();
+        if (clamped <= 0) {
+            tag.remove(TAG_REFINE_LEVEL);
+            return;
+        }
+        tag.putInt(TAG_REFINE_LEVEL, clamped);
+    }
+
+    public static int addRefineLevel(ItemStack stack, int delta) {
+        int next = getRefineLevel(stack) + delta;
+        setRefineLevel(stack, next);
+        return getRefineLevel(stack);
+    }
+
+    private static int clampRefine(int level) {
+        return Math.max(0, Math.min(MAX_REFINE_LEVEL, level));
     }
 }

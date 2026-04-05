@@ -47,5 +47,15 @@ public class EndureEvents {
         // Cancel this knockback event and decrement hit counter
         event.setCanceled(true);
         data.putInt(EndureSkillEffect.ENDURE_HITS_TAG, hitsLeft - 1);
+
+        // Feedback: Sound and particles
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                net.minecraft.sounds.SoundEvents.SHIELD_BLOCK, net.minecraft.sounds.SoundSource.PLAYERS, 0.5f, 1.5f);
+        
+        if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.POOF,
+                    player.getX(), player.getY() + 1.0, player.getZ(),
+                    5, 0.2, 0.2, 0.2, 0);
+        }
     }
 }

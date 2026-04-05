@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.entity.aoe;
 
+import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -55,7 +56,7 @@ public class NapalmBeatAoe extends AoeEntity {
     @Override
     public void applyEffect(LivingEntity target) {
         if (!level().isClientSide) {
-            target.hurt(this.damageSources().indirectMagic(this, getOwner()), damage);
+            SkillDamageHelper.dealSkillDamage(target, this.damageSources().indirectMagic(this, getOwner()), damage);
             if (level() instanceof ServerLevel sl) {
                 sl.sendParticles(ParticleTypes.SOUL, target.getX(), target.getY() + 1, target.getZ(), 5, 0.2, 0.2, 0.2, 0.02);
             }

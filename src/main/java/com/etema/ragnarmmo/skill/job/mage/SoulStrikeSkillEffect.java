@@ -21,6 +21,45 @@ public class SoulStrikeSkillEffect implements ISkillEffect {
     }
 
     @Override
+    public int getCastTime(int level) {
+        return switch (level) {
+            case 1 -> 24;
+            case 2 -> 28;
+            case 3 -> 32;
+            case 4 -> 36;
+            case 5 -> 40;
+            case 6 -> 44;
+            case 7 -> 48;
+            case 8 -> 52;
+            case 9 -> 56;
+            case 10 -> 54;
+            default -> 24;
+        };
+    }
+
+    @Override
+    public int getCastDelay(int level) {
+        return 10;
+    }
+
+    @Override
+    public int getResourceCost(int level, int defaultCost) {
+        return switch (level) {
+            case 1 -> 18;
+            case 2 -> 14;
+            case 3 -> 24;
+            case 4 -> 20;
+            case 5 -> 30;
+            case 6 -> 26;
+            case 7 -> 36;
+            case 8 -> 32;
+            case 9 -> 42;
+            case 10 -> 38;
+            default -> defaultCost;
+        };
+    }
+
+    @Override
     public void execute(ServerPlayer player, int level) {
         if (level <= 0)
             return;
@@ -61,8 +100,7 @@ public class SoulStrikeSkillEffect implements ISkillEffect {
         }
 
         for (int i = 0; i < hits; i++) {
-            // Projectiles start after 10 ticks, then 3 ticks apart
-            com.etema.ragnarmmo.skill.runtime.SkillSequencer.schedule(10 + i * 3, () -> {
+            com.etema.ragnarmmo.skill.runtime.SkillSequencer.schedule(i * 3, () -> {
                 Vec3 currentStart = player.getEyePosition().subtract(0, 0.2, 0);
                 Vec3 dir;
                 

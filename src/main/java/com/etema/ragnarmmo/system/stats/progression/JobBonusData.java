@@ -288,6 +288,12 @@ public class JobBonusData {
 
     public static Stats6 getBonus(JobType job, int level) {
         Stats6[] table = TABLES.get(job);
+        if (table == null && job != null) {
+            JobType firstClass = job.getFirstClassAncestor();
+            if (firstClass != null && firstClass != job) {
+                table = TABLES.get(firstClass);
+            }
+        }
         if (table == null)
             return Stats6.ZERO;
         int clamped = Math.max(0, Math.min(level, table.length - 1));

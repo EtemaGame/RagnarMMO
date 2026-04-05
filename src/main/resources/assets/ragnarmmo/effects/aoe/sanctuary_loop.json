@@ -1,0 +1,15 @@
+{
+  "id": "ragnarmmo:aoe/sanctuary_loop",
+  "type": "sprite_sheet",
+  "texture": "minecraft:textures/block/sea_lantern.png",
+  "columns": 1,
+  "rows": 1,
+  "frame_count": 1,
+  "fps": 6,
+  "duration_ticks": 20,
+  "loop": true,
+  "size": 4.0,
+  "orientation": "ground",
+  "offset": [0.0, 0.02, 0.0],
+  "render_type": "translucent_emissive"
+}

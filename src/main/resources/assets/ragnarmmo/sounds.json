@@ -1,0 +1,188 @@
+{
+  "skill.bash": {
+    "category": "player",
+    "sounds": [
+      "ragnarmmo:bash"
+    ]
+  },
+  "skill.magnum_break": {
+    "category": "player",
+    "sounds": [
+      "ragnarmmo:magnum_break"
+    ]
+  },
+  "skill.endure": {
+    "category": "player",
+    "sounds": [
+      "ragnarmmo:endure"
+    ]
+  },
+    "skill.provoke": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:provoke"
+      ]
+    },
+    "skill.blessing": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:blessing"
+      ]
+    },
+    "skill.increase_agi": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:increase_agility"
+      ]
+    },
+    "skill.inc_agi_dex": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:inc_agi_dex"
+      ]
+    },
+    "skill.angelus": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:angelus"
+      ]
+    },
+    "skill.magnificat": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:magnificat"
+      ]
+    },
+    "skill.gloria": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:gloria"
+      ]
+    },
+    "skill.kyrie_eleison": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:kyrie_eleison"
+      ]
+    },
+    "skill.impositio_manus": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:impositio_manus"
+      ]
+    },
+    "skill.suffragium": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:suffragium"
+      ]
+    },
+    "skill.aspersion": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:aspersion"
+      ]
+    },
+    "skill.concentration": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:concentration"
+      ]
+    },
+    "skill.hiding": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:hiding"
+      ]
+    },
+    "skill.cast": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:cast"
+      ]
+    },
+    "skill.warp_portal": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:warp"
+      ]
+    },
+    "skill.cure": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:cure"
+      ]
+    },
+    "skill.dilectio_heal": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:dilectio_heal"
+      ]
+    },
+    "skill.teleportation": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:teleportation"
+      ]
+    },
+    "skill.sight": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:ef_sight"
+      ]
+    },
+    "skill.fire_ball": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:ef_fireball"
+      ]
+    },
+    "skill.fire_wall": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:ef_firewall"
+      ]
+    },
+    "skill.light_bolt": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:ef_lightbolt1"
+      ]
+    },
+    "skill.thunder_storm": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:ef_thunderstorm"
+      ]
+    },
+    "skill.soul_strike": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:ef_soulstrike"
+      ]
+    },
+    "skill.napalm_beat": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:ef_napalmbeat"
+      ]
+    },
+    "skill.stone_curse": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:stonecurse"
+      ]
+    },
+    "skill.glass_wall": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:ef_glasswall"
+      ]
+    },
+    "skill.bolt_hit": {
+      "category": "player",
+      "sounds": [
+        "ragnarmmo:bolt_hit"
+      ]
+    }
+}

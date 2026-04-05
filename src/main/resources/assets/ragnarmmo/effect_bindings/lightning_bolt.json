@@ -1,0 +1,7 @@
+{
+  "skill_id": "ragnarmmo:lightning_bolt",
+  "bindings": [
+    { "phase": "projectile_tick", "effect": "ragnarmmo:projectiles/lightning_bolt_travel" },
+    { "phase": "impact", "effect": "ragnarmmo:impact/lightning_bolt_burst" }
+  ]
+}

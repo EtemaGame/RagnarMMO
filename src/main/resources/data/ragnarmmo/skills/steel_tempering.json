@@ -19,5 +19,5 @@
         "grid_x": 0,
         "grid_y": 3
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.SteelTemperingSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.blacksmith.SteelTemperingSkillEffect"
 }

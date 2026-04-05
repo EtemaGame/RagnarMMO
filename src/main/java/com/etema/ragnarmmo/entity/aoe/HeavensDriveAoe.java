@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.entity.aoe;
 
+import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +30,7 @@ public class HeavensDriveAoe extends AoeEntity {
 
     @Override
     public void applyEffect(LivingEntity target) {
-        target.hurt(this.damageSources().magic(), this.damage);
+        SkillDamageHelper.dealSkillDamage(target, this.damageSources().magic(), this.damage);
         target.push(0, 0.1, 0);
     }
 

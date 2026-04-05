@@ -1,13 +1,16 @@
 package com.etema.ragnarmmo.skill.job.acolyte;
 
+import com.etema.ragnarmmo.common.init.RagnarSounds;
+import com.etema.ragnarmmo.entity.effect.StatusOverlayEntity;
+import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
@@ -43,14 +46,18 @@ public class CureSkillEffect implements ISkillEffect {
         target.removeEffect(MobEffects.WITHER);
         target.removeEffect(MobEffects.LEVITATION);
         target.removeEffect(MobEffects.DIG_SLOWDOWN);
+        target.removeEffect(com.etema.ragnarmmo.common.init.RagnarMobEffects.FROZEN.get());
+        target.setTicksFrozen(0);
+        StatusOverlayEntity.clearForTarget(player.level(), target);
 
         // VFX
         if (player.level() instanceof ServerLevel sl) {
             sl.sendParticles(ParticleTypes.HAPPY_VILLAGER,
                     target.getX(), target.getY() + 1.0, target.getZ(),
                     15, 0.4, 0.5, 0.4, 0.1);
+            SkillVisualFx.spawnVerticalCross(sl, target.position(), 0.2, 1.3, 0.28, ParticleTypes.GLOW, ParticleTypes.END_ROD);
             sl.playSound(null, target.getX(), target.getY(), target.getZ(),
-                    SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0f, 1.5f);
+                    RagnarSounds.CURE.get(), SoundSource.PLAYERS, 1.0f, 1.5f);
         }
 
         String name = target == player ? "ti mismo" : target.getDisplayName().getString();

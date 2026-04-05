@@ -1,0 +1,74 @@
+{
+  "ragnarmmo:staves/sunpriest_staff": {
+    "requiredBaseLevel": 8,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 1,
+    "attributeBonuses": { "int": 1, "vit": 1 }
+  },
+  "ragnarmmo:staves/verdant_crook": {
+    "requiredBaseLevel": 12,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 1,
+    "attributeBonuses": { "int": 1, "dex": 1 }
+  },
+  "ragnarmmo:staves/tidebloom_staff": {
+    "requiredBaseLevel": 16,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 1,
+    "attributeBonuses": { "int": 2, "vit": 1 }
+  },
+  "ragnarmmo:staves/embervine_staff": {
+    "requiredBaseLevel": 20,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 1,
+    "attributeBonuses": { "int": 2, "dex": 1 }
+  },
+  "ragnarmmo:staves/thornhalo_staff": {
+    "requiredBaseLevel": 22,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 2, "vit": 1, "luk": 1 }
+  },
+  "ragnarmmo:staves/starseeker_staff": {
+    "requiredBaseLevel": 26,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 3 }
+  },
+  "ragnarmmo:staves/dreamwood_staff": {
+    "requiredBaseLevel": 30,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 2, "dex": 1, "vit": 1 }
+  },
+  "ragnarmmo:staves/magma_serpent_staff": {
+    "requiredBaseLevel": 34,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 1,
+    "attributeBonuses": { "int": 3, "dex": 1 }
+  },
+  "ragnarmmo:staves/duskpetal_staff": {
+    "requiredBaseLevel": 38,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 2, "luk": 2 }
+  },
+  "ragnarmmo:staves/dawnmantle_staff": {
+    "requiredBaseLevel": 42,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 2, "vit": 2 }
+  },
+  "ragnarmmo:staves/oracle_branch": {
+    "requiredBaseLevel": 46,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 2,
+    "attributeBonuses": { "int": 3, "luk": 1 }
+  },
+  "ragnarmmo:staves/moonlily_staff": {
+    "requiredBaseLevel": 50,
+    "allowedJobs": ["MAGE", "ACOLYTE"],
+    "cardSlots": 3,
+    "attributeBonuses": { "int": 3, "dex": 1, "vit": 1 }
+  }
+}

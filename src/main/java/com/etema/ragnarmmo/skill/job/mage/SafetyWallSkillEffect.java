@@ -38,6 +38,27 @@ public class SafetyWallSkillEffect implements ISkillEffect {
     public ResourceLocation getSkillId() { return ID; }
 
     @Override
+    public int getCastTime(int level) {
+        return switch (level) {
+            case 1 -> 80;
+            case 2 -> 70;
+            case 3 -> 60;
+            case 4 -> 50;
+            case 5 -> 40;
+            case 6 -> 30;
+            case 7, 8, 9, 10 -> 20;
+            default -> 80;
+        };
+    }
+
+    @Override
+    public int getResourceCost(int level, int defaultCost) {
+        if (level >= 7) return 40;
+        if (level >= 4) return 35;
+        return 30;
+    }
+
+    @Override
     public void execute(ServerPlayer player, int level) {
         if (level <= 0) return;
 

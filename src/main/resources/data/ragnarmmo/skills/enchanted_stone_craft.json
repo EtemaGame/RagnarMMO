@@ -19,5 +19,5 @@
         "grid_x": 1,
         "grid_y": 3
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.EnchantedStoneCraftSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.blacksmith.EnchantedStoneCraftSkillEffect"
 }

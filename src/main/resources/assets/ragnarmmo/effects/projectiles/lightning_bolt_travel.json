@@ -1,0 +1,30 @@
+{
+  "id": "ragnarmmo:projectiles/lightning_bolt_travel",
+  "type": "layered",
+  "duration_ticks": 4,
+  "loop": true,
+  "layers": [
+    {
+      "name": "lightning_spine",
+      "blend_mode": "emissive",
+      "orientation": "velocity",
+      "z_order": 0,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.08, "scale_y": 0.42, "alpha": 1.0, "texture": "minecraft:textures/block/yellow_stained_glass.png" },
+        { "tick": 2, "scale_x": 0.10, "scale_y": 0.54, "alpha": 1.0, "texture": "minecraft:textures/block/yellow_stained_glass.png" },
+        { "tick": 4, "scale_x": 0.08, "scale_y": 0.42, "alpha": 1.0, "texture": "minecraft:textures/block/yellow_stained_glass.png" }
+      ]
+    },
+    {
+      "name": "lightning_core",
+      "blend_mode": "emissive",
+      "orientation": "velocity",
+      "z_order": 1,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.04, "scale_y": 0.50, "alpha": 0.92, "rotation_deg": 45.0, "texture": "minecraft:textures/block/glowstone.png" },
+        { "tick": 2, "scale_x": 0.06, "scale_y": 0.64, "alpha": 1.0, "rotation_deg": 90.0, "texture": "minecraft:textures/block/glowstone.png" },
+        { "tick": 4, "scale_x": 0.04, "scale_y": 0.50, "alpha": 0.92, "rotation_deg": 135.0, "texture": "minecraft:textures/block/glowstone.png" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+    "skill_id": "ragnarmmo:cold_bolt",
+    "layers": [
+        { "block": "minecraft:blue_ice", "scale": [0.22, 0.22, 0.95] },
+        { "block": "minecraft:packed_ice", "scale": [0.12, 0.12, 1.08], "rotation_z": 45.0 }
+    ]
+}

@@ -21,9 +21,8 @@ import java.util.Optional;
 @Deprecated(forRemoval = true)
 public enum SkillType {
         // === Novice Skills ===
-        FIRST_AID, SURVIVAL_INSTINCT,
-        // === Swordman Skills ===
-        SWORD_MASTERY, TWO_HAND_MASTERY, BASH, PROVOKE, ONE_HAND_MASTERY, ENDURANCE,
+        FIRST_AID, BASIC_SKILL, PLAY_DEAD,
+        SWORDSMAN_SKILLS, SWORD_MASTERY, TWO_HAND_MASTERY, BASH, MAGNUM_BREAK, PROVOKE, ONE_HAND_MASTERY, ENDURANCE,
         // === Mage Skills ===
         STAFF_MASTERY, SPELL_KNOWLEDGE, MANA_CONTROL, MAGIC_AMPLIFICATION,
         ELEMENTAL_AFFINITY, MAGIC_GUARD, ARCANE_REGENERATION, OVERCAST,
@@ -46,7 +45,7 @@ public enum SkillType {
         }
 
         public ResourceLocation toResourceLocation() {
-                return new ResourceLocation("ragnarmmo", getId());
+                return ResourceLocation.fromNamespaceAndPath("ragnarmmo", getId());
         }
 
         public Optional<SkillDefinition> toDefinition() {

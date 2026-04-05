@@ -1,9 +1,9 @@
 package com.etema.ragnarmmo.skill.job.wizard;
 
+import com.etema.ragnarmmo.combat.element.CombatPropertyResolver;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import com.etema.ragnarmmo.skill.job.mage.MageTargetUtil;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -12,67 +12,77 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 
-/**
- * Monster Property — Active (Knowledge/Info skill)
- * RO: Allows the party to see the elemental property of a monster,
- *     useful for choosing the correct spells.
- *
- * Minecraft:
- *  - Extended Sense: shows MobType, armor value, and elemental weakness hint
- *    based on MobType and biome context.
- *  - Similar to Wizard's Sense skill, but includes a basic "weakness" analysis.
- */
 public class MonsterPropertySkillEffect implements ISkillEffect {
 
     private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "monster_property");
 
     @Override
-    public ResourceLocation getSkillId() { return ID; }
+    public ResourceLocation getSkillId() {
+        return ID;
+    }
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0) return;
-
-        LivingEntity target = MageTargetUtil.raycast(player, 15.0);
-        if (target == null) return;
-
-        // Build property info based on MobType (Java 17 compatible if/else)
-        MobType mt = target.getMobType();
-        String mobTypeStr;
-        if (mt == MobType.UNDEAD) {
-            mobTypeStr = "§5Undead §7(Weak to Holy/Fire)";
-        } else if (mt == MobType.ARTHROPOD) {
-            mobTypeStr = "§2Arthropod §7(Weak to Bane of Arthropods)";
-        } else if (mt == MobType.ILLAGER) {
-            mobTypeStr = "§fHuman §7(No elemental weakness)";
-        } else {
-            mobTypeStr = "§7Normal §7(Neutral properties)";
+        if (level <= 0) {
+            return;
         }
 
-        // Estimate armor as DEF
+        LivingEntity target = MageTargetUtil.raycast(player, 15.0);
+        if (target == null) {
+            return;
+        }
+
         double armor = target.getAttributeValue(Attributes.ARMOR);
-        boolean onFire = target.isOnFire();
-        boolean inWater = target.isInWater();
+        String race = describeRace(target);
+        String element = CombatPropertyResolver.getElementId(CombatPropertyResolver.getDefensiveElement(target)).toUpperCase();
+        String size = CombatPropertyResolver.getSizeId(target).toUpperCase();
+        String weakness = describeWeakness(target);
 
-        String waterStr = inWater ? " §b[WET]" : "";
-        String fireStr  = onFire  ? " §c[BURNING]" : "";
+        player.sendSystemMessage(Component.literal("== Monster Property =="));
+        player.sendSystemMessage(Component.literal("Name: " + target.getName().getString()));
+        player.sendSystemMessage(
+                Component.literal("HP: " + (int) target.getHealth() + "/" + (int) target.getMaxHealth()));
+        player.sendSystemMessage(Component.literal("DEF: " + (int) armor));
+        player.sendSystemMessage(Component.literal("Race: " + race));
+        player.sendSystemMessage(Component.literal("Element: " + element));
+        player.sendSystemMessage(Component.literal("Size: " + size));
+        player.sendSystemMessage(Component.literal("Hint: " + weakness));
+        player.sendSystemMessage(Component.literal("======================"));
 
-        player.sendSystemMessage(Component.literal("§e══ Monster Property ══"));
-        player.sendSystemMessage(Component.literal("§7Name: §f" + target.getName().getString()));
-        player.sendSystemMessage(Component.literal("§7HP: §a" + (int)target.getHealth() + "/" + (int)target.getMaxHealth()));
-        player.sendSystemMessage(Component.literal("§7DEF: §e" + (int)armor));
-        player.sendSystemMessage(Component.literal("§7Type: " + mobTypeStr + waterStr + fireStr));
-        player.sendSystemMessage(Component.literal("§e══════════════════"));
-
-        // Visual: info pulse
         player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                 SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 0.6f, 1.5f);
 
         if (player.level() instanceof ServerLevel sl) {
-            sl.sendParticles(ParticleTypes.ENCHANT,
-                    target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
-                    15, 0.3, 0.5, 0.3, 0.05);
+            sl.sendParticles(ParticleTypes.ENCHANT, target.getX(), target.getY() + target.getBbHeight() / 2,
+                    target.getZ(), 15, 0.3, 0.5, 0.3, 0.05);
         }
+    }
+
+    private String describeRace(LivingEntity target) {
+        String raceId = CombatPropertyResolver.getRaceId(target);
+        if (raceId.isBlank()) {
+            return "NORMAL";
+        }
+        if ("demihuman".equals(raceId)) {
+            return "DEMI-HUMAN";
+        }
+        return raceId.toUpperCase();
+    }
+
+    private String describeWeakness(LivingEntity target) {
+        return switch (CombatPropertyResolver.getDefensiveElement(target)) {
+            case WATER -> "Weak to WIND";
+            case EARTH -> "Weak to FIRE";
+            case FIRE -> "Weak to WATER";
+            case WIND -> "Weak to EARTH";
+            case POISON -> "Weak to FIRE or WIND";
+            case HOLY -> "Weak to DARK";
+            case DARK -> "Weak to HOLY";
+            case GHOST -> "Weak to GHOST";
+            case UNDEAD -> "Weak to HOLY and FIRE";
+            default -> "No major elemental weakness";
+        };
     }
 }

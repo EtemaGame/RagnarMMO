@@ -2,8 +2,10 @@
     "id": "blaze_card",
     "displayName": "Blaze Card",
     "mobId": "minecraft:blaze",
+    "equipType": "armor",
     "modifiers": {
-        "ragnarmmo:dex": 2.0
+        "ragnarmmo:dex": 2.0,
+        "ragnarmmo:resist_element_fire": 0.20
     },
     "dropRate": 0.005,
     "modelId": 4

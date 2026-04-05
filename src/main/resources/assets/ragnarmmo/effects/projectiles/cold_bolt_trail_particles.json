@@ -1,0 +1,14 @@
+{
+  "id": "ragnarmmo:projectiles/cold_bolt_trail_particles",
+  "type": "particle_emitter",
+  "particle": "minecraft:snowflake",
+  "shape": "point",
+  "duration_ticks": 20,
+  "loop": true,
+  "emit_interval_ticks": 1,
+  "count": 2,
+  "spread": [0.05, 0.05, 0.05],
+  "base_velocity": [0.0, -0.005, 0.0],
+  "random_velocity": [0.01, 0.01, 0.01],
+  "inherit_entity_velocity": 0.08
+}

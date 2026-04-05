@@ -28,5 +28,5 @@
         "grid_x": 2,
         "grid_y": 2
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.knight.BowlingBashSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.knight.BowlingBashSkillEffect"
 }

@@ -5,7 +5,9 @@ import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.roitems.data.RoItemRule;
+import com.etema.ragnarmmo.roitems.runtime.RoRefineMath;
 import com.etema.ragnarmmo.roitems.runtime.RoItemNbtHelper;
+import com.etema.ragnarmmo.roitems.runtime.WeaponStatHelper;
 import com.google.common.collect.Multimap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -46,26 +48,41 @@ public final class RoTooltipFormatter {
      */
     public static void addTooltipLines(List<Component> tooltip, ItemStack stack, RoItemRule rule,
             Player player) {
-        if (rule == null || rule.isEmpty())
+        int refineLevel = RoItemNbtHelper.getRefineLevel(stack);
+        if ((rule == null || rule.isEmpty()) && refineLevel <= 0)
             return;
+
+        // Combat stats (ATK, ASPD, DEF) calculated from item attribute modifiers
+        List<Component> combatLines = buildCombatLines(stack, refineLevel);
+        boolean hasRuleBonuses = rule != null && rule.hasAttributeBonuses();
+        boolean hasRequirements = rule != null && rule.hasRequirements();
+        boolean hasSlots = rule != null && rule.cardSlots() > 0;
+        boolean hasRefine = refineLevel > 0;
+
+        if (combatLines.isEmpty() && !hasRuleBonuses && !hasRequirements && !hasSlots && !hasRefine) {
+            return;
+        }
 
         tooltip.add(Component.literal(SEPARATOR).withStyle(ChatFormatting.DARK_GRAY));
 
-        // Combat stats (ATK, ASPD, DEF) calculated from item attribute modifiers
-        List<Component> combatLines = buildCombatLines(stack);
         if (!combatLines.isEmpty()) {
             tooltip.add(sectionTitle("Combat Stats"));
             tooltip.addAll(combatLines);
         }
 
-        if (rule.hasAttributeBonuses()) {
+        if (hasRuleBonuses) {
             tooltip.add(sectionTitle("Bonus Stats"));
             rule.attributeBonuses().entrySet().stream()
                     .sorted(Map.Entry.comparingByKey())
                     .forEach(entry -> tooltip.add(formatStatBonus(entry.getKey(), entry.getValue())));
         }
 
-        if (rule.hasRequirements()) {
+        if (hasRefine) {
+            tooltip.add(sectionTitle("Refine"));
+            tooltip.add(Component.literal("  +" + refineLevel).withStyle(ChatFormatting.AQUA));
+        }
+
+        if (hasRequirements) {
             tooltip.add(Component.literal(""));
             tooltip.add(sectionTitle("Requirements"));
             RequirementState requirementState = RequirementState.from(player, rule);
@@ -86,7 +103,7 @@ public final class RoTooltipFormatter {
             }
         }
 
-        if (rule.cardSlots() > 0) {
+        if (hasSlots) {
             tooltip.add(Component.literal(""));
             java.util.List<String> slottedCards = RoItemNbtHelper.getSlottedCards(stack);
             tooltip.add(formatCardSlots(rule.cardSlots(), slottedCards.size()));
@@ -166,16 +183,23 @@ public final class RoTooltipFormatter {
 
 
 
-    private static List<Component> buildCombatLines(ItemStack stack) {
+    private static List<Component> buildCombatLines(ItemStack stack, int refineLevel) {
         List<Component> lines = new ArrayList<>();
         Multimap<Attribute, AttributeModifier> mainhandModifiers = stack.getAttributeModifiers(EquipmentSlot.MAINHAND);
+        double refineAtk = refineLevel > 0 ? RoRefineMath.getAttackBonus(stack) : 0.0D;
+        double refineDef = refineLevel > 0 ? RoRefineMath.getDefenseBonus(stack) : 0.0D;
+        double magicAttack = WeaponStatHelper.getDisplayedMagicAttack(stack);
 
         if (mainhandModifiers.containsKey(Attributes.ATTACK_DAMAGE)) {
             // Vanilla base is 1.0, attributes are modifiers
-            double damage = 1.0D + sumAttribute(mainhandModifiers, Attributes.ATTACK_DAMAGE);
+            double damage = 1.0D + sumAttribute(mainhandModifiers, Attributes.ATTACK_DAMAGE) + refineAtk;
             if (damage > 0) {
                 lines.add(formatCombatLine("ATK", String.valueOf(Math.round(damage))));
             }
+        }
+
+        if (magicAttack > 0) {
+            lines.add(0, formatCombatLine("MATK", String.valueOf(Math.round(magicAttack))));
         }
 
         if (mainhandModifiers.containsKey(Attributes.ATTACK_SPEED)) {
@@ -196,8 +220,9 @@ public final class RoTooltipFormatter {
                     .getAttributeModifiers(armor.getEquipmentSlot());
             if (armorModifiers.containsKey(Attributes.ARMOR)) {
                 double defense = sumAttribute(armorModifiers, Attributes.ARMOR);
-                if (defense > 0) {
-                    int displayDef = (int) Math.round(defense * 5);
+                double displayDefense = defense * 5.0D + refineDef;
+                if (displayDefense > 0) {
+                    int displayDef = (int) Math.round(displayDefense);
                     lines.add(formatCombatLine("DEF", "+" + displayDef));
                 }
             }
@@ -241,7 +266,8 @@ public final class RoTooltipFormatter {
             Boolean classOk = null;
             if (!rule.allowedJobs().isEmpty()) {
                 JobType playerJob = JobType.fromId(stats.getJobId());
-                classOk = rule.allowedJobs().contains(playerJob);
+                classOk = rule.allowedJobs().stream()
+                        .anyMatch(playerJob::matchesExactOrAncestor);
             }
 
             return new RequirementState(levelOk, classOk);

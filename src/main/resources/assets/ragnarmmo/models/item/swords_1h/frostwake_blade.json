@@ -1,0 +1,6 @@
+{
+  "parent": "ragnarmmo:item/swords_1h/base_sword_1h",
+  "textures": {
+    "layer0": "ragnarmmo:item/weapons/swords_1h/frostwake_blade"
+  }
+}

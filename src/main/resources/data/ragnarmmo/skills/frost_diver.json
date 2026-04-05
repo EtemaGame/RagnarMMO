@@ -11,10 +11,11 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 25,
-        "cost_per_level": 1
+        "base_cost": 26,
+        "cost_per_level": -1
     },
     "cooldown_ticks": 30,
+    "cast_time_ticks": 0,
     "jobs": [
         "MAGE"
     ],
@@ -26,5 +27,5 @@
         "grid_x": 1,
         "grid_y": 1
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.mage.FrostDiverSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.mage.FrostDiverSkillEffect"
 }

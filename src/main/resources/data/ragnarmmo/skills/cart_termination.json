@@ -25,5 +25,5 @@
         "grid_x": 2,
         "grid_y": 5
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.blacksmith.CartTerminationSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.blacksmith.CartTerminationSkillEffect"
 }

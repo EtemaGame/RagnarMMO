@@ -1,5 +1,7 @@
 package com.etema.ragnarmmo.client.render.skill;
 
+import com.etema.ragnarmmo.client.effects.EffectTriggerPhase;
+import com.etema.ragnarmmo.client.effects.render.SkillEntityEffectBridge;
 import com.etema.ragnarmmo.entity.projectile.SoulStrikeProjectile;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -15,7 +17,7 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 public class SoulStrikeRenderer extends EntityRenderer<SoulStrikeProjectile> {
-    private static final ResourceLocation TEXTURE = new ResourceLocation("ragnarmmo", "textures/entity/magic/soul_strike_1.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("minecraft", "textures/block/soul_sand.png");
 
     public SoulStrikeRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -23,6 +25,12 @@ public class SoulStrikeRenderer extends EntityRenderer<SoulStrikeProjectile> {
 
     @Override
     public void render(SoulStrikeProjectile entity, float yaw, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int light) {
+        if (SkillEntityEffectBridge.render(entity, ResourceLocation.fromNamespaceAndPath("ragnarmmo", "soul_strike"),
+                EffectTriggerPhase.PROJECTILE_TICK, poseStack, bufferSource, light, partialTicks)) {
+            super.render(entity, yaw, partialTicks, poseStack, bufferSource, light);
+            return;
+        }
+
         poseStack.pushPose();
         
         float lerpYaw = Mth.lerp(partialTicks, entity.yRotO, entity.getYRot());

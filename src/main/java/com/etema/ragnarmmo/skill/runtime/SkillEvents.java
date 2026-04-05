@@ -161,7 +161,16 @@ public class SkillEvents {
                 .orElse(false);
     }
 
-    private static final net.minecraft.tags.TagKey<Item> DAGGER_TAG = net.minecraft.tags.ItemTags.create(new net.minecraft.resources.ResourceLocation(RagnarMMO.MODID, "daggers"));
+    private static final net.minecraft.tags.TagKey<Item> DAGGER_TAG = net.minecraft.tags.ItemTags
+            .create(new net.minecraft.resources.ResourceLocation(RagnarMMO.MODID, "daggers"));
+    private static final net.minecraft.tags.TagKey<Item> MACE_TAG = net.minecraft.tags.ItemTags
+            .create(new net.minecraft.resources.ResourceLocation(RagnarMMO.MODID, "maces"));
+    private static final net.minecraft.tags.TagKey<Item> STAFF_TAG = net.minecraft.tags.ItemTags
+            .create(new net.minecraft.resources.ResourceLocation(RagnarMMO.MODID, "staves"));
+    private static final net.minecraft.tags.TagKey<Item> WAND_TAG = net.minecraft.tags.ItemTags
+            .create(new net.minecraft.resources.ResourceLocation(RagnarMMO.MODID, "wands"));
+    private static final net.minecraft.tags.TagKey<Item> TWO_HANDED_TAG = net.minecraft.tags.ItemTags
+            .create(new net.minecraft.resources.ResourceLocation(RagnarMMO.MODID, "two_handed"));
 
     private static java.util.List<net.minecraft.resources.ResourceLocation> getApplicableSkills(Player player) {
         ItemStack held = player.getMainHandItem();
@@ -172,16 +181,25 @@ public class SkillEvents {
         list.add(WEAPON_TRAINER);
 
         boolean isDagger = held.is(DAGGER_TAG);
+        boolean isMace = held.is(MACE_TAG);
+        boolean isStaff = held.is(STAFF_TAG);
+        boolean isWand = held.is(WAND_TAG);
+        boolean isTwoHanded = held.is(TWO_HANDED_TAG);
 
         // Swordman
         if (item instanceof SwordItem && !isDagger) {
             list.add(SWORD_MASTERY);
-            list.add(ONE_HAND_MASTERY); // Assuming 1H for now?
-            list.add(TWO_HAND_MASTERY); // Logic for 2H vs 1H needed but sticking to legacy behavior
+            if (isTwoHanded) {
+                list.add(TWO_HAND_MASTERY);
+            } else {
+                list.add(ONE_HAND_MASTERY);
+            }
             list.add(BASH);
         }
         if (item instanceof AxeItem) {
-            list.add(ONE_HAND_MASTERY);
+            if (!isTwoHanded) {
+                list.add(ONE_HAND_MASTERY);
+            }
         }
 
         // Thief
@@ -197,17 +215,14 @@ public class SkillEvents {
         }
 
         // Acolyte
-        if (item instanceof ShovelItem || item.toString().toLowerCase().contains("mace")) {
+        if (isMace || item instanceof ShovelItem || item.toString().toLowerCase().contains("mace")) {
             list.add(MACE_MASTERY);
         }
 
         // Mage
-        // STAFF_MASTERY -> true in legacy. Adding it always?
-        // Or maybe check for stick/staff items?
-        // Legacy: case STAFF_MASTERY -> true;
-        // This means Mage gains staff mastery XP for ANY kill?
-        // Let's add it.
-        list.add(STAFF_MASTERY);
+        if (isStaff || isWand) {
+            list.add(STAFF_MASTERY);
+        }
 
         // Knight
         if (item instanceof net.minecraft.world.item.TridentItem) {

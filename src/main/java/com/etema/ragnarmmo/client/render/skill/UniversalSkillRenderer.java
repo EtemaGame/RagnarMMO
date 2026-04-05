@@ -1,5 +1,7 @@
 package com.etema.ragnarmmo.client.render.skill;
 
+import com.etema.ragnarmmo.client.effects.EffectTriggerPhase;
+import com.etema.ragnarmmo.client.effects.render.SkillEntityEffectBridge;
 import com.etema.ragnarmmo.entity.IVisualSkillEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -22,15 +24,23 @@ public class UniversalSkillRenderer<T extends Entity> extends EntityRenderer<T> 
     @Override
     public void render(T entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
         if (entity instanceof IVisualSkillEntity visualEntity) {
+            if (SkillEntityEffectBridge.render(entity, visualEntity.getSkillId(), EffectTriggerPhase.AOE_LOOP, poseStack,
+                    bufferSource, packedLight, partialTicks)) {
+                super.render(entity, entityYaw, partialTicks, poseStack, bufferSource, packedLight);
+                return;
+            }
             SkillVisualsRegistry.get(visualEntity.getSkillId()).ifPresent(visuals -> {
             poseStack.pushPose();
             
-            // Basic centering
-            poseStack.translate(0, 0.5, 0);
-
+            // Basic centering - higher for billboard, lower for floor effects
             if (visuals.billboard()) {
+                poseStack.translate(0, 0.5, 0);
                 poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
                 poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
+            } else {
+                // Horizontal sprite for "floor" effects like Warp Portal
+                poseStack.translate(0, 0.02, 0);
+                poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
             }
 
             poseStack.scale(visuals.size(), visuals.size(), visuals.size());

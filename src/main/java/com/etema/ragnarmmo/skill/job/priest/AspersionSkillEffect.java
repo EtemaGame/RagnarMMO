@@ -1,22 +1,25 @@
 package com.etema.ragnarmmo.skill.job.priest;
 
+import java.util.List;
+
+import com.etema.ragnarmmo.combat.element.CombatPropertyResolver;
+import com.etema.ragnarmmo.combat.element.ElementType;
+import com.etema.ragnarmmo.common.init.RagnarMobEffects;
+import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 
-import java.util.List;
-
 public class AspersionSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:aspersion");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "aspersion");
 
     @Override
     public ResourceLocation getSkillId() {
@@ -25,19 +28,26 @@ public class AspersionSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        // Aspersion: Endows weapon with Holy property.
-        // For Minecraft, we'll apply Strength and fire particles (simulating holy).
+        if (level <= 0) {
+            return;
+        }
+
         LivingEntity target = getClosestTarget(player, 5.0);
-        if (target == null)
+        if (target == null) {
             target = player;
+        }
 
         if (player.level() instanceof ServerLevel serverLevel) {
+            int durationTicks = 600 + (level * 200);
+            long untilTick = player.level().getGameTime() + durationTicks;
+
             serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT, target.getX(), target.getY() + 1.0, target.getZ(),
                     40, 0.5, 0.5, 0.5, 0.1);
-            serverLevel.playSound(null, target.blockPosition(), SoundEvents.BREWING_STAND_BREW, SoundSource.PLAYERS,
+            serverLevel.playSound(null, target.blockPosition(), RagnarSounds.ASPERSION.get(), SoundSource.PLAYERS,
                     1.0f, 1.0f);
 
-            target.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 600 + (level * 200), 1));
+            target.addEffect(new MobEffectInstance(RagnarMobEffects.ASPERSION.get(), durationTicks, level - 1));
+            CombatPropertyResolver.applyTemporaryWeaponElement(target, ElementType.HOLY, untilTick);
         }
     }
 
@@ -45,8 +55,9 @@ public class AspersionSkillEffect implements ISkillEffect {
         AABB box = player.getBoundingBox().inflate(range);
         List<LivingEntity> targets = player.level().getEntitiesOfClass(LivingEntity.class, box,
                 e -> e != player && e.isAlive());
-        if (targets.isEmpty())
+        if (targets.isEmpty()) {
             return null;
+        }
         return targets.get(0);
     }
 }

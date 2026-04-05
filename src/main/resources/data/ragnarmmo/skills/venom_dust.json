@@ -22,5 +22,5 @@
         "grid_x": 3,
         "grid_y": 2
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.assassin.VenomDustSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.assassin.VenomDustSkillEffect"
 }

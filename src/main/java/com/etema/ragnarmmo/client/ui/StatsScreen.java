@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.client.ui;
 
 import com.etema.ragnarmmo.common.WeightConstants;
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
+import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
@@ -13,6 +14,7 @@ import com.etema.ragnarmmo.system.stats.net.AllocateStatPacket;
 import com.etema.ragnarmmo.system.stats.net.DeallocateStatPacket;
 import com.etema.ragnarmmo.system.stats.net.PacketResetCharacter;
 import com.etema.ragnarmmo.system.stats.progression.ExpTable;
+import com.etema.ragnarmmo.system.stats.progression.JobBonusService;
 import com.etema.ragnarmmo.roitems.runtime.RoAttributeApplier;
 import com.etema.ragnarmmo.system.stats.progression.StatCost;
 import com.google.common.collect.Multimap;
@@ -27,6 +29,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -37,6 +40,7 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import com.etema.ragnarmmo.skill.api.SkillType;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
+import com.etema.ragnarmmo.common.api.attributes.RagnarAttributes;
 
 import java.util.EnumMap;
 import java.util.Locale;
@@ -254,13 +258,33 @@ public class StatsScreen extends Screen {
                                         g.drawString(mc.font, String.valueOf(value), leftX + 75, statsY, 0xFFFFFFFF,
                                                         true);
 
-                                        // RO EQUIPMENT BONUS
-                                        int bonus = RoAttributeApplier.getTotalBonus(player, key);
-                                        if (bonus != 0) {
+                                        // Break down total stats into class/job, equipment, and temporary
+                                        // buffs so the player can see where power is coming from.
+                                        int equipBonus = RoAttributeApplier.getTotalBonus(player, key);
+                                        var attrInstance = player.getAttribute(getForgeAttribute(key));
+                                        int totalValue = attrInstance != null ? (int) Math.round(attrInstance.getValue()) : value;
+                                        int jobBonus = getJobBonusValue(attrInstance, key);
+                                        int trackedBuffBonus = stats.getBonus(key);
+                                        int otherBonus = totalValue - value - jobBonus - equipBonus - trackedBuffBonus;
+                                        int buffValue = trackedBuffBonus + otherBonus;
+                                        int totalBonus = totalValue - value;
+
+                                        if (totalBonus != 0) {
                                                 int bonusX = leftX + 92; // Bonus column
-                                                int bonusColor = bonus > 0 ? 0xFF00FF00 : 0xFFFF0000;
-                                                String bonusText = (bonus > 0 ? "+" : "") + bonus;
+                                                int bonusColor = totalBonus > 0 ? 0xFF00FF00 : 0xFFFF0000;
+                                                String bonusText = (totalBonus > 0 ? "+" : "") + totalBonus;
                                                 g.drawString(mc.font, bonusText, bonusX, statsY, bonusColor, true);
+
+                                                Rect rBonusHover = new Rect(leftX, statsY - 2, 120, 12);
+                                                if (rBonusHover.contains(mx, my)) {
+                                                        this.deferredTooltip = java.util.List.of(
+                                                            formatStatBreakdown("screen.ragnarmmo.stats.total", totalValue, ChatFormatting.GOLD),
+                                                            formatStatBreakdown("screen.ragnarmmo.stats.base", value, ChatFormatting.WHITE),
+                                                            formatStatBreakdown("screen.ragnarmmo.stats.job_bonus", jobBonus, ChatFormatting.LIGHT_PURPLE),
+                                                            formatStatBreakdown("screen.ragnarmmo.stats.equip_bonus", equipBonus, ChatFormatting.GREEN),
+                                                            formatStatBreakdown("screen.ragnarmmo.stats.buff_bonus", buffValue, ChatFormatting.AQUA)
+                                                        );
+                                                }
                                         }
 
                                         g.pose().pushPose();
@@ -323,11 +347,12 @@ public class StatsScreen extends Screen {
                                 // 9 HP
                                 // 10 SP
                                 // 11 FLEE
-                                // 12 Weight (header)
-                                // 13 CUR
-                                // 14 HIGH
-                                // 15 MAX
-                                final int LINES = 16;
+                                // 12 Perfect Dodge
+                                // 13 Weight (header)
+                                // 14 CUR
+                                // 15 HIGH
+                                // 16 MAX
+                                final int LINES = 17;
 
                                 Integer yStr = statRowY.get(StatKeys.STR);
                                 Integer yLuk = statRowY.get(StatKeys.LUK);
@@ -342,7 +367,7 @@ public class StatsScreen extends Screen {
                                         final float GAP_NORMAL = 1.0f; // normal gaps
                                         // ---------------------------------
 
-                                        // 11 intervals between 12 lines
+                                        // 16 intervals between 17 lines
                                         float[] w = new float[LINES - 1];
                                         for (int j = 0; j < w.length; j++)
                                                 w[j] = GAP_NORMAL;
@@ -354,8 +379,8 @@ public class StatsScreen extends Screen {
                                         w[0] = GAP_AFTER_HEADER;
                                         w[5] = GAP_BETWEEN_SECTIONS;
                                         w[6] = GAP_AFTER_HEADER;
-                                        w[11] = GAP_BETWEEN_SECTIONS; // FLEE -> Weight
-                                        w[12] = GAP_AFTER_HEADER; // Weight -> CUR
+                                        w[12] = GAP_BETWEEN_SECTIONS; // Perfect Dodge -> Weight
+                                        w[13] = GAP_AFTER_HEADER; // Weight -> CUR
 
                                         float totalW = 0.0f;
                                         for (float v : w)
@@ -393,7 +418,7 @@ public class StatsScreen extends Screen {
                                                         String.format(Locale.ROOT, "%.1f%%", d.criticalChance * 100),
                                                         0xFFFFFFFF);
                                         renderDerivedStat(g, 0, yLine[5], "ASPD",
-                                                        String.format(Locale.ROOT, "%.2f", d.attackSpeed), 0xFFFFFFFF);
+                                                        String.format(Locale.ROOT, "%.0f", d.attackSpeed), 0xFFFFFFFF);
 
                                         g.drawString(mc.font,
                                                         Component.translatable(
@@ -413,6 +438,9 @@ public class StatsScreen extends Screen {
                                                         String.format(Locale.ROOT, "%.0f", trueSP), 0xFF5555FF);
                                         renderDerivedStat(g, 0, yLine[11], "FLEE",
                                                         String.format(Locale.ROOT, "%.0f", d.flee), 0xFFFFFFFF);
+                                        renderDerivedStat(g, 0, yLine[12], "P.DODGE",
+                                                        String.format(Locale.ROOT, "%.1f%%", d.perfectDodge * 100),
+                                                        0xFFFFFFFF);
 
                                         // ===== Weight (Encumbrance) =====
                                         int cartLevel = uiGetCartLevel(player);
@@ -430,12 +458,12 @@ public class StatsScreen extends Screen {
                                                 wColor = 0xFFFF5555; // max (near immobile)
 
                                         g.drawString(mc.font, Component.translatable("tooltip.ragnarmmo.weight.label"),
-                                                        0, yLine[12], 0xFFAAAAAA, true);
-                                        renderDerivedStat(g, 0, yLine[13], "CUR",
+                                                        0, yLine[13], 0xFFAAAAAA, true);
+                                        renderDerivedStat(g, 0, yLine[14], "CUR",
                                                         String.format(Locale.ROOT, "%.1f", currentW), wColor);
-                                        renderDerivedStat(g, 0, yLine[14], "HIGH",
+                                        renderDerivedStat(g, 0, yLine[15], "HIGH",
                                                         String.format(Locale.ROOT, "%.1f", highW), 0xFFFFFFFF);
-                                        renderDerivedStat(g, 0, yLine[15], "MAX",
+                                        renderDerivedStat(g, 0, yLine[16], "MAX",
                                                         String.format(Locale.ROOT, "%.1f", maxW), 0xFFFFFFFF);
 
                                         g.pose().popPose();
@@ -484,10 +512,9 @@ public class StatsScreen extends Screen {
                 drawButton(g, BTN_SKILLS, Component.translatable("screen.ragnarmmo.button.skills").getString(),
                                 hoverSkills, true);
 
-                // Derived from footer logic: show only if novice >= 10
+                // Show when the current job still has a valid promotion path.
                 RagnarCoreAPI.get(player).ifPresent(stats -> {
-                        boolean showChangeClass = "ragnarmmo:novice".equals(stats.getJobId())
-                                        && stats.getJobLevel() >= 10;
+                        boolean showChangeClass = JobType.fromId(stats.getJobId()).hasPromotions();
                         if (showChangeClass) {
                                 boolean hoverChange = BTN_CHANGE_CLASS.contains(mx, my);
                                 drawButton(g, BTN_CHANGE_CLASS,
@@ -612,8 +639,7 @@ public class StatsScreen extends Screen {
                                         return true;
                                 }
 
-                                boolean showChangeClass = "ragnarmmo:novice".equals(stats.getJobId())
-                                                && stats.getJobLevel() >= 10;
+                                boolean showChangeClass = JobType.fromId(stats.getJobId()).hasPromotions();
                                 if (showChangeClass && BTN_CHANGE_CLASS.contains(mx, my)) {
                                         mc.setScreen(new JobSelectionScreen(this));
                                         playClickSound(1.0f);
@@ -710,6 +736,42 @@ public class StatsScreen extends Screen {
                         case DEX -> stats.getDEX();
                         case LUK -> stats.getLUK();
                 };
+        }
+
+        private static Attribute getForgeAttribute(StatKeys key) {
+                return switch (key) {
+                        case STR -> RagnarAttributes.STR.get();
+                        case AGI -> RagnarAttributes.AGI.get();
+                        case VIT -> RagnarAttributes.VIT.get();
+                        case INT -> RagnarAttributes.INT.get();
+                        case DEX -> RagnarAttributes.DEX.get();
+                        case LUK -> RagnarAttributes.LUK.get();
+                };
+        }
+
+        private static int getJobBonusValue(AttributeInstance attrInstance, StatKeys key) {
+                if (attrInstance == null) {
+                        return 0;
+                }
+
+                AttributeModifier modifier = attrInstance.getModifier(getJobBonusUuid(key));
+                return modifier == null ? 0 : (int) Math.round(modifier.getAmount());
+        }
+
+        private static java.util.UUID getJobBonusUuid(StatKeys key) {
+                return switch (key) {
+                        case STR -> JobBonusService.JOB_BONUS_STR;
+                        case AGI -> JobBonusService.JOB_BONUS_AGI;
+                        case VIT -> JobBonusService.JOB_BONUS_VIT;
+                        case INT -> JobBonusService.JOB_BONUS_INT;
+                        case DEX -> JobBonusService.JOB_BONUS_DEX;
+                        case LUK -> JobBonusService.JOB_BONUS_LUK;
+                };
+        }
+
+        private static Component formatStatBreakdown(String key, int value, ChatFormatting color) {
+                String text = value > 0 ? "+" + value : String.valueOf(value);
+                return Component.translatable(key, text).withStyle(color);
         }
 
         private static Component getStatName(StatKeys key) {

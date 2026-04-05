@@ -1,6 +1,17 @@
 {
-    "replace": false,
-    "values": [
-        "minecraft:wooden_sword"
-    ]
+  "replace": false,
+  "values": [
+    "ragnarmmo:maces_1h/ember_flail",
+    "ragnarmmo:maces_1h/catacomb_breaker",
+    "ragnarmmo:maces_1h/grave_blackjack",
+    "ragnarmmo:maces_1h/meteor_star",
+    "ragnarmmo:maces_1h/hallowed_censer",
+    "ragnarmmo:maces_1h/sunburst_pernach",
+    "ragnarmmo:maces_1h/storm_morningstar",
+    "ragnarmmo:maces_1h/pilgrim_maul",
+    "ragnarmmo:maces_1h/frost_mallet",
+    "ragnarmmo:maces_1h/obsidian_beater",
+    "ragnarmmo:maces_1h/oracle_ram",
+    "ragnarmmo:maces_1h/gilded_comet"
+  ]
 }

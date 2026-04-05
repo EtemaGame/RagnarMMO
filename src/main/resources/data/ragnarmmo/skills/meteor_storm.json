@@ -25,5 +25,5 @@
         "grid_x": 1,
         "grid_y": 0
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.wizard.MeteorStormSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.wizard.MeteorStormSkillEffect"
 }

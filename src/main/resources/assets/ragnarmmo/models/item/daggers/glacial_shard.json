@@ -1,6 +1,6 @@
 {
   "parent": "ragnarmmo:item/daggers/base_dagger",
   "textures": {
-    "layer0": "ragnarmmo:item/weapons/glacial_shard"
+    "layer0": "ragnarmmo:item/weapons/daggers/glacial_shard"
   }
 }

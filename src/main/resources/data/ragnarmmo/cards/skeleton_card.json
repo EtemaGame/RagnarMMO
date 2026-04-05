@@ -2,8 +2,10 @@
     "id": "skeleton_card",
     "displayName": "Skeleton Card",
     "mobId": "minecraft:skeleton",
+    "equipType": "weapon",
     "modifiers": {
-        "ragnarmmo:dex": 1.0
+        "ragnarmmo:dex": 1.0,
+        "ragnarmmo:physical_damage_vs_size_medium": 0.15
     },
     "dropRate": 0.01,
     "modelId": 49

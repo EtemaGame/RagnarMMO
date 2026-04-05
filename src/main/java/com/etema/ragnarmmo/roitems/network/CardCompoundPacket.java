@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.roitems.network;
 
 import com.etema.ragnarmmo.roitems.runtime.RoItemRuleResolver;
+import com.etema.ragnarmmo.roitems.runtime.RoEquipmentTypeResolver;
 import com.etema.ragnarmmo.roitems.runtime.RoItemNbtHelper;
 import com.etema.ragnarmmo.system.loot.cards.CardItem;
 import com.etema.ragnarmmo.system.loot.cards.CardRegistry;
@@ -52,8 +53,15 @@ public class CardCompoundPacket {
                 return;
 
             String cardId = CardItem.getCardId(cardStack);
-            if (cardId == null || CardRegistry.getInstance().get(cardId) == null)
+            var cardDef = cardId != null ? CardRegistry.getInstance().get(cardId) : null;
+            if (cardDef == null)
                 return;
+
+            if (!RoEquipmentTypeResolver.isCompatible(cardDef.equipType(), equipStack)) {
+                player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                        "That card cannot be inserted into this equipment."));
+                return;
+            }
 
             int maxSlots = RoItemRuleResolver.resolve(equipStack).cardSlots();
             if (maxSlots <= 0)

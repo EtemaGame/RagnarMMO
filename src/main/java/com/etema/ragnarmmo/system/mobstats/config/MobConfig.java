@@ -15,7 +15,9 @@ public final class MobConfig {
         // ==========================================
         public static final ForgeConfigSpec.IntValue MAX_LEVEL;
         public static final ForgeConfigSpec.DoubleValue ELITE_CHANCE;
+        public static final ForgeConfigSpec.DoubleValue MINI_BOSS_CHANCE;
         public static final ForgeConfigSpec.DoubleValue BOSS_CHANCE;
+        public static final ForgeConfigSpec.DoubleValue MVP_CHANCE;
         public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MOB_EXCLUDE_LIST;
 
         // Attributes (Base & Calculations)
@@ -40,21 +42,31 @@ public final class MobConfig {
         // Progression (Points)
         public static final ForgeConfigSpec.IntValue BASE_POINTS_NORMAL;
         public static final ForgeConfigSpec.IntValue BASE_POINTS_ELITE;
+        public static final ForgeConfigSpec.IntValue BASE_POINTS_MINI_BOSS;
         public static final ForgeConfigSpec.IntValue BASE_POINTS_BOSS;
+        public static final ForgeConfigSpec.IntValue BASE_POINTS_MVP;
         public static final ForgeConfigSpec.IntValue POINTS_PER_LEVEL_NORMAL;
         public static final ForgeConfigSpec.IntValue POINTS_PER_LEVEL_ELITE;
+        public static final ForgeConfigSpec.IntValue POINTS_PER_LEVEL_MINI_BOSS;
         public static final ForgeConfigSpec.IntValue POINTS_PER_LEVEL_BOSS;
+        public static final ForgeConfigSpec.IntValue POINTS_PER_LEVEL_MVP;
 
         // Multipliers
         public static final ForgeConfigSpec.DoubleValue HEALTH_MULT_NORMAL;
         public static final ForgeConfigSpec.DoubleValue HEALTH_MULT_ELITE;
+        public static final ForgeConfigSpec.DoubleValue HEALTH_MULT_MINI_BOSS;
         public static final ForgeConfigSpec.DoubleValue HEALTH_MULT_BOSS;
+        public static final ForgeConfigSpec.DoubleValue HEALTH_MULT_MVP;
         public static final ForgeConfigSpec.DoubleValue DAMAGE_MULT_NORMAL;
         public static final ForgeConfigSpec.DoubleValue DAMAGE_MULT_ELITE;
+        public static final ForgeConfigSpec.DoubleValue DAMAGE_MULT_MINI_BOSS;
         public static final ForgeConfigSpec.DoubleValue DAMAGE_MULT_BOSS;
+        public static final ForgeConfigSpec.DoubleValue DAMAGE_MULT_MVP;
         public static final ForgeConfigSpec.DoubleValue DEFENSE_MULT_NORMAL;
         public static final ForgeConfigSpec.DoubleValue DEFENSE_MULT_ELITE;
+        public static final ForgeConfigSpec.DoubleValue DEFENSE_MULT_MINI_BOSS;
         public static final ForgeConfigSpec.DoubleValue DEFENSE_MULT_BOSS;
+        public static final ForgeConfigSpec.DoubleValue DEFENSE_MULT_MVP;
 
         // ==========================================
         // WORLD SCALING (Zone)
@@ -124,16 +136,18 @@ public final class MobConfig {
 
                 MAX_LEVEL = b.defineInRange("max_level", 0, 0, 100000);
                 ELITE_CHANCE = b.defineInRange("elite_chance", 0.08D, 0.0D, 1.0D);
+                MINI_BOSS_CHANCE = b.defineInRange("mini_boss_chance", 0.02D, 0.0D, 1.0D);
                 BOSS_CHANCE = b.defineInRange("boss_chance", 0.01D, 0.0D, 1.0D);
+                MVP_CHANCE = b.defineInRange("mvp_chance", 0.002D, 0.0D, 1.0D);
                 MOB_EXCLUDE_LIST = b.defineList("mob_exclude_list",
                                 List.of("minecraft:armor_stand", "minecraft:villager"), o -> o instanceof String);
 
                 b.push("attributes");
                 HP_BASE = b.defineInRange("hp_base", 20.0D, 0.0D, 1.0E9D);
-                VIT_TO_HP = b.defineInRange("vit_to_hp", 2.0D, 0.0D, 1.0E6D);
-                LEVEL_TO_HP = b.defineInRange("level_to_hp", 1.0D, 0.0D, 1.0E6D);
-                ATK_BASE = b.defineInRange("atk_base", 1.0D, 0.0D, 1.0E9D);
-                STR_TO_ATK = b.defineInRange("str_to_atk", 0.5D, 0.0D, 1.0E6D);
+                VIT_TO_HP = b.defineInRange("vit_to_hp", 5.0D, 0.0D, 1.0E6D);
+                LEVEL_TO_HP = b.defineInRange("level_to_hp", 5.0D, 0.0D, 1.0E6D);
+                ATK_BASE = b.defineInRange("atk_base", 4.0D, 0.0D, 1.0E9D);
+                STR_TO_ATK = b.defineInRange("str_to_atk", 1.0D, 0.0D, 1.0E6D);
                 DEX_TO_ATK = b.defineInRange("dex_to_atk", 0.2D, 0.0D, 1.0E6D);
                 LUK_TO_ATK = b.defineInRange("luk_to_atk", 0.1D, 0.0D, 1.0E6D);
                 ARMOR_BASE = b.defineInRange("armor_base", 0.0D, 0.0D, 1.0E9D);
@@ -152,22 +166,32 @@ public final class MobConfig {
                 b.push("progression");
                 BASE_POINTS_NORMAL = b.defineInRange("base_points.normal", 5, 0, 100000);
                 BASE_POINTS_ELITE = b.defineInRange("base_points.elite", 20, 0, 100000);
+                BASE_POINTS_MINI_BOSS = b.defineInRange("base_points.mini_boss", 35, 0, 100000);
                 BASE_POINTS_BOSS = b.defineInRange("base_points.boss", 50, 0, 100000);
+                BASE_POINTS_MVP = b.defineInRange("base_points.mvp", 80, 0, 100000);
                 POINTS_PER_LEVEL_NORMAL = b.defineInRange("per_level.normal", 3, 0, 10000);
                 POINTS_PER_LEVEL_ELITE = b.defineInRange("per_level.elite", 6, 0, 10000);
+                POINTS_PER_LEVEL_MINI_BOSS = b.defineInRange("per_level.mini_boss", 8, 0, 10000);
                 POINTS_PER_LEVEL_BOSS = b.defineInRange("per_level.boss", 10, 0, 10000);
+                POINTS_PER_LEVEL_MVP = b.defineInRange("per_level.mvp", 12, 0, 10000);
                 b.pop(); // progression
 
                 b.push("multipliers");
                 HEALTH_MULT_NORMAL = b.defineInRange("health.normal", 1.0D, 0.0D, 100.0D);
                 HEALTH_MULT_ELITE = b.defineInRange("health.elite", 4.0D, 0.0D, 100.0D);
+                HEALTH_MULT_MINI_BOSS = b.defineInRange("health.mini_boss", 6.0D, 0.0D, 100.0D);
                 HEALTH_MULT_BOSS = b.defineInRange("health.boss", 8.0D, 0.0D, 100.0D);
+                HEALTH_MULT_MVP = b.defineInRange("health.mvp", 12.0D, 0.0D, 100.0D);
                 DAMAGE_MULT_NORMAL = b.defineInRange("damage.normal", 1.0D, 0.0D, 100.0D);
                 DAMAGE_MULT_ELITE = b.defineInRange("damage.elite", 1.5D, 0.0D, 100.0D);
+                DAMAGE_MULT_MINI_BOSS = b.defineInRange("damage.mini_boss", 2.0D, 0.0D, 100.0D);
                 DAMAGE_MULT_BOSS = b.defineInRange("damage.boss", 2.5D, 0.0D, 100.0D);
+                DAMAGE_MULT_MVP = b.defineInRange("damage.mvp", 3.2D, 0.0D, 100.0D);
                 DEFENSE_MULT_NORMAL = b.defineInRange("defense.normal", 1.0D, 0.0D, 100.0D);
                 DEFENSE_MULT_ELITE = b.defineInRange("defense.elite", 1.5D, 0.0D, 100.0D);
+                DEFENSE_MULT_MINI_BOSS = b.defineInRange("defense.mini_boss", 1.65D, 0.0D, 100.0D);
                 DEFENSE_MULT_BOSS = b.defineInRange("defense.boss", 1.8D, 0.0D, 100.0D);
+                DEFENSE_MULT_MVP = b.defineInRange("defense.mvp", 2.2D, 0.0D, 100.0D);
                 b.pop(); // multipliers
 
                 b.pop(); // Stats
@@ -282,7 +306,9 @@ public final class MobConfig {
                 return switch (tier) {
                         case NORMAL -> BASE_POINTS_NORMAL.get();
                         case ELITE -> BASE_POINTS_ELITE.get();
+                        case MINI_BOSS -> BASE_POINTS_MINI_BOSS.get();
                         case BOSS -> BASE_POINTS_BOSS.get();
+                        case MVP -> BASE_POINTS_MVP.get();
                 };
         }
 
@@ -290,7 +316,9 @@ public final class MobConfig {
                 return switch (tier) {
                         case NORMAL -> POINTS_PER_LEVEL_NORMAL.get();
                         case ELITE -> POINTS_PER_LEVEL_ELITE.get();
+                        case MINI_BOSS -> POINTS_PER_LEVEL_MINI_BOSS.get();
                         case BOSS -> POINTS_PER_LEVEL_BOSS.get();
+                        case MVP -> POINTS_PER_LEVEL_MVP.get();
                 };
         }
 
@@ -298,7 +326,9 @@ public final class MobConfig {
                 return switch (tier) {
                         case NORMAL -> HEALTH_MULT_NORMAL.get();
                         case ELITE -> HEALTH_MULT_ELITE.get();
+                        case MINI_BOSS -> HEALTH_MULT_MINI_BOSS.get();
                         case BOSS -> HEALTH_MULT_BOSS.get();
+                        case MVP -> HEALTH_MULT_MVP.get();
                 };
         }
 
@@ -306,7 +336,9 @@ public final class MobConfig {
                 return switch (tier) {
                         case NORMAL -> DAMAGE_MULT_NORMAL.get();
                         case ELITE -> DAMAGE_MULT_ELITE.get();
+                        case MINI_BOSS -> DAMAGE_MULT_MINI_BOSS.get();
                         case BOSS -> DAMAGE_MULT_BOSS.get();
+                        case MVP -> DAMAGE_MULT_MVP.get();
                 };
         }
 
@@ -314,7 +346,9 @@ public final class MobConfig {
                 return switch (tier) {
                         case NORMAL -> DEFENSE_MULT_NORMAL.get();
                         case ELITE -> DEFENSE_MULT_ELITE.get();
+                        case MINI_BOSS -> DEFENSE_MULT_MINI_BOSS.get();
                         case BOSS -> DEFENSE_MULT_BOSS.get();
+                        case MVP -> DEFENSE_MULT_MVP.get();
                 };
         }
 }

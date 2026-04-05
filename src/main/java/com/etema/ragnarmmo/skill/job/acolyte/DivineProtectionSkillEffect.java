@@ -11,6 +11,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 
+import java.util.Set;
+
 public class DivineProtectionSkillEffect implements ISkillEffect {
 
     private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "divine_protection");
@@ -22,6 +24,11 @@ public class DivineProtectionSkillEffect implements ISkillEffect {
     @Override
     public ResourceLocation getSkillId() {
         return ID;
+    }
+
+    @Override
+    public Set<TriggerType> getSupportedTriggers() {
+        return Set.of(TriggerType.DEFENSIVE_HURT);
     }
 
     @Override

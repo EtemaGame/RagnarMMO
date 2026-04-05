@@ -27,7 +27,8 @@ public final class RoItemsModule {
 
         // Register items
         ZenyItems.register(modBus);
-        DaggerItems.register(modBus);
+        UtilityItems.register(modBus);
+        RagnarWeaponItems.register(modBus);
         com.etema.ragnarmmo.system.loot.cards.RagnarCardItems.register(modBus);
 
         // Register configuration

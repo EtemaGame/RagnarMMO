@@ -1,0 +1,74 @@
+{
+  "ragnarmmo:daggers/glacial_shard": {
+    "requiredBaseLevel": 8,
+    "allowedJobs": ["THIEF", "MERCHANT"],
+    "cardSlots": 1,
+    "attributeBonuses": { "agi": 1, "dex": 1 }
+  },
+  "ragnarmmo:daggers/volcanic_tooth": {
+    "requiredBaseLevel": 12,
+    "allowedJobs": ["THIEF", "MERCHANT"],
+    "cardSlots": 1,
+    "attributeBonuses": { "str": 1, "agi": 1 }
+  },
+  "ragnarmmo:daggers/gale_dirk": {
+    "requiredBaseLevel": 14,
+    "allowedJobs": ["THIEF", "MERCHANT"],
+    "cardSlots": 2,
+    "attributeBonuses": { "agi": 2 }
+  },
+  "ragnarmmo:daggers/quake_stiletto": {
+    "requiredBaseLevel": 18,
+    "allowedJobs": ["THIEF", "MERCHANT"],
+    "cardSlots": 1,
+    "attributeBonuses": { "str": 1, "dex": 2 }
+  },
+  "ragnarmmo:daggers/vein_seeker": {
+    "requiredBaseLevel": 20,
+    "allowedJobs": ["THIEF", "MERCHANT"],
+    "cardSlots": 2,
+    "attributeBonuses": { "dex": 2, "luk": 1 }
+  },
+  "ragnarmmo:daggers/shadows_embrace": {
+    "requiredBaseLevel": 24,
+    "allowedJobs": ["THIEF", "MERCHANT"],
+    "cardSlots": 2,
+    "attributeBonuses": { "agi": 1, "luk": 2 }
+  },
+  "ragnarmmo:daggers/mambas_kiss": {
+    "requiredBaseLevel": 26,
+    "allowedJobs": ["THIEF", "MERCHANT"],
+    "cardSlots": 2,
+    "attributeBonuses": { "agi": 2, "luk": 1 }
+  },
+  "ragnarmmo:daggers/ghostly_sting": {
+    "requiredBaseLevel": 28,
+    "allowedJobs": ["THIEF", "MERCHANT"],
+    "cardSlots": 2,
+    "attributeBonuses": { "dex": 1, "luk": 2 }
+  },
+  "ragnarmmo:daggers/valkyries_thorn": {
+    "requiredBaseLevel": 32,
+    "allowedJobs": ["THIEF", "MERCHANT"],
+    "cardSlots": 2,
+    "attributeBonuses": { "dex": 2, "luk": 2 }
+  },
+  "ragnarmmo:daggers/abyssal_fang": {
+    "requiredBaseLevel": 36,
+    "allowedJobs": ["THIEF", "MERCHANT"],
+    "cardSlots": 1,
+    "attributeBonuses": { "str": 2, "agi": 1 }
+  },
+  "ragnarmmo:daggers/twilight_carver": {
+    "requiredBaseLevel": 40,
+    "allowedJobs": ["THIEF", "MERCHANT"],
+    "cardSlots": 3,
+    "attributeBonuses": { "agi": 2, "dex": 1, "luk": 1 }
+  },
+  "ragnarmmo:daggers/oathbreaker": {
+    "requiredBaseLevel": 45,
+    "allowedJobs": ["THIEF", "MERCHANT"],
+    "cardSlots": 2,
+    "attributeBonuses": { "str": 2, "dex": 2 }
+  }
+}

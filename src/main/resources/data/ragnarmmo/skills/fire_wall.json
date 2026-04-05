@@ -15,6 +15,8 @@
         "cost_per_level": 0
     },
     "cooldown_ticks": 60,
+    "cast_delay_ticks": 0,
+    "cast_time_ticks": 0,
     "jobs": [
         "MAGE"
     ],
@@ -27,5 +29,5 @@
         "grid_x": 1,
         "grid_y": 1
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.mage.FireWallSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.mage.FireWallSkillEffect"
 }

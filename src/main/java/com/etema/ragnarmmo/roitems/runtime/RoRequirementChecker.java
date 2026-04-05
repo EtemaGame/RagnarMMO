@@ -65,7 +65,9 @@ public final class RoRequirementChecker {
         // Check class/job requirement
         if (!rule.allowedJobs().isEmpty()) {
             JobType playerJob = JobType.fromId(stats.getJobId());
-            if (!rule.allowedJobs().contains(playerJob)) {
+            boolean jobAllowed = rule.allowedJobs().stream()
+                    .anyMatch(playerJob::matchesExactOrAncestor);
+            if (!jobAllowed) {
                 return CheckResult.WRONG_CLASS;
             }
         }

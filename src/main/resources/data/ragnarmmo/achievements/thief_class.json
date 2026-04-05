@@ -1,0 +1,13 @@
+{
+    "category": "QUEST",
+    "name": "achievement.ragnarmmo.thief_class.name",
+    "description": "achievement.ragnarmmo.thief_class.desc",
+    "trigger_type": "kill_mob",
+    "trigger_id": "minecraft:cave_spider",
+    "required_amount": 50,
+    "points": 20,
+    "title": "title.ragnarmmo.the_rogue",
+    "rewards": {
+        "minecraft:emerald": 5
+    }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "ragnarmmo:projectiles/soul_strike_core",
+  "type": "layered",
+  "duration_ticks": 8,
+  "loop": true,
+  "layers": [
+    {
+      "name": "soul_core",
+      "blend_mode": "translucent",
+      "orientation": "billboard",
+      "z_order": 0,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.24, "scale_y": 0.24, "alpha": 0.90, "texture": "minecraft:textures/block/soul_sand.png" },
+        { "tick": 4, "scale_x": 0.30, "scale_y": 0.30, "alpha": 1.0, "texture": "minecraft:textures/block/soul_sand.png" },
+        { "tick": 8, "scale_x": 0.24, "scale_y": 0.24, "alpha": 0.90, "texture": "minecraft:textures/block/soul_sand.png" }
+      ]
+    }
+  ]
+}

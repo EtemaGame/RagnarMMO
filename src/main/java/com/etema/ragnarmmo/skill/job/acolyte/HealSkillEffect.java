@@ -2,8 +2,12 @@ package com.etema.ragnarmmo.skill.job.acolyte;
 
 import com.etema.ragnarmmo.skill.execution.instant.InstantTargetSkillEffect;
 import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
+import com.etema.ragnarmmo.common.init.RagnarSounds;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.runtime.SkillSequencer;
+import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
 import org.jetbrains.annotations.Nullable;
@@ -37,11 +41,11 @@ public class HealSkillEffect extends InstantTargetSkillEffect {
     @Override
     @Nullable
     protected LivingEntity getTarget(LivingEntity user, double range) {
-        // Heal has specific logic: prioritizing allies. SkillTargeting.findEntityInSight is generic.
-        // For now, use the refined logic or call a specialized helper.
-        // Actually, let's keep it simple and use the generic one for now, or refine SkillTargeting later.
-        LivingEntity target =  super.getTarget(user, range);
-        return target != null ? target : user; // Default to self
+        if (user instanceof net.minecraft.server.level.ServerPlayer player) {
+            return AcolyteTargetingHelper.resolveHealTarget(player, range);
+        }
+        LivingEntity target = super.getTarget(user, range);
+        return target != null ? target : user;
     }
 
     @Override
@@ -69,10 +73,13 @@ public class HealSkillEffect extends InstantTargetSkillEffect {
         if (target == null) target = user;
 
         float healAmount = SkillDamageHelper.getHealAmount(user, level);
+        float undeadDamageRatio = SkillRegistry.get(ID)
+                .map(def -> (float) def.getLevelDouble("undead_damage_ratio", level, 0.5))
+                .orElse(0.5f);
 
         if (target.getMobType() == MobType.UNDEAD) {
             // Damage undead
-            target.hurt(user.damageSources().magic(), healAmount);
+            target.hurt(user.damageSources().magic(), healAmount * undeadDamageRatio);
             user.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                     net.minecraft.sounds.SoundEvents.ZOMBIE_HURT, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.5F);
             if (user.level() instanceof net.minecraft.server.level.ServerLevel sl) {
@@ -82,7 +89,7 @@ public class HealSkillEffect extends InstantTargetSkillEffect {
             // Heal target or self
             target.heal(healAmount);
             user.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-                    net.minecraft.sounds.SoundEvents.EXPERIENCE_ORB_PICKUP, net.minecraft.sounds.SoundSource.PLAYERS,
+                    RagnarSounds.DILECTIO_HEAL.get(), SoundSource.PLAYERS,
                     1.0F, 1.2F);
             
             // RO Style: Rising healing aura
@@ -93,6 +100,10 @@ public class HealSkillEffect extends InstantTargetSkillEffect {
                     sl.sendParticles(net.minecraft.core.particles.ParticleTypes.HAPPY_VILLAGER, target.getX() + ox, target.getY(), target.getZ() + oz, 1, 0, 0.2, 0, 0.1);
                     sl.sendParticles(net.minecraft.core.particles.ParticleTypes.HEART, target.getX() + ox, target.getY() + 0.5, target.getZ() + oz, 1, 0, 0.1, 0, 0.05);
                 }
+                SkillVisualFx.spawnVerticalCross(sl, target.position(), 0.15, 1.6, 0.32,
+                        net.minecraft.core.particles.ParticleTypes.END_ROD, net.minecraft.core.particles.ParticleTypes.GLOW);
+                SkillVisualFx.spawnRing(sl, target.position(), 0.85, 0.12,
+                        net.minecraft.core.particles.ParticleTypes.HAPPY_VILLAGER, 10);
             }
         }
     }

@@ -1,0 +1,13 @@
+{
+    "category": "QUEST",
+    "name": "achievement.ragnarmmo.acolyte_class.name",
+    "description": "achievement.ragnarmmo.acolyte_class.desc",
+    "trigger_type": "pickup_item",
+    "trigger_id": "minecraft:golden_apple",
+    "required_amount": 1,
+    "points": 20,
+    "title": "title.ragnarmmo.the_cleric",
+    "rewards": {
+        "minecraft:potion": 3
+    }
+}

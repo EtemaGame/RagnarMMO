@@ -6,6 +6,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.TridentItem;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
+import java.util.Set;
+
 /**
  * Spear Mastery — Passive
  * RO: +4 ATK per level when wielding Spears.
@@ -18,6 +20,11 @@ public class SpearMasterySkillEffect implements ISkillEffect {
     @Override
     public ResourceLocation getSkillId() {
         return ID;
+    }
+
+    @Override
+    public Set<TriggerType> getSupportedTriggers() {
+        return Set.of(TriggerType.OFFENSIVE_HURT);
     }
 
     @Override

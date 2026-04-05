@@ -1,21 +1,19 @@
 package com.etema.ragnarmmo.skill.job.acolyte;
 
+import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Teleportation — Active (Acolyte)
- * RO: Randomly teleports the caster to a new location on the same map.
- * MC: Teleports to a random safe location within a radius of (30 + level * 20)
- *     blocks. Attempts up to 10 raycasts to find solid ground.
- *     Level 1 = 50 block radius, Level 2 = 70, ... Level 4 = 110 (max in RO).
+ * Lv.1 teleports the caster randomly on the current map.
+ * Lv.2 returns the caster to the Save Point.
  */
 public class TeleportationSkillEffect implements ISkillEffect {
 
@@ -27,6 +25,22 @@ public class TeleportationSkillEffect implements ISkillEffect {
     @Override
     public void execute(ServerPlayer player, int level) {
         if (level <= 0) return;
+
+        if (level >= 2) {
+            var destination = WarpPortalHelper.resolveSavePoint(player);
+            ServerLevel serverLevel = player.serverLevel();
+            serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    RagnarSounds.TELEPORTATION.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
+
+            if (WarpPortalHelper.teleport(player, destination)) {
+                player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                        RagnarSounds.TELEPORTATION.get(), SoundSource.PLAYERS, 1.0f, 1.2f);
+                player.sendSystemMessage(Component.literal("§d✦ Teleportation §f→ §7Save Point"));
+            } else {
+                player.sendSystemMessage(Component.literal("§cTeleportation: §fNo se pudo llegar al Save Point."));
+            }
+            return;
+        }
 
         double radius = 30 + level * 20;
         var random = player.getRandom();
@@ -64,13 +78,13 @@ public class TeleportationSkillEffect implements ISkillEffect {
 
                 // Play departure sound
                 sl.playSound(null, player.getX(), player.getY(), player.getZ(),
-                        SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.0f);
+                        RagnarSounds.TELEPORTATION.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
 
                 player.teleportTo(finalX, finalY, finalZ);
 
                 // Play arrival sound
                 sl.playSound(null, finalX, finalY, finalZ,
-                        SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.2f);
+                        RagnarSounds.TELEPORTATION.get(), SoundSource.PLAYERS, 1.0f, 1.2f);
 
                 player.sendSystemMessage(Component.literal(
                         "§d✦ Teleportation §f→ §7(" + (int)finalX + ", " + (int)finalY + ", " + (int)finalZ + ")"));

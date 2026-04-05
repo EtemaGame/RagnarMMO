@@ -11,7 +11,7 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 29,
+        "base_cost": 24,
         "cost_per_level": 5
     },
     "cooldown_ticks": 40,
@@ -26,5 +26,5 @@
         "grid_x": 1,
         "grid_y": 6
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.mage.ThunderStormSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.mage.ThunderStormSkillEffect"
 }

@@ -1,0 +1,7 @@
+{
+    "skill_id": "ragnarmmo:holy_light",
+    "layers": [
+        { "block": "minecraft:sea_lantern", "scale": [0.18, 0.18, 1.05] },
+        { "block": "minecraft:smooth_quartz", "scale": [0.10, 0.10, 1.22], "rotation_y": 45.0 }
+    ]
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "ragnarmmo:item/wands/base_wand",
+  "textures": {
+    "layer0": "ragnarmmo:item/weapons/wands/duskroot_wand"
+  }
+}

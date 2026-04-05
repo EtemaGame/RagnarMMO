@@ -28,7 +28,9 @@ public enum JobType {
     WIZARD("Wizard"), // Mage -> Wizard progression
     PRIEST("Priest"), // Acolyte -> Priest progression
     KNIGHT("Knight"), // Swordsman -> Knight progression
-    HUNTER("Hunter"); // Archer -> Hunter progression
+    HUNTER("Hunter"), // Archer -> Hunter progression
+    ASSASSIN("Assassin"), // Thief -> Assassin progression
+    BLACKSMITH("Blacksmith"); // Merchant -> Blacksmith progression
 
     private final String displayName;
     private final java.util.Map<SkillType, Double> xpMultipliers;
@@ -50,7 +52,8 @@ public enum JobType {
         switch (this) {
             case NOVICE -> {
                 classTreeSkills.add(SkillType.FIRST_AID);
-                classTreeSkills.add(SkillType.SURVIVAL_INSTINCT);
+                classTreeSkills.add(SkillType.BASIC_SKILL);
+                classTreeSkills.add(SkillType.PLAY_DEAD);
             }
             case SWORDSMAN -> {
                 classTreeSkills.add(SkillType.SWORD_MASTERY);
@@ -118,6 +121,12 @@ public enum JobType {
             case HUNTER -> {
                 // Second Class - uses dynamic skill tree system from hunter_2.json
             }
+            case ASSASSIN -> {
+                // Second Class - uses dynamic skill tree system from assassin_2.json
+            }
+            case BLACKSMITH -> {
+                // Second Class - uses dynamic skill tree system from blacksmith_2.json
+            }
         }
     }
 
@@ -174,19 +183,32 @@ public enum JobType {
     }
 
     public static JobType fromId(String id) {
-        if (id == null || id.isBlank())
+        String normalized = normalizeKey(id);
+        if (normalized.isBlank())
             return NOVICE;
 
-        // Handle names that might include modid "ragnarmmo:swordsman"
-        if (id.contains(":")) {
-            id = id.substring(id.indexOf(":") + 1);
-        }
-
         try {
-            return valueOf(id.toUpperCase(Locale.ROOT));
+            return valueOf(normalized);
         } catch (IllegalArgumentException e) {
             return NOVICE;
         }
+    }
+
+    public static String normalizeKey(String id) {
+        if (id == null) {
+            return "";
+        }
+
+        String normalized = id.trim();
+        if (normalized.isBlank()) {
+            return "";
+        }
+
+        if (normalized.contains(":")) {
+            normalized = normalized.substring(normalized.indexOf(':') + 1);
+        }
+
+        return normalized.toUpperCase(Locale.ROOT);
     }
 
     // ── Class Hierarchy ──
@@ -197,7 +219,7 @@ public enum JobType {
 
     /** Set of all Second Classes. */
     public static final Set<JobType> SECOND_CLASSES = Set.of(
-            WIZARD, PRIEST, KNIGHT, HUNTER);
+            WIZARD, PRIEST, KNIGHT, HUNTER, ASSASSIN, BLACKSMITH);
 
     /**
      * Returns the tier of this job in the class hierarchy.
@@ -207,7 +229,7 @@ public enum JobType {
         return switch (this) {
             case NOVICE -> 0;
             case SWORDSMAN, MAGE, ARCHER, THIEF, MERCHANT, ACOLYTE -> 1;
-            case WIZARD, PRIEST, KNIGHT, HUNTER -> 2;
+            case WIZARD, PRIEST, KNIGHT, HUNTER, ASSASSIN, BLACKSMITH -> 2;
         };
     }
 
@@ -223,6 +245,8 @@ public enum JobType {
             case WIZARD -> MAGE;
             case HUNTER -> ARCHER;
             case PRIEST -> ACOLYTE;
+            case ASSASSIN -> THIEF;
+            case BLACKSMITH -> MERCHANT;
         };
     }
 
@@ -236,11 +260,11 @@ public enum JobType {
             case SWORDSMAN -> List.of(KNIGHT);
             case MAGE -> List.of(WIZARD);
             case ARCHER -> List.of(HUNTER);
+            case THIEF -> List.of(ASSASSIN);
+            case MERCHANT -> List.of(BLACKSMITH);
             case ACOLYTE -> List.of(PRIEST);
-            // No promotions yet for these
-            case THIEF, MERCHANT -> List.of();
             // Second Classes have no further promotions yet
-            case KNIGHT, WIZARD, HUNTER, PRIEST -> List.of();
+            case KNIGHT, WIZARD, HUNTER, PRIEST, ASSASSIN, BLACKSMITH -> List.of();
         };
     }
 
@@ -256,5 +280,39 @@ public enum JobType {
             case 1 -> this;
             default -> getParent(); // Second Class parent is always First Class
         };
+    }
+
+    public boolean hasPromotions() {
+        return !getPromotions().isEmpty();
+    }
+
+    public boolean canPromoteTo(JobType target) {
+        return target != null && getPromotions().contains(target);
+    }
+
+    public boolean matchesExactOrAncestor(JobType allowedJob) {
+        if (allowedJob == null) {
+            return false;
+        }
+        if (this == allowedJob) {
+            return true;
+        }
+        JobType firstClass = getFirstClassAncestor();
+        return firstClass != null && firstClass == allowedJob;
+    }
+
+    public boolean matchesSkillRule(String allowedJobId) {
+        String normalized = normalizeKey(allowedJobId);
+        if (normalized.isBlank()) {
+            return false;
+        }
+        if (NOVICE.name().equals(normalized)) {
+            return true;
+        }
+        if (name().equals(normalized)) {
+            return true;
+        }
+        JobType firstClass = getFirstClassAncestor();
+        return firstClass != null && firstClass.name().equals(normalized);
     }
 }

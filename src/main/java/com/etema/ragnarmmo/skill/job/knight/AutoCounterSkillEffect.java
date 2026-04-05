@@ -15,6 +15,8 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.Set;
+
 /**
  * Auto Counter — Passive (Counter-attack on being hit)
  * RO: When an enemy attacks, there is a chance to perform a critical counter-attack.
@@ -36,6 +38,11 @@ public class AutoCounterSkillEffect implements ISkillEffect {
     @Override
     public ResourceLocation getSkillId() {
         return ID;
+    }
+
+    @Override
+    public Set<TriggerType> getSupportedTriggers() {
+        return Set.of(TriggerType.DEFENSIVE_HURT);
     }
 
     @Override

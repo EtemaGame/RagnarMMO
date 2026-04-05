@@ -5,6 +5,7 @@ import com.etema.ragnarmmo.skill.api.ISkillDefinition;
 import com.etema.ragnarmmo.skill.api.SkillType;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.system.stats.net.PacketChangeJob;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -23,6 +24,7 @@ import java.util.List;
  * Online.
  */
 public class JobSelectionScreen extends Screen {
+    private static final ResourceLocation BASIC_SKILL = new ResourceLocation("ragnarmmo", "basic_skill");
 
     // === LAYOUT CONSTANTS ===
     private static final int WINDOW_WIDTH = 480;
@@ -85,13 +87,21 @@ public class JobSelectionScreen extends Screen {
             if (selectedJob != null) {
                 boolean hasUnspentPoints = false;
                 boolean lowJobLevel = false;
+                boolean lowBasicSkill = false;
 
                 if (this.minecraft != null && this.minecraft.player != null) {
                     var statsOpt = com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(this.minecraft.player);
                     if (statsOpt.isPresent()) {
+                        JobType currentJob = JobType.fromId(statsOpt.get().getJobId());
                         hasUnspentPoints = statsOpt.get().getSkillPoints() > 0;
-                        if ("ragnarmmo:novice".equals(statsOpt.get().getJobId()) && statsOpt.get().getJobLevel() < 10) {
+                        if (currentJob == JobType.NOVICE && statsOpt.get().getJobLevel() < 10) {
                             lowJobLevel = true;
+                        }
+                        if (currentJob == JobType.NOVICE) {
+                            int basicSkillLevel = PlayerSkillsProvider.get(this.minecraft.player)
+                                    .map(skills -> skills.getSkillLevel(BASIC_SKILL))
+                                    .orElse(0);
+                            lowBasicSkill = basicSkillLevel < 9;
                         }
                     }
                 }
@@ -104,6 +114,12 @@ public class JobSelectionScreen extends Screen {
 
                 if (hasUnspentPoints) {
                     this.popupError = Component.translatable("message.ragnarmmo.unspent_skill_points");
+                    this.popupTimer = 60;
+                    return;
+                }
+
+                if (lowBasicSkill) {
+                    this.popupError = Component.translatable("message.ragnarmmo.low_basic_skill");
                     this.popupTimer = 60;
                     return;
                 }
@@ -298,8 +314,8 @@ public class JobSelectionScreen extends Screen {
                 g.fill(rightX + 5, warningY - 3, rightX + rightWidth - 5, warningY + 35, 0x40FF0000);
                 renderBorder(g, rightX + 5, warningY - 3, rightX + rightWidth - 5, warningY + 35, 0xFFFF4444);
                 g.drawString(this.font, "\u26A0 WARNING", rightX + 12, warningY, 0xFFFF4444, true);
-                g.drawString(this.font, "Level & Job Level reset to 1.", rightX + 12, warningY + 12, 0xFFFFAAAA, false);
-                g.drawString(this.font, "Stats remain allocated.", rightX + 12, warningY + 23, 0xFFFFAAAA, false);
+                g.drawString(this.font, "Base Level and stats stay.", rightX + 12, warningY + 12, 0xFFFFAAAA, false);
+                g.drawString(this.font, "Job Level resets to 1.", rightX + 12, warningY + 23, 0xFFFFAAAA, false);
             }
 
         } else {
@@ -395,6 +411,8 @@ public class JobSelectionScreen extends Screen {
             case WIZARD -> "Arcane Burst / AoE DPS";
             case HUNTER -> "Ranged DPS / Trapper";
             case PRIEST -> "Healer / Buffer";
+            case ASSASSIN -> "Burst Melee / Stealth";
+            case BLACKSMITH -> "Bruiser / Economy";
             default -> "Beginner class";
         };
     }
@@ -411,6 +429,8 @@ public class JobSelectionScreen extends Screen {
             case WIZARD -> "INT, DEX";
             case HUNTER -> "DEX, AGI, INT";
             case PRIEST -> "INT, VIT, DEX";
+            case ASSASSIN -> "AGI, STR, DEX";
+            case BLACKSMITH -> "STR, DEX, VIT";
             default -> "All";
         };
     }
@@ -437,6 +457,10 @@ public class JobSelectionScreen extends Screen {
                 "Expert marksmen who set traps and command falcons. They combine ranged attacks with tactical area control.";
             case PRIEST ->
                 "Holy healers who protect allies with blessings, powerful heals, and sacred sanctuaries that purify the battlefield.";
+            case ASSASSIN ->
+                "Silent executioners who blend speed, poison, and explosive melee bursts. They thrive on positioning, stealth, and punishing exposed targets.";
+            case BLACKSMITH ->
+                "Battle-hardened craftsmen who turn economy into power. They fight with brute force, weapon mastery, and utility tied to gear and preparation.";
             default -> "A beginning adventurer.";
         };
     }

@@ -1,6 +1,6 @@
 {
   "parent": "ragnarmmo:item/daggers/base_dagger",
   "textures": {
-    "layer0": "ragnarmmo:item/weapons/mambas_kiss"
+    "layer0": "ragnarmmo:item/weapons/daggers/mambas_kiss"
   }
 }

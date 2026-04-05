@@ -1,0 +1,11 @@
+{
+    "skill_id": "ragnarmmo:sanctuary",
+    "texture": "minecraft:textures/block/sea_lantern.png",
+    "type": "sprite",
+    "columns": 1,
+    "rows": 1,
+    "size": 4.0,
+    "animation_fps": 6,
+    "billboard": false,
+    "render_type": "translucent"
+}

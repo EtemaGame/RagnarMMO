@@ -1,0 +1,6 @@
+{
+  "skill_id": "ragnarmmo:warp_portal",
+  "bindings": [
+    { "phase": "aoe_loop", "effect": "ragnarmmo:aoe/warp_portal_loop" }
+  ]
+}

@@ -45,7 +45,7 @@ public class ExplorationEventHandler {
             // For now, use a simple region-based approach
             int points = calculateExplorationPoints(player, currentChunk);
             if (points > 0) {
-                int levelsGained = progress.addPoints(points);
+                int levelsGained = manager.addPoints(LifeSkillType.EXPLORATION, points);
 
                 // Send update to client
                 Network.sendToPlayer(player, new LifeSkillPointsPacket(
@@ -69,24 +69,21 @@ public class ExplorationEventHandler {
      * Uses region-based tracking stored in player data.
      */
     private static int calculateExplorationPoints(ServerPlayer player, ChunkPos chunk) {
-        // Use a simplified approach: store explored regions in player's life skill progress
-        // Region = 4x4 chunks
+        // Region = 4x4 chunks, persisted inside the life skill progress itself.
         int regionX = Math.floorDiv(chunk.x, 4);
         int regionZ = Math.floorDiv(chunk.z, 4);
         String regionKey = player.level().dimension().location() + "_" + regionX + "_" + regionZ;
 
         return LifeSkillCapability.get(player).map(manager -> {
             LifeSkillProgress progress = manager.getSkill(LifeSkillType.EXPLORATION);
-            if (progress == null) return 0;
-
-            // Check if region was already explored using block counter as region tracker
-            // This is a hack - we use the counter system for region tracking
-            int count = progress.incrementBlockCounter(regionKey, 1, 0);
-            if (count == 0) {
-                // First time in this region!
-                // Actually award points directly
-                return 2; // POINTS_NEW_REGION
+            if (progress == null) {
+                return 0;
             }
+
+            if (progress.markUniqueDiscovery(regionKey)) {
+                return 2; // First time in this region
+            }
+
             return 0;
         }).orElse(0);
     }

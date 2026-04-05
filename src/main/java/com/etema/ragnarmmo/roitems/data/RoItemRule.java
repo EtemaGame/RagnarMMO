@@ -15,13 +15,14 @@ public record RoItemRule(
         Map<StatKeys, Integer> attributeBonuses, // STR -> +5, DEX -> +3, etc.
         int requiredBaseLevel, // 0 = no level requirement
         Set<JobType> allowedJobs, // empty = all jobs allowed
-        int cardSlots // number of card slots (for future use)
+        int cardSlots, // number of card slots (for future use)
+        boolean showTooltip // true = show RO combat block even if only fallback data exists
 ) {
     /**
      * Empty rule used when no rules apply to an item.
      */
     public static final RoItemRule EMPTY = new RoItemRule(
-            null, Map.of(), 0, Set.of(), 0);
+            null, Map.of(), 0, Set.of(), 0, false);
 
     /**
      * Defensive copy constructor to ensure immutability.
@@ -50,7 +51,7 @@ public record RoItemRule(
      */
     public boolean isEmpty() {
         return this == EMPTY || (!hasRequirements() && !hasAttributeBonuses()
-                && cardSlots == 0);
+                && cardSlots == 0 && !showTooltip);
     }
 
     /**
@@ -61,5 +62,42 @@ public record RoItemRule(
      */
     public int getBonus(StatKeys stat) {
         return attributeBonuses.getOrDefault(stat, 0);
+    }
+
+    /**
+     * Merge a less specific rule into a more specific one.
+     * Numbers use 0 as "unspecified", so non-zero values from {@code override}
+     * replace the base. Attribute bonuses are accumulated.
+     */
+    public static RoItemRule merge(RoItemRule base, RoItemRule override) {
+        if (base == null || base.isEmpty()) {
+            return override != null ? override : EMPTY;
+        }
+        if (override == null || override.isEmpty()) {
+            return base;
+        }
+
+        Map<StatKeys, Integer> mergedBonuses = new java.util.EnumMap<>(StatKeys.class);
+        mergedBonuses.putAll(base.attributeBonuses());
+        override.attributeBonuses().forEach((key, value) ->
+                mergedBonuses.put(key, mergedBonuses.getOrDefault(key, 0) + value));
+
+        String mergedDisplayName = override.displayName() != null ? override.displayName() : base.displayName();
+        int mergedRequiredBaseLevel = override.requiredBaseLevel() > 0
+                ? override.requiredBaseLevel()
+                : base.requiredBaseLevel();
+        Set<JobType> mergedAllowedJobs = !override.allowedJobs().isEmpty()
+                ? override.allowedJobs()
+                : base.allowedJobs();
+        int mergedCardSlots = override.cardSlots() > 0 ? override.cardSlots() : base.cardSlots();
+        boolean mergedShowTooltip = base.showTooltip() || override.showTooltip();
+
+        return new RoItemRule(
+                mergedDisplayName,
+                mergedBonuses,
+                mergedRequiredBaseLevel,
+                mergedAllowedJobs,
+                mergedCardSlots,
+                mergedShowTooltip);
     }
 }

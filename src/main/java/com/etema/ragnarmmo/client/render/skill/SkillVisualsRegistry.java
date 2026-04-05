@@ -15,6 +15,10 @@ public class SkillVisualsRegistry {
         REGISTRY.put(skillId, visuals);
     }
 
+    public static void clear() {
+        REGISTRY.clear();
+    }
+
     public static Optional<SkillVisuals> get(ResourceLocation skillId) {
         return Optional.ofNullable(REGISTRY.get(skillId));
     }

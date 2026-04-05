@@ -11,8 +11,8 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 25,
-        "cost_per_level": 1
+        "base_cost": 26,
+        "cost_per_level": -1
     },
     "cooldown_ticks": 40,
     "jobs": [
@@ -24,5 +24,5 @@
         "grid_x": 0,
         "grid_y": 4
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.mage.StoneCurseSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.mage.StoneCurseSkillEffect"
 }

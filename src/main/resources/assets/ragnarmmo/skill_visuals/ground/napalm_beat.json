@@ -1,0 +1,11 @@
+{
+    "skill_id": "ragnarmmo:napalm_beat",
+    "texture": "minecraft:textures/block/soul_fire_0.png",
+    "type": "sprite",
+    "columns": 1,
+    "rows": 1,
+    "size": 1.8,
+    "animation_fps": 10,
+    "billboard": true,
+    "render_type": "translucent"
+}

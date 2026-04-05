@@ -1,0 +1,7 @@
+{
+  "skill_id": "ragnarmmo:fire_ball",
+  "bindings": [
+    { "phase": "projectile_tick", "effect": "ragnarmmo:projectiles/fire_ball_travel" },
+    { "phase": "impact", "effect": "ragnarmmo:impact/fire_ball_burst" }
+  ]
+}

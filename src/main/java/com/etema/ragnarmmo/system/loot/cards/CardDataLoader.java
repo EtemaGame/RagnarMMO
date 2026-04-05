@@ -50,6 +50,9 @@ public class CardDataLoader extends SimpleJsonResourceReloadListener {
                 String displayName = json.get("displayName").getAsString();
                 String mobId = json.get("mobId").getAsString();
                 double dropRate = json.get("dropRate").getAsDouble();
+                CardEquipType equipType = json.has("equipType")
+                        ? CardEquipType.fromString(json.get("equipType").getAsString())
+                        : CardEquipType.ANY;
                 String translationKey = json.has("translationKey") ? json.get("translationKey").getAsString()
                         : "card.ragnarmmo." + id + ".desc";
 
@@ -64,7 +67,7 @@ public class CardDataLoader extends SimpleJsonResourceReloadListener {
 
                 int modelId = json.has("modelId") ? json.get("modelId").getAsInt() : 0;
 
-                CardDefinition def = new CardDefinition(id, displayName, mobId, modifiers, dropRate,
+                CardDefinition def = new CardDefinition(id, displayName, mobId, modifiers, dropRate, equipType,
                         translationKey, modelId);
                 registry.register(def);
                 count++;

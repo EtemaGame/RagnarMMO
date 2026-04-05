@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:bat",
+    "minecraft:bee",
+    "minecraft:chicken",
+    "minecraft:rabbit",
+    "minecraft:silverfish",
+    "minecraft:endermite",
+    "minecraft:cave_spider",
+    "minecraft:vex",
+    "minecraft:allay",
+    "minecraft:cod",
+    "minecraft:salmon",
+    "minecraft:pufferfish",
+    "minecraft:tropical_fish"
+  ]
+}

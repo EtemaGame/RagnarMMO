@@ -14,7 +14,9 @@
         "base_cost": 25,
         "cost_per_level": 0
     },
-    "cooldown_ticks": 30,
+    "cooldown_ticks": 0,
+    "cast_delay_ticks": 0,
+    "cast_time_ticks": 0,
     "jobs": [
         "MAGE"
     ],
@@ -26,5 +28,20 @@
         "grid_x": 0,
         "grid_y": 2
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.mage.FireBallSkillEffect"
+    "reference": {
+        "notes": "Fire Ball: 80%-170% MATK, 25 SP, 1.5 sec cast/skill delay at Lv1-5, 1.0 sec at Lv6-10."
+    },
+    "level_data": {
+        "1": { "damage_percent": 80, "cast_time_ticks": 30, "cast_delay_ticks": 30 },
+        "2": { "damage_percent": 90, "cast_time_ticks": 30, "cast_delay_ticks": 30 },
+        "3": { "damage_percent": 100, "cast_time_ticks": 30, "cast_delay_ticks": 30 },
+        "4": { "damage_percent": 110, "cast_time_ticks": 30, "cast_delay_ticks": 30 },
+        "5": { "damage_percent": 120, "cast_time_ticks": 30, "cast_delay_ticks": 30 },
+        "6": { "damage_percent": 130, "cast_time_ticks": 20, "cast_delay_ticks": 20 },
+        "7": { "damage_percent": 140, "cast_time_ticks": 20, "cast_delay_ticks": 20 },
+        "8": { "damage_percent": 150, "cast_time_ticks": 20, "cast_delay_ticks": 20 },
+        "9": { "damage_percent": 160, "cast_time_ticks": 20, "cast_delay_ticks": 20 },
+        "10": { "damage_percent": 170, "cast_time_ticks": 20, "cast_delay_ticks": 20 }
+    },
+    "effect_class": "com.etema.ragnarmmo.skill.job.mage.FireBallSkillEffect"
 }

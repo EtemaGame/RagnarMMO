@@ -14,7 +14,10 @@
         "base_cost": 10,
         "cost_per_level": 0
     },
-    "cooldown_ticks": 20,
+    "cooldown_ticks": 0,
+    "level_data": {
+        "1": { "duration_ticks": 200 }
+    },
     "jobs": [
         "ACOLYTE"
     ],
@@ -26,5 +29,5 @@
         "grid_x": 1,
         "grid_y": 5
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.acolyte.PneumaSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.PneumaSkillEffect"
 }

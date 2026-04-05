@@ -1,6 +1,6 @@
 {
   "parent": "ragnarmmo:item/daggers/base_dagger",
   "textures": {
-    "layer0": "ragnarmmo:item/weapons/oathbreaker"
+    "layer0": "ragnarmmo:item/weapons/daggers/oathbreaker"
   }
 }

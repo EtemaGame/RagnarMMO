@@ -1,0 +1,13 @@
+{
+    "category": "QUEST",
+    "name": "achievement.ragnarmmo.mage_class.name",
+    "description": "achievement.ragnarmmo.mage_class.desc",
+    "trigger_type": "pickup_item",
+    "trigger_id": "minecraft:enchanting_table",
+    "required_amount": 1,
+    "points": 20,
+    "title": "title.ragnarmmo.the_enchanter",
+    "rewards": {
+        "minecraft:lapis_lazuli": 64
+    }
+}

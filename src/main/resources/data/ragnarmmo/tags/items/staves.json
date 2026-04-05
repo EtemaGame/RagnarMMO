@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "ragnarmmo:staves/sunpriest_staff",
+    "ragnarmmo:staves/verdant_crook",
+    "ragnarmmo:staves/tidebloom_staff",
+    "ragnarmmo:staves/embervine_staff",
+    "ragnarmmo:staves/thornhalo_staff",
+    "ragnarmmo:staves/starseeker_staff",
+    "ragnarmmo:staves/dreamwood_staff",
+    "ragnarmmo:staves/magma_serpent_staff",
+    "ragnarmmo:staves/duskpetal_staff",
+    "ragnarmmo:staves/dawnmantle_staff",
+    "ragnarmmo:staves/oracle_branch",
+    "ragnarmmo:staves/moonlily_staff"
+  ]
+}

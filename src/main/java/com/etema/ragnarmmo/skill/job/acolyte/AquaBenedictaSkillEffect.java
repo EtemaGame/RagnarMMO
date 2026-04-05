@@ -1,7 +1,9 @@
 package com.etema.ragnarmmo.skill.job.acolyte;
 
+import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -73,6 +75,8 @@ public class AquaBenedictaSkillEffect implements ISkillEffect {
         if (player.level() instanceof ServerLevel sl) {
             sl.playSound(null, player.getX(), player.getY(), player.getZ(),
                     SoundEvents.AMBIENT_UNDERWATER_ENTER, SoundSource.PLAYERS, 1.0f, 1.5f);
+            SkillVisualFx.spawnRing(sl, player.position(), 0.95, 0.1, ParticleTypes.SPLASH, 12);
+            SkillVisualFx.spawnVerticalCross(sl, player.position(), 0.15, 1.3, 0.22, ParticleTypes.GLOW, ParticleTypes.END_ROD);
         }
         player.sendSystemMessage(Component.literal("§b✦ Holy Water §fcreada."));
     }

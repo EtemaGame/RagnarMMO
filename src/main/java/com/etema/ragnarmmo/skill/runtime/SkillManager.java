@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.skill.runtime;
 
 import com.etema.ragnarmmo.common.api.stats.ChangeReason;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
+import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
 import com.etema.ragnarmmo.skill.api.ISkillDefinition;
 import com.etema.ragnarmmo.skill.api.SkillCategory;
 import com.etema.ragnarmmo.skill.api.SkillType;
@@ -9,7 +10,7 @@ import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.data.progression.SkillState;
 import com.etema.ragnarmmo.skill.api.XPGainReason;
 import com.etema.ragnarmmo.skill.data.progression.SkillProgress;
-import com.etema.ragnarmmo.skill.data.progression.SkillProgress;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,11 +19,11 @@ import net.minecraft.world.entity.player.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Optional;
-import java.util.Locale;
 import net.minecraftforge.items.ItemStackHandler;
 
 /**
@@ -37,11 +38,49 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SkillManager.class);
     private static final String DEFAULT_NAMESPACE = "ragnarmmo";
+    private static final int MAX_WARP_MEMOS = 3;
+
+    public static final class WarpMemo {
+        private final ResourceLocation dimensionId;
+        private final BlockPos pos;
+
+        public WarpMemo(ResourceLocation dimensionId, BlockPos pos) {
+            this.dimensionId = dimensionId;
+            this.pos = pos.immutable();
+        }
+
+        public ResourceLocation getDimensionId() {
+            return dimensionId;
+        }
+
+        public BlockPos getPos() {
+            return pos;
+        }
+
+        public CompoundTag serializeNBT() {
+            CompoundTag tag = new CompoundTag();
+            tag.putString("dimension", dimensionId.toString());
+            tag.putInt("x", pos.getX());
+            tag.putInt("y", pos.getY());
+            tag.putInt("z", pos.getZ());
+            return tag;
+        }
+
+        public static WarpMemo fromNBT(CompoundTag tag) {
+            ResourceLocation dimensionId = ResourceLocation.tryParse(tag.getString("dimension"));
+            if (dimensionId == null) {
+                return null;
+            }
+            return new WarpMemo(dimensionId, new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z")));
+        }
+    }
 
     // New data-driven storage
     private final Map<ResourceLocation, SkillState> skills = new HashMap<>();
     private final ItemStackHandler cartInventory;
+    private final WarpMemo[] warpMemos = new WarpMemo[MAX_WARP_MEMOS];
     private Player player;
+    private int selectedWarpDestination = 0; // 0 = Save Point, 1..3 = Memo slots
 
     public SkillManager() {
         // Initialize skills from registry
@@ -62,6 +101,39 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
     @Override
     public Player getPlayer() {
         return player;
+    }
+
+    public static int getMaxWarpMemos() {
+        return MAX_WARP_MEMOS;
+    }
+
+    public java.util.Optional<WarpMemo> getWarpMemo(int slot) {
+        if (slot < 1 || slot > MAX_WARP_MEMOS) {
+            return java.util.Optional.empty();
+        }
+        return java.util.Optional.ofNullable(warpMemos[slot - 1]);
+    }
+
+    public void setWarpMemo(int slot, ResourceLocation dimensionId, BlockPos pos) {
+        if (slot < 1 || slot > MAX_WARP_MEMOS || dimensionId == null || pos == null) {
+            return;
+        }
+        warpMemos[slot - 1] = new WarpMemo(dimensionId, pos);
+    }
+
+    public void clearWarpMemo(int slot) {
+        if (slot < 1 || slot > MAX_WARP_MEMOS) {
+            return;
+        }
+        warpMemos[slot - 1] = null;
+    }
+
+    public int getSelectedWarpDestination() {
+        return selectedWarpDestination;
+    }
+
+    public void setSelectedWarpDestination(int selection) {
+        selectedWarpDestination = Math.max(0, Math.min(MAX_WARP_MEMOS, selection));
     }
 
     // ========================================================================
@@ -208,8 +280,10 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
                 double baseMult = RagnarConfigs.SERVER.progression.skillToBaseExpMultiplier.get();
                 double jobMult = RagnarConfigs.SERVER.progression.skillToJobExpMultiplier.get();
                 
-                int baseExpToGrant = (int) Math.round(amount * baseMult);
-                int jobExpToGrant = (int) Math.round(amount * jobMult);
+                int baseExpToGrant = com.etema.ragnarmmo.system.stats.progression.ExpTable
+                        .applyBaseExpRate((int) Math.round(amount * baseMult));
+                int jobExpToGrant = com.etema.ragnarmmo.system.stats.progression.ExpTable
+                        .applyJobExpRate((int) Math.round(amount * jobMult));
 
                 if (baseExpToGrant > 0) {
                     stats.addExpAndProcessLevelUps(baseExpToGrant, 
@@ -221,18 +295,11 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
                         com.etema.ragnarmmo.system.stats.progression.ExpTable::jobExpToNext);
                 }
                 
-                if (baseExpToGrant > 0 || jobExpToGrant > 0) {
-                    stats.markDirty();
-                    // Sync is handled by the caller or by dirty check in tick
-                }
+                // Sync is handled by the caller or by dirty check in tick.
             });
 
-            // Use legacy packet with SkillType if available for compatibility
-            SkillType legacyType = SkillType.fromResourceLocation(skillId);
-            if (legacyType != null) {
-                com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
-                        new com.etema.ragnarmmo.system.stats.net.ClientboundSkillXpPacket(legacyType, (int) amount));
-            }
+            com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
+                    new com.etema.ragnarmmo.system.stats.net.ClientboundSkillXpPacket(skillId, (int) amount));
         }
 
         return levelsGained;
@@ -305,11 +372,8 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
      */
     protected void onLevelUp(ResourceLocation skillId, int newLevel, int levelsGained) {
         if (player instanceof ServerPlayer serverPlayer) {
-            SkillType legacyType = SkillType.fromResourceLocation(skillId);
-            if (legacyType != null) {
-                com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
-                        new com.etema.ragnarmmo.system.stats.net.ClientboundLevelUpPacket(legacyType, newLevel));
-            }
+            com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
+                    new com.etema.ragnarmmo.system.stats.net.ClientboundLevelUpPacket(skillId, newLevel));
         }
     }
 
@@ -376,50 +440,57 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
             return false;
 
         SkillState state = skills.get(skillId);
-        if (state == null)
+        if (state == null) {
+            RagnarDebugLog.playerData("SKILL_UPGRADE skill={} result=reject reason=missing_state", skillId);
             return false;
+        }
 
         Optional<ISkillDefinition> defOpt = SkillRegistry.get(skillId).map(d -> (ISkillDefinition) d);
-        if (defOpt.isEmpty())
+        if (defOpt.isEmpty()) {
+            RagnarDebugLog.playerData("SKILL_UPGRADE skill={} result=reject reason=missing_definition", skillId);
             return false;
+        }
 
         ISkillDefinition def = defOpt.get();
 
         // Check if skill can be upgraded with skill points
-        if (!def.canUpgradeWithPoints())
+        if (!def.canUpgradeWithPoints()) {
+            RagnarDebugLog.playerData("SKILL_UPGRADE skill={} result=reject reason=no_point_upgrade", skillId);
             return false;
+        }
 
         // Check max level
-        if (state.getLevel() >= def.getMaxLevel())
+        if (state.getLevel() >= def.getMaxLevel()) {
+            RagnarDebugLog.playerData("SKILL_UPGRADE skill={} result=reject reason=maxed level={}", skillId,
+                    state.getLevel());
             return false;
+        }
 
         // 1. Get Stats for Skill Points
         var statsOpt = com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(player);
-        if (statsOpt.isEmpty())
+        if (statsOpt.isEmpty()) {
+            RagnarDebugLog.playerData("SKILL_UPGRADE skill={} result=reject reason=missing_stats", skillId);
             return false;
+        }
         var stats = statsOpt.get();
 
-        if (stats.getSkillPoints() <= 0)
+        if (stats.getSkillPoints() <= 0) {
+            RagnarDebugLog.playerData("SKILL_UPGRADE skill={} result=reject reason=no_points", skillId);
             return false;
+        }
 
         // 2. Check Job Allow
         var job = com.etema.ragnarmmo.common.api.jobs.JobType.fromId(stats.getJobId());
         Set<String> allowedJobs = def.getAllowedJobs();
         
-        // If the skill has restricted jobs, check if current job (or ancestor) is allowed.
-        // We check:
-        // 1. If allowedJobs is empty (available to all)
-        // 2. If it contains the exact job ID (case-insensitive)
-        // 3. If it contains the first-class ancestor ID (so Wizards can upgrade Mage skills)
+        // Exact job, inherited first-job access, and Novice carryover are resolved
+        // centrally by JobType.
         if (!allowedJobs.isEmpty()) {
-            String currentJobId = job.getId().toUpperCase(Locale.ROOT);
-            var firstClass = job.getFirstClassAncestor();
-            String ancestorId = firstClass != null ? firstClass.getId().toUpperCase(Locale.ROOT) : "";
-
-            boolean jobAllowed = allowedJobs.stream()
-                .anyMatch(s -> s.equalsIgnoreCase(currentJobId) || s.equalsIgnoreCase(ancestorId) || s.equalsIgnoreCase("NOVICE"));
+            boolean jobAllowed = allowedJobs.stream().anyMatch(job::matchesSkillRule);
 
             if (!jobAllowed) {
+                RagnarDebugLog.playerData("SKILL_UPGRADE skill={} result=reject reason=job job={}", skillId,
+                        job.getId());
                 return false;
             }
         }
@@ -428,14 +499,19 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
         Map<ResourceLocation, Integer> reqs = def.getRequirements();
         for (var entry : reqs.entrySet()) {
             if (getSkillLevel(entry.getKey()) < entry.getValue()) {
+                RagnarDebugLog.playerData("SKILL_UPGRADE skill={} result=reject reason=requirement required={} level={}",
+                        skillId, entry.getKey(), entry.getValue());
                 return false;
             }
         }
 
         // 4. Get upgrade cost
         int upgradeCost = def.getUpgradeCost();
-        if (stats.getSkillPoints() < upgradeCost)
+        if (stats.getSkillPoints() < upgradeCost) {
+            RagnarDebugLog.playerData("SKILL_UPGRADE skill={} result=reject reason=cost needed={} points={}", skillId,
+                    upgradeCost, stats.getSkillPoints());
             return false;
+        }
 
         // 5. Upgrade
         boolean upgraded = state.upgradeLevel(def.getMaxLevel());
@@ -443,17 +519,20 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
         if (upgraded) {
             stats.setSkillPoints(stats.getSkillPoints() - upgradeCost);
             onLevelUp(skillId, state.getLevel(), 1);
+            RagnarDebugLog.playerData("SKILL_UPGRADE skill={} result=ok newLevel={} remainingPoints={}", skillId,
+                    state.getLevel(), stats.getSkillPoints());
 
             // Sync stats (skill points) and skills to client
             if (player instanceof ServerPlayer sp) {
-                com.etema.ragnarmmo.common.net.Network.sendToPlayer(sp,
-                        new com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket(stats));
+                com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService.sync(sp, stats,
+                        com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.PROGRESSION.bit());
                 com.etema.ragnarmmo.common.net.Network.sendToPlayer(sp,
                         new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(this.serializeNBT()));
             }
             return true;
         }
 
+        RagnarDebugLog.playerData("SKILL_UPGRADE skill={} result=reject reason=upgrade_failed", skillId);
         return false;
     }
 
@@ -475,11 +554,13 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
 
     // === Casting System ===
     private ResourceLocation activeCastSkillId;
+    private int activeCastLevel;
     private int castTicksRemaining;
     private int castTotalTicks;
 
-    public void startCast(ResourceLocation skillId, int duration) {
+    public void startCast(ResourceLocation skillId, int level, int duration) {
         this.activeCastSkillId = skillId;
+        this.activeCastLevel = Math.max(1, level);
         this.castTotalTicks = duration;
         this.castTicksRemaining = duration;
 
@@ -497,12 +578,13 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
     @Deprecated
     @SuppressWarnings("removal")
     public void startCast(SkillType skill, int duration) {
-        startCast(skill != null ? skill.toResourceLocation() : null, duration);
+        startCast(skill != null ? skill.toResourceLocation() : null, 1, duration);
     }
 
     public void interruptCast() {
         if (activeCastSkillId != null) {
             this.activeCastSkillId = null;
+            this.activeCastLevel = 0;
             this.castTicksRemaining = 0;
             this.castTotalTicks = 0;
 
@@ -519,6 +601,10 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
 
     public ResourceLocation getActiveCastSkillId() {
         return activeCastSkillId;
+    }
+
+    public int getActiveCastLevel() {
+        return activeCastLevel;
     }
 
     /**
@@ -580,6 +666,8 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
 
+        applyPendingCooldowns();
+
         // Serialize skills with full ResourceLocation
         for (Map.Entry<ResourceLocation, SkillState> entry : skills.entrySet()) {
             CompoundTag skillTag = new CompoundTag();
@@ -609,7 +697,23 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
                 }
             }
             tag.put("cooldowns", cooldownTag);
+
+            long globalRemaining = globalCooldownUntil - now;
+            if (globalRemaining > 0) {
+                tag.putLong("globalCooldown", globalRemaining);
+                tag.putInt("globalCooldownDuration", globalCooldownDuration);
+            }
         }
+
+        CompoundTag warpTag = new CompoundTag();
+        warpTag.putInt("selectedDestination", selectedWarpDestination);
+        for (int i = 0; i < MAX_WARP_MEMOS; i++) {
+            WarpMemo memo = warpMemos[i];
+            if (memo != null) {
+                warpTag.put("memo_" + (i + 1), memo.serializeNBT());
+            }
+        }
+        tag.put("warpPortal", warpTag);
 
         return tag;
     }
@@ -624,10 +728,27 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
             state.reset();
         }
 
+        Arrays.fill(hotbar, null);
+        for (int i = 0; i < cartInventory.getSlots(); i++) {
+            cartInventory.setStackInSlot(i, ItemStack.EMPTY);
+        }
+
+        activeCastSkillId = null;
+        activeCastLevel = 0;
+        castTicksRemaining = 0;
+        castTotalTicks = 0;
+        cooldowns.clear();
+        cooldownDurations.clear();
+        pendingCooldowns.clear();
+        globalCooldownUntil = 0L;
+        globalCooldownDuration = 0;
+
         // Load skills from NBT
         for (String key : tag.getAllKeys()) {
             // Skip non-skill keys
-            if (key.equals("cartInventory") || key.equals("hotbar") || key.equals("cooldowns")) {
+            if (key.equals("cartInventory") || key.equals("hotbar") || key.equals("cooldowns")
+                    || key.equals("globalCooldown") || key.equals("globalCooldownDuration")
+                    || key.equals("warpPortal")) {
                 continue;
             }
 
@@ -695,10 +816,43 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
                 }
 
                 if (skillId != null) {
-                    pendingCooldowns.put(skillId, cooldownTag.getLong(key));
+                    long remaining = cooldownTag.getLong(key);
+                    if (remaining > 0) {
+                        pendingCooldowns.put(skillId, remaining);
+                        int duration = SkillRegistry.get(skillId)
+                                .map(ISkillDefinition::getCooldownTicks)
+                                .orElse((int) Math.min(Integer.MAX_VALUE, remaining));
+                        cooldownDurations.put(skillId, Math.max(1, duration));
+                    }
                 }
             }
         }
+
+        if (tag.contains("globalCooldown") && player != null) {
+            long remaining = tag.getLong("globalCooldown");
+            if (remaining > 0) {
+                globalCooldownUntil = player.level().getGameTime() + remaining;
+                globalCooldownDuration = tag.contains("globalCooldownDuration")
+                        ? Math.max(1, tag.getInt("globalCooldownDuration"))
+                        : (int) Math.min(Integer.MAX_VALUE, remaining);
+            }
+        }
+
+        selectedWarpDestination = 0;
+        Arrays.fill(warpMemos, null);
+        if (tag.contains("warpPortal")) {
+            CompoundTag warpTag = tag.getCompound("warpPortal");
+            selectedWarpDestination = Math.max(0,
+                    Math.min(MAX_WARP_MEMOS, warpTag.getInt("selectedDestination")));
+            for (int i = 0; i < MAX_WARP_MEMOS; i++) {
+                String key = "memo_" + (i + 1);
+                if (warpTag.contains(key)) {
+                    warpMemos[i] = WarpMemo.fromNBT(warpTag.getCompound(key));
+                }
+            }
+        }
+
+        applyPendingCooldowns();
     }
 
     /**
@@ -713,6 +867,19 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
         for (SkillState state : skills.values()) {
             state.reset();
         }
+
+        Arrays.fill(hotbar, null);
+        activeCastSkillId = null;
+        activeCastLevel = 0;
+        castTicksRemaining = 0;
+        castTotalTicks = 0;
+        selectedWarpDestination = 0;
+        cooldowns.clear();
+        cooldownDurations.clear();
+        pendingCooldowns.clear();
+        globalCooldownUntil = 0L;
+        globalCooldownDuration = 0;
+        Arrays.fill(warpMemos, null);
 
         for (int i = 0; i < cartInventory.getSlots(); i++) {
             cartInventory.setStackInSlot(i, ItemStack.EMPTY);
@@ -746,6 +913,7 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
     }
 
     public boolean isOnCooldown(ResourceLocation skillId) {
+        applyPendingCooldowns();
         return player != null && player.level().getGameTime() < cooldowns.getOrDefault(skillId, 0L);
     }
 
@@ -776,7 +944,18 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
         }
     }
 
+    public long getCooldownTicksRemaining(ResourceLocation skillId) {
+        applyPendingCooldowns();
+        if (player == null || skillId == null)
+            return 0L;
+        long now = player.level().getGameTime();
+        long localEnd = cooldowns.getOrDefault(skillId, 0L);
+        long globalEnd = globalCooldownUntil;
+        return Math.max(0, Math.max(localEnd - now, globalEnd - now));
+    }
+
     public float getCooldownProgress(ResourceLocation skillId, float partialTick) {
+        applyPendingCooldowns();
         if (player == null || skillId == null)
             return 0f;
 
@@ -784,7 +963,18 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
 
         // Check local cooldown
         long localEnd = cooldowns.getOrDefault(skillId, 0L);
-        int localDuration = cooldownDurations.getOrDefault(skillId, 1);
+        int localDuration = cooldownDurations.getOrDefault(skillId, 0);
+        
+        // Fallback: If we don't have the duration (e.g. just synced to client), 
+        // try to get it from the registry.
+        if (localDuration <= 0 && now < localEnd) {
+            localDuration = SkillRegistry.get(skillId)
+                .map(com.etema.ragnarmmo.skill.api.ISkillDefinition::getCooldownTicks)
+                .orElse(1);
+            // Cache it for this session
+            cooldownDurations.put(skillId, localDuration);
+        }
+
         float localProgress = 0f;
         if (now < localEnd && localDuration > 0) {
             localProgress = (float) (localEnd - now) / (float) localDuration;
@@ -797,7 +987,7 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
         }
 
         // Return the most restrictive (highest progress bar value)
-        return Math.max(localProgress, globalProgress);
+        return Math.max(0, Math.min(1.0f, Math.max(localProgress, globalProgress)));
     }
 
     /**

@@ -1,0 +1,7 @@
+{
+  "skill_id": "ragnarmmo:sanctuary",
+  "bindings": [
+    { "phase": "aoe_loop", "effect": "ragnarmmo:aoe/sanctuary_loop" },
+    { "phase": "aoe_loop", "effect": "ragnarmmo:aoe/sanctuary_aura_particles" }
+  ]
+}

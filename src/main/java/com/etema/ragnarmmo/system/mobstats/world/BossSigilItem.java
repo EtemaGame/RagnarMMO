@@ -1,0 +1,220 @@
+package com.etema.ragnarmmo.system.mobstats.world;
+
+import com.etema.ragnarmmo.common.api.mobs.MobTier;
+import com.etema.ragnarmmo.roitems.UtilityItems;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+
+public class BossSigilItem extends Item {
+
+    private static final String TAG_ENTITY_TYPE = "BossEntityType";
+    private static final String TAG_TIER = "BossTier";
+    private static final String TAG_SPAWN_KEY = "BossSpawnKey";
+    private static final String TAG_RESPAWN_SECONDS = "BossRespawnSeconds";
+
+    public BossSigilItem(Properties props) {
+        super(props);
+    }
+
+    public static ItemStack createConfiguredStack(
+            EntityType<?> entityType,
+            MobTier tier,
+            String spawnKey,
+            int respawnSeconds) {
+        ItemStack stack = new ItemStack(UtilityItems.BOSS_SIGIL.get());
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putString(TAG_ENTITY_TYPE, BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString());
+        tag.putString(TAG_TIER, tier.name());
+        tag.putString(TAG_SPAWN_KEY, sanitizeSpawnKey(spawnKey));
+        tag.putInt(TAG_RESPAWN_SECONDS, Math.max(0, respawnSeconds));
+        return stack;
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        Level level = context.getLevel();
+        BlockPos clickedPos = context.getClickedPos();
+        BlockState state = level.getBlockState(clickedPos);
+        if (!state.is(Blocks.LODESTONE)) {
+            return InteractionResult.PASS;
+        }
+        if (context.getClickedFace() != Direction.UP) {
+            return InteractionResult.FAIL;
+        }
+
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return InteractionResult.sidedSuccess(true);
+        }
+
+        Optional<EntityType<?>> entityType = getConfiguredEntityType(context.getItemInHand());
+        Optional<MobTier> tier = getConfiguredTier(context.getItemInHand());
+        String spawnKey = getSpawnKey(context.getItemInHand());
+        int respawnSeconds = getRespawnSeconds(context.getItemInHand());
+
+        if (entityType.isEmpty() || tier.isEmpty() || spawnKey.isBlank()) {
+            sendPlayerMessage(context, Component.translatable("tooltip.ragnarmmo.boss_sigil.unconfigured")
+                    .withStyle(ChatFormatting.RED));
+            return InteractionResult.FAIL;
+        }
+
+        BlockPos spawnPos = clickedPos.above();
+        if (!serverLevel.getBlockState(spawnPos).canBeReplaced()) {
+            sendPlayerMessage(context, Component.translatable("tooltip.ragnarmmo.boss_sigil.space_blocked")
+                    .withStyle(ChatFormatting.RED));
+            return InteractionResult.FAIL;
+        }
+
+        BossSpawnService.SpawnResult result = BossSpawnService.spawnControlledBoss(
+                serverLevel,
+                spawnPos,
+                entityType.get(),
+                tier.get(),
+                BossSpawnSource.ALTAR,
+                spawnKey,
+                respawnSeconds);
+        if (!result.success()) {
+            sendPlayerMessage(context, Component.literal(result.message()).withStyle(ChatFormatting.RED));
+            return InteractionResult.FAIL;
+        }
+
+        if (context.getPlayer() != null && !context.getPlayer().getAbilities().instabuild) {
+            context.getItemInHand().shrink(1);
+        }
+        sendPlayerMessage(context, Component.translatable("tooltip.ragnarmmo.boss_sigil.spawned", result.spawnKey())
+                .withStyle(ChatFormatting.GREEN));
+        return InteractionResult.CONSUME;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, level, tooltip, flag);
+
+        Optional<EntityType<?>> entityType = getConfiguredEntityType(stack);
+        Optional<MobTier> tier = getConfiguredTier(stack);
+        String spawnKey = getSpawnKey(stack);
+        int respawnSeconds = getRespawnSeconds(stack);
+
+        if (entityType.isEmpty() || tier.isEmpty() || spawnKey.isBlank()) {
+            tooltip.add(Component.translatable("tooltip.ragnarmmo.boss_sigil.unconfigured")
+                    .withStyle(ChatFormatting.RED));
+            return;
+        }
+
+        tooltip.add(Component.translatable("tooltip.ragnarmmo.boss_sigil.entity", entityType.get().getDescription())
+                .withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.ragnarmmo.boss_sigil.tier", formatTier(tier.get()))
+                .withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.ragnarmmo.boss_sigil.spawn_key", spawnKey)
+                .withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.ragnarmmo.boss_sigil.respawn", respawnSeconds)
+                .withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.ragnarmmo.boss_sigil.use_lodestone")
+                .withStyle(ChatFormatting.BLUE));
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        Optional<EntityType<?>> entityType = getConfiguredEntityType(stack);
+        Optional<MobTier> tier = getConfiguredTier(stack);
+        if (entityType.isPresent() && tier.isPresent()) {
+            return Component.translatable(
+                    "item.ragnarmmo.utility.boss_sigil.named",
+                    formatTier(tier.get()),
+                    entityType.get().getDescription());
+        }
+        return super.getName(stack);
+    }
+
+    public static Optional<EntityType<?>> getConfiguredEntityType(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains(TAG_ENTITY_TYPE)) {
+            return Optional.empty();
+        }
+
+        ResourceLocation id = ResourceLocation.tryParse(tag.getString(TAG_ENTITY_TYPE));
+        if (id == null || !BuiltInRegistries.ENTITY_TYPE.containsKey(id)) {
+            return Optional.empty();
+        }
+        return Optional.of(BuiltInRegistries.ENTITY_TYPE.get(id));
+    }
+
+    public static Optional<MobTier> getConfiguredTier(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains(TAG_TIER)) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(MobTier.valueOf(tag.getString(TAG_TIER)));
+        } catch (IllegalArgumentException ex) {
+            return Optional.empty();
+        }
+    }
+
+    public static String getSpawnKey(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains(TAG_SPAWN_KEY)) {
+            return "";
+        }
+        return sanitizeSpawnKey(tag.getString(TAG_SPAWN_KEY));
+    }
+
+    public static int getRespawnSeconds(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains(TAG_RESPAWN_SECONDS)) {
+            return 0;
+        }
+        return Math.max(0, tag.getInt(TAG_RESPAWN_SECONDS));
+    }
+
+    private static void sendPlayerMessage(UseOnContext context, Component message) {
+        if (context.getPlayer() != null) {
+            context.getPlayer().displayClientMessage(message, true);
+        }
+    }
+
+    private static String sanitizeSpawnKey(String spawnKey) {
+        return spawnKey == null ? "" : spawnKey.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private static Component formatTier(MobTier tier) {
+        String raw = tier.name().toLowerCase(Locale.ROOT).replace('_', ' ');
+        String[] words = raw.split(" ");
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < words.length; i++) {
+            if (words[i].isEmpty()) {
+                continue;
+            }
+            if (builder.length() > 0) {
+                builder.append(' ');
+            }
+            builder.append(Character.toUpperCase(words[i].charAt(0)));
+            if (words[i].length() > 1) {
+                builder.append(words[i].substring(1));
+            }
+        }
+        return Component.literal(builder.toString());
+    }
+}

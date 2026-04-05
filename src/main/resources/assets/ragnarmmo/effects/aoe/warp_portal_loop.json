@@ -1,0 +1,15 @@
+{
+  "id": "ragnarmmo:aoe/warp_portal_loop",
+  "type": "sprite_sheet",
+  "texture": "ragnarmmo:textures/entity/magic/warp.png",
+  "columns": 1,
+  "rows": 1,
+  "frame_count": 1,
+  "fps": 8,
+  "duration_ticks": 20,
+  "loop": true,
+  "size": 2.6,
+  "orientation": "ground",
+  "offset": [0.0, 0.02, 0.0],
+  "render_type": "translucent"
+}

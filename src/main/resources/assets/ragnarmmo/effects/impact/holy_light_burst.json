@@ -1,0 +1,30 @@
+{
+  "id": "ragnarmmo:impact/holy_light_burst",
+  "type": "layered",
+  "duration_ticks": 8,
+  "loop": false,
+  "layers": [
+    {
+      "name": "holy_bloom",
+      "blend_mode": "emissive",
+      "orientation": "billboard",
+      "z_order": 0,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.22, "scale_y": 0.22, "alpha": 0.95, "texture": "minecraft:textures/block/sea_lantern.png" },
+        { "tick": 4, "scale_x": 0.70, "scale_y": 0.70, "alpha": 0.55, "texture": "minecraft:textures/block/sea_lantern.png" },
+        { "tick": 8, "scale_x": 0.98, "scale_y": 0.98, "alpha": 0.0, "texture": "minecraft:textures/block/sea_lantern.png" }
+      ]
+    },
+    {
+      "name": "holy_cross",
+      "blend_mode": "emissive",
+      "orientation": "billboard",
+      "z_order": 1,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.12, "scale_y": 0.32, "alpha": 1.0, "texture": "minecraft:textures/block/smooth_quartz.png" },
+        { "tick": 4, "scale_x": 0.24, "scale_y": 0.62, "alpha": 0.55, "texture": "minecraft:textures/block/smooth_quartz.png" },
+        { "tick": 8, "scale_x": 0.36, "scale_y": 0.82, "alpha": 0.0, "texture": "minecraft:textures/block/smooth_quartz.png" }
+      ]
+    }
+  ]
+}

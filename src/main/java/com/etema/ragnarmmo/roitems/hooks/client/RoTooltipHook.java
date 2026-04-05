@@ -3,7 +3,9 @@ package com.etema.ragnarmmo.roitems.hooks.client;
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.roitems.config.RoItemsConfig;
 import com.etema.ragnarmmo.roitems.data.RoItemRule;
+import com.etema.ragnarmmo.roitems.runtime.RoItemNbtHelper;
 import com.etema.ragnarmmo.roitems.runtime.RoItemRuleResolver;
+import com.etema.ragnarmmo.roitems.runtime.RoItemTextHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -39,10 +41,14 @@ public final class RoTooltipHook {
         RoItemRule rule = RoItemRuleResolver.resolve(stack);
 
         // Skip if no meaningful rule exists
-        if (rule == null || rule.isEmpty())
+        if ((rule == null || rule.isEmpty()) && RoItemNbtHelper.getRefineLevel(stack) <= 0)
             return;
 
         Player player = Minecraft.getInstance().player;
+
+        if (!event.getToolTip().isEmpty()) {
+            event.getToolTip().set(0, RoItemTextHelper.getDisplayName(stack));
+        }
 
         // Add tooltip lines
         RoTooltipFormatter.addTooltipLines(event.getToolTip(), stack, rule, player);
@@ -57,13 +63,13 @@ public final class RoTooltipHook {
         
         // This is a common strategy: removing lines that are added by Item.appendHoverText
         // or automatically by ItemStack.getTooltipLines.
-        // Since we can't easily detect "vanilla-ness" of a line after it's added, 
+        // Since we can't easily detect "vanilla-ness" of a line after it's added,
         // we look for the "When in..." headers and remove them + their subsequent indented lines.
-        
+
         for (int i = 0; i < tooltip.size(); i++) {
             Component c = tooltip.get(i);
             String text = c.getString();
-            
+
             // Check for vanilla slot headers
             if (text.startsWith("When in ") || text.startsWith("Al estar en ")) {
                 // Remove this line and subsequent lines until we hit an empty line or another header

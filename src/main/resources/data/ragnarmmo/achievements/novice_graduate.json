@@ -1,12 +1,12 @@
 {
     "category": "BASIC",
-    "name": "Novice Graduate",
-    "description": "Reach Job Level 10.",
+    "name": "achievement.ragnarmmo.novice_graduate.name",
+    "description": "achievement.ragnarmmo.novice_graduate.desc",
     "trigger_type": "level_up",
     "trigger_id": "job",
     "required_amount": 10,
     "points": 10,
-    "title": "Ready to Change",
+    "title": "title.ragnarmmo.the_apprentice",
     "rewards": {
         "minecraft:bread": 10
     }

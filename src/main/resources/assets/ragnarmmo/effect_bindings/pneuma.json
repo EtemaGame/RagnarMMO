@@ -1,0 +1,6 @@
+{
+  "skill_id": "ragnarmmo:pneuma",
+  "bindings": [
+    { "phase": "aoe_loop", "effect": "ragnarmmo:aoe/pneuma_loop" }
+  ]
+}

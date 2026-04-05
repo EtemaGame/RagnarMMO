@@ -3,26 +3,18 @@ package com.etema.ragnarmmo.skill.job.swordman;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-
-import java.util.UUID;
 
 import java.util.Set;
 
 /**
  * Sword Mastery — Passive
- * RO: +4 ATK per level when wielding 1-Handed Swords or Daggers.
- * Minecraft: +2% damage per level added to incoming damage on offensive hits via AttributeModifier.
- *  
- * Applied via onOffensiveHurt so it only triggers when the player is the attacker.
+ * RO: +4 ATK per level when wielding 1-Handed Swords.
+ * Minecraft adaptation: adds a flat +4 damage per level to outgoing sword hits.
  */
 public class SwordMasterySkillEffect implements ISkillEffect {
 
     private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "sword_mastery");
-    private static final UUID MODIFIER_UUID = UUID.fromString("b3c4d5e6-0001-0001-0001-000000000001");
-    private static final String MODIFIER_NAME = "ragnarmmo:sword_mastery_dmg";
 
     @Override
     public Set<TriggerType> getSupportedTriggers() {
@@ -38,12 +30,12 @@ public class SwordMasterySkillEffect implements ISkillEffect {
     public void onOffensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
         if (level <= 0) return;
 
-        // Only apply when holding a SwordItem or Dagger (SwordItem subtypes)
         net.minecraft.world.item.ItemStack held = player.getMainHandItem();
         if (!(held.getItem() instanceof net.minecraft.world.item.SwordItem)) return;
+        boolean isTwoHanded = held.getTags()
+                .anyMatch(tag -> tag.location().toString().equals("ragnarmmo:two_handed"));
+        if (isTwoHanded) return;
 
-        // +2% damage per level (max +20% at level 10)
-        float bonus = event.getAmount() * (0.02f * level);
-        event.setAmount(event.getAmount() + bonus);
+        event.setAmount(event.getAmount() + (4.0f * level));
     }
 }

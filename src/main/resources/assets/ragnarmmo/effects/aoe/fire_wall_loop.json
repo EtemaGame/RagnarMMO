@@ -1,0 +1,14 @@
+{
+  "id": "ragnarmmo:aoe/fire_wall_loop",
+  "type": "particle_emitter",
+  "particle": "minecraft:small_flame",
+  "shape": "point",
+  "duration_ticks": 20,
+  "loop": true,
+  "emit_interval_ticks": 1,
+  "count": 6,
+  "offset": [0.0, 0.15, 0.0],
+  "spread": [0.16, 0.72, 0.16],
+  "base_velocity": [0.0, 0.015, 0.0],
+  "random_velocity": [0.01, 0.02, 0.01]
+}

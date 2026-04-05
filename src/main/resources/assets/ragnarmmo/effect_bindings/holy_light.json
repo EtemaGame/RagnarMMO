@@ -1,0 +1,7 @@
+{
+  "skill_id": "ragnarmmo:holy_light",
+  "bindings": [
+    { "phase": "projectile_tick", "effect": "ragnarmmo:projectiles/holy_light_travel" },
+    { "phase": "impact", "effect": "ragnarmmo:impact/holy_light_burst" }
+  ]
+}

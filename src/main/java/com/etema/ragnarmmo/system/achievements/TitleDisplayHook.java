@@ -21,7 +21,9 @@ public class TitleDisplayHook {
         event.getEntity().getCapability(PlayerAchievementsProvider.PLAYER_ACHIEVEMENTS).ifPresent(cap -> {
             String title = cap.getActiveTitle();
             if (title != null && !title.isEmpty()) {
-                MutableComponent titleComp = Component.literal("[" + title + "] ")
+                MutableComponent titleComp = Component.literal("[")
+                        .append(Component.translatable(title))
+                        .append("] ")
                         .withStyle(net.minecraft.ChatFormatting.GOLD);
 
                 Component newName = titleComp.append(event.getDisplayname());

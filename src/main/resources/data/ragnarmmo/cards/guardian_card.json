@@ -2,9 +2,11 @@
     "id": "guardian_card",
     "displayName": "Guardian Card",
     "mobId": "minecraft:guardian",
+    "equipType": "armor",
     "modifiers": {
         "ragnarmmo:agi": 2.0,
-        "ragnarmmo:dex": 1.0
+        "ragnarmmo:dex": 1.0,
+        "ragnarmmo:resist_element_water": 0.20
     },
     "dropRate": 0.005,
     "modelId": 23

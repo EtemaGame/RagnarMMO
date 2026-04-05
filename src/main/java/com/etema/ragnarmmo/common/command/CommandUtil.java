@@ -1,9 +1,9 @@
 package com.etema.ragnarmmo.common.command;
 
-import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
+import com.etema.ragnarmmo.common.api.player.IRoPlayerData;
+import com.etema.ragnarmmo.common.api.player.RoPlayerDataAccess;
 import com.etema.ragnarmmo.skill.api.IPlayerSkills;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
-import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
@@ -34,15 +34,27 @@ public final class CommandUtil {
         source.sendFailure(message);
     }
 
+    public static Optional<IRoPlayerData> getRoPlayerData(ServerPlayer player) {
+        return RoPlayerDataAccess.get(player);
+    }
+
     public static Optional<IPlayerStats> getStats(ServerPlayer player) {
-        return player == null ? Optional.empty() : RagnarCoreAPI.get(player);
+        return getRoPlayerData(player).map(IRoPlayerData::getStats);
     }
 
     public static Optional<IPlayerSkills> getSkills(ServerPlayer player) {
-        if (player == null) {
-            return Optional.empty();
-        }
-        return PlayerSkillsProvider.get(player).resolve().map(skills -> (IPlayerSkills) skills);
+        return getRoPlayerData(player).map(IRoPlayerData::getSkills);
+    }
+
+    public static boolean withRoPlayerData(ServerPlayer player, Consumer<IRoPlayerData> action) {
+        return getRoPlayerData(player).map(data -> {
+            action.accept(data);
+            return true;
+        }).orElse(false);
+    }
+
+    public static int withRoPlayerData(ServerPlayer player, ToIntFunction<IRoPlayerData> action) {
+        return getRoPlayerData(player).map(action::applyAsInt).orElse(0);
     }
 
     public static boolean withStats(ServerPlayer player, Consumer<IPlayerStats> action) {

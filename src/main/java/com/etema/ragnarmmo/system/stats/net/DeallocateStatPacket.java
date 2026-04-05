@@ -53,7 +53,6 @@ public class DeallocateStatPacket {
                     case LUK -> s.setLUK(currentValue - 1);
                 }
                 s.setStatPoints(s.getStatPoints() + refund);
-                s.markDirty();
             });
         });
         ctx.setPacketHandled(true);

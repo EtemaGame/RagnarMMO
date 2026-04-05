@@ -1,0 +1,6 @@
+{
+  "parent": "ragnarmmo:item/maces_1h/base_mace_1h",
+  "textures": {
+    "layer0": "ragnarmmo:item/weapons/maces_1h/sunburst_pernach"
+  }
+}

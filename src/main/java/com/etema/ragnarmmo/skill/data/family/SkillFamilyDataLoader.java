@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.skill.data.family;
 
+import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.system.stats.RagnarStats;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -9,6 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -137,6 +140,15 @@ public class SkillFamilyDataLoader extends SimpleJsonResourceReloadListener {
         public static void onAddReloadListeners(AddReloadListenerEvent event) {
             event.addListener(INSTANCE);
             LOGGER.debug("Registered SkillFamilyDataLoader");
+        }
+    }
+
+    @Mod.EventBusSubscriber(modid = RagnarMMO.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class ClientEvents {
+        @SubscribeEvent
+        public static void onRegisterClientReloadListeners(RegisterClientReloadListenersEvent event) {
+            event.registerReloadListener(INSTANCE);
+            LOGGER.debug("Registered client SkillFamilyDataLoader");
         }
     }
 }

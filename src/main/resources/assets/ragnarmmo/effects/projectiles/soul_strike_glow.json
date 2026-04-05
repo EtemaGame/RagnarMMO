@@ -1,0 +1,19 @@
+{
+  "id": "ragnarmmo:projectiles/soul_strike_glow",
+  "type": "layered",
+  "duration_ticks": 8,
+  "loop": true,
+  "layers": [
+    {
+      "name": "soul_glow",
+      "blend_mode": "emissive",
+      "orientation": "billboard",
+      "z_order": 0,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.14, "scale_y": 0.14, "alpha": 0.80, "rotation_deg": 0.0, "texture": "minecraft:textures/block/sculk_vein.png" },
+        { "tick": 4, "scale_x": 0.22, "scale_y": 0.22, "alpha": 1.0, "rotation_deg": 45.0, "texture": "minecraft:textures/block/sculk_vein.png" },
+        { "tick": 8, "scale_x": 0.14, "scale_y": 0.14, "alpha": 0.80, "rotation_deg": 90.0, "texture": "minecraft:textures/block/sculk_vein.png" }
+      ]
+    }
+  ]
+}

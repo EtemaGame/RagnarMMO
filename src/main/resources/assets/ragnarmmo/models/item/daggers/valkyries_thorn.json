@@ -1,6 +1,6 @@
 {
   "parent": "ragnarmmo:item/daggers/base_dagger",
   "textures": {
-    "layer0": "ragnarmmo:item/weapons/valkyries_thorn"
+    "layer0": "ragnarmmo:item/weapons/daggers/valkyries_thorn"
   }
 }

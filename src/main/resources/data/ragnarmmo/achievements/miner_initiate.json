@@ -1,13 +1,13 @@
 {
     "category": "ADVENTURE",
-    "name": "Miner Initiate",
-    "description": "Collect 64 Cobblestone.",
+    "name": "achievement.ragnarmmo.miner_initiate.name",
+    "description": "achievement.ragnarmmo.miner_initiate.desc",
     "trigger_type": "pickup_item",
     "trigger_id": "minecraft:cobblestone",
     "required_amount": 64,
     "points": 10,
-    "title": "Miner",
+    "title": "title.ragnarmmo.the_miner",
     "rewards": {
-        "minecraft:iron_pickaxe": 1
+        "minecraft:coal": 10
     }
 }

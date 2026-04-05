@@ -1,36 +1,54 @@
 package com.etema.ragnarmmo.skill.job.acolyte;
 
+import com.etema.ragnarmmo.common.init.RagnarMobEffects;
+import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
-import net.minecraft.network.chat.Component;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.world.effect.MobEffectInstance;
+
+import java.util.List;
 
 /**
- * Angelus — Passive (Acolyte)
+ * Angelus — Passive/Active (Acolyte)
  * RO: Increases DEF of all party members in range.
- * MC: While the skill level is > 0, reduces damage received from all sources
- *     by (level * 4)% via a damage hook. Level stored in PersistentData so
- *     AcolyteSkillEvents can read it passively.
+ * MC: Applies the ANGELUS MobEffect which increases Armor via AttributeModifiers.
  */
 public class AngelusSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "angelus");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "angelus");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        // Passive — toggle notice
-        player.getPersistentData().putInt("angelus_level", level);
-        if (level > 0) {
-            player.sendSystemMessage(Component.literal(
-                    "§6✦ Angelus §flv." + level + " activo — DEF +" + (level * 4) + "%"));
-        } else {
-            player.sendSystemMessage(Component.literal("§8Angelus desactivado."));
+        if (level <= 0) {
+            return;
         }
+
+        var defOpt = SkillRegistry.get(ID);
+        int durationTicks = defOpt
+                .map(def -> def.getLevelInt("duration_ticks", level, level * 30 * 20))
+                .orElse(level * 30 * 20);
+        int amplifier = defOpt
+                .map(def -> def.getLevelInt("effect_amplifier", level, level - 1))
+                .orElse(level - 1);
+
+        List<ServerPlayer> targets = AcolyteTargetingHelper.collectPartyMembersInRange(player, 16.0);
+        for (ServerPlayer target : targets) {
+            target.addEffect(new MobEffectInstance(RagnarMobEffects.ANGELUS.get(), durationTicks, amplifier));
+            if (player.level() instanceof ServerLevel sl) {
+                SkillVisualFx.spawnRing(sl, target.position(), 0.8, 1.2, ParticleTypes.GLOW, 10);
+                SkillVisualFx.spawnRing(sl, target.position(), 0.65, 0.15, ParticleTypes.END_ROD, 8);
+            }
+        }
+
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                RagnarSounds.ANGELUS.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.0f);
     }
 }

@@ -1,0 +1,30 @@
+{
+  "id": "ragnarmmo:projectiles/cold_bolt_travel",
+  "type": "layered",
+  "duration_ticks": 5,
+  "loop": true,
+  "layers": [
+    {
+      "name": "cold_bolt_body",
+      "blend_mode": "translucent",
+      "orientation": "velocity",
+      "z_order": 0,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.12, "scale_y": 0.40, "alpha": 0.96, "texture": "minecraft:textures/block/blue_ice.png" },
+        { "tick": 2, "scale_x": 0.14, "scale_y": 0.48, "alpha": 1.0, "texture": "minecraft:textures/block/blue_ice.png" },
+        { "tick": 5, "scale_x": 0.12, "scale_y": 0.40, "alpha": 0.96, "texture": "minecraft:textures/block/blue_ice.png" }
+      ]
+    },
+    {
+      "name": "cold_bolt_glow",
+      "blend_mode": "translucent",
+      "orientation": "velocity",
+      "z_order": 1,
+      "keyframes": [
+        { "tick": 0, "scale_x": 0.06, "scale_y": 0.46, "alpha": 0.90, "rotation_deg": 45.0, "texture": "minecraft:textures/block/packed_ice.png" },
+        { "tick": 2, "scale_x": 0.08, "scale_y": 0.54, "alpha": 1.0, "rotation_deg": 90.0, "texture": "minecraft:textures/block/packed_ice.png" },
+        { "tick": 5, "scale_x": 0.06, "scale_y": 0.46, "alpha": 0.90, "rotation_deg": 135.0, "texture": "minecraft:textures/block/packed_ice.png" }
+      ]
+    }
+  ]
+}

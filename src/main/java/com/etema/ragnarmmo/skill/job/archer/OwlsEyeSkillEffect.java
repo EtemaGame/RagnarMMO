@@ -7,6 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;
 
+import java.util.Set;
+
 /**
  * Owl's Eye — Passive
  * RO: Permanently adds +level DEX (accuracy/ranged attack power).
@@ -20,6 +22,11 @@ public class OwlsEyeSkillEffect implements ISkillEffect {
 
     @Override
     public ResourceLocation getSkillId() { return ID; }
+
+    @Override
+    public Set<TriggerType> getSupportedTriggers() {
+        return Set.of(TriggerType.PERIODIC_TICK);
+    }
 
     @Override
     public void onPeriodicTick(TickEvent.PlayerTickEvent event, ServerPlayer player, int level) {

@@ -1,12 +1,12 @@
 {
     "category": "ADVENTURE",
-    "name": "Apple Gatherer",
-    "description": "Collect 50 Apples.",
+    "name": "achievement.ragnarmmo.apple_gatherer.name",
+    "description": "achievement.ragnarmmo.apple_gatherer.desc",
     "trigger_type": "pickup_item",
     "trigger_id": "minecraft:apple",
-    "required_amount": 50,
-    "points": 20,
-    "title": "Hoarder",
+    "required_amount": 20,
+    "points": 10,
+    "title": "title.ragnarmmo.the_forager",
     "rewards": {
         "minecraft:golden_apple": 1
     }

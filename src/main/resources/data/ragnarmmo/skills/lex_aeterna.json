@@ -22,5 +22,5 @@
         "grid_x": 6,
         "grid_y": 2
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.priest.LexAeternaSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skill.job.priest.LexAeternaSkillEffect"
 }

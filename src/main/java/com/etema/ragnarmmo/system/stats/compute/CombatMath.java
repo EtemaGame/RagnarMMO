@@ -30,7 +30,7 @@ public final class CombatMath {
 
     // Damage Variance
     private static final double MIN_DAMAGE_ROLL = 0.8;
-    private static final double DEX_VARIANCE_DIVISOR = 200.0;
+    private static final double DEX_VARIANCE_DIVISOR = 150.0;
     private static final double LUK_VARIANCE_BONUS = 300.0;
 
     // HIT/FLEE
@@ -467,6 +467,16 @@ public final class CombatMath {
         return Math.max(CAST_MIN, fixed + variable);
     }
 
+    public static int computeCastDelay(int baseDelayTicks, net.minecraft.world.entity.player.Player player) {
+        if (baseDelayTicks <= 0) return 0;
+        
+        // Global after-cast delay reduction logic placeholder.
+        // e.g., Kiel-D-01 card effect (reduction = 0.3), or Bragi's Poem.
+        double reduction = 0.0; 
+        
+        return Math.max(0, (int) Math.round(baseDelayTicks * (1.0 - Math.min(1.0, reduction))));
+    }
+
     // ========================================
     // HP / MANA
     // ========================================
@@ -599,5 +609,71 @@ public final class CombatMath {
         damage = applyMagicDefense(damage, defenderINT, drMagic);
 
         return Math.max(1.0, damage);
+    }
+
+    // ========================================
+    // STATUS AILMENTS (RESISTANCE)
+    // ========================================
+
+    public static class TargetStats {
+        public final int vit;
+        public final int intStat;
+        public final int luk;
+
+        public TargetStats(int vit, int intStat, int luk) {
+            this.vit = vit;
+            this.intStat = intStat;
+            this.luk = luk;
+        }
+    }
+
+    public static TargetStats getTargetStats(net.minecraft.world.entity.LivingEntity entity) {
+        if (entity instanceof net.minecraft.world.entity.player.Player p) {
+            var capability = p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).resolve();
+            if (capability.isPresent()) {
+                var stats = capability.get();
+                return new TargetStats(stats.getVIT(), stats.getINT(), stats.getLUK());
+            }
+        } else {
+            var capability = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(entity).resolve();
+            if (capability.isPresent()) {
+                var stats = capability.get();
+                return new TargetStats(
+                    stats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT),
+                    stats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT),
+                    stats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK)
+                );
+            }
+        }
+        return new TargetStats(1, 1, 1);
+    }
+
+    public static float computeStunChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {
+        TargetStats ts = getTargetStats(target);
+        // RO formula: (1 - VIT/100)
+        double res = 1.0 - (ts.vit / 100.0) - (ts.luk / 300.0);
+        res = clamp(0.0, 1.0, res);
+        return (float) (baseChance * res);
+    }
+
+    public static int computeStunDuration(int baseDurationTicks, net.minecraft.world.entity.LivingEntity target) {
+        TargetStats ts = getTargetStats(target);
+        double res = 1.0 - (ts.vit / 100.0);
+        res = clamp(0.0, 1.0, res);
+        return (int) (baseDurationTicks * res);
+    }
+    
+    public static float computePoisonChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {
+        TargetStats ts = getTargetStats(target);
+        double res = 1.0 - (ts.vit / 100.0) - (ts.luk / 300.0);
+        res = clamp(0.0, 1.0, res);
+        return (float) (baseChance * res);
+    }
+
+    public static int computePoisonDuration(int baseDurationTicks, net.minecraft.world.entity.LivingEntity target) {
+        TargetStats ts = getTargetStats(target);
+        double res = 1.0 - (ts.vit / 100.0);
+        res = clamp(0.0, 1.0, res);
+        return (int) (baseDurationTicks * res);
     }
 }

@@ -105,12 +105,19 @@ public class BashSkillEffect extends InstantTargetSkillEffect {
         if (user instanceof Player player && level >= 6) {
             SkillProgress fbProgress = SkillProgressManager.getProgress(player, FATAL_BLOW);
             if (fbProgress != null && fbProgress.getLevel() > 0) {
-                float stunChancePercent = defOpt
+                float baseStunChance = defOpt
                         .map(def -> (float) def.getLevelDouble("stun_chance_percent", level, 5.0 * (level - 5)))
-                        .orElse(5.0f * (level - 5));
-                if ((user.getRandom().nextFloat() * 100.0f) <= stunChancePercent) {
-                    target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 4, false, true, true));
-                    target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 60, 1, false, true, false));
+                        .orElse(5.0f * (level - 5)) / 100.0f;
+                
+                float finalStunChance = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStunChance(baseStunChance, target);
+                int finalStunDuration = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStunDuration(60, target);
+
+                if (finalStunDuration > 0 && user.getRandom().nextFloat() < finalStunChance) {
+                    long until = serverLevel.getGameTime() + finalStunDuration;
+                    target.getPersistentData().putLong("ragnarmmo_stunned_until", until);
+
+                    target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, finalStunDuration, 4, false, true, true));
+                    target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, finalStunDuration, 1, false, true, false));
                     serverLevel.sendParticles(ParticleTypes.ENTITY_EFFECT,
                             target.getX(), target.getY() + 2.2, target.getZ(),
                             8, 0.2, 0.1, 0.2, 0);

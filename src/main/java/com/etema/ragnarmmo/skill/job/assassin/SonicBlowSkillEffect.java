@@ -84,12 +84,14 @@ public class SonicBlowSkillEffect implements ISkillEffect {
                     serverLevel.playSound(null, target.getX(), target.getY(), target.getZ(),
                             SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.4f);
 
-                    // RO: 30% Stun chance
-                    if (player.level().random.nextFloat() < 0.3f) {
-                        long until = player.level().getGameTime() + 60; // 3s stun
+                    float finalStunChance = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStunChance(stunChance, target);
+                    int finalStunDuration = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStunDuration(60, target);
+
+                    if (finalStunDuration > 0 && player.level().random.nextFloat() < finalStunChance) {
+                        long until = player.level().getGameTime() + finalStunDuration;
                         target.getPersistentData().putLong("ragnarmmo_stunned_until", until);
-                        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 10, false, false));
-                        target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 1, false, true, false));
+                        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, finalStunDuration, 10, false, false));
+                        target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, Math.max(1, finalStunDuration - 20), 1, false, true, false));
                         serverLevel.playSound(null, target.getX(), target.getY(), target.getZ(),
                                 SoundEvents.ANVIL_PLACE, SoundSource.PLAYERS, 0.5f, 1.8f);
                     }

@@ -171,58 +171,63 @@ public final class CombatPropertyResolver {
             };
             case WATER -> switch (defense) {
                 case WATER -> 0.25;
-                case FIRE -> 0.5;
-                case WIND -> 1.75;
+                case FIRE -> 1.5;
+                case WIND -> 0.5;
+                case HOLY, DARK -> 0.75;
                 default -> 1.0;
             };
             case EARTH -> switch (defense) {
-                case FIRE -> 1.5;
-                case WIND -> 0.5;
+                case EARTH -> 0.25;
+                case FIRE -> 0.5;
+                case WIND -> 1.5;
                 case POISON -> 1.25;
+                case HOLY, DARK -> 0.75;
                 default -> 1.0;
             };
             case FIRE -> switch (defense) {
-                case WATER -> 1.5;
-                case EARTH -> 0.5;
+                case WATER -> 0.5;
+                case EARTH -> 1.5;
                 case FIRE -> 0.25;
-                case POISON -> 1.25;
+                case POISON, UNDEAD -> 1.25;
+                case HOLY, DARK -> 0.75;
                 default -> 1.0;
             };
             case WIND -> switch (defense) {
-                case WATER -> 0.5;
-                case EARTH -> 1.5;
+                case WATER -> 1.5;
+                case EARTH -> 0.5;
                 case WIND -> 0.25;
                 case POISON -> 1.25;
+                case HOLY, DARK -> 0.75;
                 default -> 1.0;
             };
             case POISON -> switch (defense) {
                 case POISON -> 0.0;
-                case DARK, UNDEAD -> 0.5;
+                case HOLY -> 0.75;
+                case DARK -> 0.5;
+                case UNDEAD -> -0.25;
                 default -> 1.0;
             };
             case HOLY -> switch (defense) {
-                case WATER, EARTH, FIRE, WIND, POISON, GHOST -> 0.75;
+                case WATER, EARTH, FIRE, WIND, POISON -> 0.75;
                 case HOLY -> 0.0;
-                case DARK -> 1.25;
+                case DARK, GHOST -> 1.25;
+                case UNDEAD -> 1.5;
                 default -> 1.0;
             };
             case DARK -> switch (defense) {
                 case POISON -> 0.5;
                 case HOLY -> 1.25;
-                case DARK, UNDEAD -> 0.0;
-                case GHOST -> 0.75;
+                case DARK -> 0.0;
+                case UNDEAD -> -0.25;
                 default -> 1.0;
             };
             case GHOST -> switch (defense) {
-                case NEUTRAL -> 0.25;
                 case GHOST -> 1.25;
                 default -> 1.0;
             };
             case UNDEAD -> switch (defense) {
-                case FIRE -> 1.25;
-                case POISON, DARK -> -0.25;
-                case HOLY -> 1.5;
-                case UNDEAD -> 0.0;
+                case POISON, HOLY -> 0.5;
+                case DARK, UNDEAD -> 0.0;
                 default -> 1.0;
             };
         };

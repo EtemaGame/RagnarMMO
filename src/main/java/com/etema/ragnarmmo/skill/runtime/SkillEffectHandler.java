@@ -168,8 +168,7 @@ public class SkillEffectHandler {
                     } else {
                         if (tryConsumeAndExecute(player, stats, id, level, cost)) {
                             skills.setCooldown(id, def.getCooldownTicks(level));
-
-                            int castDelay = resolveCastDelay(def, effectOpt, level);
+                            int castDelay = resolveCastDelay(def, effectOpt, level, player);
                             if (castDelay > 0) {
                                 skills.setGlobalCooldown(castDelay);
                             }
@@ -218,8 +217,7 @@ public class SkillEffectHandler {
 
             if (tryConsumeAndExecute(player, stats, skillId, level, cost)) {
                 skills.setCooldown(skillId, def.getCooldownTicks(level));
-
-                int castDelay = resolveCastDelay(def, effectOpt, level);
+                int castDelay = resolveCastDelay(def, effectOpt, level, player);
                 if (castDelay > 0) {
                     skills.setGlobalCooldown(castDelay);
                 }
@@ -311,7 +309,7 @@ public class SkillEffectHandler {
         }
     }
 
-    private static int resolveCastDelay(SkillDefinition def, Optional<ISkillEffect> effectOpt, int level) {
+    private static int resolveCastDelay(SkillDefinition def, Optional<ISkillEffect> effectOpt, int level, ServerPlayer player) {
         int castDelay = def.getCastDelayTicks(level);
         if (effectOpt.isPresent()) {
             int scalingDelay = effectOpt.get().getCastDelay(level);
@@ -319,7 +317,13 @@ public class SkillEffectHandler {
                 castDelay = scalingDelay;
             }
         }
-        return Math.max(0, castDelay);
+        
+        // Enforce a 10-tick baseline for ACTIVE skills lacking a configured delay to prevent unnatural spam
+        if (castDelay == 0 && def.getUsageType() == com.etema.ragnarmmo.skill.api.SkillUsageType.ACTIVE) {
+            castDelay = 10;
+        }
+
+        return CombatMath.computeCastDelay(castDelay, player);
     }
 
     private static boolean tryConsumeAndExecute(ServerPlayer player, IPlayerStats stats, ResourceLocation skillId,

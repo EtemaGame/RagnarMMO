@@ -57,9 +57,12 @@ public class EnvenomSkillEffect implements ISkillEffect {
                 com.etema.ragnarmmo.combat.damage.SkillDamageHelper.dealSkillDamage(
                         target, player.damageSources().playerAttack(player), damage);
 
-                float poisonChance = 0.10f + (level * 0.04f); // 14% at Lv1 to 50% at Lv10
-                if (player.getRandom().nextFloat() < poisonChance) {
-                    target.addEffect(new MobEffectInstance(MobEffects.POISON, 200 + (level * 20), 0, false, true, true));
+                float basePoisonChance = 0.10f + (level * 0.04f); // 14% at Lv1 to 50% at Lv10
+                float finalPoisonChance = com.etema.ragnarmmo.system.stats.compute.CombatMath.computePoisonChance(basePoisonChance, target);
+                int finalPoisonDuration = com.etema.ragnarmmo.system.stats.compute.CombatMath.computePoisonDuration(200 + (level * 20), target);
+
+                if (finalPoisonDuration > 0 && player.getRandom().nextFloat() < finalPoisonChance) {
+                    target.addEffect(new MobEffectInstance(MobEffects.POISON, finalPoisonDuration, 0, false, true, true));
                 }
             }
         });

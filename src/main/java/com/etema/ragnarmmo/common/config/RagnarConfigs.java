@@ -199,6 +199,10 @@ public final class RagnarConfigs {
                         public final ForgeConfigSpec.DoubleValue jobExpGlobalMultiplier;
                         public final ForgeConfigSpec.IntValue baseStatPoints;
                         public final ForgeConfigSpec.IntValue pointsPerLevel;
+                        public final ForgeConfigSpec.DoubleValue skillToBaseExpMultiplier;
+                        public final ForgeConfigSpec.DoubleValue skillToJobExpMultiplier;
+                        public final ForgeConfigSpec.DoubleValue lifePointsToBaseExpMultiplier;
+                        public final ForgeConfigSpec.DoubleValue lifePointsToJobExpMultiplier;
 
                         Progression(ForgeConfigSpec.Builder builder) {
                                 builder.comment("Experience and stat point progression").push("progression");
@@ -210,6 +214,22 @@ public final class RagnarConfigs {
                                 jobExpGlobalMultiplier = builder
                                                 .comment("Global multiplier for all job EXP gains")
                                                 .defineInRange("job_exp_global_multiplier", 1.0, 0.01, 100.0);
+
+                                skillToBaseExpMultiplier = builder
+                                                .comment("Multiplier for skill XP contributing to base level")
+                                                .defineInRange("skill_to_base_exp_multiplier", 0.5, 0.0, 10.0);
+
+                                skillToJobExpMultiplier = builder
+                                                .comment("Multiplier for skill XP contributing to job level")
+                                                .defineInRange("skill_to_job_exp_multiplier", 0.5, 0.0, 10.0);
+
+                                lifePointsToBaseExpMultiplier = builder
+                                                .comment("Multiplier for life skill points contributing to base level")
+                                                .defineInRange("life_points_to_base_exp_multiplier", 2.0, 0.0, 100.0);
+
+                                lifePointsToJobExpMultiplier = builder
+                                                .comment("Multiplier for life skill points contributing to job level")
+                                                .defineInRange("life_points_to_job_exp_multiplier", 2.0, 0.0, 100.0);
 
                                 baseStatPoints = builder
                                                 .comment("Base stat points granted to new characters")

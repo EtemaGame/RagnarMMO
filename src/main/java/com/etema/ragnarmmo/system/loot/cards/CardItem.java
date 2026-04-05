@@ -55,11 +55,6 @@ public class CardItem extends Item {
         }
         tag.put(TAG_CARD_MODIFIERS, mods);
 
-        // Add vanilla custom model data for overlays
-        if (def.modelId() > 0) {
-            tag.putInt("CustomModelData", def.modelId());
-        }
-
         return stack;
     }
 

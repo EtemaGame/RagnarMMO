@@ -15,7 +15,7 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-@net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = RagnarStats.MOD_ID)
+@net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "ragnarmmo")
 public class PlayerStatsProvider
         implements ICapabilityProvider, net.minecraftforge.common.util.INBTSerializable<CompoundTag> {
     public static final Capability<IPlayerStats> CAP = CapabilityManager.get(new CapabilityToken<>() {
@@ -41,19 +41,26 @@ public class PlayerStatsProvider
 
     @SubscribeEvent
     public static void onClone(PlayerEvent.Clone e) {
-        // FIX CRÍTICO: Al morir, las capabilities del original pueden estar
-        // invalidadas.
-        // Debemos revivirlas temporalmente para copiar los datos.
         if (e.isWasDeath()) {
             e.getOriginal().reviveCaps();
         }
+        
         try {
-            e.getOriginal().getCapability(CAP).ifPresent(old -> e.getEntity().getCapability(CAP).ifPresent(cur -> {
+            var oldOpt = e.getOriginal().getCapability(CAP);
+            var newOpt = e.getEntity().getCapability(CAP);
+            
+            if (oldOpt.isPresent() && newOpt.isPresent()) {
+                IPlayerStats old = oldOpt.resolve().get();
+                IPlayerStats cur = newOpt.resolve().get();
                 cur.deserializeNBT(old.serializeNBT());
                 cur.markDirty();
-            }));
+            } else {
+                com.etema.ragnarmmo.RagnarMMO.LOGGER.error("Failed to clone PlayerStats: caps missing! (Old: {}, New: {})", 
+                    oldOpt.isPresent(), newOpt.isPresent());
+            }
+        } catch (Exception ex) {
+            com.etema.ragnarmmo.RagnarMMO.LOGGER.error("Error during PlayerStats cloning: ", ex);
         } finally {
-            // Invalidar de nuevo las caps del original si fue muerte
             if (e.isWasDeath()) {
                 e.getOriginal().invalidateCaps();
             }

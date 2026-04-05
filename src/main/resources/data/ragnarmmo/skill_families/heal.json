@@ -14,7 +14,7 @@
     "interruptible": true,
     "progression": {
       "max_level": 10,
-      "upgrade_cost": 2,
+      "upgrade_cost": 1,
       "can_gain_xp": false,
       "can_upgrade_with_points": true
     }

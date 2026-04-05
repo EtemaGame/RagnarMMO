@@ -82,7 +82,7 @@ public final class ExpCommands {
         int[] result = {0};
         player.getCapability(PlayerStatsProvider.CAP).ifPresent(stats -> {
             int lvBefore = stats.getJobLevel();
-            stats.addJobExpAndProcessLevelUps(amount, ExpTable::expToNext);
+            stats.addJobExpAndProcessLevelUps(amount, ExpTable::jobExpToNext);
             sync(player, stats);
             if (stats.getJobLevel() > lvBefore) {
                 sendOk(player, "✦ +" + amount + " job XP  →  Job Level " + stats.getJobLevel()

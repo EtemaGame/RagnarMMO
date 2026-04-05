@@ -58,10 +58,7 @@ public final class MobStatsProvider implements ICapabilityProvider, INBTSerializ
     }
 
     @SubscribeEvent
-    public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
-        if (event.getLevel().isClientSide()) {
-            return;
-        }
+    public static void onEntityJoin(net.minecraftforge.event.entity.EntityJoinLevelEvent event) {
         if (!(event.getEntity() instanceof LivingEntity living) || living instanceof Player) {
             return;
         }

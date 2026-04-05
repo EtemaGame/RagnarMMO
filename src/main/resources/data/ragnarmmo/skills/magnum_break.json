@@ -16,7 +16,7 @@
     },
     "cooldown_ticks": 40,
     "jobs": [
-        "SWORDMAN"
+        "SWORDSMAN"
     ],
     "requirements": {
         "ragnarmmo:bash": 5

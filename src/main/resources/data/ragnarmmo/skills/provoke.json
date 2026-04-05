@@ -16,7 +16,7 @@
     },
     "cooldown_ticks": 20,
     "jobs": [
-        "SWORDMAN"
+        "SWORDSMAN"
     ],
     "requirements": {},
     "ui": {

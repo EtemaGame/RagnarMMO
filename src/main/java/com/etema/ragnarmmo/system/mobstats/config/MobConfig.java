@@ -70,13 +70,7 @@ public final class MobConfig {
         public static final ForgeConfigSpec.ConfigValue<List<? extends String>> STRUCTURE_MIN_LEVELS;
         public static final ForgeConfigSpec.ConfigValue<List<? extends String>> BOSS_MIN_LEVELS;
 
-        // ==========================================
-        // IDENTITY (Classes)
-        // ==========================================
-        public static final ForgeConfigSpec.BooleanValue ENABLE_CLASS_SYSTEM;
-        public static final ForgeConfigSpec.ConfigValue<List<? extends String>> ENTITY_TO_CLASS;
-        public static final ForgeConfigSpec.ConfigValue<List<? extends String>> CLASS_GROWTH_OVERRIDES;
-        public static final ForgeConfigSpec.ConfigValue<List<? extends String>> CLASS_MULT_OVERRIDES;
+
 
         // ==========================================
         // MULTIPLAYER & RARITY
@@ -263,29 +257,6 @@ public final class MobConfig {
                 b.pop(); // minimums
                 b.pop(); // World scaling
 
-                // 3. IDENTITY (Classes)
-                b.comment("Mob classes and growth").push("identity");
-                ENABLE_CLASS_SYSTEM = b.define("enabled", true);
-                ENTITY_TO_CLASS = b.defineListAllowEmpty(List.of("entity_to_class"),
-                                () -> List.of(
-                                                "minecraft:zombie=warrior",
-                                                "minecraft:husk=warrior",
-                                                "minecraft:drowned=warrior",
-                                                "minecraft:skeleton=archer",
-                                                "minecraft:stray=archer",
-                                                "minecraft:pillager=archer",
-                                                "minecraft:creeper=rogue",
-                                                "minecraft:spider=beast",
-                                                "minecraft:cave_spider=beast",
-                                                "minecraft:enderman=mage",
-                                                "minecraft:witch=mage",
-                                                "minecraft:blaze=mage",
-                                                "minecraft:wither_skeleton=warrior",
-                                                "minecraft:piglin=warrior",
-                                                "minecraft:piglin_brute=warrior",
-                                                "minecraft:zombified_piglin=warrior"),
-                                o -> o instanceof String);
-
 
 
                 b.push("multiplayer_scaling");
@@ -299,14 +270,6 @@ public final class MobConfig {
                                 .comment("ATK multiplier per extra player nearby")
                                 .defineInRange("atk_per_player", 0.2, 0.0, 10.0);
                 b.pop();
-
-
-
-                CLASS_GROWTH_OVERRIDES = b.defineListAllowEmpty(List.of("class_growth_overrides"),
-                                Collections::emptyList, o -> o instanceof String);
-                CLASS_MULT_OVERRIDES = b.defineListAllowEmpty(List.of("class_mult_overrides"), Collections::emptyList,
-                                o -> o instanceof String);
-                b.pop(); // Identity
 
                 SPEC = b.build();
         }

@@ -27,6 +27,11 @@ public final class MobCombatHandler {
         if (target.level().isClientSide())
             return;
 
+        // Player-vs-anything is handled exclusively by CommonEvents.onHurt()
+        // which uses full RO combat formulas. Skip here to prevent stacking.
+        if (event.getSource().getEntity() instanceof net.minecraft.world.entity.player.Player)
+            return;
+
         // Prevent double damage processing using centralized guard
         if (DamageProcessingGuard.isProcessedMob(target))
             return;

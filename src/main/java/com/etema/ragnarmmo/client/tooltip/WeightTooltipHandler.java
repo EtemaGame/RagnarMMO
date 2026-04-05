@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.client.tooltip;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.system.skills.merchant.MerchantSkillEvents;
+import com.etema.ragnarmmo.skill.job.merchant.MerchantSkillEvents;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;

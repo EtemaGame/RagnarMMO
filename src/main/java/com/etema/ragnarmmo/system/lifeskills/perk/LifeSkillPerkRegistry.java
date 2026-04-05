@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.system.lifeskills.perk;
 
-import com.etema.ragnarmmo.common.api.skills.SkillType;
+import com.etema.ragnarmmo.skill.api.SkillType;
 import com.etema.ragnarmmo.system.lifeskills.perk.LifeSkillPerk.PerkEffect;
 
 import java.util.*;

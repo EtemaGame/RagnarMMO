@@ -33,7 +33,10 @@ import org.slf4j.LoggerFactory;
 @Mod(RagnarMMO.MODID)
 public class RagnarMMO {
     public static final String MODID = "ragnarmmo";
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = net.minecraftforge.fml.ModList.get()
+            .getModContainerById(MODID)
+            .map(c -> c.getModInfo().getVersion().toString())
+            .orElse("unknown");
     public static final Logger LOGGER = LoggerFactory.getLogger(RagnarMMO.class);
 
     @SuppressWarnings("removal") // FMLJavaModLoadingContext.get() deprecated in 1.20.4+, still valid for 1.20.1

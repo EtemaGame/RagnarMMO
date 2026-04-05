@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.system.stats.net;
 
-import com.etema.ragnarmmo.common.api.skills.SkillType;
+import com.etema.ragnarmmo.skill.api.SkillType;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;

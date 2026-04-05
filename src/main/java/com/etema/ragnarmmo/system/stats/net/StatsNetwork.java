@@ -74,25 +74,25 @@ public final class StatsNetwork {
                 .add();
 
         // Skill use packets (logically part of stats/skills)
-        ch.messageBuilder(com.etema.ragnarmmo.system.skills.network.PacketUseSkill.class,
+        ch.messageBuilder(com.etema.ragnarmmo.skill.net.PacketUseSkill.class,
                 id.getAndIncrement(), NetworkDirection.PLAY_TO_SERVER)
-                .encoder(com.etema.ragnarmmo.system.skills.network.PacketUseSkill::encode)
-                .decoder(com.etema.ragnarmmo.system.skills.network.PacketUseSkill::decode)
-                .consumerMainThread(com.etema.ragnarmmo.system.skills.network.PacketUseSkill::handle)
+                .encoder(com.etema.ragnarmmo.skill.net.PacketUseSkill::encode)
+                .decoder(com.etema.ragnarmmo.skill.net.PacketUseSkill::new)
+                .consumerMainThread(com.etema.ragnarmmo.skill.net.PacketUseSkill::handle)
                 .add();
 
-        ch.messageBuilder(com.etema.ragnarmmo.system.skills.network.PacketSetHotbarSlot.class,
+        ch.messageBuilder(com.etema.ragnarmmo.skill.net.PacketSetHotbarSlot.class,
                 id.getAndIncrement(), NetworkDirection.PLAY_TO_SERVER)
-                .encoder(com.etema.ragnarmmo.system.skills.network.PacketSetHotbarSlot::encode)
-                .decoder(com.etema.ragnarmmo.system.skills.network.PacketSetHotbarSlot::decode)
-                .consumerMainThread(com.etema.ragnarmmo.system.skills.network.PacketSetHotbarSlot::handle)
+                .encoder(com.etema.ragnarmmo.skill.net.PacketSetHotbarSlot::encode)
+                .decoder(com.etema.ragnarmmo.skill.net.PacketSetHotbarSlot::new)
+                .consumerMainThread(com.etema.ragnarmmo.skill.net.PacketSetHotbarSlot::handle)
                 .add();
 
-        ch.messageBuilder(com.etema.ragnarmmo.system.skills.network.ClientboundCastUpdatePacket.class,
+        ch.messageBuilder(com.etema.ragnarmmo.skill.net.ClientboundCastUpdatePacket.class,
                 id.getAndIncrement(), NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(com.etema.ragnarmmo.system.skills.network.ClientboundCastUpdatePacket::encode)
-                .decoder(com.etema.ragnarmmo.system.skills.network.ClientboundCastUpdatePacket::new)
-                .consumerMainThread(com.etema.ragnarmmo.system.skills.network.ClientboundCastUpdatePacket::handle)
+                .encoder(com.etema.ragnarmmo.skill.net.ClientboundCastUpdatePacket::encode)
+                .decoder(com.etema.ragnarmmo.skill.net.ClientboundCastUpdatePacket::new)
+                .consumerMainThread(com.etema.ragnarmmo.skill.net.ClientboundCastUpdatePacket::handle)
                 .add();
     }
 }

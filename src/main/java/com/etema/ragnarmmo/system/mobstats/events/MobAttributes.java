@@ -26,11 +26,12 @@ public final class MobAttributes {
                 continue;
             }
 
-            MobCategory category = type.getCategory();
-            if (category == MobCategory.MISC) {
+            // Ensure we only touch LivingEntity types
+            if (!LivingEntity.class.isAssignableFrom(type.getBaseClass())) {
                 continue;
             }
 
+            // Register core stats to all living mobs
             addIfMissing(event, type, RagnarAttributes.STR.get());
             addIfMissing(event, type, RagnarAttributes.AGI.get());
             addIfMissing(event, type, RagnarAttributes.VIT.get());
@@ -42,7 +43,7 @@ public final class MobAttributes {
 
     @SuppressWarnings("unchecked")
     private static void addIfMissing(EntityAttributeModificationEvent event, EntityType<?> type, Attribute attribute) {
-        if (attribute == null) {
+        if (attribute == null || type == null) {
             return;
         }
 

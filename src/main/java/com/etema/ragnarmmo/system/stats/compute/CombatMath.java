@@ -34,22 +34,22 @@ public final class CombatMath {
     private static final double LUK_VARIANCE_BONUS = 300.0;
 
     // HIT/FLEE
-    public static final double HIT_BASE = 120.0;
+    public static final double HIT_BASE = 175.0;
     public static final double DEX_TO_HIT_MULT = 1.0;
     public static final double LUK_TO_HIT_DIVISOR = 3.0;
     public static final double LEVEL_TO_HIT_MULT = 1.0;
-    public static final double FLEE_BASE = 120.0;
+    public static final double FLEE_BASE = 100.0;
     public static final double AGI_TO_FLEE_MULT = 1.0;
     public static final double LUK_TO_FLEE_DIVISOR = 5.0;
     public static final double LEVEL_TO_FLEE_MULT = 1.0;
     public static final double HIT_FLEE_FORMULA_CONSTANT = 80.0;
     private static final double PERFECT_DODGE_DIVISOR = 10.0;
-    private static final double PERFECT_DODGE_MAX = 0.3;
+    private static final double PERFECT_DODGE_MAX = 1.0;
 
     // Critical
     private static final double LUK_TO_CRIT_DIVISOR = 3.0;
     private static final double DEX_TO_CRIT_DIVISOR = 0.0; // disabled
-    private static final double CRIT_MAX = 0.8;
+    private static final double CRIT_MAX = 1.0;
     private static final double CRIT_BASE_MULT = 1.4;
     private static final double LUK_TO_CRIT_DMG_DIVISOR = 200.0;
     private static final double STR_TO_CRIT_DMG_DIVISOR = 0.0; // disabled
@@ -58,9 +58,9 @@ public final class CombatMath {
     private static final double AGI_TO_ASPD = 0.25;
     private static final double DEX_TO_ASPD = 0.1;
     private static final double ASPD_RO_MIN = 50.0;
-    private static final double ASPD_RO_MAX = 200.0;
+    private static final double ASPD_RO_MAX = 190.0;
     private static final double ASPD_MIN = 0.25;
-    private static final double APS_MAX = 8.0;
+    private static final double APS_MAX = 5.0;
 
     public static final int SHIELD_ASPD_PENALTY = 5; // iROWiki flat penalty
 
@@ -98,11 +98,98 @@ public final class CombatMath {
     }
 
     public static double soft(double value, double constant) {
-        if (constant <= 0)
-            return 0;
         return value / (value + constant);
     }
 
+    // ========================================
+    // SIZE PENALTY
+    // ========================================
+
+    public enum MobSize {
+        SMALL, MEDIUM, LARGE
+    }
+
+    public static double getWeaponSizePenalty(ItemStack weapon, MobSize size) {
+        if (weapon.isEmpty()) return 1.0;
+        Item item = weapon.getItem();
+        boolean isDagger = weapon.getTags().anyMatch(t -> t.location().getPath().contains("daggers"));
+        boolean isMace = weapon.getTags().anyMatch(t -> t.location().getPath().contains("maces"));
+        boolean isStaff = weapon.getTags().anyMatch(t -> t.location().getPath().contains("staves"));
+        boolean isWand = weapon.getTags().anyMatch(t -> t.location().getPath().contains("wands"));
+        boolean isTwoHanded = weapon.getTags().anyMatch(t -> t.location().getPath().contains("two_handed"));
+
+        // RO-accurate penalties (Simplified for MC items)
+        if (item instanceof net.minecraft.world.item.SwordItem) {
+            // Daggers (Short Sword) vs Swords
+            if (isDagger) {
+                return switch (size) {
+                    case SMALL -> 1.0;
+                    case MEDIUM -> 0.75;
+                    case LARGE -> 0.5;
+                };
+            }
+            if (isMace) {
+                return switch (size) {
+                    case SMALL -> 0.75;
+                    case MEDIUM -> 1.0;
+                    case LARGE -> 1.0;
+                };
+            }
+            if (isStaff || isWand) {
+                return switch (size) {
+                    case SMALL -> 1.0;
+                    case MEDIUM -> 1.0;
+                    case LARGE -> 0.75;
+                };
+            }
+            if (isTwoHanded) {
+                return switch (size) {
+                    case SMALL -> 0.75;
+                    case MEDIUM -> 0.75;
+                    case LARGE -> 1.0;
+                };
+            }
+            return switch (size) {
+                case SMALL -> 0.75;
+                case MEDIUM -> 1.0;
+                case LARGE -> 0.75;
+            };
+        }
+
+        if (item instanceof net.minecraft.world.item.AxeItem) {
+            return switch (size) {
+                case SMALL -> 0.5;
+                case MEDIUM -> 0.75;
+                case LARGE -> 1.0;
+            };
+        }
+
+        if (item instanceof net.minecraft.world.item.BowItem || item instanceof net.minecraft.world.item.CrossbowItem) {
+            return switch (size) {
+                case SMALL -> 1.0;
+                case MEDIUM -> 1.0;
+                case LARGE -> 0.75;
+            };
+        }
+
+        if (item instanceof net.minecraft.world.item.TridentItem) { // Spears
+            return switch (size) {
+                case SMALL -> 0.75;
+                case MEDIUM -> 0.75;
+                case LARGE -> 1.0;
+            };
+        }
+        
+        if (weapon.getTags().anyMatch(t -> t.location().getPath().contains("katars"))) {
+            return switch (size) {
+                case SMALL -> 0.75;
+                case MEDIUM -> 1.0;
+                case LARGE -> 0.75;
+            };
+        }
+
+        return 1.0;
+    }
     public static double lerp(double a, double b, double t) {
         return a + (b - a) * t;
     }
@@ -191,7 +278,7 @@ public final class CombatMath {
     public static double computeHIT(int DEX, int LUK, int level, double bonus) {
         return HIT_BASE
                 + DEX * DEX_TO_HIT_MULT
-                + LUK / LUK_TO_HIT_DIVISOR
+                + Math.floor(LUK / LUK_TO_HIT_DIVISOR)
                 + level * LEVEL_TO_HIT_MULT
                 + bonus;
     }
@@ -199,7 +286,7 @@ public final class CombatMath {
     public static double computeFLEE(int AGI, int LUK, int level, double bonus) {
         return FLEE_BASE
                 + AGI * AGI_TO_FLEE_MULT
-                + LUK / LUK_TO_FLEE_DIVISOR
+                + Math.floor(LUK / LUK_TO_FLEE_DIVISOR)
                 + level * LEVEL_TO_FLEE_MULT
                 + bonus;
     }
@@ -210,7 +297,7 @@ public final class CombatMath {
     }
 
     public static double computePerfectDodge(int LUK) {
-        double pd = 0.01 + (LUK / PERFECT_DODGE_DIVISOR / 100.0);
+        double pd = (1.0 + Math.floor(LUK / PERFECT_DODGE_DIVISOR)) / 100.0;
         return clamp(0.0, PERFECT_DODGE_MAX, pd);
     }
 
@@ -219,7 +306,7 @@ public final class CombatMath {
     // ========================================
 
     public static double computeCritChance(int LUK, int DEX, double bonus) {
-        double crit = 0.01 + (LUK / LUK_TO_CRIT_DIVISOR / 100.0);
+        double crit = (1.0 + Math.floor(LUK / LUK_TO_CRIT_DIVISOR)) / 100.0;
 
         if (DEX_TO_CRIT_DIVISOR > 0) {
             crit += DEX / DEX_TO_CRIT_DIVISOR / 100.0;
@@ -257,19 +344,34 @@ public final class CombatMath {
             return 180; // Puño
 
         Item item = weapon.getItem();
+        boolean isDagger = weapon.getTags().anyMatch(t -> t.location().getPath().contains("daggers"));
+        boolean isMace = weapon.getTags().anyMatch(t -> t.location().getPath().contains("maces"));
+        boolean isStaff = weapon.getTags().anyMatch(t -> t.location().getPath().contains("staves"));
+        boolean isWand = weapon.getTags().anyMatch(t -> t.location().getPath().contains("wands"));
+        boolean isTwoHanded = weapon.getTags().anyMatch(t -> t.location().getPath().contains("two_handed"));
 
+        if (isDagger)
+            return 178;
+        if (isWand)
+            return 172;
+        if (isStaff)
+            return 165;
+        if (isMace)
+            return 160;
         if (item instanceof SwordItem)
-            return 170;
+            return isTwoHanded ? 158 : 170;
         if (item instanceof AxeItem)
-            return 155;
+            return isTwoHanded ? 150 : 155;
+        if (item instanceof ShieldItem)
+            return 150;
+        if (item instanceof BowItem || item instanceof CrossbowItem)
+            return 170;
         if (item instanceof PickaxeItem)
             return 160;
         if (item instanceof ShovelItem)
             return 165;
         if (item instanceof HoeItem)
             return 175;
-        if (item instanceof BowItem || item instanceof CrossbowItem)
-            return 165;
         if (item instanceof TridentItem)
             return 150;
 
@@ -290,7 +392,7 @@ public final class CombatMath {
     }
 
     public static double convertASPD_ToAPS(int aspdRO) {
-        if (aspdRO >= 200)
+        if (aspdRO >= ASPD_RO_MAX)
             return APS_MAX;
         if (aspdRO <= 0)
             return ASPD_MIN;
@@ -373,7 +475,7 @@ public final class CombatMath {
         var job = com.etema.ragnarmmo.common.api.jobs.JobType.fromId(jobId);
         return switch (job) {
             case SWORDSMAN, KNIGHT -> 1.5;
-            case THIEF, MERCHANT -> 1.2;
+            case THIEF, MERCHANT, ASSASSIN, BLACKSMITH -> 1.2;
             case MAGE, WIZARD -> 0.8;
             default -> 1.0;
         };
@@ -384,7 +486,7 @@ public final class CombatMath {
         return switch (job) {
             case MAGE, WIZARD, ACOLYTE, PRIEST -> 1.5;
             case ARCHER, HUNTER -> 1.2;
-            case THIEF -> 0.8;
+            case THIEF, ASSASSIN -> 0.8;
             case SWORDSMAN, KNIGHT -> 0.7;
             default -> 1.0;
         };
@@ -412,19 +514,40 @@ public final class CombatMath {
         return Math.min(regen, maxMana * MANA_REGEN_MAX_PERCENT);
     }
 
+    /**
+     * SP máximo para clases físicas.
+     * Basado en VIT y STR (stamina física), escalado inversamente al Mana.
+     * Clases físicas (Swordman, Thief) tienen más SP; mágicas tienen menos.
+     */
+    public static double computeMaxSP(int VIT, int STR, int level, String jobId) {
+        // Inverse multiplier: physical classes with low mana have high SP
+        double jobMult = 2.0 - getJobSpMultiplier(jobId); // ~2.3 for swordsman, ~0.5 for mage
+        jobMult = Math.max(0.3, Math.min(2.3, jobMult));
+        double spBase = 80 + ((level - 1) * 2 * jobMult);
+        return Math.floor(spBase * (1.0 + (VIT * 0.6 + STR * 0.4) / 100.0));
+    }
+
+    /**
+     * SP regen per second — STR/VIT based for physical classes.
+     */
+    public static double computeSPRegen(int STR, double maxSP) {
+        double regen = maxSP * (MANA_REGEN_BASE_PERCENT + STR * 0.0002);
+        return Math.min(regen, maxSP * MANA_REGEN_MAX_PERCENT);
+    }
+
     // ========================================
     // UTILIDADES DE COMBATE
     // ========================================
 
-    public static boolean rollCritical(double critChance, java.util.Random rng) {
+    public static boolean rollCritical(double critChance, net.minecraft.util.RandomSource rng) {
         return rng.nextDouble() < critChance;
     }
 
-    public static boolean rollHit(double hitRate, java.util.Random rng) {
+    public static boolean rollHit(double hitRate, net.minecraft.util.RandomSource rng) {
         return rng.nextDouble() < hitRate;
     }
 
-    public static boolean rollPerfectDodge(double perfectDodge, java.util.Random rng) {
+    public static boolean rollPerfectDodge(double perfectDodge, net.minecraft.util.RandomSource rng) {
         return rng.nextDouble() < perfectDodge;
     }
 
@@ -469,6 +592,7 @@ public final class CombatMath {
         double variance = 0.9 + rng.nextDouble() * 0.1;
         double damage = totalMATK * variance;
 
+        // NOTE: hardcoded DEX=1, level=1 here is a known limitation (MEDIO-1 in audit)
         double mdef = computeMDEF(defenderINT, defenderVIT, 1, 1, defenderEquipMDEF);
         double drMagic = computeMagicDR(mdef);
 

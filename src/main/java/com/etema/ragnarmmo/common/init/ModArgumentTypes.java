@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.common.init;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.system.skills.SkillArgumentType;
+import com.etema.ragnarmmo.skill.runtime.SkillArgumentType;
 
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;

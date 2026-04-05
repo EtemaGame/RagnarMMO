@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.client;
 
-import com.etema.ragnarmmo.common.api.skills.SkillType;
+import com.etema.ragnarmmo.skill.api.SkillType;
 import com.etema.ragnarmmo.system.lifeskills.LifeSkillClientHandler;
 import com.etema.ragnarmmo.system.lifeskills.LifeSkillManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -256,14 +256,14 @@ public class SkillOverlay {
     }
 
     private static boolean isLifeSkill(net.minecraft.resources.ResourceLocation skillId) {
-        return com.etema.ragnarmmo.system.skills.data.SkillRegistry.get(skillId)
-                .map(def -> def.getCategory() == com.etema.ragnarmmo.common.api.skills.SkillCategory.LIFE)
+        return com.etema.ragnarmmo.skill.data.SkillRegistry.get(skillId)
+                .map(def -> def.getCategory() == com.etema.ragnarmmo.skill.api.SkillCategory.LIFE)
                 .orElse(false);
     }
 
     private static String getDisplayName(net.minecraft.resources.ResourceLocation skillId) {
-        return com.etema.ragnarmmo.system.skills.data.SkillRegistry.get(skillId)
-                .map(com.etema.ragnarmmo.common.api.skills.ISkillDefinition::getDisplayName)
+        return com.etema.ragnarmmo.skill.data.SkillRegistry.get(skillId)
+                .map(com.etema.ragnarmmo.skill.api.ISkillDefinition::getDisplayName)
                 .orElse(skillId.getPath());
     }
 

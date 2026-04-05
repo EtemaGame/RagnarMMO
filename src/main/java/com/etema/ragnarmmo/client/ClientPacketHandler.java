@@ -7,8 +7,8 @@ import com.etema.ragnarmmo.system.lifeskills.LifeSkillCapability;
 import com.etema.ragnarmmo.system.lifeskills.LifeSkillClientHandler;
 import com.etema.ragnarmmo.system.lifeskills.LifeSkillProgress;
 import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
-import com.etema.ragnarmmo.system.mobstats.mobs.MobClass;
-import com.etema.ragnarmmo.system.skills.PlayerSkillsProvider;
+
+import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket;
 import com.etema.ragnarmmo.system.stats.party.PartyClientData;
 import com.etema.ragnarmmo.system.stats.party.net.PartyMemberData;
@@ -131,7 +131,7 @@ public final class ClientPacketHandler {
             if (skillId.contains(":")) {
                 id = net.minecraft.resources.ResourceLocation.tryParse(skillId);
             } else {
-                id = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("ragnarmmo", skillId.toLowerCase());
+                id = new net.minecraft.resources.ResourceLocation("ragnarmmo", skillId.toLowerCase());
             }
         }
         ClientCastManager.getInstance().updateCast(id, currentTicks, totalTicks);
@@ -141,7 +141,6 @@ public final class ClientPacketHandler {
     // SyncMobStatsPacket
     // ═══════════════════════════════════════════════
     public static void handleMobStatsSync(int entityId, int level, MobTier tier,
-            String mobClassName,
             double hpMult, double dmgMult,
             double defMult, double spdMult) {
         var mc = Minecraft.getInstance();
@@ -152,28 +151,15 @@ public final class ClientPacketHandler {
         if (!(e instanceof LivingEntity living))
             return;
 
-        MobClass mobClass = safeMobClass(mobClassName);
-
         MobStatsProvider.get(living).ifPresent(stats -> {
             stats.setLevel(level);
             stats.setTier(tier);
-            stats.setMobClass(mobClass);
             stats.setHealthMultiplier(hpMult);
             stats.setDamageMultiplier(dmgMult);
             stats.setDefenseMultiplier(defMult);
             stats.setSpeedMultiplier(spdMult);
             stats.setInitialized(true);
         });
-    }
-
-    private static MobClass safeMobClass(String name) {
-        if (name == null || name.isEmpty())
-            return null;
-        try {
-            return MobClass.valueOf(name);
-        } catch (IllegalArgumentException ex) {
-            return MobClass.WARRIOR;
-        }
     }
 
     // ═══════════════════════════════════════════════

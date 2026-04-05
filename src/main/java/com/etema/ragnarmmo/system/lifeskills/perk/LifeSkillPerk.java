@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.system.lifeskills.perk;
 
-import com.etema.ragnarmmo.common.api.skills.SkillType;
+import com.etema.ragnarmmo.skill.api.SkillType;
 
 /**
  * Represents a Life Skill perk that can be chosen every 10 levels.

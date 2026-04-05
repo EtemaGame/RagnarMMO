@@ -10,6 +10,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import org.lwjgl.glfw.GLFW;
 
 @Mod.EventBusSubscriber(modid = RagnarStats.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ClientEvents {
@@ -62,16 +63,34 @@ public class ClientEvents {
         }
 
         // Skill Hotbar Keys (1-6)
-        // If in Combat Mode and no screen is open, intercept keys 1-6
+        // If in Combat Mode and no screen is open, intercept keys 1-6 for skills
+        // Also intercept 7-9 to prevent slot changes while in combat mode
+        InputConstants.Key key = InputConstants.getKey(e.getKey(), e.getScanCode());
+        int keyCode = key.getValue();
+        boolean isNumberKey = keyCode >= GLFW.GLFW_KEY_1 && keyCode <= GLFW.GLFW_KEY_9;
+
+        if (isNumberKey && isCombatMode && mc.screen == null) {
+            // In Forge 1.20.1, InputEvent.Key is NOT cancelable.
+            // Instead of canceling, we "steal" the input by consuming the vanilla key mappings.
+            int slotIndex = keyCode - GLFW.GLFW_KEY_1;
+            if (slotIndex >= 0 && slotIndex < 9) {
+                mc.options.keyHotbarSlots[slotIndex].consumeClick();
+            }
+
+            if (e.getAction() == GLFW.GLFW_PRESS) {
+                if (slotIndex < 6) { // Only keys 1-6 cast skills
+                    castSkill(mc, slotIndex);
+                }
+            }
+            return;
+        }
+
+        // Handle skill assignment in Skills Screen or fallback casting
         for (int i = 0; i < Keybinds.HOTBAR_KEYS.length; i++) {
-            if (Keybinds.HOTBAR_KEYS[i].isActiveAndMatches(InputConstants.getKey(e.getKey(), e.getScanCode()))) {
-                if (e.getAction() == org.lwjgl.glfw.GLFW.GLFW_PRESS) {
-                    if (isCombatMode && mc.screen == null) {
-                        castSkill(mc, i);
-                    } else if (mc.screen instanceof com.etema.ragnarmmo.client.ui.SkillsScreen) {
+            if (Keybinds.HOTBAR_KEYS[i].isActiveAndMatches(key)) {
+                if (e.getAction() == GLFW.GLFW_PRESS) {
+                    if (mc.screen instanceof com.etema.ragnarmmo.client.ui.SkillsScreen) {
                         assignSkill(mc, i);
-                    } else if (mc.screen == null && !isCombatMode) {
-                        castSkill(mc, i);
                     }
                 }
             }
@@ -79,13 +98,15 @@ public class ClientEvents {
     }
 
     private static void castSkill(Minecraft mc, int slot) {
-        com.etema.ragnarmmo.system.skills.PlayerSkillsProvider.get(mc.player).ifPresent(skills -> {
+        if (!isCombatMode) return; // double check
+
+        com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider.get(mc.player).ifPresent(skills -> {
             String[] hotbar = skills.getHotbar();
             if (slot < hotbar.length) {
                 String skillId = hotbar[slot];
                 if (skillId != null && !skillId.isEmpty()) {
                     com.etema.ragnarmmo.common.net.Network.sendToServer(
-                            new com.etema.ragnarmmo.system.skills.network.PacketUseSkill(skillId));
+                            new com.etema.ragnarmmo.skill.net.PacketUseSkill(skillId));
                 }
             }
         });
@@ -100,7 +121,7 @@ public class ClientEvents {
         if (hovered != null) {
             if (hovered.getDefinition().isActive()) {
                 com.etema.ragnarmmo.common.net.Network.sendToServer(
-                        new com.etema.ragnarmmo.system.skills.network.PacketSetHotbarSlot(i,
+                        new com.etema.ragnarmmo.skill.net.PacketSetHotbarSlot(i,
                                 hovered.getSkillId().toString()));
                 mc.player.displayClientMessage(
                         net.minecraft.network.chat.Component.translatable(
@@ -116,23 +137,10 @@ public class ClientEvents {
         }
     }
 
-    private static int lastSelectedSlot = -1;
-
     @SubscribeEvent
     public static void onClientTick(net.minecraftforge.event.TickEvent.ClientTickEvent event) {
         if (event.phase == net.minecraftforge.event.TickEvent.Phase.END) {
             com.etema.ragnarmmo.client.ClientCastManager.getInstance().tick();
-
-            var mc = Minecraft.getInstance();
-            if (mc.player != null && isCombatMode && mc.screen == null) {
-                // Enforce the hotbar slot if it was changed by keys 1-6 while in combat mode
-                if (lastSelectedSlot != -1 && mc.player.getInventory().selected != lastSelectedSlot) {
-                    mc.player.getInventory().selected = lastSelectedSlot;
-                }
-                lastSelectedSlot = mc.player.getInventory().selected;
-            } else if (mc.player != null) {
-                lastSelectedSlot = mc.player.getInventory().selected;
-            }
         }
     }
 }

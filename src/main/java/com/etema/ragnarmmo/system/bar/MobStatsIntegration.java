@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.system.bar;
 
 import com.etema.ragnarmmo.system.mobstats.integration.MobInfoIntegration;
-import com.etema.ragnarmmo.system.mobstats.mobs.MobClass;
+
 import net.minecraft.world.entity.LivingEntity;
 
 public class MobStatsIntegration implements EntityStatResolver {
@@ -32,9 +32,7 @@ public class MobStatsIntegration implements EntityStatResolver {
 
     @Override
     public String getClazz(LivingEntity e) {
-        return MobInfoIntegration.getMobInfo(e)
-                .map(MobInfoIntegration.MobInfo::getClassDisplayName)
-                .orElse("");
+        return "";
     }
 }
 

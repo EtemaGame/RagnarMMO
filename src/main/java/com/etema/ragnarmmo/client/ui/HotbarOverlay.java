@@ -1,9 +1,9 @@
 package com.etema.ragnarmmo.client.ui;
 
-import com.etema.ragnarmmo.common.api.skills.ISkillDefinition;
+import com.etema.ragnarmmo.skill.api.ISkillDefinition;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
-import com.etema.ragnarmmo.system.skills.PlayerSkillsProvider;
-import com.etema.ragnarmmo.system.skills.data.SkillRegistry;
+import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -73,7 +73,7 @@ public class HotbarOverlay implements IGuiOverlay {
                     if (skillId != null && !skillId.isEmpty()) {
                         ResourceLocation skillLoc = ResourceLocation.tryParse(skillId);
                         if (skillLoc == null) {
-                            skillLoc = ResourceLocation.fromNamespaceAndPath("ragnarmmo", skillId);
+                            skillLoc = new ResourceLocation("ragnarmmo", skillId);
                         }
                         ResourceLocation icon = SkillRegistry.get(skillLoc)
                                 .map(ISkillDefinition::getIcon)

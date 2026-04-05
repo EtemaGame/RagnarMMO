@@ -12,6 +12,7 @@ import com.etema.ragnarmmo.system.stats.progression.ExpTable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
 
 import java.util.List;
 
@@ -94,8 +95,7 @@ public class PartyXpService {
      */
     private static void giveXpToMember(ServerPlayer member, int xp, String killerName) {
         RagnarCoreAPI.get(member).ifPresent(stats -> {
-            int pointsPerLevel = com.etema.ragnarmmo.common.config.RagnarConfigs.SERVER.progression.pointsPerLevel
-                    .get();
+            int pointsPerLevel = RagnarConfigs.SERVER.progression.pointsPerLevel.get();
 
             int levelsGained = stats.addExpAndProcessLevelUps(xp, pointsPerLevel, ExpTable::expToNext);
             int jobLevelsGained = stats.addJobExpAndProcessLevelUps(xp, ExpTable::jobExpToNext);

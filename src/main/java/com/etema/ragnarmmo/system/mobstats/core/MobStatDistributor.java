@@ -93,7 +93,7 @@ public class MobStatDistributor {
         }
     }
 
-    private void distributeByWeights(MobStats stats, int remaining, Map<StatKeys, Integer> weights) {
+    public void distributeByWeights(MobStats stats, int remaining, Map<StatKeys, Integer> weights) {
         if (weights.isEmpty()) {
             distributeRandom(stats, remaining);
             return;

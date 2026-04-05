@@ -3,7 +3,7 @@ package com.etema.ragnarmmo.system.mobstats.integration;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.system.mobstats.core.MobStats;
 import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
-import com.etema.ragnarmmo.system.mobstats.mobs.MobClass;
+
 import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nonnull;
@@ -60,7 +60,6 @@ public final class MobInfoIntegration {
                 .resolve()
                 .map(stats -> new MobInfo(
                         stats.getLevel(),
-                        stats.getMobClass(),
                         stats.getTier()));
     }
 
@@ -75,19 +74,6 @@ public final class MobInfoIntegration {
             return false;
         }
         return MobStatsProvider.get(entity).isPresent();
-    }
-
-    /**
-     * Gets the mob class for an entity.
-     *
-     * @param entity the entity to check
-     * @return Optional containing the mob class, or empty if not available
-     */
-    @Nonnull
-    public static Optional<MobClass> getMobClass(@Nullable LivingEntity entity) {
-        return getMobInfo(entity)
-                .map(MobInfo::mobClass)
-                .filter(Objects::nonNull);
     }
 
     /**
@@ -107,24 +93,11 @@ public final class MobInfoIntegration {
      * Record containing mob information for display.
      *
      * @param level    the mob's level (1+)
-     * @param mobClass the mob's class (warrior, mage, etc.)
      * @param tier     the mob's tier (normal, elite, boss)
      */
     public record MobInfo(
             int level,
-            @Nullable MobClass mobClass,
             @Nullable MobTier tier) {
-
-        /**
-         * Returns the display name for the mob class.
-         */
-        @Nonnull
-        public String getClassDisplayName() {
-            if (mobClass == null)
-                return "";
-            String name = mobClass.name().toLowerCase();
-            return Character.toUpperCase(name.charAt(0)) + name.substring(1);
-        }
 
         /**
          * Returns the display name for the tier.

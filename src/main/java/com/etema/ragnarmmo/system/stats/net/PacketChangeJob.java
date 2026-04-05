@@ -2,8 +2,14 @@ package com.etema.ragnarmmo.system.stats.net;
 
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.api.jobs.JobType;
+import com.etema.ragnarmmo.common.api.stats.ChangeReason;
+import com.etema.ragnarmmo.skill.api.SkillTier;
+import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skill.data.SkillDefinition;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -44,6 +50,19 @@ public class PacketChangeJob {
                     return;
                 }
 
+                // Reset skills if changing from Novice
+                if ("ragnarmmo:novice".equals(stats.getJobId())) {
+                    PlayerSkillsProvider.get(player).ifPresent(skills -> {
+                        for (ResourceLocation skillId : SkillRegistry.getAllIds()) {
+                            SkillDefinition def = SkillRegistry.require(skillId);
+                            // Clear skills that aren't Novice or Life skills
+                            if (def.getTier() != SkillTier.NOVICE && def.getTier() != SkillTier.LIFE) {
+                                skills.setSkillLevel(skillId, 0, ChangeReason.SYSTEM);
+                            }
+                        }
+                    });
+                }
+
                 stats.setJobId(job.getId());
                 // Reset levels to 1 as per RO mechanics
                 stats.setLevel(1);
@@ -51,9 +70,13 @@ public class PacketChangeJob {
                 stats.setExp(0);
                 stats.setJobExp(0);
 
-                // stats.sync(); // Sync changes to client
+                // Sync changes to both stats and skills
                 com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
                         new PlayerStatsSyncPacket(stats));
+                PlayerSkillsProvider.get(player).ifPresent(skills -> {
+                    com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
+                            new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(skills.serializeNBT()));
+                });
             });
         });
         ctx.get().setPacketHandled(true);

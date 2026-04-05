@@ -11,12 +11,8 @@ import java.util.function.IntUnaryOperator;
 public final class ExpTable {
 
     // Hardcoded EXP curve constants (previously in BalanceConfig)
-    private static final double EXP_BASE = 100.0;
-    private static final double EXP_GROWTH_RATE = 1.12;
     private static final int EXP_MINIMUM = 50;
 
-    private static final double JOB_EXP_BASE = 50.0;
-    private static final double JOB_EXP_GROWTH_RATE = 1.08;
     private static final int JOB_EXP_MINIMUM = 25;
 
     public static int expToNext(int level) {
@@ -25,7 +21,8 @@ public final class ExpTable {
             return result;
         }
 
-        int expRequired = (int) Math.round(EXP_BASE * Math.pow(EXP_GROWTH_RATE, Math.max(0, level - 1)));
+        // RO-inspired formula: 100 * 1.15^(level-1) + level^4 * 0.05
+        int expRequired = (int) Math.round(100.0 * Math.pow(1.15, Math.max(0, level - 1)) + Math.pow(level, 4) * 0.05);
         return Math.max(EXP_MINIMUM, expRequired);
     }
 
@@ -35,7 +32,9 @@ public final class ExpTable {
             return result;
         }
 
-        int expRequired = (int) Math.round(JOB_EXP_BASE * Math.pow(JOB_EXP_GROWTH_RATE, Math.max(0, jobLevel - 1)));
+        // RO-inspired Job formula: 50 * 1.12^(level-1) + level^3.5 * 0.04
+        int expRequired = (int) Math
+                .round(50.0 * Math.pow(1.12, Math.max(0, jobLevel - 1)) + Math.pow(jobLevel, 3.5) * 0.04);
         return Math.max(JOB_EXP_MINIMUM, expRequired);
     }
 

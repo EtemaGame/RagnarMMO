@@ -6,7 +6,7 @@ import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.common.net.Network;
-import com.etema.ragnarmmo.system.skills.merchant.MerchantSkillEvents;
+import com.etema.ragnarmmo.skill.job.merchant.MerchantSkillEvents;
 import com.etema.ragnarmmo.client.DerivedStatsClientCache;
 import com.etema.ragnarmmo.system.stats.compute.StatComputer;
 import com.etema.ragnarmmo.system.stats.net.AllocateStatPacket;
@@ -35,8 +35,8 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import net.minecraftforge.items.ItemStackHandler;
 
-import com.etema.ragnarmmo.common.api.skills.SkillType;
-import com.etema.ragnarmmo.system.skills.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skill.api.SkillType;
+import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 
 import java.util.EnumMap;
 import java.util.Locale;
@@ -53,8 +53,7 @@ public class StatsScreen extends Screen {
 
         private static final int BTN_SIZE_SMALL = 14;
 
-        private static final ResourceLocation TEX_GEAR = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-                        "textures/gui/gear.png");
+        private static final ResourceLocation TEX_GEAR = new ResourceLocation("ragnarmmo", "textures/gui/gear.png");
 
         // ===== Scaling placement =====
         private float uiScale = 1.0f;

@@ -1,8 +1,8 @@
 package com.etema.ragnarmmo.system.lifeskills;
 
 import com.etema.ragnarmmo.common.api.lifeskills.LifeSkillType;
-import com.etema.ragnarmmo.common.api.skills.SkillType;
-import com.etema.ragnarmmo.common.api.skills.SkillCategory;
+import com.etema.ragnarmmo.skill.api.SkillType;
+import com.etema.ragnarmmo.skill.api.SkillCategory;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 

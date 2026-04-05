@@ -11,7 +11,7 @@
     "cast_time_ticks": 80,
     "progression": {
         "max_level": 10,
-        "upgrade_cost": 2
+        "upgrade_cost": 1
     },
     "requirements": {
         "ragnarmmo:thunder_storm": 1,

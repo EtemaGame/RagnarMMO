@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "ragnarmmo:item/cards/llama_card"
-  }
-}

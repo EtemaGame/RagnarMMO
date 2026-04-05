@@ -11,7 +11,7 @@
         "can_upgrade_with_points": true
     },
     "jobs": [
-        "SWORDMAN"
+        "SWORDSMAN"
     ],
     "requirements": {
         "ragnarmmo:sword_mastery": 1

@@ -3,7 +3,7 @@ package com.etema.ragnarmmo.client.render;
 import com.etema.ragnarmmo.system.bar.EntityStatResolver;
 import com.etema.ragnarmmo.system.bar.RagnarIntegrationHandler;
 import com.etema.ragnarmmo.system.mobstats.integration.MobInfoIntegration;
-import com.etema.ragnarmmo.system.mobstats.mobs.MobClass;
+
 import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -22,7 +22,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.joml.Matrix4f;
 
 import java.util.Map;
-import java.util.Objects;
+
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.WeakHashMap;
@@ -118,16 +118,7 @@ public class RagnarBarRenderHandler {
                     level = String.valueOf(resolvedLevel);
                 }
             }
-            if (missingClazz) {
-                MobClass mobClass = infoOpt
-                        .map(MobInfoIntegration.MobInfo::mobClass)
-                        .filter(Objects::nonNull)
-                        .orElseGet(() -> readPersistentMobClass(entity).orElse(null));
-                if (mobClass != null) {
-                    String classNameLower = mobClass.name().toLowerCase();
-                    clazz = Character.toUpperCase(classNameLower.charAt(0)) + classNameLower.substring(1);
-                }
-            }
+
         }
 
         // 3) Fallbacks de seguridad
@@ -238,22 +229,6 @@ public class RagnarBarRenderHandler {
                 .filter(tag -> tag.contains("Level", Tag.TAG_INT))
                 .map(tag -> OptionalInt.of(Math.max(0, tag.getInt("Level"))))
                 .orElse(OptionalInt.empty());
-    }
-
-    private static Optional<MobClass> readPersistentMobClass(LivingEntity entity) {
-        return getMobStatsTag(entity)
-                .filter(tag -> tag.contains("Class", Tag.TAG_STRING))
-                .map(tag -> tag.getString("Class"))
-                .map(String::trim)
-                .filter(str -> !str.isEmpty())
-                .map(str -> {
-                    try {
-                        return MobClass.valueOf(str.toUpperCase());
-                    } catch (IllegalArgumentException ex) {
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull);
     }
 
     private static Optional<CompoundTag> getMobStatsTag(LivingEntity entity) {

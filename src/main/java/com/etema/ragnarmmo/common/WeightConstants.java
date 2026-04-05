@@ -61,53 +61,53 @@ public final class WeightConstants {
 
         // General Materials (1-9)
         public static final TagKey<Item> WEIGHT_EPHEMERAL = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_ephemeral"));
+                        new ResourceLocation("ragnarmmo", "weight_ephemeral"));
         public static final TagKey<Item> WEIGHT_FEATHER = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_feather"));
+                        new ResourceLocation("ragnarmmo", "weight_feather"));
         public static final TagKey<Item> WEIGHT_LIGHT = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_light"));
+                        new ResourceLocation("ragnarmmo", "weight_light"));
         public static final TagKey<Item> WEIGHT_COMMON = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_common"));
+                        new ResourceLocation("ragnarmmo", "weight_common"));
         public static final TagKey<Item> WEIGHT_MEDIUM = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_medium"));
+                        new ResourceLocation("ragnarmmo", "weight_medium"));
         public static final TagKey<Item> WEIGHT_DENSE = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_dense"));
+                        new ResourceLocation("ragnarmmo", "weight_dense"));
         public static final TagKey<Item> WEIGHT_HEAVY = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_heavy"));
+                        new ResourceLocation("ragnarmmo", "weight_heavy"));
         public static final TagKey<Item> WEIGHT_MASSIVE = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_massive"));
+                        new ResourceLocation("ragnarmmo", "weight_massive"));
         public static final TagKey<Item> WEIGHT_TITANIC = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_titanic"));
+                        new ResourceLocation("ragnarmmo", "weight_titanic"));
 
         // Armor Materials (10-16)
         public static final TagKey<Item> WEIGHT_ARMOR_LEATHER = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_armor_leather"));
+                        new ResourceLocation("ragnarmmo", "weight_armor_leather"));
         public static final TagKey<Item> WEIGHT_ARMOR_TURTLE = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_armor_turtle"));
+                        new ResourceLocation("ragnarmmo", "weight_armor_turtle"));
         public static final TagKey<Item> WEIGHT_ARMOR_CHAIN = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_armor_chain"));
+                        new ResourceLocation("ragnarmmo", "weight_armor_chain"));
         public static final TagKey<Item> WEIGHT_ARMOR_GOLD = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_armor_gold"));
+                        new ResourceLocation("ragnarmmo", "weight_armor_gold"));
         public static final TagKey<Item> WEIGHT_ARMOR_IRON = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_armor_iron"));
+                        new ResourceLocation("ragnarmmo", "weight_armor_iron"));
         public static final TagKey<Item> WEIGHT_ARMOR_DIAMOND = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_armor_diamond"));
+                        new ResourceLocation("ragnarmmo", "weight_armor_diamond"));
         public static final TagKey<Item> WEIGHT_ARMOR_NETHERITE = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_armor_netherite"));
+                        new ResourceLocation("ragnarmmo", "weight_armor_netherite"));
 
         // Tool/Weapon Materials (17-22)
         public static final TagKey<Item> WEIGHT_TOOL_WOOD = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_tool_wood"));
+                        new ResourceLocation("ragnarmmo", "weight_tool_wood"));
         public static final TagKey<Item> WEIGHT_TOOL_STONE = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_tool_stone"));
+                        new ResourceLocation("ragnarmmo", "weight_tool_stone"));
         public static final TagKey<Item> WEIGHT_TOOL_GOLD = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_tool_gold"));
+                        new ResourceLocation("ragnarmmo", "weight_tool_gold"));
         public static final TagKey<Item> WEIGHT_TOOL_IRON = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_tool_iron"));
+                        new ResourceLocation("ragnarmmo", "weight_tool_iron"));
         public static final TagKey<Item> WEIGHT_TOOL_DIAMOND = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_tool_diamond"));
+                        new ResourceLocation("ragnarmmo", "weight_tool_diamond"));
         public static final TagKey<Item> WEIGHT_TOOL_NETHERITE = TagKey.create(Registries.ITEM,
-                        ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weight_tool_netherite"));
+                        new ResourceLocation("ragnarmmo", "weight_tool_netherite"));
 
         // =============================
         // GENERAL MATERIAL WEIGHT VALUES

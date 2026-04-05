@@ -1,8 +1,8 @@
 package com.etema.ragnarmmo.client.ui;
 
 import com.etema.ragnarmmo.client.ClientCastManager;
-import com.etema.ragnarmmo.common.api.skills.ISkillDefinition;
-import com.etema.ragnarmmo.system.skills.data.SkillRegistry;
+import com.etema.ragnarmmo.skill.api.ISkillDefinition;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;

@@ -171,7 +171,8 @@ public final class RoTooltipFormatter {
         Multimap<Attribute, AttributeModifier> mainhandModifiers = stack.getAttributeModifiers(EquipmentSlot.MAINHAND);
 
         if (mainhandModifiers.containsKey(Attributes.ATTACK_DAMAGE)) {
-            double damage = sumAttribute(mainhandModifiers, Attributes.ATTACK_DAMAGE);
+            // Vanilla base is 1.0, attributes are modifiers
+            double damage = 1.0D + sumAttribute(mainhandModifiers, Attributes.ATTACK_DAMAGE);
             if (damage > 0) {
                 lines.add(formatCombatLine("ATK", String.valueOf(Math.round(damage))));
             }
@@ -182,6 +183,12 @@ public final class RoTooltipFormatter {
             if (speed > 0) {
                 lines.add(formatCombatLine("ASPD", String.format(Locale.ROOT, "%.1f", speed)));
             }
+        }
+
+        // Add Range (Reach Distance) - Essential for Better Combat
+        if (mainhandModifiers.containsKey(net.minecraftforge.common.ForgeMod.ENTITY_REACH.get())) {
+            double reach = 3.0D + sumAttribute(mainhandModifiers, net.minecraftforge.common.ForgeMod.ENTITY_REACH.get());
+            lines.add(formatCombatLine("Range", String.format(Locale.ROOT, "%.1f", reach)));
         }
 
         if (stack.getItem() instanceof ArmorItem armor) {

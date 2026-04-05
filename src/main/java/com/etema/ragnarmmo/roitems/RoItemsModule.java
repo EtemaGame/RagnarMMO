@@ -25,6 +25,11 @@ public final class RoItemsModule {
     public static void init(IEventBus modBus) {
         RagnarMMO.LOGGER.info("Initializing RO Items module...");
 
+        // Register items
+        ZenyItems.register(modBus);
+        DaggerItems.register(modBus);
+        com.etema.ragnarmmo.system.loot.cards.RagnarCardItems.register(modBus);
+
         // Register configuration
         ModLoadingContext.get().registerConfig(
                 ModConfig.Type.COMMON,

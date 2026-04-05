@@ -20,7 +20,7 @@ public final class RagnarCardItems {
      * The single generic card item. Card identity is stored in NBT via
      * {@code card_id}.
      */
-    public static final RegistryObject<Item> CARD = ITEMS.register("card",
+    public static final RegistryObject<Item> CARD = ITEMS.register("cards/card",
             () -> new CardItem(new Item.Properties().stacksTo(64)));
 
     public static void register(IEventBus modBus) {

@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.common.api.jobs;
 
-import com.etema.ragnarmmo.common.api.skills.SkillType;
+import com.etema.ragnarmmo.skill.api.SkillType;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.EnumMap;

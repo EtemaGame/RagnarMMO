@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.common.init;
 
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.common.command.RagnarAdminCommands;
-import com.etema.ragnarmmo.system.skills.CartCommands;
+import com.etema.ragnarmmo.skill.job.merchant.CartCommands;
 import com.etema.ragnarmmo.system.stats.commands.ExpCommands;
 import com.etema.ragnarmmo.system.stats.commands.StatsCommands;
 import com.etema.ragnarmmo.system.stats.party.PartyCommands;

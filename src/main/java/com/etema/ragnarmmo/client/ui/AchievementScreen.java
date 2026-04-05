@@ -24,8 +24,7 @@ import java.util.stream.Collectors;
 
 public class AchievementScreen extends Screen {
 
-    private static final ResourceLocation BG_TEXTURE = new ResourceLocation(RagnarMMO.MODID,
-            "textures/gui/achievement_screen.png");
+    private static final ResourceLocation BG_TEXTURE = new ResourceLocation(RagnarMMO.MODID, "textures/gui/achievement_screen.png");
 
     private final int imageWidth = 256;
     private final int imageHeight = 200;

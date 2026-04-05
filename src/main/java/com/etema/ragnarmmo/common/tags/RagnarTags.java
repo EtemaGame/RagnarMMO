@@ -46,7 +46,7 @@ public class RagnarTags {
 
         // Helper
         private static TagKey<EntityType<?>> create(String name) {
-            return TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(RagnarMMO.MODID, name));
+            return TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation(RagnarMMO.MODID, name));
         }
     }
 
@@ -64,7 +64,7 @@ public class RagnarTags {
 
         // Helper
         private static TagKey<Item> create(String name) {
-            return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(RagnarMMO.MODID, name));
+            return TagKey.create(Registries.ITEM, new ResourceLocation(RagnarMMO.MODID, name));
         }
     }
 }

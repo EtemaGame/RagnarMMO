@@ -3,9 +3,9 @@ package com.etema.ragnarmmo.client.ui;
 import com.etema.ragnarmmo.client.ui.SkillTreeAdapter.SkillNodeWrapper;
 import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.api.lifeskills.LifeSkillType;
-import com.etema.ragnarmmo.common.api.skills.SkillTier;
+import com.etema.ragnarmmo.skill.api.SkillTier;
 import com.etema.ragnarmmo.common.net.Network;
-import com.etema.ragnarmmo.system.skills.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.system.stats.net.PacketUpgradeSkill;
 import com.etema.ragnarmmo.system.lifeskills.LifeSkillProgress;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -552,7 +552,7 @@ public class SkillsScreen extends Screen {
         g.drawString(this.font, label, tx, ty, text, false);
     }
 
-    private void renderSkillTreeLocal(GuiGraphics g, com.etema.ragnarmmo.system.skills.SkillManager skillManager,
+    private void renderSkillTreeLocal(GuiGraphics g, com.etema.ragnarmmo.skill.runtime.SkillManager skillManager,
             JobType job, int startX, int startY, double mx, double my) {
 
         List<SkillNodeWrapper> skills = visibleSkills;
@@ -612,8 +612,7 @@ public class SkillsScreen extends Screen {
             g.renderOutline(x, y, CELL_SIZE, CELL_SIZE, GuiConstants.COLOR_PANEL_BORDER);
 
             // Icon
-            ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-                    "textures/gui/skills/" + wrapper.getDefinition().getTextureName() + ".png");
+            ResourceLocation texture = new ResourceLocation("ragnarmmo", "textures/gui/skills/" + wrapper.getDefinition().getTextureName() + ".png");
             RenderSystem.enableBlend();
 
             if (!requirementsMet)
@@ -698,7 +697,7 @@ public class SkillsScreen extends Screen {
         }
     }
 
-    private List<Component> buildSkillTooltipLocal(com.etema.ragnarmmo.system.skills.SkillManager skillManager,
+    private List<Component> buildSkillTooltipLocal(com.etema.ragnarmmo.skill.runtime.SkillManager skillManager,
             int startX, int startY, double mx, double my) {
         var player = Minecraft.getInstance().player;
         if (player == null)
@@ -836,8 +835,7 @@ public class SkillsScreen extends Screen {
             g.fill(x, y, x + CELL_SIZE, y + CELL_SIZE, bgColor);
             g.renderOutline(x, y, CELL_SIZE, CELL_SIZE, GuiConstants.COLOR_PANEL_BORDER);
 
-            ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-                    "textures/gui/skills/" + type.getTextureName() + ".png");
+            ResourceLocation texture = new ResourceLocation("ragnarmmo", "textures/gui/skills/" + type.getTextureName() + ".png");
 
             RenderSystem.enableBlend();
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1137,7 +1135,7 @@ public class SkillsScreen extends Screen {
                         .forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, pitch));
     }
 
-    private boolean checkRequirements(com.etema.ragnarmmo.system.skills.SkillManager manager, SkillNodeWrapper wrapper,
+    private boolean checkRequirements(com.etema.ragnarmmo.skill.runtime.SkillManager manager, SkillNodeWrapper wrapper,
             Map<ResourceLocation, Integer> pending) {
         for (var entry : wrapper.getRequirements().entrySet()) {
             ResourceLocation reqId = entry.getKey();

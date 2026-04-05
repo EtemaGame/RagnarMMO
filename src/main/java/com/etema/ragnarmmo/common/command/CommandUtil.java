@@ -1,9 +1,9 @@
 package com.etema.ragnarmmo.common.command;
 
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
-import com.etema.ragnarmmo.common.api.skills.IPlayerSkills;
+import com.etema.ragnarmmo.skill.api.IPlayerSkills;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
-import com.etema.ragnarmmo.system.skills.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;

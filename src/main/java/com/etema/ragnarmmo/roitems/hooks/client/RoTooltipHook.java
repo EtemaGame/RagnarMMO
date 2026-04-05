@@ -7,10 +7,13 @@ import com.etema.ragnarmmo.roitems.runtime.RoItemRuleResolver;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
+import java.util.List;
 
 /**
  * Adds RO-style tooltip information to items.
@@ -43,5 +46,40 @@ public final class RoTooltipHook {
 
         // Add tooltip lines
         RoTooltipFormatter.addTooltipLines(event.getToolTip(), stack, rule, player);
+
+        // Remove vanilla attribute modifier tooltips to avoid redundancy
+        hideVanillaAttributes(event.getToolTip());
+    }
+
+    private static void hideVanillaAttributes(List<Component> tooltip) {
+        // Vanilla attributes start with "When in Main Hand:" or similar headers.
+        // We look for common patterns or just clear lines that look like vanilla mods.
+        
+        // This is a common strategy: removing lines that are added by Item.appendHoverText
+        // or automatically by ItemStack.getTooltipLines.
+        // Since we can't easily detect "vanilla-ness" of a line after it's added, 
+        // we look for the "When in..." headers and remove them + their subsequent indented lines.
+        
+        for (int i = 0; i < tooltip.size(); i++) {
+            Component c = tooltip.get(i);
+            String text = c.getString();
+            
+            // Check for vanilla slot headers
+            if (text.startsWith("When in ") || text.startsWith("Al estar en ")) {
+                // Remove this line and subsequent lines until we hit an empty line or another header
+                tooltip.remove(i);
+                while (i < tooltip.size()) {
+                    Component next = tooltip.get(i);
+                    String nextText = next.getString();
+                    // Vanilla modifiers are indented with spaces
+                    if (nextText.startsWith(" ") || nextText.isEmpty()) {
+                        tooltip.remove(i);
+                    } else {
+                        break;
+                    }
+                }
+                i--; // Re-check current index
+            }
+        }
     }
 }

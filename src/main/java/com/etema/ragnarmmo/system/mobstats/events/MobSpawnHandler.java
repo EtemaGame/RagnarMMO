@@ -1,17 +1,21 @@
 package com.etema.ragnarmmo.system.mobstats.events;
 
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
+import com.etema.ragnarmmo.system.mobstats.mobs.MobClass;
 import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
 import com.etema.ragnarmmo.system.mobstats.config.SpeciesConfig;
 import com.etema.ragnarmmo.system.mobstats.core.MobStatDistributor;
 import com.etema.ragnarmmo.system.mobstats.core.MobStats;
+import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
+import com.etema.ragnarmmo.system.mobstats.world.ActiveBossesSavedData;
+import com.etema.ragnarmmo.system.mobstats.world.BossSpawnMetadata;
+import com.etema.ragnarmmo.system.mobstats.world.MobSpawnOverrides;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
 import com.etema.ragnarmmo.system.mobstats.level.MobLevelManager;
-import com.etema.ragnarmmo.system.mobstats.mobs.MobClass;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.system.mobstats.network.SyncMobStatsPacket;
-import com.etema.ragnarmmo.system.mobstats.util.ConfigUtils;
+import com.etema.ragnarmmo.system.mobstats.world.BossSpawnSource;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,9 +25,17 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import com.etema.ragnarmmo.system.mobstats.ai.MobUseSkillGoal;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.Skeleton;
+import net.minecraft.world.entity.monster.Spider;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.Blaze;
+import net.minecraft.world.entity.monster.Witch;
+import net.minecraft.world.entity.monster.EnderMan;
 
 public class MobSpawnHandler {
 
@@ -39,8 +51,10 @@ public class MobSpawnHandler {
             return;
 
         MobStatsProvider.get(mob).ifPresent(stats -> {
-            if (stats.isInitialized())
+            if (stats.isInitialized()) {
+                normalizeExistingNaturalCreeperBoss(mob, stats);
                 return;
+            }
 
             MobCategory cat = mob.getType().getCategory();
             // Removed exclusion for CREATURE, AMBIENT, WATER_CREATURE to handle them as Lv
@@ -60,9 +74,62 @@ public class MobSpawnHandler {
 
             applyAttributes(mob, stats);
 
+            if (stats.getTier().shouldPersistWorldState()) {
+                if (BossSpawnMetadata.getSpawnKey(mob).isEmpty()) {
+                    BossSpawnMetadata.markNatural(mob);
+                }
+                if (mob instanceof Mob persistentMob) {
+                    persistentMob.setPersistenceRequired();
+                }
+            }
+
+            if (mob.level() instanceof net.minecraft.server.level.ServerLevel serverLevel
+                    && stats.getTier().shouldPersistWorldState()
+                    && serverLevel.getServer() != null) {
+                ActiveBossesSavedData.get(serverLevel.getServer()).registerBoss(serverLevel, mob, stats.getTier());
+            }
+
+            RagnarDebugLog.mobSpawns(
+                    "SPAWN mob={} pos={} passive={} tier={} level={} class={} stats={} mult[h={},d={},def={},spd={}]",
+                    RagnarDebugLog.entityLabel(mob),
+                    RagnarDebugLog.blockPos(mob.blockPosition()),
+                    isPassive,
+                    stats.getTier(),
+                    stats.getLevel(),
+                    stats.getMobClass(),
+                    stats.describeStats(),
+                    RagnarDebugLog.formatDouble(stats.getHealthMultiplier()),
+                    RagnarDebugLog.formatDouble(stats.getDamageMultiplier()),
+                    RagnarDebugLog.formatDouble(stats.getDefenseMultiplier()),
+                    RagnarDebugLog.formatDouble(stats.getSpeedMultiplier()));
+
             // Sincroniza con clientes que ven a este mob (y el propio invocador)
             Network.sendTrackingEntityAndSelf(mob, new SyncMobStatsPacket(mob.getId(), stats));
+            
+            // Add AI goals based on assigned class
+            addMobClassAI(mob, stats.getMobClass());
         });
+    }
+
+    private static void addMobClassAI(LivingEntity entity, MobClass mobClass) {
+        if (!(entity instanceof Mob mob)) return;
+        
+        switch (mobClass) {
+            case SWORDMAN:
+                // Bash: Range 3.5, CD 4s (80 ticks), Mana 15
+                mob.goalSelector.addGoal(2, new MobUseSkillGoal(mob, new ResourceLocation("ragnarmmo", "bash"), 3.5, 80, 15));
+                break;
+            case ACOLYTE:
+                // Heal: Range 8.0, CD 5s (100 ticks), Mana 20
+                mob.goalSelector.addGoal(3, new MobUseSkillGoal(mob, new ResourceLocation("ragnarmmo", "heal"), 8.0, 100, 20));
+                break;
+            case MAGE:
+                // Fire Bolt: Range 12.0, CD 3s (60 ticks), Mana 20
+                mob.goalSelector.addGoal(2, new MobUseSkillGoal(mob, new ResourceLocation("ragnarmmo", "fire_bolt"), 12.0, 60, 20));
+                break;
+            default:
+                break;
+        }
     }
 
     private void generateStats(LivingEntity mob, MobStats stats, SpeciesConfig.SpeciesSettings species,
@@ -70,7 +137,7 @@ public class MobSpawnHandler {
         if (isPassive) {
             stats.setTier(MobTier.NORMAL);
             stats.setLevel(1);
-            stats.setMobClass(null); // Passives don't have classes
+
 
             // Basic multipliers for passives (can be tweaked if needed, but 1.0 is
             // standard)
@@ -83,53 +150,36 @@ public class MobSpawnHandler {
             return;
         }
 
-        MobTier tier = determineTier(species);
+        MobTier tier = MobSpawnOverrides.consumeForcedTier(mob)
+                .map(this::normalizeNaturalTier)
+                .orElseGet(() -> determineTier(mob, species));
         stats.setTier(tier);
 
         int level = levelMgr.computeLevel(mob, species, tier);
         stats.setLevel(level);
 
+        MobClass internalClass = assignInternalClass(mob);
+        stats.setMobClass(internalClass);
+
         int ppl = species.pointsPerLevel().orElse(MobConfig.pointsPerLevel(tier));
         int base = MobConfig.basePoints(tier);
         int total = Math.max(0, base + level * ppl);
 
-        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
-        Map<String, String> e2c = ConfigUtils.parseKeyEqualsValue(MobConfig.ENTITY_TO_CLASS.get());
-        MobClass mobClass = null;
-
-        if (MobConfig.ENABLE_CLASS_SYSTEM.get()) {
-            if (species.statWeights().isEmpty() || species.randomDistribution()) {
-                String clsName = e2c.getOrDefault(id.toString(), null);
-                if (clsName != null) {
-                    try {
-                        mobClass = MobClass.valueOf(clsName.toUpperCase(Locale.ROOT));
-                    } catch (Exception ignore) {
-                    }
-                }
-            }
-
-            // SMART CLASS VARIATION (Fallback)
-            if (mobClass == null && tier != MobTier.NORMAL) {
-                // Elites and Bosses without a fixed class get a logical one or random
-                mobClass = determineSmartClass(mob);
-            }
-        }
-
-        stats.setMobClass(mobClass);
-
-        if (mobClass != null) {
-            Map<String, Double> growthOverride = ConfigUtils
-                    .parseClassVector(MobConfig.CLASS_GROWTH_OVERRIDES.get())
-                    .getOrDefault(mobClass.name(), Map.of());
-            distributor.distributeWithWeights(stats, total, mobClass.growthWeights(), growthOverride);
-        } else {
+        // Map<StatKeys, Integer> weights = calculateInherentWeights(mob); // Old logic
+        Map<StatKeys, Integer> weights = new java.util.EnumMap<>(internalClass.getWeights());
+        
+        // Allow Species TOML to override inherent weights if provided
+        if (!species.statWeights().isEmpty() && !species.randomDistribution()) {
             distributor.distribute(stats, total, species);
+        } else {
+            // Use class-based weights
+            distributeWithCalculatedWeights(stats, total, weights);
         }
 
-        double hm = MobConfig.healthMultiplier(tier) * species.healthMultiplier().orElse(1.0);
-        double dm = MobConfig.damageMultiplier(tier) * species.damageMultiplier().orElse(1.0);
-        double df = MobConfig.defenseMultiplier(tier) * species.defenseMultiplier().orElse(1.0);
-        double sp = species.speedMultiplier().orElse(1.0);
+        double hm = MobConfig.healthMultiplier(tier) * species.healthMultiplier().orElse(1.0) * internalClass.getHpMult();
+        double dm = MobConfig.damageMultiplier(tier) * species.damageMultiplier().orElse(1.0) * internalClass.getDmgMult();
+        double df = MobConfig.defenseMultiplier(tier) * species.defenseMultiplier().orElse(1.0) * internalClass.getDefMult();
+        double sp = species.speedMultiplier().orElse(1.0) * internalClass.getSpdMult();
 
         // PARTY SCALING
         if (tier != MobTier.NORMAL) {
@@ -149,120 +199,128 @@ public class MobSpawnHandler {
         stats.setDamageMultiplier(dm);
         stats.setDefenseMultiplier(df);
         stats.setSpeedMultiplier(sp);
-
-        if (mobClass != null
-                && species.healthMultiplier().isEmpty()
-                && species.damageMultiplier().isEmpty()
-                && species.defenseMultiplier().isEmpty()
-                && species.speedMultiplier().isEmpty()) {
-
-            var mult = mobClass.multipliers();
-            Map<String, Double> multOverride = ConfigUtils
-                    .parseClassVector(MobConfig.CLASS_MULT_OVERRIDES.get())
-                    .getOrDefault(mobClass.name(), Map.of());
-
-            double ohm = multOverride.getOrDefault("health", mult.getOrDefault(StatKeys.VIT, 1.0));
-            double odm = multOverride.getOrDefault("damage", mult.getOrDefault(StatKeys.STR, 1.0));
-            double odf = multOverride.getOrDefault("defense", mult.getOrDefault(StatKeys.VIT, 1.0));
-            double osp = multOverride.getOrDefault("speed", mult.getOrDefault(StatKeys.AGI, 1.0));
-
-            stats.setHealthMultiplier(ohm * stats.getHealthMultiplier());
-            stats.setDamageMultiplier(odm * stats.getDamageMultiplier());
-            stats.setDefenseMultiplier(odf * stats.getDefenseMultiplier());
-            stats.setSpeedMultiplier(osp * stats.getSpeedMultiplier());
-        }
     }
 
-    private MobTier determineTier(SpeciesConfig.SpeciesSettings species) {
+    private MobClass assignInternalClass(LivingEntity mob) {
+        if (mob instanceof Zombie) return MobClass.SWORDMAN;
+        if (mob instanceof Skeleton) return MobClass.ARCHER;
+        if (mob instanceof Spider) return MobClass.THIEF;
+        if (mob instanceof Creeper) return MobClass.THIEF;
+        if (mob instanceof Blaze || mob instanceof Witch) return MobClass.MAGE;
+        if (mob instanceof EnderMan) return MobClass.THIEF;
+        
+        // Default based on attributes
+        AttributeInstance atk = mob.getAttribute(Attributes.ATTACK_DAMAGE);
+        AttributeInstance spd = mob.getAttribute(Attributes.MOVEMENT_SPEED);
+        
+        if (atk != null && atk.getBaseValue() > 3) return MobClass.SWORDMAN;
+        if (spd != null && spd.getBaseValue() > 0.3) return MobClass.THIEF;
+        
+        return MobClass.NOVICE;
+    }
+
+    private void distributeWithCalculatedWeights(MobStats stats, int totalPoints, Map<StatKeys, Integer> weights) {
+        distributor.distributeByWeights(stats, totalPoints, weights);
+    }
+
+    private MobTier determineTier(LivingEntity mob, SpeciesConfig.SpeciesSettings species) {
         if (species != null && species.forcedTier().isPresent())
             return species.forcedTier().get();
+
+        MobTier weightedTier = determineWeightedTier(species);
+        if (weightedTier != null) {
+            return weightedTier;
+        }
+
+        // Cascading probability roll: MVP > BOSS > MINI_BOSS > ELITE > NORMAL
         double roll = rng.nextDouble();
-        if (roll < MobConfig.BOSS_CHANCE.get())
+        double mvpChance = MobConfig.MVP_CHANCE.get();
+        double bossChance = MobConfig.BOSS_CHANCE.get();
+        double miniBossChance = MobConfig.MINI_BOSS_CHANCE.get();
+        double eliteChance = MobConfig.ELITE_CHANCE.get();
+
+        if (roll < mvpChance)
+            return MobTier.MVP;
+        roll -= mvpChance;
+        if (roll < bossChance)
             return MobTier.BOSS;
-        if (roll < MobConfig.BOSS_CHANCE.get() + MobConfig.ELITE_CHANCE.get())
+        roll -= bossChance;
+        if (roll < miniBossChance)
+            return MobTier.MINI_BOSS;
+        roll -= miniBossChance;
+        if (roll < eliteChance)
             return MobTier.ELITE;
+
         return MobTier.NORMAL;
     }
 
-    private MobClass determineSmartClass(LivingEntity mob) {
-        // 1. Logic based on entity properties
-        if (mob instanceof net.minecraft.world.entity.monster.RangedAttackMob)
-            return MobClass.ARCHER;
-        if (mob instanceof net.minecraft.world.entity.monster.Enemy
-                && (mob instanceof net.minecraft.world.entity.FlyingMob
-                        || mob instanceof net.minecraft.world.entity.monster.Blaze))
-            return MobClass.MAGE;
-        if (mob.getBbWidth() < 0.8f && mob.getBbHeight() < 1.0f)
-            return MobClass.ROGUE;
-        if (mob.isInvertedHealAndHarm())
-            return MobClass.UNDEAD;
+    /**
+     * Normalizes a forced tier for natural (non-scripted) spawns.
+     * Previously this collapsed all non-NORMAL tiers to ELITE — now it passes
+     * the tier as-is so MINI_BOSS, BOSS, and MVP function correctly.
+     */
+    private MobTier normalizeNaturalTier(MobTier tier) {
+        return tier; // All tiers are now valid for natural spawns
+    }
 
-        // 2. Random weighted distribution for variety
-        double roll = rng.nextDouble();
-        if (roll < 0.4)
-            return MobClass.WARRIOR;
-        if (roll < 0.6)
-            return MobClass.BEAST;
-        if (roll < 0.7)
-            return MobClass.ARCHER;
-        if (roll < 0.8)
-            return MobClass.ROGUE;
-        if (roll < 0.9)
-            return MobClass.MAGE;
-        return MobClass.UNDEAD;
+
+
+    private MobTier determineWeightedTier(SpeciesConfig.SpeciesSettings species) {
+        if (species == null || species.tierWeights().isEmpty()) {
+            return null;
+        }
+
+        double totalWeight = species.tierWeights().values().stream()
+                .filter(weight -> weight != null && weight > 0.0D)
+                .mapToDouble(Double::doubleValue)
+                .sum();
+        if (totalWeight <= 0.0D) {
+            return null;
+        }
+
+        double roll = rng.nextDouble() * totalWeight;
+        for (Map.Entry<MobTier, Double> entry : species.tierWeights().entrySet()) {
+            double weight = entry.getValue() == null ? 0.0D : entry.getValue();
+            if (weight <= 0.0D) {
+                continue;
+            }
+            roll -= weight;
+            if (roll <= 0.0D) {
+                return entry.getKey();
+            }
+        }
+
+        return MobTier.NORMAL;
     }
 
     private void applyAttributes(LivingEntity mob, MobStats stats) {
-        int level = stats.getLevel();
-        int str = stats.get(StatKeys.STR);
-        int agi = stats.get(StatKeys.AGI);
-        int vit = stats.get(StatKeys.VIT);
-        int intel = stats.get(StatKeys.INT);
-        int dex = stats.get(StatKeys.DEX);
-        int luk = stats.get(StatKeys.LUK);
-
-        AttributeInstance maxHealth = get(mob, Attributes.MAX_HEALTH);
-        if (maxHealth != null) {
-            double hp = (MobConfig.HP_BASE.get()
-                    + vit * MobConfig.VIT_TO_HP.get()
-                    + level * MobConfig.LEVEL_TO_HP.get()) * stats.getHealthMultiplier();
-            hp = Math.max(1.0D, hp);
-            maxHealth.setBaseValue(hp);
-            mob.setHealth((float) hp);
-        }
-
-        AttributeInstance attackDamage = get(mob, Attributes.ATTACK_DAMAGE);
-        if (attackDamage != null) {
-            double atk = (MobConfig.ATK_BASE.get()
-                    + str * MobConfig.STR_TO_ATK.get()
-                    + dex * MobConfig.DEX_TO_ATK.get()
-                    + luk * MobConfig.LUK_TO_ATK.get()) * stats.getDamageMultiplier();
-            attackDamage.setBaseValue(Math.max(0.0D, atk));
-        }
-
-        AttributeInstance armor = get(mob, Attributes.ARMOR);
-        if (armor != null) {
-            double armorValue = (MobConfig.ARMOR_BASE.get()
-                    + vit * MobConfig.VIT_TO_ARMOR.get()
-                    + intel * MobConfig.INT_TO_ARMOR.get()) * stats.getDefenseMultiplier();
-            armor.setBaseValue(Math.max(0.0D, armorValue));
-        }
-
-        AttributeInstance movementSpeed = get(mob, Attributes.MOVEMENT_SPEED);
-        if (movementSpeed != null) {
-            double base = movementSpeed.getBaseValue();
-            double spd = (base + agi * MobConfig.AGI_TO_SPEED.get()) * stats.getSpeedMultiplier();
-            movementSpeed.setBaseValue(spd);
-        }
-
-        AttributeInstance knockback = get(mob, Attributes.KNOCKBACK_RESISTANCE);
-        if (knockback != null) {
-            double kb = Math.min(1.0D, luk * MobConfig.LUK_TO_KB_RESIST.get());
-            knockback.setBaseValue(kb);
-        }
+        com.etema.ragnarmmo.system.mobstats.util.MobAttributeHelper.applyAttributes(mob, stats);
     }
 
-    private AttributeInstance get(LivingEntity e, Attribute a) {
-        return e != null && a != null ? e.getAttribute(a) : null;
+    private void normalizeExistingNaturalCreeperBoss(LivingEntity mob, MobStats stats) {
+        if (!(mob instanceof Creeper) || !stats.getTier().shouldPersistWorldState()) {
+            return;
+        }
+
+        BossSpawnMetadata.SpawnInfo spawnInfo = BossSpawnMetadata.read(mob, stats.getTier());
+        if (spawnInfo.source() != BossSpawnSource.NATURAL) {
+            return;
+        }
+
+        MobTier previousTier = stats.getTier();
+        stats.setTier(MobTier.ELITE);
+        applyAttributes(mob, stats);
+
+        if (mob.level() instanceof net.minecraft.server.level.ServerLevel serverLevel
+                && serverLevel.getServer() != null) {
+            ActiveBossesSavedData.get(serverLevel.getServer()).removeBoss(mob.getUUID());
+        }
+
+        Network.sendTrackingEntityAndSelf(mob, new SyncMobStatsPacket(mob.getId(), stats));
+        RagnarDebugLog.bossWorld(
+                "DOWNGRADE natural creeper boss entity={} oldTier={} newTier={}",
+                RagnarDebugLog.entityLabel(mob),
+                previousTier,
+                stats.getTier());
     }
 }

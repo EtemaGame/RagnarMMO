@@ -2,6 +2,12 @@
     "id": "ragnarmmo:pierce",
     "family": "ragnarmmo:spear_skill",
     "display_name": "Pierce",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
     "requirements": {
         "ragnarmmo:spear_mastery": 1
     },

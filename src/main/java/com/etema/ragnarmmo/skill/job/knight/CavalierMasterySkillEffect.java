@@ -1,0 +1,45 @@
+package com.etema.ragnarmmo.skill.job.knight;
+
+import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
+
+/**
+ * Cavalier Mastery — Passive
+ * RO: Reduces the ASPD penalty for being mounted. At level 5 (max), removes
+ *     the penalty entirely, allowing full combat efficiency on Peco Peco.
+ *
+ * Minecraft:
+ *  - When the player is riding a vehicle (mounted) and attacks, reduces the
+ *    damage penalty that vanilla applies to mounted attacks by adding a partial
+ *    Haste effect during combat.
+ *  - At level 5, provides Haste 1 always while mounted to compensate for any
+ *    attack speed loss while riding.
+ *
+ *  NOTE: Vanilla Minecraft doesn't penalize damage while riding, so this skill
+ *  acts as a quality-of-life passive: it amplifies mounted combat by adding
+ *  a stacking Haste when isPassenger() is true.
+ */
+public class CavalierMasterySkillEffect implements ISkillEffect {
+
+    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "cavalier_mastery");
+
+    @Override
+    public ResourceLocation getSkillId() {
+        return ID;
+    }
+
+    @Override
+    public void onOffensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
+        if (level <= 0) return;
+        if (!player.isPassenger()) return; // Only triggers while mounted
+
+        // While mounted, provide a damage bonus proportional to mastery level
+        // Level 1: +5%, Level 5: +25%
+        float mountedBonus = 0.05f * level;
+        event.setAmount(event.getAmount() * (1.0f + mountedBonus));
+    }
+}

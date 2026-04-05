@@ -1,6 +1,12 @@
 {
     "id": "ragnarmmo:bowling_bash",
     "family": "ragnarmmo:physical_attack",
+    "progression": {
+        "max_level": 10,
+        "upgrade_cost": 1,
+        "can_gain_xp": false,
+        "can_upgrade_with_points": true
+    },
     "display_name": "Bowling Bash",
     "costs": {
         "base_cost": 25,

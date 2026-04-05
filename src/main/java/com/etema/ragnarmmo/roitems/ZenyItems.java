@@ -18,13 +18,13 @@ import java.util.List;
 public final class ZenyItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, RagnarCore.MODID);
 
-    public static final RegistryObject<Item> COPPER_ZENY = ITEMS.register("copper_zeny",
+    public static final RegistryObject<Item> COPPER_ZENY = ITEMS.register("zeny/copper_zeny",
             () -> new ZenyItem(new Item.Properties().stacksTo(64), "§6Copper Zeny"));
 
-    public static final RegistryObject<Item> SILVER_ZENY = ITEMS.register("silver_zeny",
+    public static final RegistryObject<Item> SILVER_ZENY = ITEMS.register("zeny/silver_zeny",
             () -> new ZenyItem(new Item.Properties().stacksTo(64), "§7Silver Zeny"));
 
-    public static final RegistryObject<Item> GOLD_ZENY = ITEMS.register("gold_zeny",
+    public static final RegistryObject<Item> GOLD_ZENY = ITEMS.register("zeny/gold_zeny",
             () -> new ZenyItem(new Item.Properties().stacksTo(64), "§eGold Zeny"));
 
     public static void register(IEventBus modBus) {

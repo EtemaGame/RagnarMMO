@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.common.init;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.roitems.TestItems;
+import com.etema.ragnarmmo.roitems.DaggerItems;
 import com.etema.ragnarmmo.roitems.ZenyItems;
 import com.etema.ragnarmmo.system.loot.cards.RagnarCardItems;
 import net.minecraft.core.registries.Registries;
@@ -43,37 +43,23 @@ public final class RagnarCreativeTabs {
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.ragnarmmo.weapons"))
                     .icon(() -> {
-                        var icon = TestItems.TEST_SWORD_1H.get();
+                        var icon = DaggerItems.GLACIAL_SHARD.get();
                         return new ItemStack(icon != null ? icon : Items.IRON_SWORD);
                     })
                     .displayItems((params, output) -> {
-                        // Swords
-                        var sword1h = TestItems.TEST_SWORD_1H.get();
-                        var sword2h = TestItems.TEST_SWORD_2H.get();
-                        var dagger = TestItems.TEST_DAGGER.get();
-                        if (sword1h != null) output.accept(sword1h);
-                        if (sword2h != null) output.accept(sword2h);
-                        if (dagger != null) output.accept(dagger);
-
-                        // Maces & Axes
-                        var mace1h = TestItems.TEST_MACE_1H.get();
-                        var mace2h = TestItems.TEST_MACE_2H.get();
-                        var waraxe1h = TestItems.TEST_WARAXE_1H.get();
-                        var waraxe2h = TestItems.TEST_WARAXE_2H.get();
-                        if (mace1h != null) output.accept(mace1h);
-                        if (mace2h != null) output.accept(mace2h);
-                        if (waraxe1h != null) output.accept(waraxe1h);
-                        if (waraxe2h != null) output.accept(waraxe2h);
-
-                        // Magic
-                        var wand = TestItems.TEST_WAND.get();
-                        var staff = TestItems.TEST_STAFF.get();
-                        if (wand != null) output.accept(wand);
-                        if (staff != null) output.accept(staff);
-
-                        // Shield
-                        var shield = TestItems.TEST_SHIELD.get();
-                        if (shield != null) output.accept(shield);
+                        // Custom Daggers
+                        output.accept(DaggerItems.GLACIAL_SHARD.get());
+                        output.accept(DaggerItems.VOLCANIC_TOOTH.get());
+                        output.accept(DaggerItems.GALE_DIRK.get());
+                        output.accept(DaggerItems.QUAKE_STILETTO.get());
+                        output.accept(DaggerItems.VEIN_SEEKER.get());
+                        output.accept(DaggerItems.SHADOWS_EMBRACE.get());
+                        output.accept(DaggerItems.MAMBAS_KISS.get());
+                        output.accept(DaggerItems.GHOSTLY_STING.get());
+                        output.accept(DaggerItems.VALKYRIES_THORN.get());
+                        output.accept(DaggerItems.ABYSSAL_FANG.get());
+                        output.accept(DaggerItems.TWILIGHT_CARVER.get());
+                        output.accept(DaggerItems.OATHBREAKER.get());
                     })
                     .build());
 

@@ -1,13 +1,13 @@
 package com.etema.ragnarmmo.client.ui;
 
 import com.etema.ragnarmmo.common.api.jobs.JobType;
-import com.etema.ragnarmmo.common.api.skills.ISkillDefinition;
-import com.etema.ragnarmmo.common.api.skills.SkillType;
-import com.etema.ragnarmmo.common.api.skills.SkillTier;
-import com.etema.ragnarmmo.system.skills.data.SkillRegistry;
-import com.etema.ragnarmmo.system.skills.data.tree.SkillNode;
-import com.etema.ragnarmmo.system.skills.data.tree.SkillTreeDefinition;
-import com.etema.ragnarmmo.system.skills.data.tree.SkillTreeRegistry;
+import com.etema.ragnarmmo.skill.api.ISkillDefinition;
+import com.etema.ragnarmmo.skill.api.SkillType;
+import com.etema.ragnarmmo.skill.api.SkillTier;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skill.data.tree.SkillNode;
+import com.etema.ragnarmmo.skill.data.tree.SkillTreeDefinition;
+import com.etema.ragnarmmo.skill.data.tree.SkillTreeRegistry;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -11,7 +11,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.MinecraftForge;
 
-import com.etema.ragnarmmo.system.skills.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 
 /**
  * StatComputer - Calculates derived stats by delegating to CombatMath.
@@ -24,40 +24,25 @@ public final class StatComputer {
     }
 
     // Skill IDs
-    private static final ResourceLocation SWORD_MASTERY = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "sword_mastery");
-    private static final ResourceLocation DAGGER_MASTERY = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "dagger_mastery");
-    private static final ResourceLocation MACE_MASTERY = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "mace_mastery");
-    private static final ResourceLocation BOW_MASTERY = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "bow_mastery");
-    private static final ResourceLocation WEAPON_TRAINER = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "weapon_trainer");
-    private static final ResourceLocation FAITH = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "faith");
-    private static final ResourceLocation FIRST_AID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "first_aid");
-    private static final ResourceLocation ARCANE_REGENERATION = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "arcane_regeneration");
-    private static final ResourceLocation ACCURACY_TRAINING = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "accuracy_training");
-    private static final ResourceLocation MANA_CONTROL = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "mana_control");
-    private static final ResourceLocation SPEAR_MASTERY = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "spear_mastery");
-    private static final ResourceLocation KATAR_MASTERY = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "katar_mastery");
-    private static final ResourceLocation RIGHTHAND_MASTERY = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "righthand_mastery");
-    private static final ResourceLocation LEFTHAND_MASTERY = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "lefthand_mastery");
-    private static final ResourceLocation SONIC_ACCELERATION = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "sonic_acceleration");
-    private static final ResourceLocation RESEARCH_WEAPONRY = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "research_weaponry");
-    private static final ResourceLocation SKIN_TEMPERING = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
-            "skin_tempering");
+    private static final ResourceLocation SWORD_MASTERY = new ResourceLocation("ragnarmmo", "sword_mastery");
+    private static final ResourceLocation DAGGER_MASTERY = new ResourceLocation("ragnarmmo", "dagger_mastery");
+    private static final ResourceLocation MACE_MASTERY = new ResourceLocation("ragnarmmo", "mace_mastery");
+    private static final ResourceLocation BOW_MASTERY = new ResourceLocation("ragnarmmo", "bow_mastery");
+    private static final ResourceLocation WEAPON_TRAINER = new ResourceLocation("ragnarmmo", "weapon_trainer");
+    private static final ResourceLocation FAITH = new ResourceLocation("ragnarmmo", "faith");
+    private static final ResourceLocation ARCANE_REGENERATION = new ResourceLocation("ragnarmmo", "arcane_regeneration");
+    private static final ResourceLocation ACCURACY_TRAINING = new ResourceLocation("ragnarmmo", "accuracy_training");
+    private static final ResourceLocation MANA_CONTROL = new ResourceLocation("ragnarmmo", "mana_control");
+    private static final ResourceLocation SPEAR_MASTERY = new ResourceLocation("ragnarmmo", "spear_mastery");
+    private static final ResourceLocation KATAR_MASTERY = new ResourceLocation("ragnarmmo", "katar_mastery");
+    private static final ResourceLocation RIGHTHAND_MASTERY = new ResourceLocation("ragnarmmo", "righthand_mastery");
+    private static final ResourceLocation LEFTHAND_MASTERY = new ResourceLocation("ragnarmmo", "lefthand_mastery");
+    private static final ResourceLocation SONIC_ACCELERATION = new ResourceLocation("ragnarmmo", "sonic_acceleration");
+    private static final ResourceLocation RESEARCH_WEAPONRY = new ResourceLocation("ragnarmmo", "research_weaponry");
+    private static final ResourceLocation SKIN_TEMPERING = new ResourceLocation("ragnarmmo", "skin_tempering");
 
-    // Flee display cap (UI-only, converts raw flee to a 0-1 percentage)
+    // Flee display cap (UI-only): flee values above 60% are capped for the HUD.
+    // Raw flee is still used in combat calculations (CombatMath.computeHitRate).
     private static final double FLEE_DISPLAY_MAX = 0.60;
 
     // ========================================================================
@@ -79,7 +64,7 @@ public final class StatComputer {
         // --- Skill Bonuses retrieval ---
         int swordLvl = 0, daggerLvl = 0, maceLvl = 0, bowLvl = 0;
         int weaponTrainerLvl = 0;
-        int faithLvl = 0, firstAidLvl = 0, arcaneRegenLvl = 0, accuracyLvl = 0;
+        int faithLvl = 0, arcaneRegenLvl = 0, accuracyLvl = 0;
         int manaControlLvl = 0;
         int spearLvl = 0;
         int katarMasteryLvl = 0, rightHandLvl = 0, leftHandLvl = 0, sonicAccelLvl = 0;
@@ -87,15 +72,13 @@ public final class StatComputer {
 
         var skillsOpt = PlayerSkillsProvider.get(p);
         if (skillsOpt.isPresent()) {
-            var skills = skillsOpt.orElseThrow(
-                    () -> new IllegalStateException("Skill capability not present for " + p.getScoreboardName()));
+            var skills = skillsOpt.orElseThrow(() -> new IllegalStateException("SkillManager absent after isPresent()"));
             swordLvl = skills.getSkillLevel(SWORD_MASTERY);
             daggerLvl = skills.getSkillLevel(DAGGER_MASTERY);
             maceLvl = skills.getSkillLevel(MACE_MASTERY);
             bowLvl = skills.getSkillLevel(BOW_MASTERY);
             weaponTrainerLvl = skills.getSkillLevel(WEAPON_TRAINER);
             faithLvl = skills.getSkillLevel(FAITH);
-            firstAidLvl = skills.getSkillLevel(FIRST_AID);
             arcaneRegenLvl = skills.getSkillLevel(ARCANE_REGENERATION);
             accuracyLvl = skills.getSkillLevel(ACCURACY_TRAINING);
             manaControlLvl = skills.getSkillLevel(MANA_CONTROL);
@@ -129,15 +112,10 @@ public final class StatComputer {
 
         // Dual Wield Efficiency (Assassin)
         if (isDualWielding(p)) {
-            // Right hand mastery increases base efficiency (default 50%? No, main hand is
-            // usually 100%,
-            // but left hand is penalized. In RO, Right Hand mastery adds damage back).
-            // We'll simulate by adding a flat multiplier or bonus.
             skillATK += (rightHandLvl * 2.0) + (leftHandLvl * 2.0);
         }
 
         double dmgPhysRaw = CombatMath.computeWeaponATK(weaponATK, STR) + statusATK + skillATK;
-
         double dmgPhysFloor = CombatMath.computeDamageVarianceFloor(dmgPhysRaw, DEX, LUK);
 
         // --- Magic Attack ---
@@ -169,13 +147,21 @@ public final class StatComputer {
         // --- Attack Speed ---
         boolean hasShield = p.getOffhandItem().canPerformAction(net.minecraftforge.common.ToolActions.SHIELD_BLOCK)
                 || p.getOffhandItem().getItem() instanceof net.minecraft.world.item.ShieldItem;
-        double aps = CombatMath.computeAPS(p.getMainHandItem(), hasShield, AGI, DEX, 0);
+
+        double aspdBonus = 0;
+        if (p.hasEffect(net.minecraft.world.effect.MobEffects.DIG_SPEED) && isAxeOrMace(p.getMainHandItem())) {
+            // Adrenaline Rush: Approx +5-7 flat ASPD (30% reduction in delay logic)
+            aspdBonus += 6.0;
+        }
+
+        int aspdRo = CombatMath.computeASPD_RO(CombatMath.getWeaponBaseASPD(p.getMainHandItem()), hasShield, AGI, DEX,
+                aspdBonus);
+        double aps = CombatMath.convertASPD_ToAPS(aspdRo);
 
         // --- Cast Time ---
         double castTime = CombatMath.computeCastTime(baseCast, DEX, INT, false);
 
         // --- Physical Defense ---
-        double softDEF = CombatMath.computeSoftDEF(VIT, AGI, LVL);
         double hardDEF = CombatMath.computeHardDEF(armorEff, VIT);
 
         // Blacksmith Skin Tempering (Physical DR bonus)
@@ -191,7 +177,6 @@ public final class StatComputer {
         hpMax += (faithLvl * 10.0);
 
         double hpRegenPerSec = CombatMath.computeHPRegen(VIT, hpMax);
-        hpRegenPerSec += (firstAidLvl * 0.2);
 
         // --- Mana (base + skill bonuses) ---
         double manaMax = CombatMath.computeMaxMana(INT, LVL, s.getJobId());
@@ -202,20 +187,26 @@ public final class StatComputer {
         double manaRegenPerSec = CombatMath.computeManaRegen(INT, manaMax);
         manaRegenPerSec += (arcaneRegenLvl * 0.1);
 
+        // --- SP (physical stamina resource — separate from Mana) ---
+        double spMax = CombatMath.computeMaxSP(VIT, STR, LVL, s.getJobId());
+        double spRegenPerSec = CombatMath.computeSPRegen(STR, spMax);
+
         // --- Life Steal ---
         double lifeSteal = getLifeSteal(p);
 
         // --- Build result ---
         DerivedStats d = new DerivedStats();
         d.physicalAttack = dmgPhysRaw;
-        d.physicalAttackMin = Math.max(0, dmgPhysFloor - softDEF);
+        d.physicalAttackMin = Math.max(0, dmgPhysFloor);
         d.physicalAttackMax = dmgPhysRaw;
         d.magicAttack = Math.max(0, dmgMagic);
         d.accuracy = hitA;
         d.criticalChance = pCrit;
         d.criticalDamageMultiplier = critDmgMult;
-        d.flee = fleeD;
-        d.attackSpeed = aps;
+        // Flee: cap the display value to 60% for UI; raw value is used in CombatMath
+        d.flee = Math.min(fleeD, FLEE_DISPLAY_MAX * 100.0);
+        d.perfectDodge = perfectDodge;
+        d.attackSpeed = aspdRo;
         d.castTime = castTime;
         d.globalCooldown = aps > 0 ? 1.0 / aps : 0.0;
         d.physicalDamageReduction = drPhys;
@@ -224,6 +215,8 @@ public final class StatComputer {
         d.healthRegenPerSecond = Math.max(0, hpRegenPerSec);
         d.maxMana = manaMax;
         d.manaRegenPerSecond = manaRegenPerSec;
+        d.maxSP = spMax;
+        d.spRegenPerSecond = spRegenPerSec;
         d.defense = hardDEF;
         d.magicDefense = mdefBase;
         d.lifeSteal = lifeSteal;
@@ -252,25 +245,24 @@ public final class StatComputer {
     }
 
     private static boolean isKatar(net.minecraft.world.item.ItemStack stack) {
-        // Placeholder check for Katar items (e.g. by tag or specific item class)
         return stack.getTags().anyMatch(t -> t.location().getPath().contains("katars"));
     }
 
     private static boolean isDualWielding(Player p) {
         net.minecraft.world.item.ItemStack main = p.getMainHandItem();
         net.minecraft.world.item.ItemStack off = p.getOffhandItem();
-        return !main.isEmpty() && !off.isEmpty() &&
-                main.getItem() instanceof net.minecraft.world.item.TieredItem &&
-                off.getItem() instanceof net.minecraft.world.item.TieredItem &&
-                !(off.getItem() instanceof net.minecraft.world.item.ShieldItem);
+        return !main.isEmpty() && !off.isEmpty()
+                && main.getItem() instanceof net.minecraft.world.item.TieredItem
+                && off.getItem() instanceof net.minecraft.world.item.TieredItem
+                && !(off.getItem() instanceof net.minecraft.world.item.ShieldItem);
     }
 
     private static boolean isAxeOrMace(net.minecraft.world.item.ItemStack stack) {
         if (stack.isEmpty())
             return false;
         net.minecraft.world.item.Item item = stack.getItem();
-        return item instanceof net.minecraft.world.item.AxeItem ||
-                stack.getTags().anyMatch(t -> t.location().getPath().contains("maces"));
+        return item instanceof net.minecraft.world.item.AxeItem
+                || stack.getTags().anyMatch(t -> t.location().getPath().contains("maces"));
     }
 
     /**

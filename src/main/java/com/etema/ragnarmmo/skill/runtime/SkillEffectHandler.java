@@ -110,80 +110,25 @@ public class SkillEffectHandler {
 
     /**
      * Attempts to trigger an active skill use.
+     * Delegates to RagnarCombatEngine for authoritative resolution.
      * 
      * @param player  The player attempting to use the skill.
      * @param skillId The string ID of the skill.
      * @param level   The requested skill level.
      */
     public static void tryUseSkill(ServerPlayer player, String skillId, int level) {
-        Optional<SkillDefinition> defOpt = SkillRegistry.get(skillId);
-        if (defOpt.isPresent()) {
-            SkillDefinition def = defOpt.get();
-            ResourceLocation id = def.getId();
-
-            RoPlayerDataAccess.get(player).ifPresent(data -> {
-                IPlayerStats stats = data.getStats();
-                SkillManager skills = (SkillManager) data.getSkills();
-                if (skills.getSkillLevel(id) < level) {
-                    return;
-                }
-
-                // Check job requirement
-                if (!def.getAllowedJobs().isEmpty()) {
-                    String currentJobId = stats.getJobId();
-                    com.etema.ragnarmmo.common.api.jobs.JobType jobType = com.etema.ragnarmmo.common.api.jobs.JobType.fromId(currentJobId);
-
-                    java.util.Set<String> allowedJobs = def.getAllowedJobs();
-                    boolean jobAllowed = allowedJobs.stream()
-                        .anyMatch(jobType::matchesSkillRule)
-                                     || def.getTier() == com.etema.ragnarmmo.skill.api.SkillTier.LIFE;
-
-                    if (!jobAllowed) {
-                        player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.ragnarmmo.skill_wrong_job"));
-                        return;
-                    }
-                }
-
-                if (skills.isCasting() || skills.isOnGlobalCooldown()) {
-                    return;
-                }
-
-                if (skills.isOnCooldown(id)) {
-                    return;
-                }
-
-                Optional<ISkillEffect> effectOpt = SkillRegistry.getEffect(id);
-                int cost = resolveResourceCost(def, effectOpt, level);
-                int baseCastTime = resolveBaseCastTime(def, effectOpt, level);
-                int castTime = adjustCastTime(player, baseCastTime);
-                boolean hasEnough = stats.getCurrentResource() >= cost;
-
-                if (hasEnough) {
-                    if (castTime > 0) {
-                        skills.startCast(id, level, castTime);
-                        consumeCastTimeModifiers(player, baseCastTime);
-                        player.sendSystemMessage(
-                                Component.translatable("message.ragnarmmo.cast_start",
-                                        def.getDisplayName()));
-                    } else {
-                        if (tryConsumeAndExecute(player, stats, id, level, cost)) {
-                            skills.setCooldown(id, def.getCooldownTicks(level));
-
-                            int castDelay = resolveCastDelay(def, effectOpt, level);
-                            if (castDelay > 0) {
-                                skills.setGlobalCooldown(castDelay);
-                            }
-
-                            syncPlayer(player, stats, skills);
-                        }
-                    }
-                } else {
-                    player.sendSystemMessage(
-                            Component.translatable("message.ragnarmmo.insufficient_sp")
-                                    .withStyle(ChatFormatting.RED));
-                }
-            });
-        }
+        com.etema.ragnarmmo.combat.engine.RagnarCombatEngine.get().handleSkillUseRequest(
+            new com.etema.ragnarmmo.combat.api.CombatRequestContext(
+                player,
+                com.etema.ragnarmmo.combat.api.CombatActionType.SKILL,
+                0, // sequenceId not available here
+                0,
+                false,
+                skillId,
+                java.util.Collections.emptyList(),
+                java.util.Map.of("level", level)
+            )
+        );
     }
 
     public static void tryUseSkill(ServerPlayer player, String skillId) {

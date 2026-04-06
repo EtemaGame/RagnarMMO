@@ -91,7 +91,7 @@ public class ClientModEvents {
             } else if (event.getOverlay().id().equals(VanillaGuiOverlay.AIR_LEVEL.id())) {
                 // Move air bubbles up to avoid overlapping with the skill hotbar
                 event.getGuiGraphics().pose().pushPose();
-                event.getGuiGraphics().pose().translate(0, -25, 0);
+                event.getGuiGraphics().pose().translate(0, -32, 0);
             }
         }
 

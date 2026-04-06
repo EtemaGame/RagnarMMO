@@ -532,6 +532,15 @@ public class AchievementScreen extends Screen {
     }
 
     @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (com.etema.ragnarmmo.client.Keybinds.OPEN_ACHIEVEMENTS.matches(keyCode, scanCode)) {
+            this.minecraft.setScreen(null);
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
     public boolean isPauseScreen() {
         return false;
     }

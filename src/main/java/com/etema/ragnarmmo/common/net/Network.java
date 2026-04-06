@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @SuppressWarnings("removal") // ResourceLocation constructor deprecated in 1.20.4+, valid for 1.20.1
 public final class Network {
-        private static final String PROTOCOL = "1";
+        private static final String PROTOCOL = "2";
         private static final SimpleChannel CH = NetworkRegistry.ChannelBuilder
                         .named(new ResourceLocation(RagnarMMO.MODID, "main"))
                         .networkProtocolVersion(() -> PROTOCOL)

@@ -166,22 +166,22 @@ public final class MobConfig {
                 b.push("progression");
                 BASE_POINTS_NORMAL = b.defineInRange("base_points.normal", 5, 0, 100000);
                 BASE_POINTS_ELITE = b.defineInRange("base_points.elite", 20, 0, 100000);
-                BASE_POINTS_MINI_BOSS = b.defineInRange("base_points.mini_boss", 35, 0, 100000);
-                BASE_POINTS_BOSS = b.defineInRange("base_points.boss", 50, 0, 100000);
-                BASE_POINTS_MVP = b.defineInRange("base_points.mvp", 80, 0, 100000);
+                BASE_POINTS_MINI_BOSS = b.defineInRange("base_points.mini_boss", 30, 0, 100000);
+                BASE_POINTS_BOSS = b.defineInRange("base_points.boss", 40, 0, 100000);
+                BASE_POINTS_MVP = b.defineInRange("base_points.mvp", 60, 0, 100000);
                 POINTS_PER_LEVEL_NORMAL = b.defineInRange("per_level.normal", 3, 0, 10000);
-                POINTS_PER_LEVEL_ELITE = b.defineInRange("per_level.elite", 6, 0, 10000);
-                POINTS_PER_LEVEL_MINI_BOSS = b.defineInRange("per_level.mini_boss", 8, 0, 10000);
-                POINTS_PER_LEVEL_BOSS = b.defineInRange("per_level.boss", 10, 0, 10000);
-                POINTS_PER_LEVEL_MVP = b.defineInRange("per_level.mvp", 12, 0, 10000);
+                POINTS_PER_LEVEL_ELITE = b.defineInRange("per_level.elite", 5, 0, 10000);
+                POINTS_PER_LEVEL_MINI_BOSS = b.defineInRange("per_level.mini_boss", 6, 0, 10000);
+                POINTS_PER_LEVEL_BOSS = b.defineInRange("per_level.boss", 8, 0, 10000);
+                POINTS_PER_LEVEL_MVP = b.defineInRange("per_level.mvp", 10, 0, 10000);
                 b.pop(); // progression
 
                 b.push("multipliers");
                 HEALTH_MULT_NORMAL = b.defineInRange("health.normal", 1.0D, 0.0D, 100.0D);
-                HEALTH_MULT_ELITE = b.defineInRange("health.elite", 4.0D, 0.0D, 100.0D);
-                HEALTH_MULT_MINI_BOSS = b.defineInRange("health.mini_boss", 6.0D, 0.0D, 100.0D);
-                HEALTH_MULT_BOSS = b.defineInRange("health.boss", 8.0D, 0.0D, 100.0D);
-                HEALTH_MULT_MVP = b.defineInRange("health.mvp", 12.0D, 0.0D, 100.0D);
+                HEALTH_MULT_ELITE = b.defineInRange("health.elite", 2.0D, 0.0D, 100.0D);
+                HEALTH_MULT_MINI_BOSS = b.defineInRange("health.mini_boss", 3.0D, 0.0D, 100.0D);
+                HEALTH_MULT_BOSS = b.defineInRange("health.boss", 4.0D, 0.0D, 100.0D);
+                HEALTH_MULT_MVP = b.defineInRange("health.mvp", 6.0D, 0.0D, 100.0D);
                 DAMAGE_MULT_NORMAL = b.defineInRange("damage.normal", 1.0D, 0.0D, 100.0D);
                 DAMAGE_MULT_ELITE = b.defineInRange("damage.elite", 1.5D, 0.0D, 100.0D);
                 DAMAGE_MULT_MINI_BOSS = b.defineInRange("damage.mini_boss", 2.0D, 0.0D, 100.0D);

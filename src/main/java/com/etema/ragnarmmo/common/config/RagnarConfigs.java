@@ -205,8 +205,12 @@ public final class RagnarConfigs {
                         public final ForgeConfigSpec.BooleanValue usePreRenewalStatPointCurve;
                         public final ForgeConfigSpec.IntValue baseStatPoints;
                         public final ForgeConfigSpec.IntValue pointsPerLevel;
-                        public final ForgeConfigSpec.DoubleValue skillToBaseExpMultiplier;
                         public final ForgeConfigSpec.DoubleValue skillToJobExpMultiplier;
+                        public final ForgeConfigSpec.DoubleValue skillToBaseExpMultiplier;
+                        public final ForgeConfigSpec.IntValue antiFarmTimeThreshold;
+                        public final ForgeConfigSpec.IntValue antiFarmRadiusChunks;
+                        public final ForgeConfigSpec.DoubleValue antiFarmMaxPenalty;
+                        public final ForgeConfigSpec.BooleanValue antiFarmSpawnReduction;
 
                         Progression(ForgeConfigSpec.Builder builder) {
                                 builder.comment("Experience and stat point progression").push("progression");
@@ -250,6 +254,24 @@ public final class RagnarConfigs {
                                 pointsPerLevel = builder
                                                 .comment("Fallback stat points gained per Base Level when the pre-renewal curve is disabled")
                                                 .defineInRange("points_per_level", 3, 0, 50);
+
+                                builder.comment("Anti-Farm System").push("anti_farm");
+                                antiFarmTimeThreshold = builder
+                                                .comment("Minutes spent in the same chunk zone (2-chunk radius) before penalties start")
+                                                .defineInRange("time_threshold_minutes", 15, 1, 1440);
+
+                                antiFarmRadiusChunks = builder
+                                                .comment("Radius in chunks for the anti-farm zone")
+                                                .defineInRange("radius_chunks", 2, 1, 10);
+
+                                antiFarmMaxPenalty = builder
+                                                .comment("Minimum efficiency factor (0.1 = 10% gain) reached after prolonged farming")
+                                                .defineInRange("max_penalty_limit", 0.1, 0.0, 1.0);
+
+                                antiFarmSpawnReduction = builder
+                                                .comment("If true, mob spawn rates decrease in the farmed zone")
+                                                .define("spawn_reduction_enabled", true);
+                                builder.pop();
 
                                 builder.pop();
                         }

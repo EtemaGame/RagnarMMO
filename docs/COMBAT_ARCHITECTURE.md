@@ -35,6 +35,7 @@ RagnarMMO MUST use the following boundary:
 In practical terms:
 
 ### Better Combat is allowed to handle
+
 - weapon poses
 - attack animations
 - upswing visuals
@@ -44,6 +45,7 @@ In practical terms:
 - weapon feel and swing timing for presentation
 
 ### Better Combat is NOT allowed to decide
+
 - whether an attack truly lands
 - final hit/miss result
 - crit result
@@ -57,6 +59,7 @@ In practical terms:
 - server truth
 
 ### RagnarMMO MUST own
+
 - attack legality
 - skill legality
 - ASPD logic
@@ -356,7 +359,7 @@ The server SHOULD reject duplicated or stale sequence ids.
 
 ## 8. Combat flow
 
-## 8.1 Basic attack flow
+### 8.1 Basic attack flow
 
 This flow is mandatory.
 
@@ -375,7 +378,7 @@ This flow is mandatory.
 Candidate targets from the client are hints only.
 The server MUST treat them as suggestions, not truth.
 
-## 8.2 Skill flow
+### 8.2 Skill flow
 
 1. Client requests skill use.
 2. Client MAY display pre-cast or animation.
@@ -485,6 +488,7 @@ All damage application must pass through shared combat result handling.
 These rules are specifically for AI coding agents.
 
 ### 13.1 The agent MUST
+
 - create a bridge layer rather than scattering Better Combat calls
 - keep all formulas in RagnarMMO-owned services
 - keep server authority intact
@@ -493,6 +497,7 @@ These rules are specifically for AI coding agents.
 - centralize feedback packet emission
 
 ### 13.2 The agent MUST NOT
+
 - implement RO formulas inside Better Combat mixins
 - use `Player.attack()` as the final design
 - solve multihit by random vanilla cooldown hacks
@@ -501,6 +506,7 @@ These rules are specifically for AI coding agents.
 - let individual skills invent their own combat pipeline without going through shared engine services
 
 ### 13.3 If the agent needs to intercept Better Combat
+
 It MUST:
 - do so in a minimal number of classes
 - keep integration localized to `combat.bridge`
@@ -526,34 +532,18 @@ The following are forbidden anti-patterns.
 
 ---
 
-## 15. Recommended implementation phases
+## 15. Next Implementation Phases
 
-### Phase 1 - Foundation
-- create combat packages
-- create packet contracts
-- create cooldown state and cast state
-- create combat debug logging
+### Phase 5 - Cleanup (IN PROGRESS)
+- [ ] Remove accidental dependence on vanilla melee semantics.
+- [ ] Reduce direct Better Combat coupling further.
+- [ ] Evaluate whether a Better Combat fork is still necessary.
+- [ ] Add deterministic server tests where possible.
 
-### Phase 2 - Basic attacks
-- implement `RagnarCombatEngine`
-- implement `RagnarBasicAttackResolver`
-- implement Better Combat bridge for candidate targets and animation context
-- route basic attacks through RagnarMMO server resolution
-
-### Phase 3 - Skills
-- implement `RagnarSkillResolver`
-- move existing skills to shared pipeline
-- add cast/delay/resource validation
-
-### Phase 4 - Multihit stabilization
-- implement aggregated-multihit
-- convert problematic rapid-hit skills to aggregated behavior by default
-- add deterministic server tests where possible
-
-### Phase 5 - Cleanup
-- remove accidental dependence on vanilla melee semantics
-- reduce direct Better Combat coupling further
-- evaluate whether a Better Combat fork is still necessary
+### Phase 6 - Expansion
+- [ ] Implement more Pre-Renewal skills using the new `RagnarSkillResolver`.
+- [ ] Implement support for Projectile skills (Bow/Magic) in the Engine.
+- [ ] Implement Area of Effect (AoE) logic in the Engine.
 
 ---
 

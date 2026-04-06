@@ -58,7 +58,8 @@ public class ServerboundRagnarSkillUsePacket {
                     0,
                     false,
                     msg.skillId,
-                    candidates));
+                    candidates,
+                    java.util.Map.of("level", msg.skillLevel)));
         });
         ctx.setPacketHandled(true);
     }

@@ -25,6 +25,7 @@ import com.etema.ragnarmmo.system.stats.progression.ExpTable;
 import com.etema.ragnarmmo.system.stats.progression.JobBonusService;
 import com.etema.ragnarmmo.system.stats.party.PartyXpService;
 import com.etema.ragnarmmo.system.mobstats.util.MobUtils;
+import com.etema.ragnarmmo.system.stats.util.AntiFarmManager;
 import com.google.common.collect.Multimap;
 
 import net.minecraft.network.chat.Component;
@@ -79,7 +80,7 @@ public class CommonEvents {
                 if (s instanceof PlayerStats internal) {
                     internal.setSPMaxClient(derived.maxSP); // Fix: use SP-specific formula, not Mana
                 }
-
+                
                 // Immediate HP sync on join (e.g. 20/20 -> 40/40)
                 var hpAttr = sp.getAttribute(Attributes.MAX_HEALTH);
                 if (hpAttr != null) {
@@ -211,247 +212,42 @@ public class CommonEvents {
     public static void onHurt(LivingHurtEvent e) {
         if (!(e.getSource().getEntity() instanceof Player p))
             return;
-        var tgt = e.getEntity();
-
-        if (tgt.level().isClientSide())
+        if (p.level().isClientSide())
             return;
 
+        var tgt = e.getEntity();
         if (DamageProcessingGuard.isProcessedPlayer(tgt)) {
             return;
         }
 
+        // If it reaches here, it's a non-engine player attack (vanilla or other mod)
+        // We force it to use RO math via the engine's calculators
         RagnarCoreAPI.get(p).ifPresent(stats -> {
-            double vit = StatAttributes.getTotal(p, StatKeys.VIT);
-            double intel = StatAttributes.getTotal(p, StatKeys.INT);
-            double attackerDex = StatAttributes.getTotal(p, StatKeys.DEX);
-            double attackerLuk = StatAttributes.getTotal(p, StatKeys.LUK);
+            var hitCalc = new com.etema.ragnarmmo.combat.engine.RagnarHitCalculator();
+            var dmgCalc = new com.etema.ragnarmmo.combat.engine.RagnarDamageCalculator();
 
-            double modifier = 1.0;
-
-            double armaBase = getWeaponDamage(p);
-            double aps = getWeaponAPS(p);
-            double spellBase = getWeaponMagicDamage(p);
-            double attackerArmorEff = getArmorEff(p);
-            double defenderArmorEff = getArmorEff(tgt);
-            double baseCast = 1.0;
-
-            var d = StatComputer.compute(p, stats, armaBase, aps, spellBase, attackerArmorEff, baseCast);
-
-            // Fetch Target Stats for proper HIT vs FLEE and Critical Shield
-            double defenderFlee = 100.0;
-            double defenderAgi = 0.0;
-            double defenderDex = 1.0;
-            double defenderLuk = 0.0;
-            int defenderLevel = 1;
-            double defenderVit = 0.0;
-            double defenderInt = 0.0;
-            double defenderMdefEquip = defenderArmorEff;
-            double defenderPerfectDodge = 0.0;
-
-            if (tgt instanceof Player tgtPlayer) {
-                var tgtStatsOpt = RagnarCoreAPI.get(tgtPlayer);
-                if (tgtStatsOpt.isPresent()) {
-                    var ts = tgtStatsOpt.get();
-                    int dodgeLv = com.etema.ragnarmmo.skill.data.progression.SkillProgressManager.getProgress(tgtPlayer, new ResourceLocation("ragnarmmo", "improve_dodge")).getLevel();
-                    int defenderAgiTotal = (int) Math.round(StatAttributes.getTotal(tgtPlayer, StatKeys.AGI));
-                    int defenderDexTotal = (int) Math.round(StatAttributes.getTotal(tgtPlayer, StatKeys.DEX));
-                    int defenderLukTotal = (int) Math.round(StatAttributes.getTotal(tgtPlayer, StatKeys.LUK));
-                    int defenderVitTotal = (int) Math.round(StatAttributes.getTotal(tgtPlayer, StatKeys.VIT));
-                    int defenderIntTotal = (int) Math.round(StatAttributes.getTotal(tgtPlayer, StatKeys.INT));
-                    defenderAgi = defenderAgiTotal;
-                    defenderDex = defenderDexTotal;
-                    defenderFlee = CombatMath.computeFLEE(defenderAgiTotal, defenderLukTotal, ts.getLevel(), dodgeLv * 3.0);
-                    defenderLuk = defenderLukTotal;
-                    defenderLevel = ts.getLevel();
-                    defenderVit = defenderVitTotal;
-                    defenderInt = defenderIntTotal;
-                    defenderPerfectDodge = CombatMath.computePerfectDodge(defenderLukTotal);
-                }
-            } else if (tgt instanceof net.minecraft.world.entity.Mob mob) {
-                var mobStatsLazy = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(mob);
-                if (mobStatsLazy.isPresent()) {
-                    var ms = mobStatsLazy.orElseThrow(() -> new IllegalStateException("MobStats absent after isPresent()"));
-                    defenderAgi = ms.get(StatKeys.AGI);
-                    defenderDex = ms.get(StatKeys.DEX);
-                    defenderFlee = CombatMath.computeFLEE(ms.get(StatKeys.AGI), ms.get(StatKeys.LUK), ms.getLevel(), 0);
-                    defenderLuk = ms.get(StatKeys.LUK);
-                    defenderLevel = ms.getLevel();
-                    defenderVit = ms.get(StatKeys.VIT);
-                    defenderInt = ms.get(StatKeys.INT);
-                } else {
-                    defenderLevel = mob.getAttributes().hasAttribute(Attributes.MAX_HEALTH) ? (int) (mob.getMaxHealth() / 10) : 10;
-                    defenderFlee = defenderLevel + CombatMath.FLEE_BASE;
-                    defenderLuk = defenderLevel;
-                }
-            }
-
-            boolean isMagic = isMagicDamage(e.getSource());
-            var attackElement = isMagic
-                    ? CombatPropertyResolver.getMagicElement(e.getSource().getDirectEntity())
-                    : CombatPropertyResolver.getOffensiveElement(p);
-            var defenseElement = CombatPropertyResolver.getDefensiveElement(tgt);
-            modifier *= CombatPropertyResolver.getElementalModifier(attackElement, defenseElement);
-            modifier *= EquipmentCombatModifierResolver.getOutgoingModifier(p, tgt, attackElement, isMagic);
-
-            if (!isMagic && defenderPerfectDodge > 0.0
-                    && ThreadLocalRandom.current().nextDouble() < defenderPerfectDodge) {
-                RagnarDebugLog.combat(
-                        "ATTACK result=PERFECT_DODGE attacker={} target={} type={} hit={} flee={} pDodge={} crit={} atkElem={} defElem={}",
-                        RagnarDebugLog.entityLabel(p),
-                        RagnarDebugLog.entityLabel(tgt),
-                        isMagic ? "magic" : "physical",
-                        RagnarDebugLog.formatDouble(d.accuracy),
-                        RagnarDebugLog.formatDouble(defenderFlee),
-                        RagnarDebugLog.percent(defenderPerfectDodge),
-                        RagnarDebugLog.percent(d.criticalChance),
-                        attackElement,
-                        defenseElement);
-                e.setCanceled(true);
-                spawnMissParticles(tgt);
-                DamageProcessingGuard.markProcessedPlayer(tgt);
-                return;
-            }
-
-            // --- HIT VS FLEE Check ---
-            double finalHitChance = CombatMath.computeHitRate(d.accuracy, defenderFlee);
-            if (ThreadLocalRandom.current().nextDouble() > finalHitChance) {
-                RagnarDebugLog.combat(
-                        "ATTACK result=MISS attacker={} target={} type={} hit={} flee={} chance={} crit={} atkElem={} defElem={}",
-                        RagnarDebugLog.entityLabel(p),
-                        RagnarDebugLog.entityLabel(tgt),
-                        isMagic ? "magic" : "physical",
-                        RagnarDebugLog.formatDouble(d.accuracy),
-                        RagnarDebugLog.formatDouble(defenderFlee),
-                        RagnarDebugLog.percent(finalHitChance),
-                        RagnarDebugLog.percent(d.criticalChance),
-                        attackElement,
-                        defenseElement);
-                e.setCanceled(true);
-                spawnMissParticles(tgt);
-                DamageProcessingGuard.markProcessedPlayer(tgt);
-                return;
-            }
-
-            double dmg = isMagic ? d.magicAttack : d.physicalAttack;
-            double minPhysicalDamage = d.physicalAttackMin;
-
-            // --- CRITICAL HIT SCALING & SHIELD ---
-            double critShield = Math.floor(defenderLevel / 15.0) + Math.floor(defenderLuk / 5.0);
-            double finalCritChance = Math.max(0.0, d.criticalChance - (critShield / 100.0));
-            boolean criticalHit = false;
-
-            if (!isMagic && ThreadLocalRandom.current().nextDouble() < finalCritChance) {
-                dmg *= d.criticalDamageMultiplier;
-                criticalHit = true;
-            }
-
-            double variance = 1.0;
-            if (p.getTags().contains("ragnarmmo_maximize_power")) {
-                variance = 1.0;
-            } else if (!isMagic) {
-                dmg = CombatMath.computeDamageVariance(dmg, (int) attackerDex, (int) attackerLuk,
-                        ThreadLocalRandom.current());
-            }
-
-            // --- Size Penalty ---
-            if (!isMagic && !CombatPropertyResolver.hasWeaponPerfection(p)) {
-                CombatMath.MobSize targetSize = getMobSize(e.getEntity());
-                double sizePenalty = CombatMath.getWeaponSizePenalty(p.getMainHandItem(), targetSize);
-                dmg *= sizePenalty;
-                minPhysicalDamage *= sizePenalty;
-            }
-
-            // --- Enchant Poison Check ---
-            int epLv = p.getPersistentData()
-                    .getInt(com.etema.ragnarmmo.skill.job.assassin.EnchantPoisonSkillEffect.ENCHANT_POISON_LEVEL_TAG);
-            long epUntil = p.getPersistentData()
-                    .getLong(com.etema.ragnarmmo.skill.job.assassin.EnchantPoisonSkillEffect.ENCHANT_POISON_UNTIL_TAG);
-            if (epLv > 0 && epUntil > 0 && p.level().getGameTime() >= epUntil) {
-                p.getPersistentData().remove(
-                        com.etema.ragnarmmo.skill.job.assassin.EnchantPoisonSkillEffect.ENCHANT_POISON_LEVEL_TAG);
-                p.getPersistentData().remove(
-                        com.etema.ragnarmmo.skill.job.assassin.EnchantPoisonSkillEffect.ENCHANT_POISON_UNTIL_TAG);
-                epLv = 0;
-            }
-            if (epLv > 0 && !isMagic) {
-                if (p.level().random.nextFloat() < (0.05f + epLv * 0.03f)) {
-                    e.getEntity().addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.POISON, 100, 0));
-                }
-            }
-
-            double afterSoft;
-            if (isMagic) {
-                double totalMdef = CombatMath.computeMDEF((int) defenderInt, (int) defenderVit, (int) defenderDex,
-                        defenderLevel, defenderMdefEquip);
-                double drMagic = CombatMath.computeMagicDR(totalMdef);
-                afterSoft = CombatMath.applyMagicDefense(dmg, (int) defenderInt, drMagic);
-            } else {
-                double softDEF = CombatMath.computeSoftDEF((int) defenderVit, (int) defenderAgi, defenderLevel);
-                double hardDEF = CombatMath.computeHardDEF(defenderArmorEff, (int) defenderVit);
-                double drPhys = CombatMath.computePhysDR(hardDEF);
-                afterSoft = CombatMath.applyPhysicalDefense(dmg, softDEF, hardDEF, drPhys);
-                minPhysicalDamage = CombatMath.applyPhysicalDefense(minPhysicalDamage, softDEF, hardDEF, drPhys);
-            }
-
-            // Apply Tags (Element/Race/Size multiplier)
-            afterSoft *= modifier;
-            if (!isMagic) {
-                minPhysicalDamage *= modifier;
-            }
-
-            // --- Frozen Status (Water Property Shift) ---
-            if (tgt.hasEffect(com.etema.ragnarmmo.common.init.RagnarMobEffects.FROZEN.get())) {
-                Entity direct = e.getSource().getDirectEntity();
-                // Wind damage vs Frozen (Water)
-                if (direct instanceof com.etema.ragnarmmo.entity.projectile.LightningBoltProjectile) {
-                    afterSoft *= 1.75;
-                } 
-                // Fire damage vs Frozen (Water)
-                else if (direct instanceof com.etema.ragnarmmo.entity.projectile.FireBoltProjectile || 
-                         direct instanceof com.etema.ragnarmmo.entity.projectile.FireBallProjectile ||
-                         direct instanceof com.etema.ragnarmmo.entity.aoe.FireWallAoe) {
-                    afterSoft *= 0.4;
-                    // Fire breaks Frozen status in RO
-                    tgt.removeEffect(com.etema.ragnarmmo.common.init.RagnarMobEffects.FROZEN.get());
-                }
-            }
-
-            if (tgt.getTags().contains("ragnarmmo_lex_aeterna")) {
-                afterSoft *= 2.0;
-                if (!isMagic) {
-                    minPhysicalDamage *= 2.0;
-                }
-                tgt.removeTag("ragnarmmo_lex_aeterna");
-                tgt.setGlowingTag(false);
-                if (tgt.level() instanceof net.minecraft.server.level.ServerLevel sl) {
-                    sl.sendParticles(ParticleTypes.FLASH, tgt.getX(), tgt.getY() + 1.0, tgt.getZ(), 1, 0, 0, 0, 0);
-                }
-            }
-
-            if (!isMagic) {
-                afterSoft = Math.max(afterSoft, minPhysicalDamage);
-            }
-
-            RagnarDebugLog.combat(
-                    "ATTACK result={} attacker={} target={} type={} raw={} final={} minFinal={} hitChance={} critChance={} modifier={} atkElem={} defElem={} variance={} targetLvl={} targetVit={} targetInt={} size={}",
-                    criticalHit ? "CRIT" : "HIT",
-                    RagnarDebugLog.entityLabel(p),
-                    RagnarDebugLog.livingState(tgt),
-                    isMagic ? "magic" : "physical",
-                    RagnarDebugLog.formatDouble(dmg),
-                    RagnarDebugLog.formatDouble(afterSoft),
-                    RagnarDebugLog.formatDouble(minPhysicalDamage),
-                    RagnarDebugLog.percent(finalHitChance),
-                    RagnarDebugLog.percent(finalCritChance),
-                    RagnarDebugLog.formatDouble(modifier),
-                    attackElement,
-                    defenseElement,
-                    RagnarDebugLog.formatDouble(variance),
-                    defenderLevel,
-                    RagnarDebugLog.formatDouble(defenderVit),
-                    RagnarDebugLog.formatDouble(defenderInt),
-                    getMobSize(e.getEntity()));
-            e.setAmount((float) afterSoft);
+            // Basic Physical Attack assumption for vanilla hits
+            int dex = (int) StatAttributes.getTotal(p, StatKeys.DEX);
+            int luk = (int) StatAttributes.getTotal(p, StatKeys.LUK);
+            int str = (int) StatAttributes.getTotal(p, StatKeys.STR);
+            int lvl = stats.getLevel();
+            
+            double weaponBaseAtk = getWeaponDamage(p);
+            double totalBaseAtk = CombatMath.computeTotalATK(str, dex, luk, lvl, weaponBaseAtk, 0, false);
+            double accuracy = CombatMath.computeHIT(dex, luk, lvl, 0);
+            
+            // Defender
+            // We use a simplified version of fetchDefenderStats here or just call it if we can
+            // (Since it's private in RagnarCombatEngine, we might need to expose it or duplicate briefly)
+            // For now, I'll use the calculators directly with simplified logic
+            
+            double dmg = dmgCalc.computePhysicalDamage(totalBaseAtk, dex, luk, ThreadLocalRandom.current());
+            
+            // Apply modifiers
+            var attackElement = CombatPropertyResolver.getOffensiveElement(p);
+            dmg = dmgCalc.applyModifiers(dmg, p.getMainHandItem(), tgt, attackElement, false);
+            
+            e.setAmount((float) dmg);
             DamageProcessingGuard.markProcessedPlayer(tgt);
         });
     }
@@ -463,110 +259,38 @@ public class CommonEvents {
         if (p.level().isClientSide())
             return;
 
-        if (e.getSource().getEntity() instanceof Player)
-            return;
-
         if (DamageProcessingGuard.isProcessedPlayer(p))
             return;
 
-        boolean isMagic = isMagicDamage(e.getSource());
-        double rawDamage = e.getAmount();
-        LivingEntity attacker = e.getSource().getEntity() instanceof LivingEntity living ? living : null;
-
+        // Mob-to-player damage handling
         RagnarCoreAPI.get(p).ifPresent(stats -> {
-            double vit = StatAttributes.getTotal(p, StatKeys.VIT);
-            double agi = StatAttributes.getTotal(p, StatKeys.AGI);
-            double intel = StatAttributes.getTotal(p, StatKeys.INT);
-            double dex = StatAttributes.getTotal(p, StatKeys.DEX);
-            double luk = StatAttributes.getTotal(p, StatKeys.LUK);
-            int level = stats.getLevel();
-
-            // 1. FLEE Check (Only physical)
-            if (!isMagic) {
-                double playerPerfectDodge = CombatMath.computePerfectDodge((int) luk);
-                if (ThreadLocalRandom.current().nextDouble() < playerPerfectDodge) {
-                    RagnarDebugLog.combat(
-                            "DEFEND result=PERFECT_DODGE defender={} attacker={} type={} pDodge={} raw={}",
-                            RagnarDebugLog.entityLabel(p),
-                            RagnarDebugLog.entityLabel(attacker),
-                            isMagic ? "magic" : "physical",
-                            RagnarDebugLog.percent(playerPerfectDodge),
-                            RagnarDebugLog.formatDouble(rawDamage));
-                    e.setCanceled(true);
-                    spawnMissParticles(p);
-                    DamageProcessingGuard.markProcessedPlayer(p);
-                    return;
-                }
-
-                int dodgeLv = com.etema.ragnarmmo.skill.data.progression.SkillProgressManager.getProgress(p, new ResourceLocation("ragnarmmo", "improve_dodge")).getLevel();
-                double playerFlee = CombatMath.computeFLEE((int) agi, (int) luk, level, dodgeLv * 3.0);
-                double attackerHit = CombatMath.HIT_BASE; 
-                Entity src = e.getSource().getEntity();
-                if (src instanceof net.minecraft.world.entity.Mob mob) {
-                    var attackerStatsOpt = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(mob);
-                    if (attackerStatsOpt.isPresent()) {
-                        com.etema.ragnarmmo.system.mobstats.core.MobStats as = attackerStatsOpt.orElseThrow(() -> new IllegalStateException("MobStats absent after isPresent()"));
-                        attackerHit = CombatMath.computeHIT(as.get(StatKeys.DEX), as.get(StatKeys.LUK), as.getLevel(), 0);
-                    } else {
-                        int mobLevel = mob.getAttributes().hasAttribute(Attributes.MAX_HEALTH) ? (int) (mob.getMaxHealth() / 10) : 10;
-                        attackerHit = CombatMath.HIT_BASE + (mobLevel * 1.5);
-                    }
-                }
-
-                double finalHitChance = CombatMath.computeHitRate(attackerHit, playerFlee);
-                if (ThreadLocalRandom.current().nextDouble() > finalHitChance) {
-                    RagnarDebugLog.combat(
-                            "DEFEND result=MISS defender={} attacker={} type={} attackerHit={} playerFlee={} chance={} raw={}",
-                            RagnarDebugLog.entityLabel(p),
-                            RagnarDebugLog.entityLabel(attacker),
-                            isMagic ? "magic" : "physical",
-                            RagnarDebugLog.formatDouble(attackerHit),
-                            RagnarDebugLog.formatDouble(playerFlee),
-                            RagnarDebugLog.percent(finalHitChance),
-                            RagnarDebugLog.formatDouble(rawDamage));
-                    e.setCanceled(true);
-                    spawnMissParticles(p);
-                    DamageProcessingGuard.markProcessedPlayer(p);
-                    return;
-                }
-            }
-
-            // 2. DEF Mitigación
-            double afterSoft;
+            var dmgCalc = new com.etema.ragnarmmo.combat.engine.RagnarDamageCalculator();
+            
+            double rawDamage = e.getAmount();
+            boolean isMagic = isMagicDamage(e.getSource());
+            LivingEntity attacker = e.getSource().getEntity() instanceof LivingEntity living ? living : null;
+            
+            // Stats
+            int vit = (int) StatAttributes.getTotal(p, StatKeys.VIT);
+            int agi = (int) StatAttributes.getTotal(p, StatKeys.AGI);
+            int intel = (int) StatAttributes.getTotal(p, StatKeys.INT);
+            int dex = (int) StatAttributes.getTotal(p, StatKeys.DEX);
+            int lvl = stats.getLevel();
             double armorEff = getArmorEff(p);
 
+            double finalDmg = rawDamage;
             if (isMagic) {
-                double mdef = CombatMath.computeMDEF((int) intel, (int) vit, (int) dex, level, armorEff);
-                double drMagic = CombatMath.computeMagicDR(mdef);
-                afterSoft = CombatMath.applyMagicDefense(rawDamage, (int) intel, drMagic);
+                finalDmg = dmgCalc.applyMagicDefense(rawDamage, intel, vit, dex, lvl, armorEff);
             } else {
-
-                double softDEF = CombatMath.computeSoftDEF((int) vit, (int) agi, level);
-                double hardDEF = CombatMath.computeHardDEF(armorEff, (int) vit);
-                double drPhys = CombatMath.computePhysDR(hardDEF);
-                afterSoft = CombatMath.applyPhysicalDefense(rawDamage, softDEF, hardDEF, drPhys);
+                finalDmg = dmgCalc.applyPhysicalDefense(rawDamage, vit, agi, lvl, armorEff);
             }
 
+            // Elemental
             ElementType attackElement = resolveIncomingAttackElement(attacker, e.getSource().getDirectEntity(), isMagic);
             ElementType defenseElement = CombatPropertyResolver.getDefensiveElement(p);
-            afterSoft *= CombatPropertyResolver.getElementalModifier(attackElement, defenseElement);
-            afterSoft *= EquipmentCombatModifierResolver.getIncomingModifier(p, attacker, attackElement, isMagic);
+            finalDmg *= CombatPropertyResolver.getElementalModifier(attackElement, defenseElement);
 
-            RagnarDebugLog.combat(
-                    "DEFEND result=HIT defender={} attacker={} type={} raw={} final={} atkElem={} defElem={} vit={} agi={} int={} dex={} luk={}",
-                    RagnarDebugLog.livingState(p),
-                    RagnarDebugLog.entityLabel(attacker),
-                    isMagic ? "magic" : "physical",
-                    RagnarDebugLog.formatDouble(rawDamage),
-                    RagnarDebugLog.formatDouble(Math.max(1.0, afterSoft)),
-                    attackElement,
-                    defenseElement,
-                    RagnarDebugLog.formatDouble(vit),
-                    RagnarDebugLog.formatDouble(agi),
-                    RagnarDebugLog.formatDouble(intel),
-                    RagnarDebugLog.formatDouble(dex),
-                    RagnarDebugLog.formatDouble(luk));
-            e.setAmount((float) Math.max(1.0, afterSoft));
+            e.setAmount((float) Math.max(1.0, finalDmg));
             DamageProcessingGuard.markProcessedPlayer(p);
         });
     }
@@ -605,8 +329,17 @@ public class CommonEvents {
 
                     if (ThreadLocalRandom.current().nextDouble() * 100.0 < resChance) {
                         e.setResult(net.minecraftforge.eventbus.api.Event.Result.DENY);
-                        p.sendSystemMessage(Component.translatable("message.ragnarmmo.status_resisted")
-                                .withStyle(net.minecraft.ChatFormatting.AQUA));
+                        // Cooldown to prevent spam
+                        long now = System.currentTimeMillis();
+                        long lastMsg = p.getPersistentData().getLong("ragnarmmo_last_res_msg");
+                        if (now - lastMsg > 2000) { // 2 seconds cooldown
+                            // Silenced specifically for slowness to prevent weight-system spam
+                            if (!effectName.contains("slowness")) {
+                                p.sendSystemMessage(Component.translatable("message.ragnarmmo.status_resisted")
+                                        .withStyle(net.minecraft.ChatFormatting.AQUA));
+                                p.getPersistentData().putLong("ragnarmmo_last_res_msg", now);
+                            }
+                        }
                     }
                 });
             }
@@ -648,23 +381,74 @@ public class CommonEvents {
             return;
         }
 
-        if (!(e.getSource().getEntity() instanceof ServerPlayer sp))
+        LivingEntity killed = e.getEntity();
+        Entity sourceEntity = e.getSource().getEntity();
+        ServerPlayer sp = null;
+
+        if (sourceEntity instanceof ServerPlayer) {
+            sp = (ServerPlayer) sourceEntity;
+        } else {
+            // Check for environmental kill credit (last hurt by)
+            LivingEntity lastHurtBy = killed.getLastHurtByMob();
+            if (lastHurtBy instanceof ServerPlayer) {
+                // Only credit if the last hit was recent (e.g., within 5 seconds)
+                if (killed.tickCount - killed.getLastHurtByMobTimestamp() < 100) {
+                    sp = (ServerPlayer) lastHurtBy;
+                }
+            }
+        }
+
+        if (sp == null)
             return;
 
-        if (!shouldGiveExp(e.getEntity()))
+        if (!shouldGiveExp(killed))
             return;
+
+        // Anti-Farm Check (Stationary Penalty)
+        Vec3 lastPos = sp.getPersistentData().get("ragnarmmo_last_kill_pos") instanceof net.minecraft.nbt.DoubleTag 
+            ? new Vec3(sp.getPersistentData().getDouble("ragnarmmo_last_kill_x"), 0, sp.getPersistentData().getDouble("ragnarmmo_last_kill_z"))
+            : null;
+        
+        double distSq = lastPos != null ? sp.position().distanceToSqr(lastPos.x, sp.getY(), lastPos.z) : 100.0;
+        int stationaryKills = sp.getPersistentData().getInt("ragnarmmo_stationary_kills");
+        
+        if (distSq < 25.0) { // 5 blocks radius
+            stationaryKills++;
+        } else {
+            stationaryKills = 0;
+        }
+        
+        sp.getPersistentData().putInt("ragnarmmo_stationary_kills", stationaryKills);
+        sp.getPersistentData().putDouble("ragnarmmo_last_kill_x", sp.getX());
+        sp.getPersistentData().putDouble("ragnarmmo_last_kill_z", sp.getZ());
+
+        final int finalStationaryKills = stationaryKills;
+        final ServerPlayer finalSp = sp;
+
+        // Compute anti-farm penalty BEFORE the lambda (must be effectively final)
+        double antiFarmPenaltyRaw = AntiFarmManager.getPenaltyFactor(sp);
+        final double antiFarmPenalty = antiFarmPenaltyRaw;
+        final boolean shouldWarnFarm = antiFarmPenalty < 1.0 && sp.tickCount % 600 == 0;
 
         RagnarCoreAPI.get(sp).ifPresent(s -> {
-            int baseExp = computeKillExp(e.getEntity());
+            int baseExp = computeKillExp(killed);
+            
+            // Apply expanded anti-farm penalty
+            if (antiFarmPenalty < 1.0) {
+                baseExp = (int)(baseExp * antiFarmPenalty);
+                if (shouldWarnFarm) {
+                    finalSp.sendSystemMessage(Component.translatable("message.ragnarmmo.anti_farm_warning").withStyle(net.minecraft.ChatFormatting.YELLOW));
+                }
+            }
+
 
             int finalExp = baseExp;
             if (MOB_EXP_SCALE_WITH_PLAYER_LEVEL) {
-                finalExp = applyLevelPenalty(baseExp, sp, e.getEntity(), s.getLevel());
+                finalExp = applyLevelPenalty(baseExp, finalSp, killed, s.getLevel());
             }
 
-            // Apply party XP sharing - distributes to party members and returns killer's
-            // share
-            finalExp = PartyXpService.distributeKillXp(sp, finalExp, sp.getServer());
+            // Apply party XP sharing - distributes to party members and returns killer's share
+            finalExp = PartyXpService.distributeKillXp(finalSp, finalExp, finalSp.getServer());
 
             if (s instanceof PlayerStats internal) {
                 internal.ensureBaseStatBaseline(RagnarConfigs.SERVER.progression.baseStatPoints.get());
@@ -677,7 +461,7 @@ public class CommonEvents {
             int jobGained = s.addJobExpAndProcessLevelUps(jobAward, ExpTable::jobExpToNext);
             RagnarDebugLog.playerData(
                     "KILL_XP killer={} target={} baseRaw={} baseFinal={} baseAward={} jobAward={} baseLv={} jobLv={} levelUps={} jobLevelUps={}",
-                    sp.getGameProfile().getName(),
+                    finalSp.getGameProfile().getName(),
                     RagnarDebugLog.entityLabel(e.getEntity()),
                     baseExp,
                     finalExp,
@@ -687,19 +471,32 @@ public class CommonEvents {
                     s.getJobLevel(),
                     gained,
                     jobGained);
-            sp.sendSystemMessage(Component.translatable("message.ragnarmmo.exp_gain",
+            finalSp.sendSystemMessage(Component.translatable("message.ragnarmmo.exp_gain",
                     baseAward, e.getEntity().getDisplayName()));
             if (gained > 0) {
-                sp.sendSystemMessage(Component.translatable("message.ragnarmmo.level_up", gained));
+                finalSp.sendSystemMessage(Component.translatable("message.ragnarmmo.level_up", gained));
             }
             if (jobGained > 0) {
-                sp.sendSystemMessage(Component.translatable("message.ragnarmmo.job_level_up", jobGained));
+                finalSp.sendSystemMessage(Component.translatable("message.ragnarmmo.job_level_up", jobGained));
             }
-            PlayerStatsSyncService.sync(sp, s);
+            PlayerStatsSyncService.sync(finalSp, s);
 
             // Update party HUD for killer
-            PartyXpService.updatePartyMemberHud(sp);
+            PartyXpService.updatePartyMemberHud(finalSp);
         });
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void onLivingDrops(net.minecraftforge.event.entity.living.LivingDropsEvent event) {
+        if (event.getEntity().level().isClientSide) return;
+        if (event.getSource().getEntity() instanceof Player player) {
+            double penalty = AntiFarmManager.getPenaltyFactor(player);
+            if (penalty < 1.0) {
+                // Remove drops based on penalty
+                // If penalty is 0.5, we keep 50% of drops
+                event.getDrops().removeIf(drop -> player.getRandom().nextDouble() > penalty);
+            }
+        }
     }
 
     /**

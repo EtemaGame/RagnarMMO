@@ -634,7 +634,7 @@ public class StatsScreen extends Screen {
 
                                 if (BTN_RESET_STATS.contains(mx, my)) {
                                         Network.sendToServer(new PacketResetCharacter());
-                                        mc.setScreen(null);
+                                        // mc.setScreen(null); // Keep menu open
                                         playClickSound(1.0f);
                                         return true;
                                 }
@@ -682,6 +682,11 @@ public class StatsScreen extends Screen {
 
         @Override
         public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+                if (com.etema.ragnarmmo.client.Keybinds.OPEN_STATS.matches(keyCode, scanCode)) {
+                        Minecraft.getInstance().setScreen(null);
+                        return true;
+                }
+
                 if (keyCode == 256) { // ESC
                         Minecraft.getInstance().setScreen(null);
                         return true;

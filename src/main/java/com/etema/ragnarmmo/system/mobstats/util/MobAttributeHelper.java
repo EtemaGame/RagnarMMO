@@ -29,9 +29,11 @@ public final class MobAttributeHelper {
                     + level * MobConfig.LEVEL_TO_HP.get()) * stats.getHealthMultiplier();
             hp = Math.max(1.0D, hp);
             maxHealth.setBaseValue(hp);
-            // If spawning or health is at max, keep it at max
+            // If spawning or health is at max, keep it at max. Always clamp to avoid overflow.
             if (mob.tickCount < 10 || mob.getHealth() >= (float)maxHealth.getBaseValue()) {
                 mob.setHealth((float) hp);
+            } else {
+                mob.setHealth(Math.min(mob.getHealth(), (float)hp));
             }
         }
 

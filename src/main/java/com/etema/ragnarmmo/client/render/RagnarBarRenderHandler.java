@@ -3,7 +3,6 @@ package com.etema.ragnarmmo.client.render;
 import com.etema.ragnarmmo.system.bar.EntityStatResolver;
 import com.etema.ragnarmmo.system.bar.RagnarIntegrationHandler;
 import com.etema.ragnarmmo.system.mobstats.integration.MobInfoIntegration;
-
 import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -12,17 +11,19 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.joml.Matrix4f;
 
 import java.util.Map;
-
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.WeakHashMap;
@@ -44,8 +45,6 @@ public class RagnarBarRenderHandler {
 
     /**
      * Called from MobHurtPacket handler to mark an entity as recently hurt.
-     * This enables health bar display on dedicated servers where LivingHurtEvent
-     * only fires on the server side.
      */
     public static void markEntityHurt(LivingEntity entity) {
         if (entity != null) {
@@ -55,11 +54,17 @@ public class RagnarBarRenderHandler {
 
     @SubscribeEvent
     public static void onEntityHurt(LivingHurtEvent event) {
-        // This only fires client-side in singleplayer
-        // For dedicated servers, we use MobHurtPacket instead
         LivingEntity entity = event.getEntity();
         if (entity != null && entity.level().isClientSide()) {
             lastHitTime.put(entity, System.currentTimeMillis());
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRenderNameTag(RenderNameTagEvent event) {
+        if (event.getEntity() instanceof LivingEntity) {
+            // Hide vanilla nametag to prevent duplication with our custom HUD
+            event.setResult(Event.Result.DENY);
         }
     }
 
@@ -72,8 +77,6 @@ public class RagnarBarRenderHandler {
         if (player == null || mc.options.hideGui)
             return;
 
-        // Fix: Don't render overlays when in SkillsScreen (prevents text over player
-        // model)
         if (mc.screen instanceof com.etema.ragnarmmo.client.ui.SkillsScreen) {
             return;
         }
@@ -90,7 +93,6 @@ public class RagnarBarRenderHandler {
         boolean showClazz = resolver != null;
         String clazz = "";
 
-        // 1) Lee desde el resolver (MobStatsIntegration / RagnarStatsIntegration)
         if (resolver != null) {
             String lvl = resolver.getLevel(entity);
             String cls = showClazz ? resolver.getClazz(entity) : "";
@@ -100,8 +102,6 @@ public class RagnarBarRenderHandler {
                 clazz = cls;
         }
 
-        // 2) Si aún no hay datos y estamos en cliente, consulta MobInfoIntegration para
-        // usar sus fallbacks internos
         boolean missingLevel = level == null || level.isEmpty() || level.equals("?") || level.equals("0");
         boolean missingClazz = clazz == null || clazz.isEmpty();
         if ((missingLevel || missingClazz)
@@ -118,11 +118,8 @@ public class RagnarBarRenderHandler {
                     level = String.valueOf(resolvedLevel);
                 }
             }
-
         }
 
-        // 3) Fallbacks de seguridad
-        // 3) Fallbacks de seguridad
         if (level.isEmpty() || level.equals("0"))
             level = "?";
 
@@ -133,29 +130,20 @@ public class RagnarBarRenderHandler {
                 || cat == net.minecraft.world.entity.MobCategory.WATER_CREATURE;
 
         String label;
-
         if (isPassive) {
-            // Passive format: Lv 1 [Name]
             label = "Lv 1 " + name;
         } else {
-            // Monster format: [Icon] Lv X [Name] [Class]
             String rank = resolver != null ? resolver.getRank(entity) : "";
-            // Fallback if resolver is missing but we have info integration
             if (rank.isEmpty() && entity.level().isClientSide()) {
                 rank = MobInfoIntegration.getMobTier(entity).map(t -> t.name()).orElse("");
             }
 
-            if ("MINI_BOSS".equalsIgnoreCase(rank)) {
-                rank = "ELITE";
-            } else if ("MVP".equalsIgnoreCase(rank)) {
-                rank = "BOSS";
-            }
+            if ("MINI_BOSS".equalsIgnoreCase(rank)) rank = "ELITE";
+            else if ("MVP".equalsIgnoreCase(rank)) rank = "BOSS";
 
             String icon = "";
-            if ("ELITE".equalsIgnoreCase(rank))
-                icon = "★ ";
-            else if ("BOSS".equalsIgnoreCase(rank))
-                icon = "☠ ";
+            if ("ELITE".equalsIgnoreCase(rank)) icon = "★ ";
+            else if ("BOSS".equalsIgnoreCase(rank)) icon = "☠ ";
 
             label = icon + "Lv " + level + " " + name;
             if (showClazz && !clazz.isEmpty()) {
@@ -171,8 +159,6 @@ public class RagnarBarRenderHandler {
         ps.scale(-0.025F * SCALE, -0.025F * SCALE, 0.025F * SCALE);
 
         Font font = mc.font;
-        font.drawInBatch(label, -font.width(label) / 2f, 0, 0xFFFFFF, false,
-                ps.last().pose(), e.getMultiBufferSource(), Font.DisplayMode.NORMAL, 0, e.getPackedLight());
 
         // === Barra de HP si fue golpeado recientemente
         Long lastHit = lastHitTime.get(entity);
@@ -183,13 +169,13 @@ public class RagnarBarRenderHandler {
             float max = entity.getMaxHealth();
             if (max > 0f) {
                 float pct = Math.max(0f, Math.min(1f, hp / max));
-                drawCompactBar(ps, 10, pct);
+                drawCompactBar(ps, 12, pct); // Bar moved down to make room for name in center
 
                 if (MobConfig.RENDER_NUMERIC_HEALTH.get()) {
                     String hpText = String.format(java.util.Locale.ROOT, "%.0f / %.0f", hp, max);
                     ps.pushPose();
-                    float textScale = 0.5f; // Smaller text
-                    ps.translate(0, 16, 0); // Position below bar (bar is at y=10, height=5)
+                    float textScale = 0.5f;
+                    ps.translate(0, -12, 0); // Position ABOVE label
                     ps.scale(textScale, textScale, textScale);
 
                     font.drawInBatch(hpText, -font.width(hpText) / 2f, 0, 0xFFFFFFFF, true,
@@ -198,6 +184,10 @@ public class RagnarBarRenderHandler {
                 }
             }
         }
+
+        // Draw label (Level and Name) at y=0 (Center)
+        font.drawInBatch(label, -font.width(label) / 2f, 0, 0xFFFFFF, false,
+                ps.last().pose(), e.getMultiBufferSource(), Font.DisplayMode.NORMAL, 0, e.getPackedLight());
 
         ps.popPose();
     }
@@ -238,19 +228,13 @@ public class RagnarBarRenderHandler {
     }
 
     private static Optional<CompoundTag> getMobStatsTag(LivingEntity entity) {
-        if (entity == null) {
-            return Optional.empty();
-        }
+        if (entity == null) return Optional.empty();
         CompoundTag data = entity.getPersistentData();
-        if (data == null || !data.contains("RagnarMobStats", Tag.TAG_COMPOUND)) {
-            return Optional.empty();
-        }
-        CompoundTag stats = data.getCompound("RagnarMobStats");
-        return Optional.of(stats);
+        if (data == null || !data.contains("RagnarMobStats", Tag.TAG_COMPOUND)) return Optional.empty();
+        return Optional.of(data.getCompound("RagnarMobStats"));
     }
 
-    private static void fillRect(Matrix4f mat, BufferBuilder buffer, float x1, float y1, float x2, float y2,
-            int color) {
+    private static void fillRect(Matrix4f mat, BufferBuilder buffer, float x1, float y1, float x2, float y2, int color) {
         float a = (color >> 24 & 255) / 255.0F;
         float r = (color >> 16 & 255) / 255.0F;
         float g = (color >> 8 & 255) / 255.0F;

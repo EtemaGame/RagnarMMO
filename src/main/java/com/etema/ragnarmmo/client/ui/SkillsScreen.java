@@ -1304,6 +1304,11 @@ public class SkillsScreen extends Screen {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         // ESC -> back
+        if (com.etema.ragnarmmo.client.Keybinds.OPEN_SKILLS.matches(keyCode, scanCode)) {
+            this.minecraft.setScreen(null);
+            return true;
+        }
+
         if (keyCode == 256) { // GLFW_KEY_ESCAPE
             if (this.minecraft != null)
                 this.minecraft.setScreen(parent);

@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "ragnarmmo.refmap.json",
   "mixins": [
-    "MerchantOfferMixin"
+    "MerchantOfferMixin",
+    "LivingEntityMixin"
   ],
   "client": [],
   "server": [],

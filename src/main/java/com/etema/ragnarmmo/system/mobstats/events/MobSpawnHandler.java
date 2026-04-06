@@ -23,7 +23,11 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import com.etema.ragnarmmo.system.stats.util.AntiFarmManager;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
 
 import java.util.Map;
 import java.util.Random;
@@ -42,6 +46,22 @@ public class MobSpawnHandler {
     private final Random rng = new Random();
     private final MobLevelManager levelMgr = new MobLevelManager(rng);
     private final MobStatDistributor distributor = new MobStatDistributor(rng);
+
+    @SubscribeEvent
+    public void onFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
+        if (!RagnarConfigs.SERVER.progression.antiFarmSpawnReduction.get()) return;
+        
+        // Find nearest player to check for anti-farm penalty
+        Player nearest = event.getLevel().getNearestPlayer(event.getX(), event.getY(), event.getZ(), 64, false);
+        if (nearest != null) {
+            double penalty = AntiFarmManager.getPenaltyFactor(nearest);
+            if (penalty < 1.0) {
+                if (rng.nextDouble() > penalty) {
+                    event.setSpawnCancelled(true);
+                }
+            }
+        }
+    }
 
     @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.LOWEST)
     public void onMobJoinLevel(EntityJoinLevelEvent event) {
@@ -67,8 +87,9 @@ public class MobSpawnHandler {
             SpeciesConfig.SpeciesSettings species = mobId != null ? SpeciesConfig.get(mobId)
                     : SpeciesConfig.SpeciesSettings.EMPTY;
 
+            // Passive check also includes WATER_AMBIENT (e.g. Salmons, Cod)
             boolean isPassive = cat == MobCategory.CREATURE || cat == MobCategory.AMBIENT
-                    || cat == MobCategory.WATER_CREATURE;
+                    || cat == MobCategory.WATER_CREATURE || cat == MobCategory.WATER_AMBIENT;
             generateStats(mob, stats, species, isPassive);
             stats.setInitialized(true);
 

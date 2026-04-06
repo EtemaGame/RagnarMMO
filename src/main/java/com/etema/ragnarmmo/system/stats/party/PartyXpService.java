@@ -23,16 +23,18 @@ public class PartyXpService {
     /**
      * XP share factors based on party size.
      * Index = number of eligible members (1-6)
-     * More members = less XP per member, but total XP bonus for party.
+     * Following Ragnarok Online's 'Even Share' formula:
+     * TotalXP = BaseXP * (1 + 0.2 * (n-1))
+     * ShareXP = TotalXP / n
      */
     private static final double[] XP_FACTORS = {
             1.00, // 0 (unused, fallback)
             1.00, // 1 member (solo)
-            0.85, // 2 members
-            0.75, // 3 members
-            0.68, // 4 members
-            0.62, // 5 members
-            0.57 // 6 members
+            0.60, // 2 members (120% / 2)
+            0.47, // 3 members (140% / 3)
+            0.40, // 4 members (160% / 4)
+            0.36, // 5 members (180% / 5)
+            0.33  // 6 members (200% / 6)
     };
 
     /**

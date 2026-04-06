@@ -30,9 +30,7 @@ public class ClientEvents {
         // Toggle Combat Mode
         if (Keybinds.TOGGLE_COMBAT_MODE.consumeClick()) {
             isCombatMode = !isCombatMode;
-            mc.player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("Combat Mode: " + (isCombatMode ? "§aON" : "§cOFF")),
-                    true);
+            // Removed Action Bar message to prevent overlap with the skill hotbar's "COMBAT MODE" text
         }
 
         // Open Stats Screen (V)

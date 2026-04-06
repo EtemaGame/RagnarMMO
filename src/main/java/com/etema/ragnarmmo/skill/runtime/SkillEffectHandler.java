@@ -117,19 +117,77 @@ public class SkillEffectHandler {
      * @param level   The requested skill level.
      */
     public static void tryUseSkill(ServerPlayer player, String skillId, int level) {
-        com.etema.ragnarmmo.combat.engine.RagnarCombatEngine.get().handleSkillUseRequest(
-            new com.etema.ragnarmmo.combat.api.CombatRequestContext(
-                player,
-                com.etema.ragnarmmo.combat.api.CombatActionType.SKILL,
-                0, // sequenceId not available here
-                0,
-                false,
-                skillId,
-                java.util.Collections.emptyList(),
-                java.util.Map.of("level", level)
-            )
-        );
+    Optional<SkillDefinition> defOpt = SkillRegistry.get(skillId);
+    if (defOpt.isPresent()) {
+        SkillDefinition def = defOpt.get();
+        ResourceLocation id = def.getId();
+
+        RoPlayerDataAccess.get(player).ifPresent(data -> {
+            IPlayerStats stats = data.getStats();
+            SkillManager skills = (SkillManager) data.getSkills();
+            if (skills.getSkillLevel(id) < level) {
+                return;
+            }
+
+            // Check job requirement
+            if (!def.getAllowedJobs().isEmpty()) {
+                String currentJobId = stats.getJobId();
+                com.etema.ragnarmmo.common.api.jobs.JobType jobType =
+                        com.etema.ragnarmmo.common.api.jobs.JobType.fromId(currentJobId);
+
+                java.util.Set<String> allowedJobs = def.getAllowedJobs();
+                boolean jobAllowed = allowedJobs.stream()
+                        .anyMatch(jobType::matchesSkillRule)
+                        || def.getTier() == com.etema.ragnarmmo.skill.api.SkillTier.LIFE;
+
+                if (!jobAllowed) {
+                    player.sendSystemMessage(
+                            net.minecraft.network.chat.Component.translatable(
+                                    "message.ragnarmmo.skill_wrong_job"));
+                    return;
+                }
+            }
+
+            if (skills.isCasting() || skills.isOnGlobalCooldown()) {
+                return;
+            }
+
+            if (skills.isOnCooldown(id)) {
+                return;
+            }
+
+            Optional<ISkillEffect> effectOpt = SkillRegistry.getEffect(id);
+            int cost = resolveResourceCost(def, effectOpt, level);
+            int baseCastTime = resolveBaseCastTime(def, effectOpt, level);
+            int castTime = adjustCastTime(player, baseCastTime);
+            boolean hasEnough = stats.getCurrentResource() >= cost;
+
+            if (hasEnough) {
+                if (castTime > 0) {
+                    skills.startCast(id, level, castTime);
+                    consumeCastTimeModifiers(player, baseCastTime);
+                    player.sendSystemMessage(
+                            Component.translatable("message.ragnarmmo.cast_start",
+                                    def.getDisplayName()));
+                } else {
+                    if (tryConsumeAndExecute(player, stats, id, level, cost)) {
+                        skills.setCooldown(id, def.getCooldownTicks(level));
+                        int castDelay = resolveCastDelay(def, effectOpt, level, player);
+                        if (castDelay > 0) {
+                            skills.setGlobalCooldown(castDelay);
+                        }
+
+                        syncPlayer(player, stats, skills);
+                    }
+                }
+            } else {
+                player.sendSystemMessage(
+                        Component.translatable("message.ragnarmmo.insufficient_sp")
+                                .withStyle(ChatFormatting.RED));
+            }
+        });
     }
+}
 
     public static void tryUseSkill(ServerPlayer player, String skillId) {
         Optional<SkillDefinition> defOpt = SkillRegistry.get(skillId);
@@ -163,8 +221,7 @@ public class SkillEffectHandler {
 
             if (tryConsumeAndExecute(player, stats, skillId, level, cost)) {
                 skills.setCooldown(skillId, def.getCooldownTicks(level));
-
-                int castDelay = resolveCastDelay(def, effectOpt, level);
+                int castDelay = resolveCastDelay(def, effectOpt, level, player);
                 if (castDelay > 0) {
                     skills.setGlobalCooldown(castDelay);
                 }
@@ -256,7 +313,7 @@ public class SkillEffectHandler {
         }
     }
 
-    private static int resolveCastDelay(SkillDefinition def, Optional<ISkillEffect> effectOpt, int level) {
+    private static int resolveCastDelay(SkillDefinition def, Optional<ISkillEffect> effectOpt, int level, ServerPlayer player) {
         int castDelay = def.getCastDelayTicks(level);
         if (effectOpt.isPresent()) {
             int scalingDelay = effectOpt.get().getCastDelay(level);
@@ -264,7 +321,13 @@ public class SkillEffectHandler {
                 castDelay = scalingDelay;
             }
         }
-        return Math.max(0, castDelay);
+        
+        // Enforce a 10-tick baseline for ACTIVE skills lacking a configured delay to prevent unnatural spam
+        if (castDelay == 0 && def.getUsageType() == com.etema.ragnarmmo.skill.api.SkillUsageType.ACTIVE) {
+            castDelay = 10;
+        }
+
+        return CombatMath.computeCastDelay(castDelay, player);
     }
 
     private static boolean tryConsumeAndExecute(ServerPlayer player, IPlayerStats stats, ResourceLocation skillId,

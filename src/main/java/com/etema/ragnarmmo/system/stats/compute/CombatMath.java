@@ -49,6 +49,7 @@ public final class CombatMath {
     // Critical
     private static final double CRIT_BASE_MULT = 1.4;
     private static final double LUK_TO_CRIT_DIVISOR = 3.0;
+    private static final double DEX_TO_CRIT_DIVISOR = 0.0; // disabled for classic
     private static final double CRIT_MAX = 1.0;
 
     // ASPD

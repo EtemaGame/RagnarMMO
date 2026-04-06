@@ -36,10 +36,10 @@ public class RagnarCombatTest {
 
         double finalDmg = dmgCalc.applyPhysicalDefense(rawDmg, vit, agi, level, armorEff);
         
-        // Hard DEF 50 reduces by ~25-30% depending on formula
-        // Soft DEF reduces by flat amount
-        assertTrue(finalDmg < rawDmg);
-        assertTrue(finalDmg > 0);
+        // Pre-Renewal Hard DEF 50 = 50% Reduction
+        // Soft DEF = floor((50+99)/2) + floor(30/5) = 74 + 6 = 80
+        // Expected: 1000 * (1 - 0.5) - 80 = 420
+        assertEquals(420.0, finalDmg, 0.1);
     }
 
     @Test
@@ -56,10 +56,26 @@ public class RagnarCombatTest {
     @Test
     public void testCriticalHit() {
         double baseDmg = 100.0;
-        // High LUK = High Crit Multiplier
+        // High LUK should NOT increase multiplier in Classic Pre-Renewal
         double critDmg = dmgCalc.applyCriticalModifier(baseDmg, 50, 50);
-        assertTrue(critDmg > baseDmg);
-        assertEquals(baseDmg * 1.4, critDmg, 0.1); // Based on CombatMath formula (1.4x default roughly)
+        assertEquals(140.0, critDmg, 0.1); // Strictly 1.4x
+    }
+
+    @Test
+    public void testStatusAtkBreakpoint() {
+        int level = 99;
+        int str = 50;
+        int dex = 50;
+        int luk = 50;
+        
+        double statusAtk = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStatusATK(str, dex, luk, level, false);
+        
+        // STR 50: 50 + 5^2 = 75
+        // DEX 50: 50 / 5 = 10
+        // LUK 50: floor(50 / 3) = 16
+        // LVL 99: 99 * 0.25 = 24.75
+        // Total = 75 + 10 + 16 + 24.75 = 125.75
+        assertEquals(125.75, statusAtk, 0.01);
     }
 
     @Test

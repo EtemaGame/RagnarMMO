@@ -47,12 +47,9 @@ public final class CombatMath {
     private static final double PERFECT_DODGE_MAX = 1.0;
 
     // Critical
-    private static final double LUK_TO_CRIT_DIVISOR = 3.0;
-    private static final double DEX_TO_CRIT_DIVISOR = 0.0; // disabled
-    private static final double CRIT_MAX = 1.0;
     private static final double CRIT_BASE_MULT = 1.4;
-    private static final double LUK_TO_CRIT_DMG_DIVISOR = 200.0;
-    private static final double STR_TO_CRIT_DMG_DIVISOR = 0.0; // disabled
+    private static final double LUK_TO_CRIT_DIVISOR = 3.0;
+    private static final double CRIT_MAX = 1.0;
 
     // ASPD
     private static final double AGI_TO_ASPD = 0.25;
@@ -64,11 +61,9 @@ public final class CombatMath {
 
     public static final int SHIELD_ASPD_PENALTY = 5; // iROWiki flat penalty
 
-    // Defense
-    private static final double ARMOR_HARD_DEF_MULT = 5.0;
-    private static final double VIT_HARD_DEF_MULT = 0.5;
-    private static final double HARD_DEF_CONSTANT = 100.0;
-    private static final double DR_PHYS_MAX = 0.8;
+    // Defense (Pre-Renewal)
+    private static final double HARD_DEF_REDUCTION_MULT = 0.01; // 1% per point
+    private static final double DR_PHYS_MAX = 0.99;
 
     // MDEF
     private static final double MDEF_CONSTANT = 80.0;
@@ -202,14 +197,14 @@ public final class CombatMath {
         double atk = 0;
 
         if (isRanged) {
-            atk += DEX * 1.0;
+            atk += DEX + Math.pow(Math.floor(DEX / 10.0), 2);
             atk += STR / DEX_TO_ATK_DIVISOR;
         } else {
-            atk += STR * 1.0;
+            atk += STR + Math.pow(Math.floor(STR / 10.0), 2);
             atk += DEX / DEX_TO_ATK_DIVISOR;
         }
 
-        atk += LUK / LUK_TO_ATK_DIVISOR;
+        atk += Math.floor(LUK / LUK_TO_ATK_DIVISOR);
         atk += level * LEVEL_TO_ATK_MULT;
 
         return atk;
@@ -318,13 +313,7 @@ public final class CombatMath {
 
     public static double computeCritDamageMultiplier(int LUK, int STR) {
         double mult = CRIT_BASE_MULT;
-
-        mult += LUK / LUK_TO_CRIT_DMG_DIVISOR;
-
-        if (STR_TO_CRIT_DMG_DIVISOR > 0) {
-            mult += STR / STR_TO_CRIT_DMG_DIVISOR;
-        }
-
+        System.out.println("DEBUG: computeCritDamageMultiplier LUK=" + LUK + " STR=" + STR + " result=" + mult);
         return mult;
     }
 
@@ -412,16 +401,15 @@ public final class CombatMath {
     // ========================================
 
     public static double computeSoftDEF(int VIT, int AGI, int level) {
-        return (VIT * 1.0) + (level / 2.0) + (AGI / 5.0);
+        return Math.floor((VIT + level) / 2.0) + Math.floor(AGI / 5.0);
     }
 
     public static double computeHardDEF(double armorDEF, int VIT) {
-        return armorDEF * ARMOR_HARD_DEF_MULT + VIT * VIT_HARD_DEF_MULT;
+        return armorDEF; // In classic, it's just the sum of armor DEF
     }
 
-    public static double computePhysDR(double totalDEF) {
-        double dr = soft(totalDEF, HARD_DEF_CONSTANT);
-        return clamp(0, DR_PHYS_MAX, dr);
+    public static double computePhysDR(double hardDEF) {
+        return clamp(0, DR_PHYS_MAX, hardDEF * HARD_DEF_REDUCTION_MULT);
     }
 
     public static double applyPhysicalDefense(double rawDamage, double softDEF,

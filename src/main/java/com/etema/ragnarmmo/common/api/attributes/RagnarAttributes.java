@@ -45,6 +45,9 @@ public class RagnarAttributes {
         public static final RegistryObject<Attribute> OVERHEAL = ATTRIBUTES.register("overheal",
                         () -> new SyncableRangedAttribute("attribute.name.ragnar.overheal", 0.0D, 0.0D, 100.0D));
 
+        public static final RegistryObject<Attribute> MAGIC_DEFENSE = ATTRIBUTES.register("magic_defense",
+                        () -> new SyncableRangedAttribute("attribute.name.ragnar.magic_defense", 0.0D, 0.0D, 1000.0D));
+
         public static void register(IEventBus bus) {
                 ATTRIBUTES.register(bus);
         }

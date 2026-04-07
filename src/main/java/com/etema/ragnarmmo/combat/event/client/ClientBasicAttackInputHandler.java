@@ -3,8 +3,8 @@ package com.etema.ragnarmmo.combat.event.client;
 import java.util.List;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.combat.bridge.BetterCombatAttackSnapshot;
-import com.etema.ragnarmmo.combat.bridge.BetterCombatBridge;
+import com.etema.ragnarmmo.combat.integration.bettercombat.BetterCombatAttackSnapshot;
+import com.etema.ragnarmmo.combat.integration.bettercombat.BetterCombatBridge;
 import com.etema.ragnarmmo.combat.net.ServerboundRagnarBasicAttackPacket;
 import com.etema.ragnarmmo.common.net.Network;
 

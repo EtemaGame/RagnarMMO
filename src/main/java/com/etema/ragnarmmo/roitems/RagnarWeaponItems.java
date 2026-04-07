@@ -107,8 +107,26 @@ public final class RagnarWeaponItems {
                 "A knife of frozen crystal (Lv 1).", 2, -1.5F);
         registerDagger("volcanic_tooth", "Volcanic Tooth",
                 "A jagged fire dagger (Lv 15).", 4, -1.6F);
+        registerDagger("gale_dirk", "Gale Dirk",
+                "A light wind-imbued dagger (Lv 20).", 5, -1.2F);
+        registerDagger("quake_stiletto", "Quake Stiletto",
+                "A heavy earth dagger (Lv 25).", 7, -1.8F);
+        registerDagger("vein_seeker", "Vein Seeker",
+                "A thin blade that seeks blood (Lv 28).", 8, -1.5F);
         registerDagger("shadows_embrace", "Shadow's Embrace",
                 "A dark-edge blade (Lv 30).", 6, -1.4F);
+        registerDagger("mambas_kiss", "Mamba's Kiss",
+                "A venomous tooth (Lv 35).", 9, -1.3F);
+        registerDagger("ghostly_sting", "Ghostly Sting",
+                "A spectral piercing blade (Lv 40).", 11, -1.7F);
+        registerDagger("valkyries_thorn", "Valkyrie's Thorn",
+                "A divine holy dagger (Lv 45).", 13, -1.4F);
+        registerDagger("abyssal_fang", "Abyssal Fang",
+                "A cursed blade from the void (Lv 50).", 15, -1.6F);
+        registerDagger("twilight_carver", "Twilight Carver",
+                "A balance of light and dark (Lv 55).", 18, -1.5F);
+        registerDagger("oathbreaker", "Oathbreaker",
+                "A legendary dagger for those who defy fate (Lv 60).", 22, -1.4F);
     }
 
     private static void registerOneHandedSwords() {

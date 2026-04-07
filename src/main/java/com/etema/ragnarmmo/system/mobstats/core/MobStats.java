@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.system.mobstats.core;
 
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
+import com.etema.ragnarmmo.combat.element.ElementType;
 import com.etema.ragnarmmo.system.mobstats.mobs.MobClass;
 import com.etema.ragnarmmo.system.stats.Multipliers;
 import com.etema.ragnarmmo.system.stats.StatContainer;
@@ -22,6 +23,7 @@ public class MobStats {
     private int level = 1;
     private MobTier tier = MobTier.NORMAL;
     private MobClass mobClass = MobClass.NOVICE;
+    private ElementType element = ElementType.NEUTRAL;
     private boolean initialized;
 
     private double mana;
@@ -51,6 +53,10 @@ public class MobStats {
 
     public void setTier(MobTier tier) {
         this.tier = tier != null ? tier : MobTier.NORMAL;
+        // Auto-update multipliers based on tier
+        this.setHealthMultiplier(this.tier.getHpMultiplier());
+        this.setDamageMultiplier(this.tier.getDamageMultiplier());
+        this.setDefenseMultiplier(this.tier.getDefenseMultiplier());
     }
 
     public MobClass getMobClass() {
@@ -61,7 +67,13 @@ public class MobStats {
         this.mobClass = mobClass != null ? mobClass : MobClass.NOVICE;
     }
 
+    public ElementType getElement() {
+        return element;
+    }
 
+    public void setElement(ElementType element) {
+        this.element = element != null ? element : ElementType.NEUTRAL;
+    }
 
     public boolean isInitialized() {
         return initialized;

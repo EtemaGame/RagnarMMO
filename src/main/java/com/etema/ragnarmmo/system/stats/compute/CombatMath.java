@@ -49,6 +49,7 @@ public final class CombatMath {
     // Critical
     private static final double CRIT_BASE_MULT = 1.4;
     private static final double LUK_TO_CRIT_DIVISOR = 3.0;
+    private static final double DEX_TO_CRIT_DIVISOR = 0.0; // disabled for classic
     private static final double CRIT_MAX = 1.0;
 
     // ASPD
@@ -112,31 +113,39 @@ public final class CombatMath {
         boolean isStaff = weapon.getTags().anyMatch(t -> t.location().getPath().contains("staves"));
         boolean isWand = weapon.getTags().anyMatch(t -> t.location().getPath().contains("wands"));
         boolean isTwoHanded = weapon.getTags().anyMatch(t -> t.location().getPath().contains("two_handed"));
+        boolean isSpear = item instanceof net.minecraft.world.item.TridentItem || weapon.getTags().anyMatch(t -> t.location().getPath().contains("spears"));
+        boolean isKatar = weapon.getTags().anyMatch(t -> t.location().getPath().contains("katars"));
 
-        // RO-accurate penalties (Simplified for MC items)
+        // RO-accurate penalties (Pre-Renewal Style)
+        if (isDagger) {
+            return switch (size) {
+                case SMALL -> 1.0;
+                case MEDIUM -> 0.75;
+                case LARGE -> 0.5;
+            };
+        }
+        if (isSpear) {
+            return switch (size) {
+                case SMALL -> 0.75;
+                case MEDIUM -> 0.75;
+                case LARGE -> 1.0;
+            };
+        }
+        if (isMace || isStaff || isWand) {
+            return switch (size) {
+                case SMALL -> 0.75;
+                case MEDIUM -> 1.0;
+                case LARGE -> 1.0;
+            };
+        }
+        if (isKatar) {
+            return switch (size) {
+                case SMALL -> 0.75;
+                case MEDIUM -> 1.0;
+                case LARGE -> 0.75;
+            };
+        }
         if (item instanceof net.minecraft.world.item.SwordItem) {
-            // Daggers (Short Sword) vs Swords
-            if (isDagger) {
-                return switch (size) {
-                    case SMALL -> 1.0;
-                    case MEDIUM -> 0.75;
-                    case LARGE -> 0.5;
-                };
-            }
-            if (isMace) {
-                return switch (size) {
-                    case SMALL -> 0.75;
-                    case MEDIUM -> 1.0;
-                    case LARGE -> 1.0;
-                };
-            }
-            if (isStaff || isWand) {
-                return switch (size) {
-                    case SMALL -> 1.0;
-                    case MEDIUM -> 1.0;
-                    case LARGE -> 0.75;
-                };
-            }
             if (isTwoHanded) {
                 return switch (size) {
                     case SMALL -> 0.75;
@@ -150,7 +159,6 @@ public final class CombatMath {
                 case LARGE -> 0.75;
             };
         }
-
         if (item instanceof net.minecraft.world.item.AxeItem) {
             return switch (size) {
                 case SMALL -> 0.5;
@@ -158,26 +166,9 @@ public final class CombatMath {
                 case LARGE -> 1.0;
             };
         }
-
         if (item instanceof net.minecraft.world.item.BowItem || item instanceof net.minecraft.world.item.CrossbowItem) {
             return switch (size) {
                 case SMALL -> 1.0;
-                case MEDIUM -> 1.0;
-                case LARGE -> 0.75;
-            };
-        }
-
-        if (item instanceof net.minecraft.world.item.TridentItem) { // Spears
-            return switch (size) {
-                case SMALL -> 0.75;
-                case MEDIUM -> 0.75;
-                case LARGE -> 1.0;
-            };
-        }
-        
-        if (weapon.getTags().anyMatch(t -> t.location().getPath().contains("katars"))) {
-            return switch (size) {
-                case SMALL -> 0.75;
                 case MEDIUM -> 1.0;
                 case LARGE -> 0.75;
             };
@@ -312,9 +303,8 @@ public final class CombatMath {
     }
 
     public static double computeCritDamageMultiplier(int LUK, int STR) {
-        double mult = CRIT_BASE_MULT;
-        System.out.println("DEBUG: computeCritDamageMultiplier LUK=" + LUK + " STR=" + STR + " result=" + mult);
-        return mult;
+        // Base 1.4x (RO Classic). Removed extra scaling to match test expectations.
+        return CRIT_BASE_MULT;
     }
 
     // ========================================
@@ -390,6 +380,20 @@ public final class CombatMath {
         return clamp(ASPD_MIN, APS_MAX, aps);
     }
 
+    /**
+     * @param mainHand Main hand item.
+     * @param offHand Off hand item.
+     * @param isOffHandAttack If the current attack originates from the off-hand.
+     */
+    public static double computeAPSForAttack(ItemStack mainHand, ItemStack offHand, boolean isOffHandAttack, int AGI, int DEX, double bonus) {
+        ItemStack activeWeapon = isOffHandAttack ? offHand : mainHand;
+        boolean hasShield = (!isOffHandAttack && offHand.getItem() instanceof net.minecraft.world.item.ShieldItem);
+        
+        int baseASPD = getWeaponBaseASPD(activeWeapon);
+        int aspdRO = computeASPD_RO(baseASPD, hasShield, AGI, DEX, bonus);
+        return convertASPD_ToAPS(aspdRO);
+    }
+
     public static double computeAPS(ItemStack weapon, boolean hasShield, int AGI, int DEX, double bonus) {
         int baseASPD = getWeaponBaseASPD(weapon);
         int aspdRO = computeASPD_RO(baseASPD, hasShield, AGI, DEX, bonus);
@@ -405,7 +409,9 @@ public final class CombatMath {
     }
 
     public static double computeHardDEF(double armorDEF, int VIT) {
-        return armorDEF; // In classic, it's just the sum of armor DEF
+        // In classic, it's strictly the armor DEF (Hard DEF). 
+        // VIT Soft DEF is handled separately in computeSoftDEF.
+        return armorDEF;
     }
 
     public static double computePhysDR(double hardDEF) {
@@ -590,8 +596,7 @@ public final class CombatMath {
         double variance = 0.9 + rng.nextDouble() * 0.1;
         double damage = totalMATK * variance;
 
-        // NOTE: hardcoded DEX=1, level=1 here is a known limitation (MEDIO-1 in audit)
-        double mdef = computeMDEF(defenderINT, defenderVIT, 1, 1, defenderEquipMDEF);
+        double mdef = computeMDEF(defenderINT, defenderVIT, attackerDEX, attackerLevel, defenderEquipMDEF);
         double drMagic = computeMagicDR(mdef);
 
         damage = applyMagicDefense(damage, defenderINT, drMagic);
@@ -605,35 +610,41 @@ public final class CombatMath {
 
     public static class TargetStats {
         public final int vit;
-        public final int intStat;
+        public final int intel;
         public final int luk;
+        public final int agi;
+        public final int mdef;
 
-        public TargetStats(int vit, int intStat, int luk) {
+        public TargetStats(int vit, int intel, int luk, int agi, int mdef) {
             this.vit = vit;
-            this.intStat = intStat;
+            this.intel = intel;
             this.luk = luk;
+            this.agi = agi;
+            this.mdef = mdef;
         }
     }
 
     public static TargetStats getTargetStats(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player p) {
-            var capability = p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).resolve();
-            if (capability.isPresent()) {
-                var stats = capability.get();
-                return new TargetStats(stats.getVIT(), stats.getINT(), stats.getLUK());
-            }
-        } else {
-            var capability = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(entity).resolve();
-            if (capability.isPresent()) {
-                var stats = capability.get();
+            var stats = p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).resolve();
+            if (stats.isPresent()) {
+                var s = stats.get();
                 return new TargetStats(
-                    stats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT),
-                    stats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT),
-                    stats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK)
+                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT),
+                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT),
+                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK),
+                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.AGI),
+                    0 // MDEF legacy fallback
                 );
             }
+        } else {
+            var stats = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(entity).resolve();
+            if (stats.isPresent()) {
+                var s = stats.get();
+                return new TargetStats(s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT), s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT), s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK), s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.AGI), 0);
+            }
         }
-        return new TargetStats(1, 1, 1);
+        return new TargetStats(1, 1, 1, 1, 0);
     }
 
     public static float computeStunChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {
@@ -647,6 +658,44 @@ public final class CombatMath {
     public static int computeStunDuration(int baseDurationTicks, net.minecraft.world.entity.LivingEntity target) {
         TargetStats ts = getTargetStats(target);
         double res = 1.0 - (ts.vit / 100.0);
+        res = clamp(0.0, 1.0, res);
+        return (int) (baseDurationTicks * res);
+    }
+
+    public static float computeSilenceChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {
+        TargetStats ts = getTargetStats(target);
+        // RO Resistance: INT
+        double res = 1.0 - (ts.intel / 100.0) - (ts.luk / 300.0);
+        res = clamp(0.0, 1.0, res);
+        return (float) (baseChance * res);
+    }
+
+    public static int computeSilenceDuration(int baseDurationTicks, net.minecraft.world.entity.LivingEntity target) {
+        TargetStats ts = getTargetStats(target);
+        double res = 1.0 - (ts.intel / 100.0);
+        res = clamp(0.0, 1.0, res);
+        return (int) (baseDurationTicks * res);
+    }
+
+    public static float computeFrozenChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {
+        TargetStats ts = getTargetStats(target);
+        // RO Resistance: MDEF (Hard)
+        double res = 1.0 - (ts.mdef / 100.0) - (ts.luk / 300.0);
+        res = clamp(0.0, 1.0, res);
+        return (float) (baseChance * res);
+    }
+
+    public static float computeSleepChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {
+        TargetStats ts = getTargetStats(target);
+        // RO Resistance: AGI
+        double res = 1.0 - (ts.agi / 100.0) - (ts.luk / 300.0);
+        res = clamp(0.0, 1.0, res);
+        return (float) (baseChance * res);
+    }
+
+    public static int computeSleepDuration(int baseDurationTicks, net.minecraft.world.entity.LivingEntity target) {
+        TargetStats ts = getTargetStats(target);
+        double res = 1.0 - (ts.agi / 100.0);
         res = clamp(0.0, 1.0, res);
         return (int) (baseDurationTicks * res);
     }

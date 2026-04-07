@@ -35,11 +35,12 @@ public class RagnarCombatTest {
         double armorEff = 50.0; // 50 Hard DEF
 
         double finalDmg = dmgCalc.applyPhysicalDefense(rawDmg, vit, agi, level, armorEff);
+        System.out.println("DEBUG: testPhysicalDefense - raw=" + rawDmg + ", vit=" + vit + ", agi=" + agi + ", lvl=" + level + ", armor=" + armorEff + " -> finalDmg=" + finalDmg);
         
         // Pre-Renewal Hard DEF 50 = 50% Reduction
         // Soft DEF = floor((50+99)/2) + floor(30/5) = 74 + 6 = 80
         // Expected: 1000 * (1 - 0.5) - 80 = 420
-        assertEquals(420.0, finalDmg, 0.1);
+        assertEquals(420.0, finalDmg, 0.1, "finalDmg calculation failure: expected 420.0 but got " + finalDmg);
     }
 
     @Test
@@ -58,7 +59,8 @@ public class RagnarCombatTest {
         double baseDmg = 100.0;
         // High LUK should NOT increase multiplier in Classic Pre-Renewal
         double critDmg = dmgCalc.applyCriticalModifier(baseDmg, 50, 50);
-        assertEquals(140.0, critDmg, 0.1); // Strictly 1.4x
+        System.out.println("DEBUG: testCriticalHit - base=" + baseDmg + " -> critDmg=" + critDmg);
+        assertEquals(140.0, critDmg, 0.1, "critDmg calculation failure: expected 140.0 but got " + critDmg); // Strictly 1.4x
     }
 
     @Test

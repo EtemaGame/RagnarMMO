@@ -11,6 +11,7 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.slf4j.Logger;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,5 +90,32 @@ public class AchievementRegistry extends SimpleJsonResourceReloadListener {
         });
 
         LOGGER.info("Loaded {} achievement definitions.", definitions.size());
+    }
+
+    /**
+     * Apply synchronized definitions from server.
+     * Used only on client.
+     */
+    public static void applySync(Collection<AchievementDefinition> syncedDefinitions) {
+        INSTANCE.definitions.clear();
+        for (AchievementDefinition def : syncedDefinitions) {
+            INSTANCE.definitions.put(def.id(), def);
+        }
+        LOGGER.info("Applied {} synchronized achievement definitions from server", syncedDefinitions.size());
+    }
+
+    public void syncToAll() {
+        var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return;
+
+        var packet = new com.etema.ragnarmmo.system.achievements.network.SyncAchievementDefinitionsPacket(definitions.values());
+        for (var player : server.getPlayerList().getPlayers()) {
+            com.etema.ragnarmmo.common.net.Network.sendToPlayer(player, packet);
+        }
+    }
+
+    public void syncToPlayer(net.minecraft.server.level.ServerPlayer player) {
+        var packet = new com.etema.ragnarmmo.system.achievements.network.SyncAchievementDefinitionsPacket(definitions.values());
+        com.etema.ragnarmmo.common.net.Network.sendToPlayer(player, packet);
     }
 }

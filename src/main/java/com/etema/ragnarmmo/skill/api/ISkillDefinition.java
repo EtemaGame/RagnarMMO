@@ -101,6 +101,21 @@ public interface ISkillDefinition {
         return getBaseCost() + (level * getCostPerLevel());
     }
 
+    /**
+     * Determines which resource (SP or Mana) this skill consumes.
+     */
+    default com.etema.ragnarmmo.skill.api.ResourceType getResourceType() {
+        com.etema.ragnarmmo.skill.api.SkillCategory cat = getCategory();
+        if (cat == com.etema.ragnarmmo.skill.api.SkillCategory.MAGE || 
+            cat == com.etema.ragnarmmo.skill.api.SkillCategory.PRIEST ||
+            cat == com.etema.ragnarmmo.skill.api.SkillCategory.WIZARD ||
+            cat == com.etema.ragnarmmo.skill.api.SkillCategory.ACOLYTE ||
+            cat == com.etema.ragnarmmo.skill.api.SkillCategory.LIFE) {
+            return com.etema.ragnarmmo.skill.api.ResourceType.MANA;
+        }
+        return com.etema.ragnarmmo.skill.api.ResourceType.SP;
+    }
+
     // === Timing ===
 
     /**

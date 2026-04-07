@@ -176,6 +176,8 @@ public final class SkillRegistry {
     // === Registration (internal use) ===
 
     /**
+
+    /**
      * Register a skill definition.
      * Should only be called by SkillDataLoader during loading.
      *
@@ -183,14 +185,18 @@ public final class SkillRegistry {
      * @throws IllegalStateException if registry is frozen
      */
     public static void register(SkillDefinition definition) {
-        if (frozen) {
+        register(definition, false);
+    }
+
+    private static void register(SkillDefinition definition, boolean force) {
+        if (frozen && !force) {
             LOGGER.warn("Attempted to register skill {} after registry was frozen", definition.getId());
             return;
         }
 
         ResourceLocation id = definition.getId();
         SkillDefinition existing = SKILLS.put(id, definition);
-        if (existing != null) {
+        if (existing != null && !force) {
             LOGGER.warn("Skill {} was overwritten by a new definition", id);
         }
     }
@@ -257,5 +263,26 @@ public final class SkillRegistry {
      */
     public static String getDefaultNamespace() {
         return DEFAULT_NAMESPACE;
+    }
+
+    /**
+     * Apply synchronized definitions from the server.
+     * Used only on the client.
+     */
+    public static void applySync(Collection<SkillDefinition> definitions) {
+        LOGGER.info("Applying {} synchronized skill definitions from server", definitions.size());
+        
+        // Unfreeze to allow updates
+        boolean wasFrozen = frozen;
+        frozen = false;
+        
+        // We don't clear() because we want to keep existing effects if any,
+        // but we overwrite definitions.
+        for (SkillDefinition def : definitions) {
+            register(def, true);
+        }
+        
+        frozen = wasFrozen;
+        LOGGER.info("SkillRegistry synced and re-frozen");
     }
 }

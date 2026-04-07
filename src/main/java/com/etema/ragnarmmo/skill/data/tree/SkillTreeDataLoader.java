@@ -7,12 +7,14 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
@@ -72,6 +74,26 @@ public class SkillTreeDataLoader extends SimpleJsonResourceReloadListener {
 
         SkillTreeRegistry.freeze();
         LOGGER.info("Loaded {} skill tree layouts ({} failed)", loaded, failed);
+
+        // Sync to all connected players after reload
+        syncToAll();
+    }
+
+    public void syncToAll() {
+        var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return;
+
+        com.etema.ragnarmmo.skill.net.SyncSkillTreesPacket packet = new com.etema.ragnarmmo.skill.net.SyncSkillTreesPacket(SkillTreeRegistry.getAll());
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            com.etema.ragnarmmo.common.net.Network.sendToPlayer(player, packet);
+        }
+        RagnarMMO.LOGGER.debug("Synced skill tree layouts to {} players", server.getPlayerList().getPlayerCount());
+    }
+
+    public void syncToPlayer(ServerPlayer player) {
+        com.etema.ragnarmmo.skill.net.SyncSkillTreesPacket packet = new com.etema.ragnarmmo.skill.net.SyncSkillTreesPacket(SkillTreeRegistry.getAll());
+        com.etema.ragnarmmo.common.net.Network.sendToPlayer(player, packet);
+        RagnarMMO.LOGGER.debug("Synced skill tree layouts to player {}", player.getName().getString());
     }
 
     private SkillTreeDefinition parseSkillTree(ResourceLocation fileId, JsonObject json) {
@@ -132,7 +154,7 @@ public class SkillTreeDataLoader extends SimpleJsonResourceReloadListener {
 
     private ResourceLocation parseResourceLocation(String id) {
         if (id.contains(":")) {
-            return ResourceLocation.parse(id);
+            return new ResourceLocation(id);
         } else {
             // Default to ragnarmmo namespace
             return new ResourceLocation("ragnarmmo", id);
@@ -142,12 +164,21 @@ public class SkillTreeDataLoader extends SimpleJsonResourceReloadListener {
     /**
      * Event handler class for registering the reload listener.
      */
-    @Mod.EventBusSubscriber(modid = RagnarStats.MOD_ID)
+    @Mod.EventBusSubscriber(modid = RagnarMMO.MODID)
     public static class Events {
         @SubscribeEvent
         public static void onAddReloadListeners(AddReloadListenerEvent event) {
             event.addListener(INSTANCE);
             LOGGER.info("Registered skill tree data loader");
+        }
+
+        @SubscribeEvent
+        public static void onDatapackSync(OnDatapackSyncEvent event) {
+            if (event.getPlayer() != null) {
+                INSTANCE.syncToPlayer(event.getPlayer());
+            } else {
+                INSTANCE.syncToAll();
+            }
         }
     }
 

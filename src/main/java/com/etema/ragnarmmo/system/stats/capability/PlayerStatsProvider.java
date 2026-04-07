@@ -15,6 +15,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import com.etema.ragnarmmo.system.stats.compute.StatResolutionService;
 
 @net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "ragnarmmo")
 public class PlayerStatsProvider
@@ -78,6 +79,22 @@ public class PlayerStatsProvider
     }
 
     @SubscribeEvent
+    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            resolveAndSync(player);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onStartTracking(PlayerEvent.StartTracking event) {
+        if (event.getTarget() instanceof ServerPlayer target) {
+            target.getCapability(CAP).ifPresent(stats -> {
+                com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService.sync(target, stats);
+            });
+        }
+    }
+
+    @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             player.getCapability(CAP).ifPresent(stats -> {
@@ -96,21 +113,21 @@ public class PlayerStatsProvider
                 player.getFoodData().setSaturation(5.0f);
             });
 
-            syncToClient(player);
+            resolveAndSync(player);
         }
     }
 
     @SubscribeEvent
     public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            syncToClient(player);
+            resolveAndSync(player);
         }
     }
 
-    private static void syncToClient(ServerPlayer player) {
+    private static void resolveAndSync(ServerPlayer player) {
         player.getCapability(CAP).ifPresent(stats -> {
-            RagnarDebugLog.playerData("SYNC_TRIGGER player={} reason=provider_hook", playerName(player));
-            com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService.sync(player, stats);
+            RagnarDebugLog.playerData("RESOLVE_SYNC_TRIGGER player={} reason=provider_hook", playerName(player));
+            StatResolutionService.resolve(player, stats);
         });
     }
 

@@ -5,118 +5,93 @@ import com.etema.ragnarmmo.common.api.stats.ChangeReason;
 import java.util.function.IntUnaryOperator;
 
 public interface IPlayerStats {
-        int getSTR();
+    int getSTR();
+    void setSTR(int v);
 
-        void setSTR(int v);
+    int getAGI();
+    void setAGI(int v);
 
-        int getAGI();
+    int getVIT();
+    void setVIT(int v);
 
-        void setAGI(int v);
+    int getINT();
+    void setINT(int v);
 
-        int getVIT();
+    int getDEX();
+    void setDEX(int v);
 
-        void setVIT(int v);
+    int getLUK();
+    void setLUK(int v);
 
-        int getINT();
+    int get(StatKeys key);
+    void set(StatKeys key, int value);
 
-        void setINT(int v);
+    void setStat(StatKeys key, int value, ChangeReason reason);
+    void addStat(StatKeys key, int delta, ChangeReason reason);
 
-        int getDEX();
+    int getBonus(StatKeys key);
+    void addBonus(StatKeys key, int delta);
+    void setBonus(StatKeys key, int value);
 
-        void setDEX(int v);
+    double getMana();
+    double getManaMax();
+    void setMana(double v);
+    void addMana(double dv);
+    boolean consumeMana(double amount);
 
-        int getLUK();
+    double getSP();
+    double getSPMax();
+    void setSP(double v);
+    void addSP(double dv);
+    boolean consumeSP(double amount);
 
-        void setLUK(int v);
+    void setManaMaxClient(double v);
+    void setSPMaxClient(double v);
 
-        int get(StatKeys key);
+    int getLevel();
+    void setLevel(int lvl);
+    void setLevel(int lvl, ChangeReason reason);
 
-        void set(StatKeys key, int value);
+    int getExp();
+    void setExp(int exp);
 
-        void setStat(StatKeys key, int value, ChangeReason reason);
+    int getStatPoints();
+    void setStatPoints(int pts);
 
-        void addStat(StatKeys key, int delta, ChangeReason reason);
+    String getJobId();
+    void setJobId(String jobId);
+    void setJobId(String jobId, ChangeReason reason);
 
-        int getBonus(StatKeys key);
+    int getJobLevel();
+    void setJobLevel(int lvl);
+    void setJobLevel(int lvl, ChangeReason reason);
 
-        void addBonus(StatKeys key, int delta);
+    int getJobExp();
+    void setJobExp(int exp);
 
-        void setBonus(StatKeys key, int value);
+    int getSkillPoints();
+    void setSkillPoints(int pts);
 
-        double getMana();
+    void setBaseStatPointsGranted(boolean granted);
+    void ensureBaseStatBaseline(int baseline);
 
-        double getManaMax();
+    int addExpAndProcessLevelUps(int expToAdd, int pointsPerLevel,
+                                 IntUnaryOperator expToNextFunc);
 
-        void setMana(double v);
+    int addJobExpAndProcessLevelUps(int expToAdd,
+                                    IntUnaryOperator expToNextFunc);
 
-        void addMana(double dv);
+    void resetAll(ChangeReason reason);
 
-        void setManaMaxClient(double v);
+    void markDirty();
+    boolean consumeDirty();
+    int consumeDirtyMask();
 
-        int getLevel();
+    net.minecraft.nbt.CompoundTag serializeNBT();
+    void deserializeNBT(net.minecraft.nbt.CompoundTag nbt);
 
-        void setLevel(int lvl);
-
-        void setLevel(int lvl, ChangeReason reason);
-
-        int getExp();
-
-        void setExp(int exp);
-
-        int getStatPoints();
-
-        void setStatPoints(int pts);
-
-        String getJobId();
-
-        void setJobId(String jobId);
-
-        void setJobId(String jobId, ChangeReason reason);
-
-        int getJobLevel();
-
-        void setJobLevel(int lvl);
-
-        void setJobLevel(int lvl, ChangeReason reason);
-
-        int getJobExp();
-
-        void setJobExp(int exp);
-
-        int getSkillPoints();
-
-        void setSkillPoints(int pts);
-
-        int addExpAndProcessLevelUps(int expToAdd, int pointsPerLevel,
-                        IntUnaryOperator expToNextFunc);
-
-        int addJobExpAndProcessLevelUps(int expToAdd,
-                        IntUnaryOperator expToNextFunc);
-
-        void resetAll(ChangeReason reason);
-
-        void markDirty();
-
-        boolean consumeDirty();
-
-        net.minecraft.nbt.CompoundTag serializeNBT();
-
-        void deserializeNBT(net.minecraft.nbt.CompoundTag nbt);
-
-        double getSP();
-
-        double getSPMax();
-
-        void setSP(double v);
-
-        void addSP(double dv);
-
-        boolean consumeResource(double amount);
-
-        void addResource(double amount);
-
-        double getCurrentResource();
-
-        double getMaxResource();
-
+    boolean consumeResource(double amount);
+    void addResource(double amount);
+    double getCurrentResource();
+    double getMaxResource();
 }

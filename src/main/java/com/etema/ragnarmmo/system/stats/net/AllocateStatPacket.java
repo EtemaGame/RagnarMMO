@@ -56,6 +56,7 @@ public class AllocateStatPacket {
                     case INT -> s.setINT(currentValue + 1);
                     case DEX -> s.setDEX(currentValue + 1);
                     case LUK -> s.setLUK(currentValue + 1);
+                    default -> throw new IllegalStateException("Unhandled StatKeys: " + msg.key);
                 }
                 s.setStatPoints(s.getStatPoints() - cost);
             });
@@ -71,6 +72,7 @@ public class AllocateStatPacket {
             case INT -> stats.getINT();
             case DEX -> stats.getDEX();
             case LUK -> stats.getLUK();
+            default -> throw new IllegalStateException("Unhandled StatKeys: " + key);
         };
     }
 }

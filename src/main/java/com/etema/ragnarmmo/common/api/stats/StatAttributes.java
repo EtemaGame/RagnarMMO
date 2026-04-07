@@ -39,6 +39,10 @@ public final class StatAttributes {
     private StatAttributes() {
     }
 
+    public static Attribute get(StatKeys key) {
+        return getAttribute(key);
+    }
+
     public static Attribute getAttribute(StatKeys key) {
         return switch (key) {
             case STR -> RagnarAttributes.STR.get();
@@ -47,6 +51,7 @@ public final class StatAttributes {
             case INT -> RagnarAttributes.INT.get();
             case DEX -> RagnarAttributes.DEX.get();
             case LUK -> RagnarAttributes.LUK.get();
+            default -> throw new IllegalStateException("Unhandled StatKeys: " + key);
         };
     }
 

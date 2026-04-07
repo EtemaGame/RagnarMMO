@@ -92,6 +92,13 @@ public final class RoEquipRestrictionHook {
                 // Usability is blocked by other events (AttackEntityEvent, etc.)
             }
         }
+
+        // Trigger sync of derived stats since equipment modifiers changed
+        com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(player).ifPresent(stats -> {
+            if (stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats internal) {
+                internal.markDirty(com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS);
+            }
+        });
     }
 
     private static void revertEquipment(ServerPlayer player, EquipmentSlot slot, ItemStack oldStack,

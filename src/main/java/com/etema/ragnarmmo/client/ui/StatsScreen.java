@@ -326,13 +326,10 @@ public class StatsScreen extends Screen {
                                 // weighted intervals
                                 int rightX = PANEL_WIDTH / 2 + 40;
 
-                                // Use server-synced derived stats if available, else fallback to local calc
+                                // Use server-synced derived stats if available. 
+                                // No local fallback to StatComputer.compute to maintain server authority.
                                 var d = DerivedStatsClientCache.get();
-                                if (d == null) {
-                                        double armaBase = 0; // Fallback or basic
-                                        double armorEff = 0; 
-                                        d = StatComputer.compute(player, stats, armaBase, 1.6, 0, armorEff, 1.0);
-                                }
+                                boolean hasData = (d != null);
 
                                 // Lines:
                                 // 0 Offense
@@ -361,26 +358,20 @@ public class StatsScreen extends Screen {
                                         int span = yLuk - yStr;
 
                                         // ---- YOU CONTROL SPACING HERE ----
-                                        // Bigger values => more gap RELATIVE to other gaps (still fits in span).
-                                        final float GAP_AFTER_HEADER = 1.6f; // after "Offense" and after "Defense"
-                                        final float GAP_BETWEEN_SECTIONS = 1.9f; // between ASPD -> Defense
-                                        final float GAP_NORMAL = 1.0f; // normal gaps
+                                        final float GAP_AFTER_HEADER = 1.6f;
+                                        final float GAP_BETWEEN_SECTIONS = 1.9f;
+                                        final float GAP_NORMAL = 1.0f;
                                         // ---------------------------------
 
-                                        // 16 intervals between 17 lines
                                         float[] w = new float[LINES - 1];
                                         for (int j = 0; j < w.length; j++)
                                                 w[j] = GAP_NORMAL;
 
-                                        // Interval indices:
-                                        // 0: Offense -> ATK
-                                        // 5: ASPD -> Defense
-                                        // 6: Defense -> DEF
                                         w[0] = GAP_AFTER_HEADER;
                                         w[5] = GAP_BETWEEN_SECTIONS;
                                         w[6] = GAP_AFTER_HEADER;
-                                        w[12] = GAP_BETWEEN_SECTIONS; // Perfect Dodge -> Weight
-                                        w[13] = GAP_AFTER_HEADER; // Weight -> CUR
+                                        w[12] = GAP_BETWEEN_SECTIONS;
+                                        w[13] = GAP_AFTER_HEADER;
 
                                         float totalW = 0.0f;
                                         for (float v : w)
@@ -388,7 +379,6 @@ public class StatsScreen extends Screen {
 
                                         float unit = span / totalW;
 
-                                        // Precompute Y for each line so last lands EXACTLY on yLuk.
                                         int[] yLine = new int[LINES];
                                         float acc = 0.0f;
                                         yLine[0] = yStr;
@@ -396,53 +386,60 @@ public class StatsScreen extends Screen {
                                                 acc += w[li - 1] * unit;
                                                 yLine[li] = Math.round(yStr + acc);
                                         }
-                                        yLine[LINES - 1] = yLuk; // force perfect end
+                                        yLine[LINES - 1] = yLuk;
 
                                         g.pose().pushPose();
                                         g.pose().translate(rightX, 0, 0);
-                                        g.pose().scale(1.0f, 1.0f, 1.0f);
 
                                         g.drawString(mc.font,
                                                         Component.translatable(
-                                                                        "screen.ragnarmmo.derived.offense_title"),
-                                                        0, yLine[0], 0xFFFF8800, true);
+                                                                         "screen.ragnarmmo.derived.offense_title"),
+                                                         0, yLine[0], 0xFFFF8800, true);
+                                        
                                         renderDerivedStat(g, 0, yLine[1], "ATK",
-                                                        String.format(Locale.ROOT, "%.1f", d.physicalAttack),
+                                                        hasData ? String.format(Locale.ROOT, "%.1f", d.physicalAttack) : "--",
                                                         0xFFFFFFFF);
                                         renderDerivedStat(g, 0, yLine[2], "MATK",
-                                                        String.format(Locale.ROOT, "%.1f", d.magicAttack), 0xFFFFFFFF);
+                                                        hasData ? String.format(Locale.ROOT, "%.1f", d.magicAttack) : "--", 0xFFFFFFFF);
                                         renderDerivedStat(g, 0, yLine[3], "HIT",
-                                                        String.format(Locale.ROOT, "%.0f", d.accuracy),
+                                                        hasData ? String.format(Locale.ROOT, "%.0f", d.accuracy) : "--",
                                                         0xFFFFFFFF);
                                         renderDerivedStat(g, 0, yLine[4], "CRIT",
-                                                        String.format(Locale.ROOT, "%.1f%%", d.criticalChance * 100),
+                                                        hasData ? String.format(Locale.ROOT, "%.1f%%", d.criticalChance * 100) : "--",
                                                         0xFFFFFFFF);
                                         renderDerivedStat(g, 0, yLine[5], "ASPD",
-                                                        String.format(Locale.ROOT, "%.0f", d.attackSpeed), 0xFFFFFFFF);
+                                                        hasData ? String.format(Locale.ROOT, "%.0f", d.attackSpeed) : "--", 0xFFFFFFFF);
 
                                         g.drawString(mc.font,
                                                         Component.translatable(
-                                                                        "screen.ragnarmmo.derived.defense_title"),
+                                                                         "screen.ragnarmmo.derived.defense_title"),
                                                         0, yLine[6], 0xFF4488FF, true);
                                         renderDerivedStat(g, 0, yLine[7], "DEF",
-                                                        String.format(Locale.ROOT, "%.1f", d.defense), 0xFFFFFFFF);
+                                                        hasData ? String.format(Locale.ROOT, "%.1f", d.defense) : "--", 0xFFFFFFFF);
                                         renderDerivedStat(g, 0, yLine[8], "MDEF",
-                                                        String.format(Locale.ROOT, "%.1f", d.magicDefense), 0xFFFFFFFF);
+                                                        hasData ? String.format(Locale.ROOT, "%.1f", d.magicDefense) : "--", 0xFFFFFFFF);
+                                        
                                         double trueSP = (stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps)
                                                         ? ps.getMaxResource()
                                                         : stats.getManaMax();
+                                        
+                                        // HP and SP are base stats synced via PlayerStats, so they are always available.
                                         renderDerivedStat(g, 0, yLine[9], "HP",
                                                         String.format(Locale.ROOT, "%.0f", player.getMaxHealth()),
                                                         0xFFFF5555);
                                         renderDerivedStat(g, 0, yLine[10], "SP",
                                                         String.format(Locale.ROOT, "%.0f", trueSP), 0xFF5555FF);
+                                        
                                         renderDerivedStat(g, 0, yLine[11], "FLEE",
-                                                        String.format(Locale.ROOT, "%.0f", d.flee), 0xFFFFFFFF);
+                                                        hasData ? String.format(Locale.ROOT, "%.0f", d.flee) : "--", 0xFFFFFFFF);
                                         renderDerivedStat(g, 0, yLine[12], "P.DODGE",
-                                                        String.format(Locale.ROOT, "%.1f%%", d.perfectDodge * 100),
+                                                        hasData ? String.format(Locale.ROOT, "%.1f%%", d.perfectDodge * 100) : "--",
                                                         0xFFFFFFFF);
 
                                         // ===== Weight (Encumbrance) =====
+                                        // Capacity and current weight formulas are deterministic based on base stats 
+                                        // and inventory, which are already synced. We keep these local as they are 
+                                        // strictly UI helpers for the inventory.
                                         int cartLevel = uiGetCartLevel(player);
                                         double capacity = uiComputeCapacity(stats, cartLevel);
                                         double currentW = uiComputeTotalWeight(player, cartLevel);
@@ -451,11 +448,11 @@ public class StatsScreen extends Screen {
 
                                         int wColor;
                                         if (currentW <= highW)
-                                                wColor = 0xFFFFFFFF; // ok
+                                                wColor = 0xFFFFFFFF;
                                         else if (currentW <= maxW)
-                                                wColor = 0xFFFFDD55; // overweight (debuff)
+                                                wColor = 0xFFFFDD55;
                                         else
-                                                wColor = 0xFFFF5555; // max (near immobile)
+                                                wColor = 0xFFFF5555;
 
                                         g.drawString(mc.font, Component.translatable("tooltip.ragnarmmo.weight.label"),
                                                         0, yLine[13], 0xFFAAAAAA, true);
@@ -471,11 +468,11 @@ public class StatsScreen extends Screen {
                                         int derivedY = CONTENT_START_Y;
                                         g.drawString(mc.font,
                                                         Component.translatable(
-                                                                        "screen.ragnarmmo.derived.offense_title"),
+                                                                         "screen.ragnarmmo.derived.offense_title"),
                                                         rightX, derivedY, 0xFFFF8800, true);
                                         derivedY += SECTION_GAP;
                                         renderDerivedStat(g, rightX, derivedY, "ATK",
-                                                        String.format(Locale.ROOT, "%.1f", d.physicalAttack),
+                                                        hasData ? String.format(Locale.ROOT, "%.1f", d.physicalAttack) : "--",
                                                         0xFFFFFFFF);
                                 }
 

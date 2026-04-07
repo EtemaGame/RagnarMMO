@@ -402,6 +402,43 @@ public class PlayerStats implements IPlayerStats {
         for (RoPlayerSyncDomain dm : d) if (dm != null) dirtyMask |= dm.bit();
     }
 
+    /**
+     * Applies a server snapshot to this capability instance.
+     * Used ONLY on the client to synchronize state without triggering domain logic,
+     * recalculations, or dirty flagging.
+     *
+     * @param msg The synchronization packet from the server.
+     */
+    public void applyMirrorState(com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket msg) {
+        int mask = msg.syncMask;
+
+        if (com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.has(mask, com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS)) {
+            for (StatKeys key : StatKeys.values()) {
+                int val = msg.stats.get(key);
+                this.stats.set(key, val);
+                syncAttribute(key, val);
+            }
+        }
+
+        if (com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.has(mask, com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.RESOURCES)) {
+            this.mana = msg.mana;
+            this.manaMax = msg.manaMax;
+            this.sp = msg.sp;
+            this.spMax = msg.spMax;
+        }
+
+        if (com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.has(mask, com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.PROGRESSION)) {
+            this.level = msg.level;
+            this.exp = msg.exp;
+            this.statPoints = msg.statPoints;
+            this.jobLevel = msg.jobLevel;
+            this.jobExp = msg.jobExp;
+            this.skillPoints = msg.skillPoints;
+            this.jobId = msg.jobId;
+            this.baseStatPointsGranted = msg.baseStatPointsGranted;
+        }
+    }
+
     @Override
     public double getCurrentResource() {
         return com.etema.ragnarmmo.common.api.jobs.JobType.fromId(jobId).isMagical() ? mana : sp;

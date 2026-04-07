@@ -83,32 +83,33 @@ public final class ClientPacketHandler {
             return;
 
         RagnarCoreAPI.get(p).ifPresent(s -> {
-            if (RoPlayerSyncDomain.includes(msg.syncMask, RoPlayerSyncDomain.RESOURCES)) {
-                s.setMana(msg.mana);
-                s.setManaMaxClient(msg.manaMax);
-                if (s instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps) {
-                    ps.setSP(msg.sp);
-                    ps.setSPMaxClient(msg.spMax);
+            if (s instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps) {
+                ps.applyMirrorState(msg);
+            } else {
+                // Fallback for non-concrete instances
+                if (RoPlayerSyncDomain.includes(msg.syncMask, RoPlayerSyncDomain.RESOURCES)) {
+                    s.setMana(msg.mana);
+                    s.setManaMaxClient(msg.manaMax);
                 }
-            }
 
-            if (RoPlayerSyncDomain.includes(msg.syncMask, RoPlayerSyncDomain.PROGRESSION)) {
-                s.setJobId(msg.jobId);
-                s.setLevel(msg.level);
-                s.setExp(msg.exp);
-                s.setStatPoints(msg.statPoints);
-                s.setJobLevel(msg.jobLevel);
-                s.setJobExp(msg.jobExp);
-                s.setSkillPoints(msg.skillPoints);
-            }
+                if (RoPlayerSyncDomain.includes(msg.syncMask, RoPlayerSyncDomain.PROGRESSION)) {
+                    s.setJobId(msg.jobId);
+                    s.setLevel(msg.level);
+                    s.setExp(msg.exp);
+                    s.setStatPoints(msg.statPoints);
+                    s.setJobLevel(msg.jobLevel);
+                    s.setJobExp(msg.jobExp);
+                    s.setSkillPoints(msg.skillPoints);
+                }
 
-            if (RoPlayerSyncDomain.includes(msg.syncMask, RoPlayerSyncDomain.STATS)) {
-                s.setSTR(msg.str);
-                s.setAGI(msg.agi);
-                s.setVIT(msg.vit);
-                s.setINT(msg.intelligence);
-                s.setDEX(msg.dex);
-                s.setLUK(msg.luk);
+                if (RoPlayerSyncDomain.includes(msg.syncMask, RoPlayerSyncDomain.STATS)) {
+                    s.setSTR(msg.str);
+                    s.setAGI(msg.agi);
+                    s.setVIT(msg.vit);
+                    s.setINT(msg.intelligence);
+                    s.setDEX(msg.dex);
+                    s.setLUK(msg.luk);
+                }
             }
         });
     }
@@ -130,24 +131,13 @@ public final class ClientPacketHandler {
         SkillOverlay.showLevelUp(skillId, newLevel);
     }
 
-    // ═══════════════════════════════════════════════
-    // ClientboundSkillXpPacket
-    // ═══════════════════════════════════════════════
     public static void handleSkillXpGain(net.minecraft.resources.ResourceLocation skillId, int amount) {
         if (skillId == null)
             return;
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null) {
-            PlayerSkillsProvider.get(mc.player).ifPresent(manager -> {
-                int levels = manager.addSkillXP(skillId, amount,
-                        com.etema.ragnarmmo.common.api.stats.ChangeReason.DEBUG);
-                if (levels > 0) {
-                    SkillOverlay.showLevelUp(skillId, manager.getSkillLevel(skillId));
-                }
-            });
-        }
-
+        // Client no longer mutates skill state directly to ensure authority
+        // Skill progress will be updated via Sync packets from server
         SkillOverlay.showXpGain(skillId, amount);
     }
 
@@ -160,7 +150,12 @@ public final class ClientPacketHandler {
             return;
 
         PlayerSkillsProvider.get(mc.player).ifPresent(manager -> {
-            manager.deserializeNBT(data);
+            if (manager instanceof com.etema.ragnarmmo.skill.runtime.SkillManager sm) {
+                sm.applyClientMirror(data);
+            } else {
+                // Fallback for non-concrete (should not happen on player)
+                manager.deserializeNBT(data);
+            }
         });
     }
 

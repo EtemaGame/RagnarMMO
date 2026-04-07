@@ -219,7 +219,12 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
         if (player instanceof ServerPlayer serverPlayer) {
             com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
                     new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(serializeNBT()));
-            SkillEffectHandler.refreshPassiveEffects(serverPlayer);
+                        SkillEffectHandler.refreshPassiveEffects(serverPlayer);
+            com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(serverPlayer).ifPresent(stats -> {
+                if (stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats internal) {
+                    internal.markDirty(com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS);
+                }
+            });
         }
 
         return state.getLevel();
@@ -888,7 +893,12 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
         if (player instanceof ServerPlayer serverPlayer) {
             com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
                     new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(serializeNBT()));
-            SkillEffectHandler.refreshPassiveEffects(serverPlayer);
+                        SkillEffectHandler.refreshPassiveEffects(serverPlayer);
+            com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(serverPlayer).ifPresent(stats -> {
+                if (stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats internal) {
+                    internal.markDirty(com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS);
+                }
+            });
         }
     }
 
@@ -1017,6 +1027,31 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
     public void ensureSkillExists(ResourceLocation skillId) {
         if (!skills.containsKey(skillId) && SkillRegistry.contains(skillId)) {
             skills.put(skillId, new SkillState(skillId));
+        }
+    }
+
+    /**
+     * Applies a server snapshot to the client-side skill manager.
+     * Updates ONLY levels and XP to match the server's state.
+     * Does NOT reset cooldowns, casts, or other volatile client-side state.
+     *
+     * @param nbt The NBT tag containing the 'Skills' compound.
+     */
+    public void applyClientMirror(CompoundTag nbt) {
+        if (!nbt.contains("Skills"))
+            return;
+
+        CompoundTag skillsTag = nbt.getCompound("Skills");
+        for (String key : skillsTag.getAllKeys()) {
+            ResourceLocation id = new ResourceLocation(key);
+            CompoundTag stateTag = skillsTag.getCompound(key);
+
+            SkillState state = skills.computeIfAbsent(id, SkillState::new);
+            state.setLevel(stateTag.getInt("Level"));
+            // SkillRegistry might have different keys, ensure we match exactly "XP" or "Xp" 
+            // In SkillState it's getXp/setXp (lowercase p) but in serializeNBT it was "XP" usually
+            double xpVal = stateTag.contains("XP") ? stateTag.getDouble("XP") : stateTag.getDouble("Xp");
+            state.setXp(xpVal);
         }
     }
 }

@@ -16,6 +16,7 @@ public class PlayerStatsSyncPacket {
     public final int level, exp, statPoints;
     public final int jobLevel, jobExp, skillPoints;
     public final String jobId;
+    public final boolean baseStatPointsGranted;
     public final int str, agi, vit, intelligence, dex, luk;
     
     // Auth derived stats for HUD
@@ -27,6 +28,7 @@ public class PlayerStatsSyncPacket {
             double mana, double manaMax, double sp, double spMax,
             int level, int exp, int statPoints,
             int jobLevel, int jobExp, int skillPoints, String jobId,
+            boolean baseStatPointsGranted,
             int str, int agi, int vit, int intelligence, int dex, int luk,
             double physAtkMin, double physAtkMax, double magicAtk,
             double accuracy, double flee, double critChance,
@@ -43,6 +45,7 @@ public class PlayerStatsSyncPacket {
         this.jobExp = jobExp;
         this.skillPoints = skillPoints;
         this.jobId = jobId == null ? "" : jobId;
+        this.baseStatPointsGranted = baseStatPointsGranted;
         this.str = str;
         this.agi = agi;
         this.vit = vit;
@@ -70,6 +73,7 @@ public class PlayerStatsSyncPacket {
                 stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps2 ? ps2.getSPMax() : 100,
                 stats.getLevel(), stats.getExp(), stats.getStatPoints(),
                 stats.getJobLevel(), stats.getJobExp(), stats.getSkillPoints(), stats.getJobId(),
+                stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps3 ? ps3.isBaseStatPointsGranted() : true,
                 stats.getSTR(), stats.getAGI(), stats.getVIT(), stats.getINT(), stats.getDEX(), stats.getLUK(),
                 0, 0, 0, 0, 0, 0, 0, 0);
     }
@@ -87,6 +91,7 @@ public class PlayerStatsSyncPacket {
         buf.writeVarInt(m.jobExp);
         buf.writeVarInt(m.skillPoints);
         buf.writeUtf(m.jobId);
+        buf.writeBoolean(m.baseStatPointsGranted);
         buf.writeVarInt(m.str);
         buf.writeVarInt(m.agi);
         buf.writeVarInt(m.vit);
@@ -111,6 +116,7 @@ public class PlayerStatsSyncPacket {
                 buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
                 buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
                 buf.readUtf(),
+                buf.readBoolean(),
                 buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
                 buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
                 buf.readDouble(), buf.readDouble(), buf.readDouble(),

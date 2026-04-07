@@ -11,12 +11,13 @@ public record RagnarAttackRequest(
         int sequenceId,
         int comboIndex,
         boolean offHand,
+        int selectedSlot,
         List<RagnarTargetCandidate> candidates
 ) {
     /**
      * Create an empty request.
      */
     public static RagnarAttackRequest empty(int sequenceId) {
-        return new RagnarAttackRequest(sequenceId, 0, false, Collections.emptyList());
+        return new RagnarAttackRequest(sequenceId, 0, false, 0, Collections.emptyList());
     }
 }

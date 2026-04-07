@@ -16,14 +16,11 @@ import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 /**
  * StatComputer - Calculates derived stats by delegating to CombatMath.
  * All base formulas live in CombatMath (single source of truth).
- * This class adds skill bonuses and extended attribute reads on top.
  */
 public final class StatComputer {
 
-    private StatComputer() {
-    }
+    private StatComputer() {}
 
-    // Skill IDs
     private static final ResourceLocation SWORD_MASTERY = new ResourceLocation("ragnarmmo", "sword_mastery");
     private static final ResourceLocation DAGGER_MASTERY = new ResourceLocation("ragnarmmo", "dagger_mastery");
     private static final ResourceLocation MACE_MASTERY = new ResourceLocation("ragnarmmo", "mace_mastery");
@@ -41,17 +38,8 @@ public final class StatComputer {
     private static final ResourceLocation RESEARCH_WEAPONRY = new ResourceLocation("ragnarmmo", "research_weaponry");
     private static final ResourceLocation SKIN_TEMPERING = new ResourceLocation("ragnarmmo", "skin_tempering");
 
-    // Flee display cap (UI-only): flee values above 60% are capped for the HUD.
-    // Raw flee is still used in combat calculations (CombatMath.computeHitRate).
     private static final double FLEE_DISPLAY_MAX = 0.60;
 
-    // ========================================================================
-    // MAIN COMPUTE METHOD
-    // ========================================================================
-
-    /**
-     * SkillContext - Internal record to pass skill levels between resolvers.
-     */
     private record SkillContext(
             int sword, int dagger, int mace, int bow, int weaponTrainer,
             int faith, int arcaneRegen, int accuracy, int manaControl,
@@ -60,8 +48,8 @@ public final class StatComputer {
     ) {}
 
     public static DerivedStats compute(Player p, IPlayerStats s,
-            double weaponATK, double apsArma,
-            double spellBase, double armorEff, double equipMDEF, double baseCast) {
+            double weaponATK, double weaponAps,
+            double spellBase, double armorEff, double baseCast) {
 
         int STR = (int) Math.round(StatAttributes.getTotal(p, StatKeys.STR));
         int AGI = (int) Math.round(StatAttributes.getTotal(p, StatKeys.AGI));
@@ -76,7 +64,11 @@ public final class StatComputer {
 
         applyPhysicalOffense(p, d, STR, DEX, LUK, LVL, weaponATK, ctx);
         applyMagicalOffense(p, d, INT, DEX, LUK, LVL, spellBase);
-        applyDefense(p, d, VIT, AGI, INT, DEX, LVL, armorEff, equipMDEF, ctx);
+        
+        // Fetch equipMDEF internally to match 7-param API
+        double equipMDEF = p.getAttributeValue(RagnarAttributes.MAGIC_DEFENSE.get());
+        applyDefense(p, d, VIT, AGI, INT, DEX, LUK, LVL, armorEff, equipMDEF, ctx);
+        
         applyResources(p, d, STR, VIT, INT, LVL, s, ctx);
         applyMiscStats(p, d, AGI, DEX, INT, LUK, STR, baseCast);
 
@@ -85,7 +77,7 @@ public final class StatComputer {
     }
 
     private static SkillContext fetchSkillContext(Player p) {
-        var skillsOpt = PlayerSkillsProvider.get(p);
+        var skillsOpt = PlayerSkillsProvider.get(p).resolve();
         if (skillsOpt.isEmpty()) {
             return new SkillContext(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
@@ -105,118 +97,61 @@ public final class StatComputer {
     private static void applyPhysicalOffense(Player p, DerivedStats d, int STR, int DEX, int LUK, int LVL, double weaponATK, SkillContext ctx) {
         boolean isRanged = CombatMath.isRangedWeapon(p.getMainHandItem());
         double statusATK = CombatMath.computeStatusATK(STR, DEX, LUK, LVL, isRanged);
-
-        // Mastery Bonuses
         double masteryBonus = (ctx.sword + ctx.dagger + ctx.mace + ctx.bow + ctx.spear) * 0.5;
-
-        if (isKatar(p.getMainHandItem())) {
-            masteryBonus += (ctx.katar * 3.0);
-        }
-        if (isAxeOrMace(p.getMainHandItem())) {
-            masteryBonus += (ctx.researchWeaponry * 2.0);
-        }
-
+        if (isKatar(p.getMainHandItem())) masteryBonus += (ctx.katar * 3.0);
+        if (isAxeOrMace(p.getMainHandItem())) masteryBonus += (ctx.researchWeaponry * 2.0);
         double skillATK = masteryBonus + (ctx.weaponTrainer * 0.5);
-
-        if (isDualWielding(p)) {
-            skillATK += (ctx.rightHand * 2.0) + (ctx.leftHand * 2.0);
-        }
-
+        if (isDualWielding(p)) skillATK += (ctx.rightHand * 2.0) + (ctx.leftHand * 2.0);
         double dmgPhysRaw = CombatMath.computeWeaponATK(weaponATK, STR) + statusATK + skillATK;
-        double dmgPhysFloor = CombatMath.computeDamageVarianceFloor(dmgPhysRaw, DEX, LUK);
-
         d.physicalAttack = dmgPhysRaw;
-        d.physicalAttackMin = Math.max(0, dmgPhysFloor);
+        d.physicalAttackMin = Math.max(0, CombatMath.computeDamageVarianceFloor(dmgPhysRaw, DEX, LUK));
         d.physicalAttackMax = dmgPhysRaw;
-
-        // Hit
         double skillHitBonus = (ctx.bow * 1.0) + (ctx.accuracy * 2.0);
-        if (ctx.sonicAccel > 0 && isKatar(p.getMainHandItem())) {
-            skillHitBonus += (ctx.sonicAccel * 5.0);
-        }
-        if (ctx.researchWeaponry > 0 && isAxeOrMace(p.getMainHandItem())) {
-            skillHitBonus += (ctx.researchWeaponry * 2.0);
-        }
+        if (ctx.sonicAccel > 0 && isKatar(p.getMainHandItem())) skillHitBonus += (ctx.sonicAccel * 5.0);
+        if (ctx.researchWeaponry > 0 && isAxeOrMace(p.getMainHandItem())) skillHitBonus += (ctx.researchWeaponry * 2.0);
         d.accuracy = CombatMath.computeHIT(DEX, LUK, LVL, skillHitBonus);
-
-        // Critical
-        double extraCrit = getCritChance(p);
-        d.criticalChance = CombatMath.computeCritChance(LUK, DEX, extraCrit);
-
-        double extraCritDmg = getCritDamage(p);
-        d.criticalDamageMultiplier = CombatMath.computeCritDamageMultiplier(LUK, STR) + extraCritDmg;
-
+        d.criticalChance = CombatMath.computeCritChance(LUK, DEX, getCritChance(p));
+        d.criticalDamageMultiplier = CombatMath.computeCritDamageMultiplier(LUK, STR) + getCritDamage(p);
         d.perfectDodge = CombatMath.computePerfectDodge(LUK);
     }
 
     private static void applyMagicalOffense(Player p, DerivedStats d, int INT, int DEX, int LUK, int LVL, double spellBase) {
-        double statusMATK = CombatMath.computeStatusMATK(INT, DEX, LUK, LVL);
-        d.magicAttack = Math.max(0, spellBase + statusMATK);
+        d.magicAttack = Math.max(0, spellBase + CombatMath.computeStatusMATK(INT, DEX, LUK, LVL));
     }
 
-    private static void applyDefense(Player p, DerivedStats d, int VIT, int AGI, int INT, int DEX, int LVL, double armorEff, double equipMDEF, SkillContext ctx) {
-        // Physical Defense
+    private static void applyDefense(Player p, DerivedStats d, int VIT, int AGI, int INT, int DEX, int LUK, int LVL, double armorEff, double equipMDEF, SkillContext ctx) {
         double hardDEF = CombatMath.computeHardDEF(armorEff, VIT);
-        double extraDR = (ctx.skinTempering * 0.01);
-        d.physicalDamageReduction = CombatMath.computePhysDR(hardDEF) + extraDR;
+        d.physicalDamageReduction = CombatMath.computePhysDR(hardDEF) + (ctx.skinTempering * 0.01);
         d.defense = hardDEF;
-
-        // Magic Defense
         double mdefBase = CombatMath.computeMDEF(INT, VIT, DEX, LVL, equipMDEF);
         d.magicDamageReduction = CombatMath.computeMagicDR(mdefBase);
         d.magicDefense = mdefBase;
-
-        // Flee
-        double fleeD = CombatMath.computeFLEE(AGI, LUK, LVL, 0);
-        d.flee = Math.min(fleeD, FLEE_DISPLAY_MAX * 100.0);
+        d.flee = Math.min(CombatMath.computeFLEE(AGI, LUK, LVL, 0), FLEE_DISPLAY_MAX * 100.0);
     }
 
     private static void applyResources(Player p, DerivedStats d, int STR, int VIT, int INT, int LVL, IPlayerStats s, SkillContext ctx) {
-        // HP
-        double hpMax = CombatMath.computeMaxHP(VIT, LVL, s.getJobId());
-        hpMax += (ctx.faith * 10.0);
+        double hpMax = CombatMath.computeMaxHP(VIT, LVL, s.getJobId()) + (ctx.faith * 10.0);
         d.maxHealth = hpMax;
         d.healthRegenPerSecond = Math.max(0, CombatMath.computeHPRegen(VIT, hpMax));
-
-        // Mana
         double manaMax = CombatMath.computeMaxMana(INT, LVL, s.getJobId());
-        if (ctx.manaControl > 0) {
-            manaMax *= (1.0 + (ctx.manaControl * 0.03));
-        }
+        if (ctx.manaControl > 0) manaMax *= (1.0 + (ctx.manaControl * 0.03));
         d.maxMana = manaMax;
-
-        double manaRegenPerSec = CombatMath.computeManaRegen(INT, manaMax);
-        manaRegenPerSec += (ctx.arcaneRegen * 0.1);
-        d.manaRegenPerSecond = manaRegenPerSec;
-
-        // SP (Stamina)
+        d.manaRegenPerSecond = CombatMath.computeManaRegen(INT, manaMax) + (ctx.arcaneRegen * 0.1);
         double spMax = CombatMath.computeMaxSP(VIT, STR, LVL, s.getJobId());
         d.maxSP = spMax;
         d.spRegenPerSecond = CombatMath.computeSPRegen(STR, spMax);
     }
 
     private static void applyMiscStats(Player p, DerivedStats d, int AGI, int DEX, int INT, int LUK, int STR, double baseCast) {
-        // ASPD
-        boolean hasShield = p.getOffhandItem().canPerformAction(net.minecraftforge.common.ToolActions.SHIELD_BLOCK)
-                || p.getOffhandItem().getItem() instanceof net.minecraft.world.item.ShieldItem;
-
-        double aspdBonus = 0;
-        if (p.hasEffect(net.minecraft.world.effect.MobEffects.DIG_SPEED) && isAxeOrMace(p.getMainHandItem())) {
-            aspdBonus += 6.0;
-        }
-
+        boolean hasShield = p.getOffhandItem().canPerformAction(net.minecraftforge.common.ToolActions.SHIELD_BLOCK) || p.getOffhandItem().getItem() instanceof net.minecraft.world.item.ShieldItem;
+        double aspdBonus = (p.hasEffect(net.minecraft.world.effect.MobEffects.DIG_SPEED) && isAxeOrMace(p.getMainHandItem())) ? 6.0 : 0;
         int aspdRo = CombatMath.computeASPD_RO(CombatMath.getWeaponBaseASPD(p.getMainHandItem()), hasShield, AGI, DEX, aspdBonus);
         double aps = CombatMath.convertASPD_ToAPS(aspdRo);
-
         d.attackSpeed = aspdRo;
         d.globalCooldown = aps > 0 ? 1.0 / aps : 0.0;
         d.castTime = CombatMath.computeCastTime(baseCast, DEX, INT, false);
         d.lifeSteal = getLifeSteal(p);
     }
-
-    // ========================================================================
-    // EXTENDED ATTRIBUTE READERS (own RagnarAttributes registry)
-    // ========================================================================
 
     private static double getCritChance(Player p) {
         AttributeInstance attr = p.getAttribute(RagnarAttributes.CRIT_CHANCE.get());
@@ -238,26 +173,10 @@ public final class StatComputer {
     }
 
     private static boolean isDualWielding(Player p) {
-        net.minecraft.world.item.ItemStack main = p.getMainHandItem();
-        net.minecraft.world.item.ItemStack off = p.getOffhandItem();
-        return !main.isEmpty() && !off.isEmpty()
-                && main.getItem() instanceof net.minecraft.world.item.TieredItem
-                && off.getItem() instanceof net.minecraft.world.item.TieredItem
-                && !(off.getItem() instanceof net.minecraft.world.item.ShieldItem);
+        return !p.getMainHandItem().isEmpty() && !p.getOffhandItem().isEmpty() && p.getMainHandItem().getItem() instanceof net.minecraft.world.item.TieredItem && p.getOffhandItem().getItem() instanceof net.minecraft.world.item.TieredItem && !(p.getOffhandItem().getItem() instanceof net.minecraft.world.item.ShieldItem);
     }
 
     private static boolean isAxeOrMace(net.minecraft.world.item.ItemStack stack) {
-        if (stack.isEmpty())
-            return false;
-        net.minecraft.world.item.Item item = stack.getItem();
-        return item instanceof net.minecraft.world.item.AxeItem
-                || stack.getTags().anyMatch(t -> t.location().getPath().contains("maces"));
-    }
-
-    /**
-     * Public accessor for magical ATK calculation (used by skill effects).
-     */
-    public static double computeMagicalATK(int INT, int DEX, int LUK, int LVL) {
-        return CombatMath.computeStatusMATK(INT, DEX, LUK, LVL);
+        return !stack.isEmpty() && (stack.getItem() instanceof net.minecraft.world.item.AxeItem || stack.getTags().anyMatch(t -> t.location().getPath().contains("maces")));
     }
 }

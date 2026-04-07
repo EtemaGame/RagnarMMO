@@ -43,11 +43,10 @@ public final class BasicAttackEventHandler {
         if (resolution == null) {
             CombatDebugLog.logValidationReject(
                     new com.etema.ragnarmmo.combat.api.CombatRequestContext(
-                            attacker,
+                            (net.minecraft.server.level.ServerPlayer) event.getEntity(),
                             com.etema.ragnarmmo.combat.api.CombatActionType.BASIC_ATTACK,
-                            -1,
-                            0,
-                            false,
+                            0, 0, false, 
+                            ((net.minecraft.server.level.ServerPlayer) event.getEntity()).getInventory().selected,
                             null,
                             java.util.List.of()),
                     "basic_attack_service_returned_null");

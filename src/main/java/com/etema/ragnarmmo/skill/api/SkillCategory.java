@@ -7,7 +7,24 @@ package com.etema.ragnarmmo.skill.api;
 public enum SkillCategory {
     CLASS_PASSIVE("Class Tree"),
     LIFE("Life Skill"),
-    MISC("Misc");
+    MISC("Misc"),
+    
+    // Core Job Categories
+    NOVICE("Novice"),
+    SWORDSMAN("Swordsman"),
+    MAGE("Mage"),
+    ARCHER("Archer"),
+    THIEF("Thief"),
+    MERCHANT("Merchant"),
+    ACOLYTE("Acolyte"),
+    
+    // Advanced Job Categories
+    KNIGHT("Knight"),
+    WIZARD("Wizard"),
+    HUNTER("Hunter"),
+    ASSASSIN("Assassin"),
+    BLACKSMITH("Blacksmith"),
+    PRIEST("Priest");
 
     private final String displayName;
 

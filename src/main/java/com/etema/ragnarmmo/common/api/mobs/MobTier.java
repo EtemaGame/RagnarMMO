@@ -36,6 +36,10 @@ public enum MobTier {
         return this == BOSS || this == MVP;
     }
 
+    public boolean isBossLike() {
+        return this == MINI_BOSS || this == BOSS || this == MVP;
+    }
+
     public boolean shouldPersistWorldState() {
         return isMiniBossOrHigher();
     }

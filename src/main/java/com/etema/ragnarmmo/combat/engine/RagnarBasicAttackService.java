@@ -40,6 +40,7 @@ public class RagnarBasicAttackService {
                 actorState.getLastAcceptedSequenceId() + 1,
                 0,
                 false,
+                attacker.getInventory().selected,
                 null,
                 java.util.List.of(com.etema.ragnarmmo.combat.api.CombatTargetCandidate.betterCombat(target.getId(),
                         attacker.distanceTo(target))));

@@ -13,12 +13,12 @@ public record CombatRequestContext(
         int sequenceId,
         int comboIndex,
         boolean offHand,
+        int selectedSlot,
         String skillId,
         List<CombatTargetCandidate> candidates,
         Map<String, Object> metadata) {
     
-    public CombatRequestContext(ServerPlayer actor, CombatActionType actionType, int sequenceId, int comboIndex, boolean offHand, String skillId, List<CombatTargetCandidate> candidates) {
-        this(actor, actionType, sequenceId, comboIndex, offHand, skillId, candidates, java.util.Collections.emptyMap());
+    public CombatRequestContext(ServerPlayer actor, CombatActionType actionType, int sequenceId, int comboIndex, boolean offHand, int selectedSlot, String skillId, List<CombatTargetCandidate> candidates) {
+        this(actor, actionType, sequenceId, comboIndex, offHand, selectedSlot, skillId, candidates, java.util.Collections.emptyMap());
     }
 }
-

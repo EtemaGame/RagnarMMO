@@ -380,6 +380,20 @@ public final class CombatMath {
         return clamp(ASPD_MIN, APS_MAX, aps);
     }
 
+    /**
+     * @param mainHand Main hand item.
+     * @param offHand Off hand item.
+     * @param isOffHandAttack If the current attack originates from the off-hand.
+     */
+    public static double computeAPSForAttack(ItemStack mainHand, ItemStack offHand, boolean isOffHandAttack, int AGI, int DEX, double bonus) {
+        ItemStack activeWeapon = isOffHandAttack ? offHand : mainHand;
+        boolean hasShield = (!isOffHandAttack && offHand.getItem() instanceof net.minecraft.world.item.ShieldItem);
+        
+        int baseASPD = getWeaponBaseASPD(activeWeapon);
+        int aspdRO = computeASPD_RO(baseASPD, hasShield, AGI, DEX, bonus);
+        return convertASPD_ToAPS(aspdRO);
+    }
+
     public static double computeAPS(ItemStack weapon, boolean hasShield, int AGI, int DEX, double bonus) {
         int baseASPD = getWeaponBaseASPD(weapon);
         int aspdRO = computeASPD_RO(baseASPD, hasShield, AGI, DEX, bonus);
@@ -595,35 +609,37 @@ public final class CombatMath {
 
     public static class TargetStats {
         public final int vit;
-        public final int intStat;
+        public final int intel;
         public final int luk;
+        public final int agi;
+        public final int mdef;
 
-        public TargetStats(int vit, int intStat, int luk) {
+        public TargetStats(int vit, int intel, int luk, int agi, int mdef) {
             this.vit = vit;
-            this.intStat = intStat;
+            this.intel = intel;
             this.luk = luk;
+            this.agi = agi;
+            this.mdef = mdef;
         }
     }
 
     public static TargetStats getTargetStats(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player p) {
-            var capability = p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).resolve();
-            if (capability.isPresent()) {
-                var stats = capability.get();
-                return new TargetStats(stats.getVIT(), stats.getINT(), stats.getLUK());
+            var stats = p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).resolve();
+            if (stats.isPresent()) {
+                var s = stats.get();
+                // Fetch derived MDEF from computeMATK relative attributes (placeholder or actual attribute)
+                int mdefVal = (int) p.getAttributeValue(com.etema.ragnarmmo.common.api.attributes.RagnarAttributes.MAGIC_DEFENSE.get());
+                return new TargetStats(s.getVIT(), s.getINT(), s.getLUK(), s.getAGI(), mdefVal);
             }
         } else {
-            var capability = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(entity).resolve();
-            if (capability.isPresent()) {
-                var stats = capability.get();
-                return new TargetStats(
-                    stats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT),
-                    stats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT),
-                    stats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK)
-                );
+            var stats = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(entity).resolve();
+            if (stats.isPresent()) {
+                var s = stats.get();
+                return new TargetStats(s.getVit(), s.getInt(), s.getLuk(), s.getAgi(), (int)s.getMdef());
             }
         }
-        return new TargetStats(1, 1, 1);
+        return new TargetStats(1, 1, 1, 1, 0);
     }
 
     public static float computeStunChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {

@@ -16,18 +16,22 @@ public final class CombatDebugLog {
     }
 
     public static void logAttackRequest(CombatRequestContext ctx) {
-        LOGGER.debug("ATTACK_REQUEST actor={} seq={} combo={} offHand={} candidates={}",
-                actorName(ctx), ctx.sequenceId(), ctx.comboIndex(), ctx.offHand(), ctx.candidates().size());
+        LOGGER.debug("ATTACK_REQUEST actor={} seq={} combo={} offHand={} slot={} candidates={}",
+                actorName(ctx), ctx.sequenceId(), ctx.comboIndex(), ctx.offHand(), ctx.selectedSlot(),
+                ctx.candidates() != null ? ctx.candidates().size() : 0);
     }
 
     public static void logSkillRequest(CombatRequestContext ctx) {
-        LOGGER.debug("SKILL_REQUEST actor={} seq={} skill={} candidates={}",
-                actorName(ctx), ctx.sequenceId(), ctx.skillId(), ctx.candidates().size());
+        LOGGER.debug("SKILL_REQUEST actor={} seq={} skill={} slot={} candidates={}",
+                actorName(ctx), ctx.sequenceId(), ctx.skillId(), ctx.selectedSlot(),
+                ctx.candidates() != null ? ctx.candidates().size() : 0);
     }
 
     public static void logValidationReject(CombatRequestContext ctx, String reason) {
+        int seq = ctx != null ? ctx.sequenceId() : -1;
+        String action = ctx != null ? String.valueOf(ctx.actionType()) : "UNKNOWN";
         LOGGER.debug("VALIDATION_REJECT actor={} seq={} action={} reason={}",
-                actorName(ctx), ctx.sequenceId(), ctx.actionType(), reason);
+                actorName(ctx), seq, action, reason);
     }
 
     public static void logHitResolution(CombatResolution resolution) {

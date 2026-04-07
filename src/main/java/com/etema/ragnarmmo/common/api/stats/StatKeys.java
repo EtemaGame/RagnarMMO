@@ -4,8 +4,11 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Random;
 
+/**
+ * Core stats used for character progression and combat math.
+ */
 public enum StatKeys {
-    STR, AGI, VIT, INT, DEX, LUK;
+    STR, AGI, VIT, INT, DEX, LUK, LEVEL;
 
     public String id() {
         return name().toLowerCase(Locale.ROOT);
@@ -24,12 +27,7 @@ public enum StatKeys {
 
     public static StatKeys random(Random rng) {
         StatKeys[] values = values();
-        return values[rng.nextInt(values.length)];
+        // Exclude LEVEL from random attribute roll
+        return values[rng.nextInt(values.length - 1)];
     }
 }
-
-
-
-
-
-

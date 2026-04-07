@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.etema.ragnarmmo.combat.api.CombatHitResultType;
+import com.etema.ragnarmmo.combat.api.CombatRejectReason;
 import com.etema.ragnarmmo.combat.api.CombatRequestContext;
 import com.etema.ragnarmmo.combat.api.CombatResolution;
 import com.etema.ragnarmmo.combat.api.CombatTargetCandidate;
@@ -15,7 +16,6 @@ import com.etema.ragnarmmo.combat.api.RagnarAttackRequest;
 import com.etema.ragnarmmo.combat.api.RagnarTargetCandidate;
 import com.etema.ragnarmmo.combat.state.CombatActorState;
 import com.etema.ragnarmmo.combat.util.CombatDebugLog;
-import com.etema.ragnarmmo.combat.validation.AttackRequestValidator;
 import com.etema.ragnarmmo.combat.targeting.RagnarTargetResolver;
 import com.etema.ragnarmmo.combat.targeting.ServerAuthoritativeTargetResolver;
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
@@ -59,21 +59,12 @@ public class RagnarCombatEngine {
 
     public void processBasicAttackRequest(ServerPlayer player, RagnarAttackRequest request) {
         CombatActorState state = state(player);
-        
-        // 1. Structural/Protocol Validation
-        String reject = AttackRequestValidator.validate(player, request, state);
-        if (reject != null) {
-            CombatDebugLog.logValidationReject(null, "PROTO_REJECT: " + reject);
-            return;
-        }
+        long now = player.serverLevel().getGameTime();
 
-        // 2. Authoritative Target Resolution
+        // 1. Initial Authoritative Target Resolution
         List<LivingEntity> targets = targetResolver.resolveCandidates(player, request.candidates());
-        if (targets.isEmpty()) {
-            return;
-        }
-
-        // 3. Normalized Request Context
+        
+        // 2. Normalized Request Context
         List<CombatTargetCandidate> candidates = targets.stream()
                 .map(t -> new CombatTargetCandidate(t.getId(), "domain", 0, false))
                 .toList();
@@ -84,8 +75,16 @@ public class RagnarCombatEngine {
                 request.sequenceId(),
                 request.comboIndex(),
                 request.offHand(),
+                request.selectedSlot(),
                 null,
                 candidates);
+
+        // 3. Complete Server Validation
+        CombatRejectReason reject = validationService.validateBasicAttack(ctx, state, now, cooldownService);
+        if (reject != null) {
+            CombatDebugLog.logValidationReject(ctx, "REJECTED_" + reject.name());
+            return;
+        }
 
         handleBasicAttackRequest(ctx);
     }
@@ -96,12 +95,6 @@ public class RagnarCombatEngine {
         long nowTick = attacker.serverLevel().getGameTime();
         CombatActorState actorState = state(attacker);
 
-        String reject = validationService.validateBasicAttack(ctx, actorState, nowTick, cooldownService);
-        if (reject != null) {
-            CombatDebugLog.logValidationReject(ctx, reject);
-            return Collections.emptyList();
-        }
-
         actorState.setLastAcceptedSequenceId(ctx.sequenceId());
 
         // Attacker Data (Authoritative)
@@ -111,14 +104,23 @@ public class RagnarCombatEngine {
         DerivedStats attackerDerived = StatResolutionService.computeAuthoritative(attacker, attackerStats);
         if (attackerDerived == null) return Collections.emptyList();
 
-        // ASPD math determines cooldown ticks
-        double aps = CombatMath.convertASPD_ToAPS((int) attackerDerived.attackSpeed);
+        // ASPD math determines cooldown ticks - Explicit Hand Resolution
+        int agi = (int) StatAttributes.getTotal(attacker, StatKeys.AGI);
+        int dex = (int) StatAttributes.getTotal(attacker, StatKeys.DEX);
+        double aps = CombatMath.computeAPSForAttack(
+                attacker.getMainHandItem(), 
+                attacker.getOffhandItem(), 
+                ctx.offHand(), 
+                agi, 
+                dex, 
+                0.0);
+        
         int cooldownTicks = (int) Math.max(2, 20.0 / aps);
         cooldownService.markBasicAttackUsed(actorState.getCooldowns(), nowTick, cooldownTicks);
 
         List<CombatResolution> results = new ArrayList<>();
         for (CombatTargetCandidate candidate : ctx.candidates()) {
-            CombatResolution resolution = resolveSingleBasicHit(attacker, attackerDerived, candidate);
+            CombatResolution resolution = resolveSingleBasicHit(attacker, attackerDerived, candidate, ctx.offHand());
             results.add(resolution);
             applyResolution(attacker, resolution);
             CombatDebugLog.logHitResolution(resolution);
@@ -126,7 +128,8 @@ public class RagnarCombatEngine {
         return results;
     }
 
-    private CombatResolution resolveSingleBasicHit(ServerPlayer attacker, DerivedStats attackerDerived, CombatTargetCandidate candidate) {
+    private CombatResolution resolveSingleBasicHit(ServerPlayer attacker, DerivedStats attackerDerived, 
+                                                   CombatTargetCandidate candidate, boolean isOffHand) {
         net.minecraft.world.entity.Entity targetEntity = attacker.serverLevel().getEntity(candidate.entityId());
         if (!(targetEntity instanceof LivingEntity target)) {
             return CombatResolution.miss(attacker.getId(), candidate.entityId());
@@ -134,7 +137,7 @@ public class RagnarCombatEngine {
 
         // Attacker Data from authoritative source
         int lvl = (int) StatAttributes.getTotal(attacker, StatKeys.LEVEL);
-        ItemStack weapon = attacker.getMainHandItem();
+        ItemStack weapon = isOffHand ? attacker.getOffhandItem() : attacker.getMainHandItem();
         
         double totalBaseAtk = attackerDerived.physicalAttack;
         double accuracy = attackerDerived.accuracy;
@@ -185,9 +188,6 @@ public class RagnarCombatEngine {
 
     private record DefenderStats(double flee, double critShield, double perfectDodge, 
                                  int vit, int agi, int luk, int lvl, double armorEff, com.etema.ragnarmmo.combat.element.ElementType element) {
-        public DefenderStats(double flee, double critShield, double perfectDodge, int vit, int agi, int luk, int lvl, double armorEff) {
-            this(flee, critShield, pd, vit, agi, luk, lvl, armorEff, com.etema.ragnarmmo.combat.element.ElementType.NEUTRAL);
-        }
     }
 
     private DefenderStats fetchDefenderStats(LivingEntity target) {
@@ -238,9 +238,9 @@ public class RagnarCombatEngine {
         long nowTick = ctx.actor().serverLevel().getGameTime();
         CombatActorState actorState = state(ctx.actor());
 
-        String reject = validationService.validateSkillRequest(ctx, actorState, nowTick, cooldownService);
+        CombatRejectReason reject = validationService.validateSkillRequest(ctx, actorState, nowTick, cooldownService);
         if (reject != null) {
-            CombatDebugLog.logValidationReject(ctx, reject);
+            CombatDebugLog.logValidationReject(ctx, "REJECTED_" + reject.name());
             return Collections.emptyList();
         }
 

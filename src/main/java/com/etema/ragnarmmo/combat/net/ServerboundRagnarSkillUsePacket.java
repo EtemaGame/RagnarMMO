@@ -17,12 +17,16 @@ public class ServerboundRagnarSkillUsePacket {
     private final int sequenceId;
     private final String skillId;
     private final int skillLevel;
+    private final int selectedSlot;
+    private final boolean offHand;
     private final int[] candidateTargetIds;
 
-    public ServerboundRagnarSkillUsePacket(int sequenceId, String skillId, int skillLevel, int[] candidateTargetIds) {
+    public ServerboundRagnarSkillUsePacket(int sequenceId, String skillId, int skillLevel, int selectedSlot, boolean offHand, int[] candidateTargetIds) {
         this.sequenceId = sequenceId;
         this.skillId = skillId == null ? "" : skillId;
         this.skillLevel = skillLevel;
+        this.selectedSlot = selectedSlot;
+        this.offHand = offHand;
         this.candidateTargetIds = candidateTargetIds == null ? new int[0] : candidateTargetIds;
     }
 
@@ -30,6 +34,8 @@ public class ServerboundRagnarSkillUsePacket {
         this.sequenceId = buf.readInt();
         this.skillId = buf.readUtf();
         this.skillLevel = buf.readInt();
+        this.selectedSlot = buf.readInt();
+        this.offHand = buf.readBoolean();
         this.candidateTargetIds = buf.readVarIntArray();
     }
 
@@ -37,6 +43,8 @@ public class ServerboundRagnarSkillUsePacket {
         buf.writeInt(sequenceId);
         buf.writeUtf(skillId);
         buf.writeInt(skillLevel);
+        buf.writeInt(selectedSlot);
+        buf.writeBoolean(offHand);
         buf.writeVarIntArray(candidateTargetIds);
     }
 
@@ -48,23 +56,22 @@ public class ServerboundRagnarSkillUsePacket {
                 return;
             }
 
-            // basic payload protection
             if (msg.candidateTargetIds.length > 20) {
                 return;
             }
 
             List<com.etema.ragnarmmo.combat.api.CombatTargetCandidate> candidates = new ArrayList<>(msg.candidateTargetIds.length);
             for (int id : msg.candidateTargetIds) {
-                // Determine source or use neutral fallback
                 candidates.add(new com.etema.ragnarmmo.combat.api.CombatTargetCandidate(id, "domain", 0.0D, false));
             }
 
             RagnarCombatEngine.get().handleSkillUseRequest(new CombatRequestContext(
                     player,
-                    CombatActionType.SKILL,
+                    CombatActionType.SKILL_USE, // Updated to match Skill Resolver expected type
                     msg.sequenceId,
                     0,
-                    false,
+                    msg.offHand,
+                    msg.selectedSlot,
                     msg.skillId,
                     candidates,
                     java.util.Map.of("level", msg.skillLevel)));

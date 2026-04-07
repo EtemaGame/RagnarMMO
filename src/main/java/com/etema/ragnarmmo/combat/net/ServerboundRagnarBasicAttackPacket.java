@@ -69,6 +69,7 @@ public class ServerboundRagnarBasicAttackPacket {
                     msg.sequenceId,
                     msg.comboIndex,
                     msg.offHand,
+                    msg.selectedSlot,
                     candidates);
 
             RagnarCombatEngine.get().processBasicAttackRequest(player, request);

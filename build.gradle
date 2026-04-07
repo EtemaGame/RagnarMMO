@@ -179,10 +179,10 @@ dependencies {
     // Mixin annotation processor (Forge 1.20.1 bundles SpongePowered mixin at runtime)
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
-    // Better Combat Integration
-    implementation fg.deobf("curse.maven:better-combat-by-zsoltmoly-639842:4685418")
-    implementation fg.deobf("curse.maven:cloth-config-348521:5729105")
-    implementation fg.deobf("curse.maven:playeranimator-658587:4587214")
+    // Better Combat Integration (Optional, reflection-based bridge)
+    compileOnly fg.deobf("curse.maven:better-combat-by-zsoltmoly-639842:4685418")
+    compileOnly fg.deobf("curse.maven:cloth-config-348521:5729105")
+    compileOnly fg.deobf("curse.maven:playeranimator-658587:4587214")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

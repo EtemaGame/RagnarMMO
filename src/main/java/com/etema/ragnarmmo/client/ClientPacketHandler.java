@@ -150,12 +150,7 @@ public final class ClientPacketHandler {
             return;
 
         PlayerSkillsProvider.get(mc.player).ifPresent(manager -> {
-            if (manager instanceof com.etema.ragnarmmo.skill.runtime.SkillManager sm) {
-                sm.applyClientMirror(data);
-            } else {
-                // Fallback for non-concrete (should not happen on player)
-                manager.deserializeNBT(data);
-            }
+            manager.applyClientMirror(data);
         });
     }
 

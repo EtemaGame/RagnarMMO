@@ -262,6 +262,10 @@ public class PlayerStats implements IPlayerStats {
         markDirty(RoPlayerSyncDomain.PROGRESSION);
     }
 
+    public boolean isBaseStatPointsGranted() {
+        return baseStatPointsGranted;
+    }
+
     @Override
     public void setBaseStatPointsGranted(boolean granted) {
         this.baseStatPointsGranted = granted;
@@ -412,22 +416,32 @@ public class PlayerStats implements IPlayerStats {
     public void applyMirrorState(com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket msg) {
         int mask = msg.syncMask;
 
-        if (com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.has(mask, com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS)) {
-            for (StatKeys key : StatKeys.values()) {
-                int val = msg.stats.get(key);
-                this.stats.set(key, val);
-                syncAttribute(key, val);
-            }
+        if (com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.includes(mask, com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS)) {
+            // Apply base stat values directly
+            this.stats.set(StatKeys.STR, msg.str);
+            this.stats.set(StatKeys.AGI, msg.agi);
+            this.stats.set(StatKeys.VIT, msg.vit);
+            this.stats.set(StatKeys.INT, msg.intelligence);
+            this.stats.set(StatKeys.DEX, msg.dex);
+            this.stats.set(StatKeys.LUK, msg.luk);
+
+            // Synchronize Forge attributes WITHOUT dirtying
+            syncAttribute(StatKeys.STR, msg.str);
+            syncAttribute(StatKeys.AGI, msg.agi);
+            syncAttribute(StatKeys.VIT, msg.vit);
+            syncAttribute(StatKeys.INT, msg.intelligence);
+            syncAttribute(StatKeys.DEX, msg.dex);
+            syncAttribute(StatKeys.LUK, msg.luk);
         }
 
-        if (com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.has(mask, com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.RESOURCES)) {
+        if (com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.includes(mask, com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.RESOURCES)) {
             this.mana = msg.mana;
             this.manaMax = msg.manaMax;
             this.sp = msg.sp;
             this.spMax = msg.spMax;
         }
 
-        if (com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.has(mask, com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.PROGRESSION)) {
+        if (com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.includes(mask, com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.PROGRESSION)) {
             this.level = msg.level;
             this.exp = msg.exp;
             this.statPoints = msg.statPoints;

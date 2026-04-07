@@ -47,10 +47,18 @@ public class ServerboundRagnarSkillUsePacket {
             if (player == null) {
                 return;
             }
-            List<CombatTargetCandidate> candidates = new ArrayList<>(msg.candidateTargetIds.length);
-            for (int id : msg.candidateTargetIds) {
-                candidates.add(CombatTargetCandidate.betterCombat(id, 0.0D));
+
+            // basic payload protection
+            if (msg.candidateTargetIds.length > 20) {
+                return;
             }
+
+            List<com.etema.ragnarmmo.combat.api.CombatTargetCandidate> candidates = new ArrayList<>(msg.candidateTargetIds.length);
+            for (int id : msg.candidateTargetIds) {
+                // Determine source or use neutral fallback
+                candidates.add(new com.etema.ragnarmmo.combat.api.CombatTargetCandidate(id, "domain", 0.0D, false));
+            }
+
             RagnarCombatEngine.get().handleSkillUseRequest(new CombatRequestContext(
                     player,
                     CombatActionType.SKILL,

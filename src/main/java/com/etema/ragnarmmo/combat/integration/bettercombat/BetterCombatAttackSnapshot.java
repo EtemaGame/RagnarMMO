@@ -1,4 +1,4 @@
-package com.etema.ragnarmmo.combat.bridge;
+package com.etema.ragnarmmo.combat.integration.bettercombat;
 
 import java.util.List;
 

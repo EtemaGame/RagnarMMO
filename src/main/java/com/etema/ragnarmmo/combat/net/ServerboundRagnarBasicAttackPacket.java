@@ -52,18 +52,26 @@ public class ServerboundRagnarBasicAttackPacket {
             if (player == null) {
                 return;
             }
-            List<CombatTargetCandidate> candidates = new ArrayList<>(msg.candidateTargetIds.length);
-            for (int id : msg.candidateTargetIds) {
-                candidates.add(CombatTargetCandidate.betterCombat(id, 0.0D));
+
+            // basic payload protection
+            if (msg.candidateTargetIds.length > 20) {
+                return;
             }
-            RagnarCombatEngine.get().handleBasicAttackRequest(new CombatRequestContext(
-                    player,
-                    CombatActionType.BASIC_ATTACK,
+
+            // Convert to domain candidates using integration adaptors if necessary
+            List<com.etema.ragnarmmo.combat.api.RagnarTargetCandidate> candidates = new java.util.ArrayList<>(msg.candidateTargetIds.length);
+            for (int id : msg.candidateTargetIds) {
+                // In the future, this source could be determined by a packet flag
+                candidates.add(com.etema.ragnarmmo.combat.integration.bettercombat.BetterCombatTargetAdapter.fromEntityId(id));
+            }
+
+            com.etema.ragnarmmo.combat.api.RagnarAttackRequest request = new com.etema.ragnarmmo.combat.api.RagnarAttackRequest(
                     msg.sequenceId,
                     msg.comboIndex,
                     msg.offHand,
-                    null,
-                    candidates));
+                    candidates);
+
+            RagnarCombatEngine.get().processBasicAttackRequest(player, request);
         });
         ctx.setPacketHandled(true);
     }

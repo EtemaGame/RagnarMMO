@@ -11,13 +11,17 @@ import com.etema.ragnarmmo.combat.api.CombatHitResultType;
 import com.etema.ragnarmmo.combat.api.CombatRequestContext;
 import com.etema.ragnarmmo.combat.api.CombatResolution;
 import com.etema.ragnarmmo.combat.api.CombatTargetCandidate;
+import com.etema.ragnarmmo.combat.api.RagnarAttackRequest;
+import com.etema.ragnarmmo.combat.api.RagnarTargetCandidate;
 import com.etema.ragnarmmo.combat.state.CombatActorState;
 import com.etema.ragnarmmo.combat.util.CombatDebugLog;
+import com.etema.ragnarmmo.combat.validation.AttackRequestValidator;
+import com.etema.ragnarmmo.combat.targeting.RagnarTargetResolver;
+import com.etema.ragnarmmo.combat.targeting.ServerAuthoritativeTargetResolver;
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.system.stats.compute.CombatMath;
-import com.etema.ragnarmmo.system.stats.compute.StatComputer;
 import com.etema.ragnarmmo.system.stats.compute.StatResolutionService;
 import com.etema.ragnarmmo.common.api.compute.DerivedStats;
 import com.etema.ragnarmmo.common.util.DamageProcessingGuard;
@@ -39,6 +43,7 @@ public class RagnarCombatEngine {
     private final RagnarDamageCalculator damageCalculator = new RagnarDamageCalculator();
     private final RagnarSkillResolver skillResolver = new RagnarSkillResolver(hitCalculator, damageCalculator);
     private final RagnarCombatFeedbackService feedbackService = new RagnarCombatFeedbackService();
+    private final RagnarTargetResolver targetResolver = new ServerAuthoritativeTargetResolver();
     private final Map<UUID, CombatActorState> actorStates = new ConcurrentHashMap<>();
 
     private RagnarCombatEngine() {
@@ -50,6 +55,39 @@ public class RagnarCombatEngine {
 
     public CombatActorState state(ServerPlayer player) {
         return actorStates.computeIfAbsent(player.getUUID(), ignored -> new CombatActorState());
+    }
+
+    public void processBasicAttackRequest(ServerPlayer player, RagnarAttackRequest request) {
+        CombatActorState state = state(player);
+        
+        // 1. Structural/Protocol Validation
+        String reject = AttackRequestValidator.validate(player, request, state);
+        if (reject != null) {
+            CombatDebugLog.logValidationReject(null, "PROTO_REJECT: " + reject);
+            return;
+        }
+
+        // 2. Authoritative Target Resolution
+        List<LivingEntity> targets = targetResolver.resolveCandidates(player, request.candidates());
+        if (targets.isEmpty()) {
+            return;
+        }
+
+        // 3. Normalized Request Context
+        List<CombatTargetCandidate> candidates = targets.stream()
+                .map(t -> new CombatTargetCandidate(t.getId(), "domain", 0, false))
+                .toList();
+
+        CombatRequestContext ctx = new CombatRequestContext(
+                player,
+                com.etema.ragnarmmo.combat.api.CombatActionType.BASIC_ATTACK,
+                request.sequenceId(),
+                request.comboIndex(),
+                request.offHand(),
+                null,
+                candidates);
+
+        handleBasicAttackRequest(ctx);
     }
 
     public List<CombatResolution> handleBasicAttackRequest(CombatRequestContext ctx) {
@@ -146,7 +184,11 @@ public class RagnarCombatEngine {
     }
 
     private record DefenderStats(double flee, double critShield, double perfectDodge, 
-                                 int vit, int agi, int luk, int lvl, double armorEff) {}
+                                 int vit, int agi, int luk, int lvl, double armorEff, com.etema.ragnarmmo.combat.element.ElementType element) {
+        public DefenderStats(double flee, double critShield, double perfectDodge, int vit, int agi, int luk, int lvl, double armorEff) {
+            this(flee, critShield, pd, vit, agi, luk, lvl, armorEff, com.etema.ragnarmmo.combat.element.ElementType.NEUTRAL);
+        }
+    }
 
     private DefenderStats fetchDefenderStats(LivingEntity target) {
         if (target instanceof ServerPlayer tp) {
@@ -165,7 +207,7 @@ public class RagnarCombatEngine {
                 double criticalShield = Math.floor(lvl / 15.0) + Math.floor(luk / 5.0);
                 double armorEff = d.defense; 
                 
-                return new DefenderStats(flee, criticalShield, pd, vit, agi, luk, lvl, armorEff);
+                return new DefenderStats(flee, criticalShield, pd, vit, agi, luk, lvl, armorEff, com.etema.ragnarmmo.combat.element.ElementType.NEUTRAL);
             }
         } else if (target instanceof net.minecraft.world.entity.Mob mob) {
             var mobStatsOpt = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(mob);

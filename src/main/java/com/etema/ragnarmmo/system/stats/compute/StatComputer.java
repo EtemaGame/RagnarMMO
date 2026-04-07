@@ -76,6 +76,15 @@ public final class StatComputer {
         return d;
     }
 
+    /**
+     * Compatibility overload for legacy callers using 8 parameters.
+     */
+    public static DerivedStats compute(Player p, IPlayerStats s,
+            double weaponATK, double weaponAps,
+            double spellBase, double armorEff, double equipMdef, double legacyScale) {
+        return compute(p, s, weaponATK, weaponAps, spellBase, armorEff, equipMdef);
+    }
+
     private static SkillContext fetchSkillContext(Player p) {
         var skillsOpt = PlayerSkillsProvider.get(p).resolve();
         if (skillsOpt.isEmpty()) {

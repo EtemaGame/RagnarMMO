@@ -628,15 +628,19 @@ public final class CombatMath {
             var stats = p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).resolve();
             if (stats.isPresent()) {
                 var s = stats.get();
-                // Fetch derived MDEF from computeMATK relative attributes (placeholder or actual attribute)
-                int mdefVal = (int) p.getAttributeValue(com.etema.ragnarmmo.common.api.attributes.RagnarAttributes.MAGIC_DEFENSE.get());
-                return new TargetStats(s.getVIT(), s.getINT(), s.getLUK(), s.getAGI(), mdefVal);
+                return new TargetStats(
+                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT),
+                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT),
+                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK),
+                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.AGI),
+                    0 // MDEF legacy fallback
+                );
             }
         } else {
             var stats = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(entity).resolve();
             if (stats.isPresent()) {
                 var s = stats.get();
-                return new TargetStats(s.getVit(), s.getInt(), s.getLuk(), s.getAgi(), (int)s.getMdef());
+                return new TargetStats(s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT), s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT), s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK), s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.AGI), 0);
             }
         }
         return new TargetStats(1, 1, 1, 1, 0);

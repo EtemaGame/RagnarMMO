@@ -46,6 +46,7 @@ public interface IPlayerStats {
     boolean consumeSP(double amount);
 
     void setManaMaxClient(double v);
+    void setSPMaxClient(double v);
 
     int getLevel();
     void setLevel(int lvl);
@@ -72,6 +73,7 @@ public interface IPlayerStats {
     void setSkillPoints(int pts);
 
     void setBaseStatPointsGranted(boolean granted);
+    void ensureBaseStatBaseline(int baseline);
 
     int addExpAndProcessLevelUps(int expToAdd, int pointsPerLevel,
                                  IntUnaryOperator expToNextFunc);
@@ -83,6 +85,7 @@ public interface IPlayerStats {
 
     void markDirty();
     boolean consumeDirty();
+    boolean consumeDirtyMask();
 
     net.minecraft.nbt.CompoundTag serializeNBT();
     void deserializeNBT(net.minecraft.nbt.CompoundTag nbt);

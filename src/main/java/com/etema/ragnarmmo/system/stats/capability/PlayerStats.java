@@ -204,6 +204,13 @@ public class PlayerStats implements IPlayerStats {
     }
 
     @Override
+    public void setSPMaxClient(double v) {
+        this.spMax = v;
+        this.sp = Math.min(sp, spMax);
+        markDirty(RoPlayerSyncDomain.RESOURCES);
+    }
+
+    @Override
     public int getLevel() { return level; }
     @Override
     public void setLevel(int lvl) {
@@ -259,6 +266,14 @@ public class PlayerStats implements IPlayerStats {
     public void setBaseStatPointsGranted(boolean granted) {
         this.baseStatPointsGranted = granted;
         markDirty(RoPlayerSyncDomain.PROGRESSION);
+    }
+
+    @Override
+    public void ensureBaseStatBaseline(int baseline) {
+        if (!baseStatPointsGranted) {
+            setStatPoints(getStatPoints() + baseline);
+            setBaseStatPointsGranted(true);
+        }
     }
 
     @Override
@@ -375,6 +390,11 @@ public class PlayerStats implements IPlayerStats {
         int m = dirtyMask;
         dirtyMask = 0;
         return m != 0;
+    }
+
+    @Override
+    public boolean consumeDirtyMask() {
+        return consumeDirty();
     }
 
     public void markDirty(RoPlayerSyncDomain... d) {

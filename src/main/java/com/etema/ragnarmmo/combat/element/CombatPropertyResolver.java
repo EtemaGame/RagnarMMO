@@ -94,7 +94,7 @@ public final class CombatPropertyResolver {
         if (entity instanceof net.minecraft.world.entity.Mob mob) {
             var stats = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(mob);
             if (stats.isPresent()) {
-        return stats.resolve().map(com.etema.ragnarmmo.system.mobstats.core.capability.MobStats::getElement)
+        return stats.resolve().map(com.etema.ragnarmmo.system.mobstats.core.MobStats::getElement)
                 .orElse(com.etema.ragnarmmo.combat.element.ElementType.NEUTRAL);
             }
         }

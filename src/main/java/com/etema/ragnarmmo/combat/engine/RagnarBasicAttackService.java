@@ -45,9 +45,9 @@ public class RagnarBasicAttackService {
                 java.util.List.of(com.etema.ragnarmmo.combat.api.CombatTargetCandidate.betterCombat(target.getId(),
                         attacker.distanceTo(target))));
 
-        String reject = validationService.validateBasicAttack(ctx, actorState, nowTick, cooldownService);
+        com.etema.ragnarmmo.combat.api.CombatRejectReason reject = validationService.validateBasicAttack(ctx, actorState, nowTick, cooldownService);
         if (reject != null) {
-            CombatDebugLog.logValidationReject(ctx, reject);
+            CombatDebugLog.logValidationReject(ctx, reject.name());
             return null;
         }
 
@@ -62,6 +62,7 @@ public class RagnarBasicAttackService {
         DerivedStats attackerDerived = RagnarCoreAPI
                 .computeDerivedStats(attacker, attackerStats, weaponAtk, 1.0D, 0.0D, target.getArmorValue(), 1.0D)
                 .orElse(null);
+
         if (attackerDerived == null) {
             CombatDebugLog.logValidationReject(ctx, "missing_attacker_derived_stats");
             return null;

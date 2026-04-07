@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import com.etema.ragnarmmo.combat.api.CombatActionType;
+import static com.etema.ragnarmmo.combat.api.CombatActionType.SKILL;
 import com.etema.ragnarmmo.combat.api.CombatRequestContext;
 import com.etema.ragnarmmo.combat.api.CombatTargetCandidate;
 import com.etema.ragnarmmo.combat.engine.RagnarCombatEngine;
@@ -67,7 +67,7 @@ public class ServerboundRagnarSkillUsePacket {
 
             RagnarCombatEngine.get().handleSkillUseRequest(new CombatRequestContext(
                     player,
-                    CombatActionType.SKILL_USE, // Updated to match Skill Resolver expected type
+                    com.etema.ragnarmmo.combat.api.CombatActionType.SKILL,
                     msg.sequenceId,
                     0,
                     msg.offHand,

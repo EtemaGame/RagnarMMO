@@ -85,7 +85,7 @@ public interface IPlayerStats {
 
     void markDirty();
     boolean consumeDirty();
-    boolean consumeDirtyMask();
+    int consumeDirtyMask();
 
     net.minecraft.nbt.CompoundTag serializeNBT();
     void deserializeNBT(net.minecraft.nbt.CompoundTag nbt);

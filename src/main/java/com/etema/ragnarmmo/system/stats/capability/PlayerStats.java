@@ -387,14 +387,14 @@ public class PlayerStats implements IPlayerStats {
     public void markDirty() { dirtyMask = RoPlayerSyncDomain.allMask(); }
     @Override
     public boolean consumeDirty() {
-        int m = dirtyMask;
-        dirtyMask = 0;
-        return m != 0;
+        return consumeDirtyMask() != 0;
     }
 
     @Override
-    public boolean consumeDirtyMask() {
-        return consumeDirty();
+    public int consumeDirtyMask() {
+        int m = dirtyMask;
+        dirtyMask = 0;
+        return m;
     }
 
     public void markDirty(RoPlayerSyncDomain... d) {

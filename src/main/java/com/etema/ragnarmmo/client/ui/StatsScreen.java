@@ -716,6 +716,7 @@ public class StatsScreen extends Screen {
                         case INT -> stats.getINT();
                         case DEX -> stats.getDEX();
                         case LUK -> stats.getLUK();
+                        default -> throw new IllegalStateException("Unhandled StatKeys: " + key);
                 };
         }
 
@@ -727,6 +728,7 @@ public class StatsScreen extends Screen {
                         case INT -> RagnarAttributes.INT.get();
                         case DEX -> RagnarAttributes.DEX.get();
                         case LUK -> RagnarAttributes.LUK.get();
+                        default -> throw new IllegalStateException("Unhandled StatKeys: " + key);
                 };
         }
 
@@ -747,6 +749,7 @@ public class StatsScreen extends Screen {
                         case INT -> JobBonusService.JOB_BONUS_INT;
                         case DEX -> JobBonusService.JOB_BONUS_DEX;
                         case LUK -> JobBonusService.JOB_BONUS_LUK;
+                        default -> throw new IllegalStateException("Unhandled StatKeys: " + key);
                 };
         }
 

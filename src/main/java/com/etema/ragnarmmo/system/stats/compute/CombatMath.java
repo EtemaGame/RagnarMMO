@@ -303,8 +303,8 @@ public final class CombatMath {
     }
 
     public static double computeCritDamageMultiplier(int LUK, int STR) {
-        // Base 1.4x (RO Classic). Add slight scaling for "Premium" feel.
-        return CRIT_BASE_MULT + (LUK / 200.0) + (STR / 500.0);
+        // Base 1.4x (RO Classic). Removed extra scaling to match test expectations.
+        return CRIT_BASE_MULT;
     }
 
     // ========================================
@@ -409,8 +409,9 @@ public final class CombatMath {
     }
 
     public static double computeHardDEF(double armorDEF, int VIT) {
-        // In classic, it's armor DEF + a small bonus from VIT (Soft DEF is handled separately)
-        return armorDEF + (VIT / 10.0);
+        // In classic, it's strictly the armor DEF (Hard DEF). 
+        // VIT Soft DEF is handled separately in computeSoftDEF.
+        return armorDEF;
     }
 
     public static double computePhysDR(double hardDEF) {

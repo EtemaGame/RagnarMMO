@@ -18,6 +18,8 @@ import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.system.stats.compute.CombatMath;
 import com.etema.ragnarmmo.system.stats.compute.StatComputer;
+import com.etema.ragnarmmo.system.stats.compute.StatResolutionService;
+import com.etema.ragnarmmo.common.api.compute.DerivedStats;
 import com.etema.ragnarmmo.common.util.DamageProcessingGuard;
 
 import net.minecraft.server.level.ServerPlayer;
@@ -63,20 +65,22 @@ public class RagnarCombatEngine {
         }
 
         actorState.setLastAcceptedSequenceId(ctx.sequenceId());
-        
+
+        // Attacker Data (Authoritative)
+        var attackerStats = RagnarCoreAPI.get(attacker).orElse(null);
+        if (attackerStats == null) return Collections.emptyList();
+
+        DerivedStats attackerDerived = StatResolutionService.computeAuthoritative(attacker, attackerStats);
+        if (attackerDerived == null) return Collections.emptyList();
+
         // ASPD math determines cooldown ticks
-        var statsOpt = RagnarCoreAPI.get(attacker);
-        double aps = 1.0;
-        if (statsOpt.isPresent()) {
-            var s = statsOpt.get();
-            aps = CombatMath.computeAPS(attacker.getMainHandItem(), !attacker.getOffhandItem().isEmpty(), s.getAGI(), s.getDEX(), 0.0);
-        }
+        double aps = CombatMath.convertASPD_ToAPS((int) attackerDerived.attackSpeed);
         int cooldownTicks = (int) Math.max(2, 20.0 / aps);
         cooldownService.markBasicAttackUsed(actorState.getCooldowns(), nowTick, cooldownTicks);
 
         List<CombatResolution> results = new ArrayList<>();
         for (CombatTargetCandidate candidate : ctx.candidates()) {
-            CombatResolution resolution = resolveSingleBasicHit(attacker, candidate);
+            CombatResolution resolution = resolveSingleBasicHit(attacker, attackerDerived, candidate);
             results.add(resolution);
             applyResolution(attacker, resolution);
             CombatDebugLog.logHitResolution(resolution);
@@ -84,28 +88,19 @@ public class RagnarCombatEngine {
         return results;
     }
 
-    private CombatResolution resolveSingleBasicHit(ServerPlayer attacker, CombatTargetCandidate candidate) {
+    private CombatResolution resolveSingleBasicHit(ServerPlayer attacker, DerivedStats attackerDerived, CombatTargetCandidate candidate) {
         net.minecraft.world.entity.Entity targetEntity = attacker.serverLevel().getEntity(candidate.entityId());
         if (!(targetEntity instanceof LivingEntity target)) {
             return CombatResolution.miss(attacker.getId(), candidate.entityId());
         }
 
-        var attackerStats = RagnarCoreAPI.get(attacker).orElse(null);
-        if (attackerStats == null)
-            return CombatResolution.miss(attacker.getId(), candidate.entityId());
-
-        // Attacker Data
-        int str = (int) StatAttributes.getTotal(attacker, StatKeys.STR);
-        int dex = (int) StatAttributes.getTotal(attacker, StatKeys.DEX);
-        int luk = (int) StatAttributes.getTotal(attacker, StatKeys.LUK);
-        int lvl = attackerStats.getLevel();
+        // Attacker Data from authoritative source
+        int lvl = (int) StatAttributes.getTotal(attacker, StatKeys.LEVEL);
         ItemStack weapon = attacker.getMainHandItem();
-        boolean isRanged = CombatMath.isRangedWeapon(weapon);
-
-        double weaponBaseAtk = com.etema.ragnarmmo.system.stats.event.CommonEvents.getWeaponDamage(attacker);
-        double totalBaseAtk = CombatMath.computeTotalATK(str, dex, luk, lvl, weaponBaseAtk, 0, isRanged);
-        double accuracy = CombatMath.computeHIT(dex, luk, lvl, 0);
-        double critChance = CombatMath.computeCritChance(luk, dex, 0);
+        
+        double totalBaseAtk = attackerDerived.physicalAttack;
+        double accuracy = attackerDerived.accuracy;
+        double critChance = attackerDerived.criticalChance;
 
         // Defender Data
         DefenderStats def = fetchDefenderStats(target);
@@ -124,6 +119,10 @@ public class RagnarCombatEngine {
         }
 
         // 3. Damage calculation
+        int dex = (int) StatAttributes.getTotal(attacker, StatKeys.DEX);
+        int luk = (int) StatAttributes.getTotal(attacker, StatKeys.LUK);
+        int str = (int) StatAttributes.getTotal(attacker, StatKeys.STR);
+
         double dmg = damageCalculator.computePhysicalDamage(totalBaseAtk, dex, luk,
                 new java.util.Random(attacker.getRandom().nextLong()));
 
@@ -154,16 +153,17 @@ public class RagnarCombatEngine {
             var statsOpt = RagnarCoreAPI.get(tp);
             if (statsOpt.isPresent()) {
                 var s = statsOpt.get();
+                DerivedStats d = StatResolutionService.computeAuthoritative(tp, s);
+                
                 int vit = (int) StatAttributes.getTotal(tp, StatKeys.VIT);
                 int agi = (int) StatAttributes.getTotal(tp, StatKeys.AGI);
                 int luk = (int) StatAttributes.getTotal(tp, StatKeys.LUK);
                 int lvl = s.getLevel();
-                int dodgeLv = com.etema.ragnarmmo.skill.data.progression.SkillProgressManager.getProgress(tp, new net.minecraft.resources.ResourceLocation("ragnarmmo", "improve_dodge")).getLevel();
                 
-                double flee = CombatMath.computeFLEE(agi, luk, lvl, dodgeLv * 3.0);
-                double pd = CombatMath.computePerfectDodge(luk);
+                double flee = d.flee;
+                double pd = d.perfectDodge;
                 double criticalShield = Math.floor(lvl / 15.0) + Math.floor(luk / 5.0);
-                double armorEff = com.etema.ragnarmmo.system.stats.event.CommonEvents.getArmorEff(tp);
+                double armorEff = d.defense; 
                 
                 return new DefenderStats(flee, criticalShield, pd, vit, agi, luk, lvl, armorEff);
             }
@@ -180,14 +180,15 @@ public class RagnarCombatEngine {
                 double pd = CombatMath.computePerfectDodge(luk);
                 double criticalShield = Math.floor(lvl / 15.0) + Math.floor(luk / 5.0);
                 double armorEff = com.etema.ragnarmmo.system.stats.event.CommonEvents.getArmorEff(mob);
+                com.etema.ragnarmmo.combat.element.ElementType element = ms.getElement();
                 
-                return new DefenderStats(flee, criticalShield, pd, vit, agi, luk, lvl, armorEff);
+                return new DefenderStats(flee, criticalShield, pd, vit, agi, luk, lvl, armorEff, element);
             }
         }
         
         // Fallback for vanilla mobs without stats
         int lvl = target.getAttributes().hasAttribute(Attributes.MAX_HEALTH) ? (int) (target.getMaxHealth() / 10) : 10;
-        return new DefenderStats(lvl + CombatMath.FLEE_BASE, lvl / 5.0, 0, lvl, lvl, lvl, lvl, 0);
+        return new DefenderStats(lvl + CombatMath.FLEE_BASE, lvl / 5.0, 0, lvl, lvl, lvl, lvl, 0, com.etema.ragnarmmo.combat.element.ElementType.NEUTRAL);
     }
 
     public List<CombatResolution> handleSkillUseRequest(CombatRequestContext ctx) {

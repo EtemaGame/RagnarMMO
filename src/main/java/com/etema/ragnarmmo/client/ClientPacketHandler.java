@@ -58,10 +58,18 @@ public final class ClientPacketHandler {
         }
 
         Entity entity = mc.level.getEntity(entityId);
+        
+        // Fallback for local player if not yet in level (common on join/respawn)
+        if (entity == null && mc.player != null && mc.player.getId() == entityId) {
+            entity = mc.player;
+        }
+
         if (entity != null) {
             entity.getCapability(PlayerAchievementsProvider.PLAYER_ACHIEVEMENTS).ifPresent(cap -> {
                 cap.deserializeNBT(tag);
             });
+        } else {
+            com.etema.ragnarmmo.RagnarMMO.LOGGER.warn("Received achievement sync for unknown entity: {}", entityId);
         }
     }
 

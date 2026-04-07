@@ -76,6 +76,30 @@ public interface ISkillDefinition {
      */
     double getXpMultiplier();
 
+
+    /**
+     * @return The usage type of this skill (ACTIVE, PASSIVE)
+     */
+    com.etema.ragnarmmo.skill.api.SkillUsageType getUsageType();
+
+    /**
+     * @return true if this skill is active (requires manual activation)
+     */
+    default boolean isActive() {
+        return getUsageType() == com.etema.ragnarmmo.skill.api.SkillUsageType.ACTIVE;
+    }
+
+    /**
+     * @return The primary stat that scales this skill (STR, AGI, VIT, INT, DEX,
+     *         LUK)
+     */
+    String getScalingStat();
+
+    /**
+     * @return XP multiplier for this skill
+     */
+    double getXpMultiplier();
+
     // === Costs ===
 
     /**
@@ -99,6 +123,19 @@ public interface ISkillDefinition {
         if (!isActive())
             return 0;
         return getBaseCost() + (level * getCostPerLevel());
+    }
+
+    /**
+     * Determines which resource (SP or Mana) this skill consumes.
+     */
+    default com.etema.ragnarmmo.skill.api.ResourceType getResourceType() {
+        com.etema.ragnarmmo.skill.api.SkillCategory cat = getCategory();
+        if (cat == com.etema.ragnarmmo.skill.api.SkillCategory.MAGE || 
+            cat == com.etema.ragnarmmo.skill.api.SkillCategory.PRIEST ||
+            cat == com.etema.ragnarmmo.skill.api.SkillCategory.LIFE) {
+            return com.etema.ragnarmmo.skill.api.ResourceType.MANA;
+        }
+        return com.etema.ragnarmmo.skill.api.ResourceType.SP;
     }
 
     // === Timing ===

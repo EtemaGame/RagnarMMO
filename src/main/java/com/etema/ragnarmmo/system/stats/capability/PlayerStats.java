@@ -18,7 +18,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.IntUnaryOperator;
-import com.etema.ragnarmmo.system.stats.progression.JobBonusService;
+import com.etema.ragnarmmo.system.stats.compute.StatResolutionService;
 import com.etema.ragnarmmo.system.stats.progression.StatPointProgression;
 
 public class PlayerStats implements IPlayerStats {
@@ -145,7 +145,51 @@ public class PlayerStats implements IPlayerStats {
             stats.set(key, clamped);
             syncAttribute(key, clamped);
             markDirty(RoPlayerSyncDomain.STATS);
+            StatResolutionService.resolve(owner, this);
         }
+    }
+
+    private void syncAttribute(StatKeys key, int value) {
+        AttributeInstance inst = getInstance(key);
+        if (inst == null)
+            return;
+
+        double clamped = value;
+        if (inst.getAttribute() instanceof RangedAttribute ranged) {
+            clamped = Mth.clamp(value, ranged.getMinValue(), ranged.getMaxValue());
+        }
+
+        if (Double.compare(inst.getBaseValue(), clamped) != 0) {
+            inst.setBaseValue(clamped);
+        }
+    }
+
+    @Override
+    public int getBonus(StatKeys key) {
+        AttributeInstance inst = getInstance(key);
+        if (inst == null)
+            return 0;
+        AttributeModifier mod = inst.getModifier(BONUS_IDS.get(key));
+        return mod == null ? 0 : (int) Math.round(mod.getAmount());
+    }
+
+    @Override
+    public void addBonus(StatKeys key, int d) {
+        setBonus(key, getBonus(key) + d);
+    }
+
+    @Override
+    public void setBonus(StatKeys key, int v) {
+        AttributeInstance inst = getInstance(key);
+        if (inst == null)
+            return;
+        UUID id = BONUS_IDS.get(key);
+        AttributeModifier existing = inst.getModifier(id);
+        if (existing != null) {
+            if (existing.getAmount() == v) {
+                return;
+            }
+            inst.removeModifier(existing);
     }
 
     private void syncAttribute(StatKeys key, int value) {
@@ -195,6 +239,7 @@ public class PlayerStats implements IPlayerStats {
                     AttributeModifier.Operation.ADDITION));
         }
         markDirty(RoPlayerSyncDomain.STATS);
+        StatResolutionService.resolve(owner, this);
     }
 
     @Override
@@ -392,7 +437,7 @@ public class PlayerStats implements IPlayerStats {
         if (jobLevel != clamped) {
             jobLevel = clamped;
             markDirty(RoPlayerSyncDomain.PROGRESSION);
-            JobBonusService.recomputeStats(owner, this);
+            StatResolutionService.resolve(owner, this);
         }
     }
 
@@ -454,7 +499,7 @@ public class PlayerStats implements IPlayerStats {
             setLevel(level);
             setJobLevel(jobLevel);
             markDirty(RoPlayerSyncDomain.PROGRESSION, RoPlayerSyncDomain.RESOURCES);
-            JobBonusService.recomputeStats(owner, this);
+            StatResolutionService.resolve(owner, this);
         }
     }
 
@@ -477,7 +522,7 @@ public class PlayerStats implements IPlayerStats {
         }
         setBaseStatPointsGranted(false);
         markDirty();
-        JobBonusService.recomputeStats(owner, this);
+        StatResolutionService.resolve(owner, this);
     }
 
     @Override
@@ -543,6 +588,75 @@ public class PlayerStats implements IPlayerStats {
     }
 
     @Override
+    public boolean consumeMana(double amount) {
+        if (mana < amount) return false;
+        mana -= amount;
+        markDirty(RoPlayerSyncDomain.RESOURCES);
+        return true;
+    }
+
+    @Override
+    public boolean consumeSP(double amount) {
+        if (sp < amount) return false;
+        sp -= amount;
+        markDirty(RoPlayerSyncDomain.RESOURCES);
+        return true;
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag serializeNBT() {
+        net.minecraft.nbt.CompoundTag nbt = new net.minecraft.nbt.CompoundTag();
+        nbt.putInt("Level", level);
+        nbt.putInt("Exp", exp);
+        nbt.putInt("StatPoints", statPoints);
+        nbt.putInt("JobLevel", jobLevel);
+        nbt.putInt("JobExp", jobExp);
+        nbt.putInt("SkillPoints", skillPoints);
+        nbt.putString("JobId", jobId);
+        nbt.putBoolean("BaseStatPointsGranted", baseStatPointsGranted);
+
+        nbt.putDouble("Mana", mana);
+        nbt.putDouble("ManaMax", manaMax);
+        nbt.putDouble("SP", sp);
+        nbt.putDouble("SPMax", spMax);
+
+        net.minecraft.nbt.CompoundTag statsTag = new net.minecraft.nbt.CompoundTag();
+        for (StatKeys key : StatKeys.values()) {
+            statsTag.putInt(key.id(), stats.get(key));
+        }
+        nbt.put("Stats", statsTag);
+
+        return nbt;
+    }
+
+    @Override
+    public void deserializeNBT(net.minecraft.nbt.CompoundTag nbt) {
+        this.level = nbt.getInt("Level");
+        this.exp = nbt.getInt("Exp");
+        this.statPoints = nbt.getInt("StatPoints");
+        this.jobLevel = nbt.getInt("JobLevel");
+        this.jobExp = nbt.getInt("JobExp");
+        this.skillPoints = nbt.getInt("SkillPoints");
+        this.jobId = nbt.getString("JobId");
+        this.baseStatPointsGranted = nbt.getBoolean("BaseStatPointsGranted");
+
+        this.mana = nbt.getDouble("Mana");
+        this.manaMax = nbt.getDouble("ManaMax");
+        this.sp = nbt.getDouble("SP");
+        this.spMax = nbt.getDouble("SPMax");
+
+        if (nbt.contains("Stats")) {
+            net.minecraft.nbt.CompoundTag statsTag = nbt.getCompound("Stats");
+            for (StatKeys key : StatKeys.values()) {
+                if (statsTag.contains(key.id())) {
+                    set(key, statsTag.getInt(key.id()));
+                }
+            }
+        }
+        markDirty();
+    }
+
+    @Override
     public void markDirty() {
         dirtyMask = RoPlayerSyncDomain.allMask();
     }
@@ -577,111 +691,6 @@ public class PlayerStats implements IPlayerStats {
             baseStatPointsGranted = true;
             markDirty(RoPlayerSyncDomain.PROGRESSION);
         }
-    }
-
-    public boolean areBaseStatPointsGranted() {
-        return baseStatPointsGranted;
-    }
-
-    public void setBaseStatPointsGranted(boolean granted) {
-        this.baseStatPointsGranted = granted;
-    }
-
-    @Override
-    public net.minecraft.nbt.CompoundTag serializeNBT() {
-        net.minecraft.nbt.CompoundTag n = new net.minecraft.nbt.CompoundTag();
-        n.putInt("STR", getSTR());
-        n.putInt("AGI", getAGI());
-        n.putInt("VIT", getVIT());
-        n.putInt("INT", getINT());
-        n.putInt("DEX", getDEX());
-        n.putInt("LUK", getLUK());
-        n.putDouble("Mana", getMana());
-        n.putDouble("ManaMax", getManaMax());
-        n.putDouble("SP", getSP());
-        n.putDouble("SPMax", getSPMax());
-        n.putInt("Level", getLevel());
-        n.putInt("Exp", getExp());
-        n.putInt("StatPoints", getStatPoints());
-        n.putInt("JobLevel", getJobLevel());
-        n.putInt("JobExp", getJobExp());
-        n.putInt("SkillPoints", getSkillPoints());
-        n.putString("JobId", getJobId());
-        n.putBoolean("BaseStatPointsGranted", areBaseStatPointsGranted());
-        return n;
-    }
-
-    @Override
-    public void deserializeNBT(net.minecraft.nbt.CompoundTag nbt) {
-        // IMPORTANT: Load JobId FIRST so level/jobLevel clamping uses the correct job's
-        // caps
-        setJobId(nbt.contains("JobId") ? nbt.getString("JobId") : "ragnarmmo:novice");
-
-        setSTR(nbt.getInt("STR"));
-        setAGI(nbt.getInt("AGI"));
-        setVIT(nbt.getInt("VIT"));
-        setINT(nbt.getInt("INT"));
-        setDEX(nbt.getInt("DEX"));
-        setLUK(nbt.getInt("LUK"));
-        setMana(nbt.getDouble("Mana"));
-        if (nbt.contains("ManaMax")) {
-            setManaMaxClient(nbt.getDouble("ManaMax"));
-        }
-        setSP(nbt.contains("SP") ? nbt.getDouble("SP") : 0);
-        if (nbt.contains("SPMax")) {
-            setSPMaxClient(nbt.getDouble("SPMax"));
-        }
-        setLevel(nbt.contains("Level") ? nbt.getInt("Level") : 1);
-        setExp(nbt.getInt("Exp"));
-        setStatPoints(nbt.getInt("StatPoints"));
-        setJobLevel(nbt.contains("JobLevel") ? nbt.getInt("JobLevel") : 1);
-        setJobExp(nbt.getInt("JobExp"));
-        setSkillPoints(nbt.getInt("SkillPoints"));
-        boolean granted = nbt.contains("BaseStatPointsGranted")
-                ? nbt.getBoolean("BaseStatPointsGranted")
-                : !nbt.isEmpty();
-        setBaseStatPointsGranted(granted);
-        JobBonusService.recomputeStats(owner, this);
-    }
-
-    private AttributeInstance getInstance(StatKeys key) {
-        if (owner == null)
-            return null;
-        Attribute attr = StatAttributes.getAttribute(key);
-        return attr == null ? null : owner.getAttribute(attr);
-    }
-
-    private boolean isNoviceJobId(String jobId) {
-        if (jobId == null || jobId.isBlank()) {
-            return true;
-        }
-        String id = jobId;
-        if (id.contains(":")) {
-            id = id.substring(id.indexOf(':') + 1);
-        }
-        return "novice".equalsIgnoreCase(id);
-    }
-
-    private int clampLevel(int level) {
-        int clamped = Math.max(1, level);
-        int max = com.etema.ragnarmmo.common.config.RagnarConfigs.SERVER.caps.maxLevel.get();
-        if (isNoviceJobId(jobId)) {
-            max = Math.min(max, com.etema.ragnarmmo.common.config.RagnarConfigs.SERVER.caps.noviceMaxLevel.get());
-        }
-        return Math.min(clamped, Math.max(1, max));
-    }
-
-    private int clampJobLevel(int level) {
-        int clamped = Math.max(1, level);
-        com.etema.ragnarmmo.common.api.jobs.JobType job = com.etema.ragnarmmo.common.api.jobs.JobType.fromId(jobId);
-
-        int max;
-        if (job == com.etema.ragnarmmo.common.api.jobs.JobType.NOVICE) {
-            max = com.etema.ragnarmmo.common.config.RagnarConfigs.SERVER.caps.noviceMaxJobLevel.get();
-        } else {
-            max = com.etema.ragnarmmo.common.config.RagnarConfigs.SERVER.caps.maxJobLevel.get();
-        }
-
         return Math.min(clamped, Math.max(1, max));
     }
 

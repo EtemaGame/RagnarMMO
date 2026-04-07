@@ -131,4 +131,23 @@ public final class SkillTreeRegistry {
     public static boolean isFrozen() {
         return frozen;
     }
+
+    /**
+     * Apply synchronized definitions from server.
+     * Used only on client.
+     */
+    public static void applySync(Collection<SkillTreeDefinition> trees) {
+        LOGGER.info("Applying {} synchronized skill tree layouts from server", trees.size());
+        
+        // Unfreeze to allow updates
+        boolean wasFrozen = frozen;
+        frozen = false;
+        
+        for (SkillTreeDefinition tree : trees) {
+            register(tree);
+        }
+        
+        frozen = wasFrozen;
+        LOGGER.info("SkillTreeRegistry synced and re-frozen");
+    }
 }

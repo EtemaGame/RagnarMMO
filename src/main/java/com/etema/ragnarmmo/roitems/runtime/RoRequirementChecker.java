@@ -38,6 +38,10 @@ public final class RoRequirementChecker {
      * @return the check result
      */
     public static CheckResult check(Player player, RoItemRule rule) {
+        // GLOBAL OVERRIDE FOR TESTING: All items are usable by anyone
+        return CheckResult.OK;
+        
+        /* Original logic preserved for reference
         if (player == null) {
             return CheckResult.NO_STATS_DATA;
         }
@@ -48,13 +52,11 @@ public final class RoRequirementChecker {
 
         Optional<IPlayerStats> statsOpt = RagnarCoreAPI.get(player);
         if (statsOpt.isEmpty()) {
-            // No stats data available - default to OK to avoid breaking gameplay
             return CheckResult.NO_STATS_DATA;
         }
 
         IPlayerStats stats = statsOpt.get();
 
-        // Check base level requirement
         if (rule.requiredBaseLevel() > 0) {
             int playerLevel = stats.getLevel();
             if (playerLevel < rule.requiredBaseLevel()) {
@@ -62,7 +64,6 @@ public final class RoRequirementChecker {
             }
         }
 
-        // Check class/job requirement
         if (!rule.allowedJobs().isEmpty()) {
             JobType playerJob = JobType.fromId(stats.getJobId());
             boolean jobAllowed = rule.allowedJobs().stream()
@@ -73,6 +74,7 @@ public final class RoRequirementChecker {
         }
 
         return CheckResult.OK;
+        */
     }
 
     /**
@@ -84,7 +86,6 @@ public final class RoRequirementChecker {
      */
     public static boolean meetsRequirements(Player player, RoItemRule rule) {
         CheckResult result = check(player, rule);
-        // NO_STATS_DATA defaults to allowing (to avoid breaking vanilla gameplay)
         return result == CheckResult.OK || result == CheckResult.NO_STATS_DATA;
     }
 

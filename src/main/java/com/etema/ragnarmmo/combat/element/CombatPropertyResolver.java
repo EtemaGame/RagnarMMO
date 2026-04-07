@@ -90,6 +90,14 @@ public final class CombatPropertyResolver {
             return temporary;
         }
 
+        // Check MobStats first for authoritative element
+        if (entity instanceof net.minecraft.world.entity.Mob mob) {
+            var stats = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(mob);
+            if (stats.isPresent()) {
+                return stats.get().getElement();
+            }
+        }
+
         var type = entity.getType();
         if (type.is(RagnarTags.Entities.ELEMENT_UNDEAD)) return ElementType.UNDEAD;
         if (type.is(RagnarTags.Entities.ELEMENT_GHOST)) return ElementType.GHOST;
@@ -171,63 +179,84 @@ public final class CombatPropertyResolver {
             };
             case WATER -> switch (defense) {
                 case WATER -> 0.25;
+                case EARTH -> 1.0;
                 case FIRE -> 1.5;
                 case WIND -> 0.5;
+                case POISON -> 1.0;
                 case HOLY, DARK -> 0.75;
+                case GHOST -> 0.75;
+                case UNDEAD -> 1.0;
                 default -> 1.0;
             };
             case EARTH -> switch (defense) {
+                case WATER -> 1.0;
                 case EARTH -> 0.25;
                 case FIRE -> 0.5;
                 case WIND -> 1.5;
                 case POISON -> 1.25;
                 case HOLY, DARK -> 0.75;
+                case GHOST -> 0.75;
+                case UNDEAD -> 1.0;
                 default -> 1.0;
             };
             case FIRE -> switch (defense) {
                 case WATER -> 0.5;
                 case EARTH -> 1.5;
                 case FIRE -> 0.25;
-                case POISON, UNDEAD -> 1.25;
+                case WIND -> 1.0;
+                case POISON -> 1.25;
                 case HOLY, DARK -> 0.75;
+                case GHOST -> 0.75;
+                case UNDEAD -> 1.5;
                 default -> 1.0;
             };
             case WIND -> switch (defense) {
                 case WATER -> 1.5;
                 case EARTH -> 0.5;
+                case FIRE -> 1.0;
                 case WIND -> 0.25;
                 case POISON -> 1.25;
                 case HOLY, DARK -> 0.75;
+                case GHOST -> 0.75;
+                case UNDEAD -> 1.0;
                 default -> 1.0;
             };
             case POISON -> switch (defense) {
+                case WATER, EARTH, FIRE, WIND -> 1.0;
                 case POISON -> 0.0;
                 case HOLY -> 0.75;
                 case DARK -> 0.5;
-                case UNDEAD -> -0.25;
+                case GHOST -> 0.5;
+                case UNDEAD -> -0.25; // Heals Undead
                 default -> 1.0;
             };
             case HOLY -> switch (defense) {
                 case WATER, EARTH, FIRE, WIND, POISON -> 0.75;
                 case HOLY -> 0.0;
                 case DARK, GHOST -> 1.25;
-                case UNDEAD -> 1.5;
+                case UNDEAD -> 1.75; // Increased Holy effectiveness vs Undead L1
                 default -> 1.0;
             };
             case DARK -> switch (defense) {
+                case WATER, EARTH, FIRE, WIND -> 1.0;
                 case POISON -> 0.5;
                 case HOLY -> 1.25;
                 case DARK -> 0.0;
-                case UNDEAD -> -0.25;
+                case GHOST -> 1.0;
+                case UNDEAD -> -0.25; // Heals Undead
                 default -> 1.0;
             };
             case GHOST -> switch (defense) {
+                case NEUTRAL -> 0.0; // Ghost skills don't hurt Neutral players in RO
                 case GHOST -> 1.25;
                 default -> 1.0;
             };
             case UNDEAD -> switch (defense) {
-                case POISON, HOLY -> 0.5;
+                case WATER, EARTH, FIRE, WIND -> 1.0;
+                case POISON -> 0.5;
+                case HOLY -> 1.25;
                 case DARK, UNDEAD -> 0.0;
+                case GHOST -> 1.0;
                 default -> 1.0;
             };
         };

@@ -92,6 +92,7 @@ public final class MobStatsProvider implements ICapabilityProvider, INBTSerializ
         CompoundTag tag = new CompoundTag();
         tag.putInt("Level", stats.getLevel());
         tag.putString("Tier", stats.getTier().name());
+        tag.putString("Element", stats.getElement().name());
         tag.putBoolean("Initialized", stats.isInitialized());
         tag.putDouble("HealthMultiplier", stats.getHealthMultiplier());
         tag.putDouble("DamageMultiplier", stats.getDamageMultiplier());
@@ -109,6 +110,7 @@ public final class MobStatsProvider implements ICapabilityProvider, INBTSerializ
     @Override
     public void deserializeNBT(CompoundTag nbt) {
         stats.setLevel(nbt.contains("Level") ? nbt.getInt("Level") : 1);
+        
         String tierName = nbt.contains("Tier") ? nbt.getString("Tier") : "";
         try {
             stats.setTier(tierName == null || tierName.isEmpty()
@@ -117,6 +119,16 @@ public final class MobStatsProvider implements ICapabilityProvider, INBTSerializ
         } catch (IllegalArgumentException ex) {
             stats.setTier(com.etema.ragnarmmo.common.api.mobs.MobTier.NORMAL);
         }
+
+        String elementName = nbt.contains("Element") ? nbt.getString("Element") : "";
+        try {
+            stats.setElement(elementName == null || elementName.isEmpty()
+                    ? com.etema.ragnarmmo.combat.element.ElementType.NEUTRAL
+                    : com.etema.ragnarmmo.combat.element.ElementType.valueOf(elementName));
+        } catch (IllegalArgumentException ex) {
+            stats.setElement(com.etema.ragnarmmo.combat.element.ElementType.NEUTRAL);
+        }
+
         stats.setInitialized(nbt.getBoolean("Initialized"));
         if (nbt.contains("HealthMultiplier")) {
             stats.setHealthMultiplier(nbt.getDouble("HealthMultiplier"));

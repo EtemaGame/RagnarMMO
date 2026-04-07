@@ -1,7 +1,6 @@
 package com.etema.ragnarmmo.system.achievements;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.system.achievements.capability.PlayerAchievementsProvider;
 import com.etema.ragnarmmo.system.achievements.data.AchievementDefinition;
 import com.etema.ragnarmmo.system.achievements.data.AchievementRegistry;
@@ -14,6 +13,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Handles listening to gameplay events and progressing achievements.
  */
@@ -22,7 +24,16 @@ public class AchievementTriggerHandler {
 
     @SubscribeEvent
     public static void onAddReloadListeners(net.minecraftforge.event.AddReloadListenerEvent event) {
-        event.addListener(com.etema.ragnarmmo.system.achievements.data.AchievementRegistry.getInstance());
+        event.addListener(AchievementRegistry.getInstance());
+    }
+
+    @SubscribeEvent
+    public static void onDatapackSync(net.minecraftforge.event.OnDatapackSyncEvent event) {
+        if (event.getPlayer() != null) {
+            AchievementRegistry.getInstance().syncToPlayer(event.getPlayer());
+        } else {
+            AchievementRegistry.getInstance().syncToAll();
+        }
     }
 
     /**

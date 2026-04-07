@@ -6,17 +6,20 @@ import com.etema.ragnarmmo.skill.api.SkillTier;
 import com.etema.ragnarmmo.skill.api.SkillType;
 import com.etema.ragnarmmo.skill.api.SkillUsageType;
 import com.etema.ragnarmmo.skill.api.SkillEffectFactory;
+import com.etema.ragnarmmo.skill.net.SyncSkillDefinitionsPacket;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
@@ -79,7 +82,7 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         // Phase 2: Load remaining skills from legacy enum (fallback)
         int legacyCount = 0;
         for (SkillType type : SkillType.values()) {
-            ResourceLocation legacyId = ResourceLocation.fromNamespaceAndPath(SkillRegistry.getDefaultNamespace(), type.getId());
+            ResourceLocation legacyId = new ResourceLocation(SkillRegistry.getDefaultNamespace(), type.getId());
             if (!SkillRegistry.contains(legacyId)) {
                 SkillDefinition def = convertFromLegacyEnum(type);
                 SkillRegistry.register(def);
@@ -118,6 +121,26 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         LOGGER.info("SkillRegistry ready: {} total skills", SkillRegistry.size());
 
         profiler.pop();
+        
+        // Sync to all connected players after reload if on server
+        syncToAll();
+    }
+
+    public void syncToAll() {
+        var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return;
+
+        SyncSkillDefinitionsPacket packet = new SyncSkillDefinitionsPacket(SkillRegistry.getAll());
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            com.etema.ragnarmmo.common.net.Network.sendToPlayer(player, packet);
+        }
+        RagnarMMO.LOGGER.debug("Synced skill definitions to {} players", server.getPlayerList().getPlayerCount());
+    }
+
+    public void syncToPlayer(ServerPlayer player) {
+        SyncSkillDefinitionsPacket packet = new SyncSkillDefinitionsPacket(SkillRegistry.getAll());
+        com.etema.ragnarmmo.common.net.Network.sendToPlayer(player, packet);
+        RagnarMMO.LOGGER.debug("Synced skill definitions to player {}", player.getName().getString());
     }
 
     /**
@@ -600,6 +623,15 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         @SubscribeEvent
         public static void onAddReloadListeners(AddReloadListenerEvent event) {
             event.addListener(INSTANCE);
+        }
+
+        @SubscribeEvent
+        public static void onDatapackSync(OnDatapackSyncEvent event) {
+            if (event.getPlayer() != null) {
+                INSTANCE.syncToPlayer(event.getPlayer());
+            } else {
+                INSTANCE.syncToAll();
+            }
         }
     }
 

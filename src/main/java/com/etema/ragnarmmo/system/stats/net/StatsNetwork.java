@@ -94,5 +94,19 @@ public final class StatsNetwork {
                 .decoder(com.etema.ragnarmmo.skill.net.ClientboundCastUpdatePacket::new)
                 .consumerMainThread(com.etema.ragnarmmo.skill.net.ClientboundCastUpdatePacket::handle)
                 .add();
+
+        ch.messageBuilder(com.etema.ragnarmmo.skill.net.SyncSkillDefinitionsPacket.class,
+                id.getAndIncrement(), NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(com.etema.ragnarmmo.skill.net.SyncSkillDefinitionsPacket::encode)
+                .decoder(com.etema.ragnarmmo.skill.net.SyncSkillDefinitionsPacket::new)
+                .consumerMainThread(com.etema.ragnarmmo.skill.net.SyncSkillDefinitionsPacket::handle)
+                .add();
+
+        ch.messageBuilder(com.etema.ragnarmmo.skill.net.SyncSkillTreesPacket.class,
+                id.getAndIncrement(), NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(com.etema.ragnarmmo.skill.net.SyncSkillTreesPacket::encode)
+                .decoder(com.etema.ragnarmmo.skill.net.SyncSkillTreesPacket::new)
+                .consumerMainThread(com.etema.ragnarmmo.skill.net.SyncSkillTreesPacket::handle)
+                .add();
     }
 }

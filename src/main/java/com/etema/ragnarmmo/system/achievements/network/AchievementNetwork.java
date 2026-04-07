@@ -23,5 +23,11 @@ public class AchievementNetwork {
                 .decoder(SetTitlePacket::decode)
                 .consumerMainThread(SetTitlePacket::handle)
                 .add();
+
+        ch.messageBuilder(SyncAchievementDefinitionsPacket.class, id.getAndIncrement())
+                .encoder(SyncAchievementDefinitionsPacket::encode)
+                .decoder(SyncAchievementDefinitionsPacket::new)
+                .consumerMainThread(SyncAchievementDefinitionsPacket::handle)
+                .add();
     }
 }

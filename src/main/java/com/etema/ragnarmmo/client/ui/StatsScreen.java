@@ -329,8 +329,8 @@ public class StatsScreen extends Screen {
                                 // Use server-synced derived stats if available, else fallback to local calc
                                 var d = DerivedStatsClientCache.get();
                                 if (d == null) {
-                                        double armaBase = getWeaponDamage(player);
-                                        double armorEff = getArmorEff(player);
+                                        double armaBase = 0; // Fallback or basic
+                                        double armorEff = 0; 
                                         d = StatComputer.compute(player, stats, armaBase, 1.6, 0, armorEff, 1.0);
                                 }
 
@@ -707,30 +707,6 @@ public class StatsScreen extends Screen {
 
         // ===== Original computation helpers =====
 
-        private static double getWeaponDamage(Player p) {
-                double base = p.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
-                ItemStack main = p.getItemInHand(InteractionHand.MAIN_HAND);
-                Multimap<Attribute, AttributeModifier> mods = main.getAttributeModifiers(EquipmentSlot.MAINHAND);
-
-                double add = 0.0, multBase = 0.0, multTotal = 0.0;
-                for (var e : mods.entries()) {
-                        if (e.getKey() != Attributes.ATTACK_DAMAGE)
-                                continue;
-                        var m = e.getValue();
-                        switch (m.getOperation()) {
-                                case ADDITION -> add += m.getAmount();
-                                case MULTIPLY_BASE -> multBase += m.getAmount();
-                                case MULTIPLY_TOTAL -> multTotal += m.getAmount();
-                        }
-                }
-                double withItem = (base * (1.0 + multBase) + add) * (1.0 + multTotal);
-                float ench = EnchantmentHelper.getDamageBonus(main, MobType.UNDEFINED);
-                return withItem + ench;
-        }
-
-        private static double getArmorEff(Player p) {
-                return p.getArmorValue();
-        }
 
         private static int getStatValue(IPlayerStats stats, StatKeys key) {
                 return switch (key) {

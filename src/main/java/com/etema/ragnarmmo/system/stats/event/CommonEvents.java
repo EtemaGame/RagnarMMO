@@ -71,7 +71,7 @@ public class CommonEvents {
         if (e.getEntity() instanceof ServerPlayer sp) {
             RagnarCoreAPI.get(sp).ifPresent(s -> {
                 double armaBase = getWeaponDamage(sp);
-                var derived = StatComputer.compute(sp, s, armaBase, getWeaponAPS(sp), getWeaponMagicDamage(sp), getArmorEff(sp), 1.0);
+                var derived = StatComputer.compute(sp, s, armaBase, getWeaponAPS(sp), getWeaponMagicDamage(sp), getArmorEff(sp), getArmorMagicDefense(sp), 1.0);
                 if (s instanceof PlayerStats internal) {
                     internal.ensureBaseStatBaseline(RagnarConfigs.SERVER.progression.baseStatPoints.get());
                 }
@@ -118,7 +118,7 @@ public class CommonEvents {
             if (stats instanceof PlayerStats internal) {
                 internal.ensureBaseStatBaseline(RagnarConfigs.SERVER.progression.baseStatPoints.get());
             }
-            var d = StatComputer.compute(p, stats, getWeaponDamage(p), getWeaponAPS(p), getWeaponMagicDamage(p), getArmorEff(p), 1.0);
+            var d = StatComputer.compute(p, stats, getWeaponDamage(p), getWeaponAPS(p), getWeaponMagicDamage(p), getArmorEff(p), getArmorMagicDefense(p), 1.0);
 
             // Sync MAX_HEALTH
             var maxHealthInstance = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
@@ -649,6 +649,34 @@ public class CommonEvents {
         }
 
         return armorEff;
+    }
+
+    /**
+     * Extracts magical defense from armor items and refinements.
+     * In Ragnarok, MDEF is typically granted by specific armors or refinements.
+     */
+    public static double getArmorMagicDefense(LivingEntity ent) {
+        double equipMdef = 0.0;
+        
+        // Sum MDEF from armor attributes
+        var attrInstance = ent.getAttribute(com.etema.ragnarmmo.common.api.attributes.RagnarAttributes.MAGIC_DEFENSE.get());
+        if (attrInstance != null) {
+            equipMdef += attrInstance.getValue();
+        }
+
+        // Add refinement bonuses to MDEF (custom mechanic for RagnarMMO)
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemStack stack = ent.getItemBySlot(slot);
+            if (!stack.isEmpty()) {
+                // High refinements grant a small MDEF bonus
+                int refine = com.etema.ragnarmmo.roitems.runtime.RoItemNbtHelper.getRefineLevel(stack);
+                if (refine >= 5) {
+                    equipMdef += (refine - 4); 
+                }
+            }
+        }
+
+        return equipMdef;
     }
 
     /**

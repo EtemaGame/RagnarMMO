@@ -160,7 +160,10 @@ public class SkillEffectHandler {
             int cost = resolveResourceCost(def, effectOpt, level);
             int baseCastTime = resolveBaseCastTime(def, effectOpt, level);
             int castTime = adjustCastTime(player, baseCastTime);
-            boolean hasEnough = stats.getCurrentResource() >= cost;
+            com.etema.ragnarmmo.skill.api.ResourceType resType = def.getResourceType();
+            boolean hasEnough = (resType == com.etema.ragnarmmo.skill.api.ResourceType.MANA)
+                    ? stats.getMana() >= cost
+                    : stats.getSP() >= cost;
 
             if (hasEnough) {
                 if (castTime > 0) {
@@ -170,7 +173,7 @@ public class SkillEffectHandler {
                             Component.translatable("message.ragnarmmo.cast_start",
                                     def.getDisplayName()));
                 } else {
-                    if (tryConsumeAndExecute(player, stats, id, level, cost)) {
+                    if (tryConsumeAndExecute(player, stats, def, level, cost)) {
                         skills.setCooldown(id, def.getCooldownTicks(level));
                         int castDelay = resolveCastDelay(def, effectOpt, level, player);
                         if (castDelay > 0) {
@@ -181,8 +184,11 @@ public class SkillEffectHandler {
                     }
                 }
             } else {
+                String msg = (resType == com.etema.ragnarmmo.skill.api.ResourceType.MANA)
+                        ? "message.ragnarmmo.insufficient_mana"
+                        : "message.ragnarmmo.insufficient_sp";
                 player.sendSystemMessage(
-                        Component.translatable("message.ragnarmmo.insufficient_sp")
+                        Component.translatable(msg)
                                 .withStyle(ChatFormatting.RED));
             }
         });
@@ -219,7 +225,7 @@ public class SkillEffectHandler {
             Optional<ISkillEffect> effectOpt = SkillRegistry.getEffect(skillId);
             int cost = resolveResourceCost(def, effectOpt, level);
 
-            if (tryConsumeAndExecute(player, stats, skillId, level, cost)) {
+            if (tryConsumeAndExecute(player, stats, def, level, cost)) {
                 skills.setCooldown(skillId, def.getCooldownTicks(level));
                 int castDelay = resolveCastDelay(def, effectOpt, level, player);
                 if (castDelay > 0) {
@@ -330,19 +336,31 @@ public class SkillEffectHandler {
         return CombatMath.computeCastDelay(castDelay, player);
     }
 
-    private static boolean tryConsumeAndExecute(ServerPlayer player, IPlayerStats stats, ResourceLocation skillId,
+    private static boolean tryConsumeAndExecute(ServerPlayer player, IPlayerStats stats, SkillDefinition def,
             int level, int cost) {
-        if (stats.getCurrentResource() < cost || !stats.consumeResource(cost)) {
-            player.sendSystemMessage(Component.translatable("message.ragnarmmo.insufficient_sp")
+        com.etema.ragnarmmo.skill.api.ResourceType resType = def.getResourceType();
+        boolean consumed = (resType == com.etema.ragnarmmo.skill.api.ResourceType.MANA)
+                ? stats.consumeMana(cost)
+                : stats.consumeSP(cost);
+
+        if (!consumed) {
+            String msg = (resType == com.etema.ragnarmmo.skill.api.ResourceType.MANA)
+                    ? "message.ragnarmmo.insufficient_mana"
+                    : "message.ragnarmmo.insufficient_sp";
+            player.sendSystemMessage(Component.translatable(msg)
                     .withStyle(ChatFormatting.RED));
             return false;
         }
 
-        if (executeSkillEffect(player, skillId, level)) {
+        if (executeSkillEffect(player, def.getId(), level)) {
             return true;
         }
 
-        stats.addResource(cost);
+        if (resType == com.etema.ragnarmmo.skill.api.ResourceType.MANA) {
+            stats.addMana(cost);
+        } else {
+            stats.addSP(cost);
+        }
         return false;
     }
 

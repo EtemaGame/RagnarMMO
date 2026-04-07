@@ -17,12 +17,20 @@ public class PlayerStatsSyncPacket {
     public final int jobLevel, jobExp, skillPoints;
     public final String jobId;
     public final int str, agi, vit, intelligence, dex, luk;
+    
+    // Auth derived stats for HUD
+    public final double physAtkMin, physAtkMax, magicAtk;
+    public final double accuracy, flee, critChance;
+    public final double aspd, castTime;
 
     public PlayerStatsSyncPacket(int syncMask,
             double mana, double manaMax, double sp, double spMax,
             int level, int exp, int statPoints,
             int jobLevel, int jobExp, int skillPoints, String jobId,
-            int str, int agi, int vit, int intelligence, int dex, int luk) {
+            int str, int agi, int vit, int intelligence, int dex, int luk,
+            double physAtkMin, double physAtkMax, double magicAtk,
+            double accuracy, double flee, double critChance,
+            double aspd, double castTime) {
         this.syncMask = syncMask;
         this.mana = mana;
         this.manaMax = manaMax;
@@ -41,6 +49,14 @@ public class PlayerStatsSyncPacket {
         this.intelligence = intelligence;
         this.dex = dex;
         this.luk = luk;
+        this.physAtkMin = physAtkMin;
+        this.physAtkMax = physAtkMax;
+        this.magicAtk = magicAtk;
+        this.accuracy = accuracy;
+        this.flee = flee;
+        this.critChance = critChance;
+        this.aspd = aspd;
+        this.castTime = castTime;
     }
 
     public PlayerStatsSyncPacket(com.etema.ragnarmmo.common.api.stats.IPlayerStats stats) {
@@ -54,7 +70,8 @@ public class PlayerStatsSyncPacket {
                 stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps2 ? ps2.getSPMax() : 100,
                 stats.getLevel(), stats.getExp(), stats.getStatPoints(),
                 stats.getJobLevel(), stats.getJobExp(), stats.getSkillPoints(), stats.getJobId(),
-                stats.getSTR(), stats.getAGI(), stats.getVIT(), stats.getINT(), stats.getDEX(), stats.getLUK());
+                stats.getSTR(), stats.getAGI(), stats.getVIT(), stats.getINT(), stats.getDEX(), stats.getLUK(),
+                0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     public static void encode(PlayerStatsSyncPacket m, FriendlyByteBuf buf) {
@@ -76,6 +93,14 @@ public class PlayerStatsSyncPacket {
         buf.writeVarInt(m.intelligence);
         buf.writeVarInt(m.dex);
         buf.writeVarInt(m.luk);
+        buf.writeDouble(m.physAtkMin);
+        buf.writeDouble(m.physAtkMax);
+        buf.writeDouble(m.magicAtk);
+        buf.writeDouble(m.accuracy);
+        buf.writeDouble(m.flee);
+        buf.writeDouble(m.critChance);
+        buf.writeDouble(m.aspd);
+        buf.writeDouble(m.castTime);
     }
 
     public static PlayerStatsSyncPacket decode(FriendlyByteBuf buf) {
@@ -87,7 +112,10 @@ public class PlayerStatsSyncPacket {
                 buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
                 buf.readUtf(),
                 buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
-                buf.readVarInt(), buf.readVarInt(), buf.readVarInt());
+                buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
+                buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                buf.readDouble(), buf.readDouble());
     }
 
     public static void handle(PlayerStatsSyncPacket msg, Supplier<NetworkEvent.Context> ctxSup) {

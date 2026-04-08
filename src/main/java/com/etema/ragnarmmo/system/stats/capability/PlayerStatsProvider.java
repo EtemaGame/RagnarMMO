@@ -100,7 +100,7 @@ public class PlayerStatsProvider
             player.getCapability(CAP).ifPresent(stats -> {
                 // Forzar el recálculo y aplicación de MaxHealth antes de rellenar.
                 var derived = com.etema.ragnarmmo.system.stats.compute.StatComputer.compute(
-                        player, stats, 0, 1.0, 0, player.getArmorValue(), 1.0);
+                        player, stats, com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot.capture(player));
 
                 var maxHealthAttr = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
                 if (maxHealthAttr != null) {

@@ -24,9 +24,9 @@ public class RagnarDamageCalculator {
     }
 
     public double applyMagicDefense(double damage, int intel, int vit, int dex, int level, double equipMDEF) {
-        double totalMdef = CombatMath.computeMDEF(intel, vit, dex, level, equipMDEF);
-        double drMagic = CombatMath.computeMagicDR(totalMdef);
-        return CombatMath.applyMagicDefense(damage, intel, drMagic);
+        double softMdef = CombatMath.computeSoftMDEF(intel, vit);
+        double hardMdef = CombatMath.computeHardMDEF(equipMDEF);
+        return CombatMath.applyMagicDefense(damage, softMdef, hardMdef);
     }
 
     public double applyCriticalModifier(double amount, int luk, int str) {

@@ -16,6 +16,7 @@ import com.etema.ragnarmmo.roitems.runtime.WeaponStatHelper;
 import com.etema.ragnarmmo.system.stats.RagnarStats;
 import com.etema.ragnarmmo.system.stats.capability.PlayerStats;
 import com.etema.ragnarmmo.system.stats.compute.CombatMath;
+import com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot;
 import com.etema.ragnarmmo.system.stats.compute.StatComputer;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.system.stats.net.DerivedStatsSyncPacket;
@@ -70,12 +71,11 @@ public class CommonEvents {
     public static void onJoin(EntityJoinLevelEvent e) {
         if (e.getEntity() instanceof ServerPlayer sp) {
             RagnarCoreAPI.get(sp).ifPresent(s -> {
-                double armaBase = getWeaponDamage(sp);
-                var derived = StatComputer.compute(sp, s, armaBase, getWeaponAPS(sp), getWeaponMagicDamage(sp), getArmorEff(sp), getArmorMagicDefense(sp), 1.0);
                 if (s instanceof PlayerStats internal) {
                     internal.ensureBaseStatBaseline(RagnarConfigs.SERVER.progression.baseStatPoints.get());
                 }
                 JobBonusService.recomputeStats(sp, s);
+                var derived = StatComputer.compute(sp, s, EquipmentStatSnapshot.capture(sp));
                 s.setManaMaxClient(derived.maxMana);
                 if (s instanceof PlayerStats internal) {
                     internal.setSPMaxClient(derived.maxSP); // Fix: use SP-specific formula, not Mana
@@ -118,7 +118,7 @@ public class CommonEvents {
             if (stats instanceof PlayerStats internal) {
                 internal.ensureBaseStatBaseline(RagnarConfigs.SERVER.progression.baseStatPoints.get());
             }
-            var d = StatComputer.compute(p, stats, getWeaponDamage(p), getWeaponAPS(p), getWeaponMagicDamage(p), getArmorEff(p), getArmorMagicDefense(p), 1.0);
+            var d = StatComputer.compute(p, stats, EquipmentStatSnapshot.capture(p));
 
             // Sync MAX_HEALTH
             var maxHealthInstance = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
@@ -219,7 +219,7 @@ public class CommonEvents {
         // --- PRIORITY RANGED BRANCH ---
         if (direct instanceof net.minecraft.world.entity.projectile.AbstractArrow arrow) {
             net.minecraft.nbt.CompoundTag snapshotTag = arrow.getPersistentData().getCompound("ragnarmmo_snapshot");
-            if (snapshotTag.contains("version") && snapshotTag.getInt("version") == 1) {
+            if (snapshotTag.contains("version") && snapshotTag.getInt("version") >= 1) {
                 String family = snapshotTag.getString("family");
                 java.util.UUID shooterUuid = snapshotTag.getUUID("shooter_uuid");
                 Entity owner = arrow.getOwner();
@@ -261,7 +261,8 @@ public class CommonEvents {
     }
 
     private static void processRangedDamage(LivingHurtEvent e, net.minecraft.nbt.CompoundTag snapshot, Entity shooter, LivingEntity target) {
-        double atk = snapshot.getDouble("atk");
+        double drawRatio = snapshot.contains("draw_ratio") ? snapshot.getDouble("draw_ratio") : 1.0D;
+        double atk = snapshot.getDouble("atk") * Math.max(0.1D, Math.min(1.0D, drawRatio));
         double critChance = snapshot.getDouble("crit_chance");
         double critMult = snapshot.getDouble("crit_damage");
         int dex = snapshot.getInt("dex");
@@ -269,18 +270,19 @@ public class CommonEvents {
         com.etema.ragnarmmo.combat.element.ElementType element = com.etema.ragnarmmo.combat.element.ElementType.valueOf(snapshot.getString("element"));
 
         java.util.Random rng = new java.util.Random();
-        int level = shooter instanceof LivingEntity le ? (le instanceof Player p ? RagnarCoreAPI.get(p).map(s -> s.getLevel()).orElse(1) : 1) : 1;
-        
         var ts = CombatMath.getTargetStats(target);
         double armorEff = getArmorEff(target);
-        
-        // STR 0 for purely ranged bow hits as per snapshot model Option A
-        double dmg = CombatMath.calculatePhysicalDamage(
-            0, dex, luk, level,
-            ts.vit, ts.agi, ts.vit, armorEff,
-            atk, 0, critChance, critMult - 1.4, 
-            rng, true
-        );
+
+        double dmg = CombatMath.computeDamageVariance(atk, dex, luk, rng);
+        if (rng.nextDouble() < critChance) {
+            dmg *= Math.max(1.0D, critMult);
+        }
+
+        dmg *= CombatMath.getWeaponSizePenalty(new ItemStack(net.minecraft.world.item.Items.BOW), getMobSize(target));
+
+        double hardDef = CombatMath.computeHardDEF(armorEff, ts.vit);
+        double softDef = CombatMath.computeSoftDEF(ts.vit, ts.agi, 0);
+        dmg = CombatMath.applyPhysicalDefense(dmg, softDef, hardDef, CombatMath.computePhysDR(hardDef));
         
         dmg *= CombatPropertyResolver.getElementalModifier(element, CombatPropertyResolver.getDefensiveElement(target));
         
@@ -313,10 +315,11 @@ public class CommonEvents {
             int dex = (int) StatAttributes.getTotal(p, StatKeys.DEX);
             int lvl = stats.getLevel();
             double armorEff = getArmorEff(p);
+            double armorMdef = getArmorMagicDefense(p);
 
             double finalDmg = rawDamage;
             if (isMagic) {
-                finalDmg = dmgCalc.applyMagicDefense(rawDamage, intel, vit, dex, lvl, armorEff);
+                finalDmg = dmgCalc.applyMagicDefense(rawDamage, intel, vit, dex, lvl, armorMdef);
             } else {
                 finalDmg = dmgCalc.applyPhysicalDefense(rawDamage, vit, agi, lvl, armorEff);
             }

@@ -1,24 +1,22 @@
 package com.etema.ragnarmmo.system.stats.compute;
 
+import com.etema.ragnarmmo.common.api.attributes.RagnarAttributes;
 import com.etema.ragnarmmo.common.api.compute.DerivedStats;
 import com.etema.ragnarmmo.common.api.events.StatComputeEvent;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
-import com.etema.ragnarmmo.common.api.attributes.RagnarAttributes;
+import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 
-import com.etema.ragnarmmo.roitems.runtime.RoItemNbtHelper;
-import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
-
 /**
- * StatComputer - Calculates derived stats by delegating to CombatMath.
- * All base formulas live in CombatMath (single source of truth).
+ * Authoritative derived-stat resolver.
+ * The formulas themselves live in {@link CombatMath}; this class wires player
+ * state, equipment, and passive skills into that formula layer.
  */
 public final class StatComputer {
 
@@ -42,8 +40,6 @@ public final class StatComputer {
     private static final ResourceLocation CRITICAL_SHOT = new ResourceLocation("ragnarmmo", "critical_shot");
     private static final ResourceLocation SKIN_TEMPERING = new ResourceLocation("ragnarmmo", "skin_tempering");
 
-    private static final double FLEE_DISPLAY_MAX = 0.60;
-
     private record SkillContext(
             int sword, int dagger, int mace, int bow, int weaponTrainer,
             int faith, int arcaneRegen, int accuracy, int manaControl,
@@ -51,212 +47,199 @@ public final class StatComputer {
             int researchWeaponry, int skinTempering, int criticalShot
     ) {}
 
-    public static DerivedStats compute(Player p, IPlayerStats s,
-            double weaponATK, double weaponAps,
-            double spellBase, double armorEff, double baseCast) {
-        double equipMDEF = getEquipMagicDefense(p);
-        return computeInternal(p, s, weaponATK, weaponAps, spellBase, armorEff, equipMDEF, baseCast);
+    public static DerivedStats compute(Player player, IPlayerStats stats, EquipmentStatSnapshot snapshot) {
+        EquipmentStatSnapshot resolvedSnapshot = snapshot != null ? snapshot : EquipmentStatSnapshot.capture(player);
+
+        int str = (int) Math.round(StatAttributes.getTotal(player, StatKeys.STR));
+        int agi = (int) Math.round(StatAttributes.getTotal(player, StatKeys.AGI));
+        int vit = (int) Math.round(StatAttributes.getTotal(player, StatKeys.VIT));
+        int intel = (int) Math.round(StatAttributes.getTotal(player, StatKeys.INT));
+        int dex = (int) Math.round(StatAttributes.getTotal(player, StatKeys.DEX));
+        int luk = (int) Math.round(StatAttributes.getTotal(player, StatKeys.LUK));
+        int level = stats.getLevel();
+
+        SkillContext skillContext = fetchSkillContext(player);
+        DerivedStats derived = new DerivedStats();
+
+        applyPhysicalOffense(player, derived, str, dex, luk, level, resolvedSnapshot, skillContext);
+        applyMagicalOffense(derived, intel, resolvedSnapshot.weaponMagicAtk());
+        applyDefense(derived, vit, agi, intel, luk, level, resolvedSnapshot, skillContext);
+        applyResources(derived, str, vit, intel, level, stats, skillContext);
+        applyMiscStats(player, derived, agi, dex, resolvedSnapshot);
+
+        MinecraftForge.EVENT_BUS.post(new StatComputeEvent(player, stats, derived));
+        return derived;
     }
 
-    private static DerivedStats computeInternal(Player p, IPlayerStats s,
-            double weaponATK, double weaponAps,
-            double spellBase, double armorEff, double equipMDEF, double baseCast) {
-        int STR = (int) Math.round(StatAttributes.getTotal(p, StatKeys.STR));
-        int AGI = (int) Math.round(StatAttributes.getTotal(p, StatKeys.AGI));
-        int VIT = (int) Math.round(StatAttributes.getTotal(p, StatKeys.VIT));
-        int INT = (int) Math.round(StatAttributes.getTotal(p, StatKeys.INT));
-        int DEX = (int) Math.round(StatAttributes.getTotal(p, StatKeys.DEX));
-        int LUK = (int) Math.round(StatAttributes.getTotal(p, StatKeys.LUK));
-        int LVL = s.getLevel();
-
-        SkillContext ctx = fetchSkillContext(p);
-        DerivedStats d = new DerivedStats();
-
-        applyPhysicalOffense(p, d, STR, DEX, LUK, LVL, weaponATK, ctx);
-        applyMagicalOffense(p, d, INT, DEX, LUK, LVL, spellBase);
-        applyDefense(p, d, VIT, AGI, INT, DEX, LUK, LVL, armorEff, equipMDEF, ctx);
-        
-        applyResources(p, d, STR, VIT, INT, LVL, s, ctx);
-        applyMiscStats(p, d, AGI, DEX, INT, LUK, STR, baseCast);
-
-        MinecraftForge.EVENT_BUS.post(new StatComputeEvent(p, s, d));
-        return d;
-    }
-
-    /**
-     * Compatibility overload for legacy callers using 8 parameters.
-     */
-    public static DerivedStats compute(Player p, IPlayerStats s,
-            double weaponATK, double weaponAps,
-            double spellBase, double armorEff, double equipMdef, double legacyScale) {
-        return computeInternal(p, s, weaponATK, weaponAps, spellBase, armorEff, equipMdef, legacyScale);
-    }
-
-    private static double getEquipMagicDefense(Player p) {
-        double equipMDEF = 0.0;
-        AttributeInstance attr = p.getAttribute(RagnarAttributes.MAGIC_DEFENSE.get());
-        if (attr != null) {
-            equipMDEF += attr.getValue();
-        }
-
-        for (EquipmentSlot slot : EquipmentSlot.values()) {
-            ItemStack stack = p.getItemBySlot(slot);
-            if (stack.isEmpty()) {
-                continue;
-            }
-            int refine = RoItemNbtHelper.getRefineLevel(stack);
-            if (refine >= 5) {
-                equipMDEF += (refine - 4);
-            }
-        }
-
-        return equipMDEF;
-    }
-
-    private static SkillContext fetchSkillContext(Player p) {
-        var skillsOpt = PlayerSkillsProvider.get(p).resolve();
+    private static SkillContext fetchSkillContext(Player player) {
+        var skillsOpt = PlayerSkillsProvider.get(player).resolve();
         if (skillsOpt.isEmpty()) {
             return new SkillContext(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
-        var sk = skillsOpt.get();
+
+        var skills = skillsOpt.get();
         return new SkillContext(
-                sk.getSkillLevel(SWORD_MASTERY), sk.getSkillLevel(DAGGER_MASTERY),
-                sk.getSkillLevel(MACE_MASTERY), sk.getSkillLevel(BOW_MASTERY),
-                sk.getSkillLevel(WEAPON_TRAINER), sk.getSkillLevel(FAITH),
-                sk.getSkillLevel(ARCANE_REGENERATION), sk.getSkillLevel(ACCURACY_TRAINING),
-                sk.getSkillLevel(MANA_CONTROL), sk.getSkillLevel(SPEAR_MASTERY),
-                sk.getSkillLevel(KATAR_MASTERY), sk.getSkillLevel(RIGHTHAND_MASTERY),
-                sk.getSkillLevel(LEFTHAND_MASTERY), sk.getSkillLevel(SONIC_ACCELERATION),
-                sk.getSkillLevel(RESEARCH_WEAPONRY), sk.getSkillLevel(SKIN_TEMPERING),
-                sk.getSkillLevel(CRITICAL_SHOT)
+                skills.getSkillLevel(SWORD_MASTERY), skills.getSkillLevel(DAGGER_MASTERY),
+                skills.getSkillLevel(MACE_MASTERY), skills.getSkillLevel(BOW_MASTERY),
+                skills.getSkillLevel(WEAPON_TRAINER), skills.getSkillLevel(FAITH),
+                skills.getSkillLevel(ARCANE_REGENERATION), skills.getSkillLevel(ACCURACY_TRAINING),
+                skills.getSkillLevel(MANA_CONTROL), skills.getSkillLevel(SPEAR_MASTERY),
+                skills.getSkillLevel(KATAR_MASTERY), skills.getSkillLevel(RIGHTHAND_MASTERY),
+                skills.getSkillLevel(LEFTHAND_MASTERY), skills.getSkillLevel(SONIC_ACCELERATION),
+                skills.getSkillLevel(RESEARCH_WEAPONRY), skills.getSkillLevel(SKIN_TEMPERING),
+                skills.getSkillLevel(CRITICAL_SHOT)
         );
     }
 
-    private static void applyPhysicalOffense(Player p, DerivedStats d, int STR, int DEX, int LUK, int LVL, double weaponATK, SkillContext ctx) {
-        ItemStack main = p.getMainHandItem();
-        boolean isRanged = CombatMath.isRangedWeapon(main);
-        double statusATK = CombatMath.computeStatusATK(STR, DEX, LUK, LVL, isRanged);
-        
-        // STRICT MASTERY FILTERING
-        double masteryBonus = 0;
-        if (isSword(main)) masteryBonus += ctx.sword * 4.0;
-        else if (isDagger(main)) masteryBonus += ctx.dagger * 4.0;
-        else if (isMace(main)) masteryBonus += ctx.mace * 4.0;
-        else if (isBow(main)) masteryBonus += ctx.bow * 4.0;
-        else if (isSpear(main)) masteryBonus += ctx.spear * 4.0;
-        else if (isKatar(main)) masteryBonus += ctx.katar * 4.0;
-        
-        if (isAxeOrMace(main)) masteryBonus += (ctx.researchWeaponry * 3.0);
-        
-        double skillATK = masteryBonus + (ctx.weaponTrainer * 1.5);
-        if (isDualWielding(p)) skillATK += (ctx.rightHand * 3.0) + (ctx.leftHand * 3.0);
-        
-        double dmgPhysRaw = CombatMath.computeWeaponATK(weaponATK, STR, DEX, isRanged) + statusATK + skillATK;
-        d.physicalAttack = dmgPhysRaw;
-        d.physicalAttackMin = Math.max(0, CombatMath.computeDamageVarianceFloor(dmgPhysRaw, DEX, LUK));
-        d.physicalAttackMax = dmgPhysRaw;
-        
-        double skillHitBonus = (ctx.accuracy * 3.0);
-        if (isBow(main)) skillHitBonus += (ctx.bow * 2.0);
-        if (ctx.sonicAccel > 0 && isKatar(main)) skillHitBonus += (ctx.sonicAccel * 5.0);
-        if (ctx.researchWeaponry > 0 && isAxeOrMace(main)) skillHitBonus += (ctx.researchWeaponry * 2.0);
-        
-        d.accuracy = CombatMath.computeHIT(DEX, LUK, LVL, skillHitBonus);
-        
-        double skillCritChance = 0;
-        double skillCritDamage = 0;
-        if (isRanged) {
-            skillCritChance += ctx.criticalShot * 0.01;
-            skillCritDamage += ctx.criticalShot * 0.01;
+    private static void applyPhysicalOffense(Player player, DerivedStats derived, int str, int dex, int luk, int level,
+            EquipmentStatSnapshot snapshot, SkillContext ctx) {
+        ItemStack main = player.getMainHandItem();
+        boolean isRanged = snapshot.rangedWeapon();
+        double statusAtk = CombatMath.computeStatusATK(str, dex, luk, level, isRanged);
+
+        double masteryBonus = 0.0D;
+        if (isSword(main)) masteryBonus += ctx.sword * 4.0D;
+        else if (isDagger(main)) masteryBonus += ctx.dagger * 4.0D;
+        else if (isMace(main)) masteryBonus += ctx.mace * 4.0D;
+        else if (isBow(main)) masteryBonus += ctx.bow * 4.0D;
+        else if (isSpear(main)) masteryBonus += ctx.spear * 4.0D;
+        else if (isKatar(main)) masteryBonus += ctx.katar * 4.0D;
+
+        if (isAxeOrMace(main)) masteryBonus += ctx.researchWeaponry * 3.0D;
+
+        double skillAtk = masteryBonus + (ctx.weaponTrainer * 1.5D);
+        if (isDualWielding(player)) {
+            skillAtk += (ctx.rightHand * 3.0D) + (ctx.leftHand * 3.0D);
         }
-        
-        d.criticalChance = CombatMath.computeCritChance(LUK, DEX, getCritChance(p) + skillCritChance);
-        d.criticalDamageMultiplier = CombatMath.computeCritDamageMultiplier(LUK, STR) + getCritDamage(p) + skillCritDamage;
-        d.perfectDodge = CombatMath.computePerfectDodge(LUK);
+
+        double physicalAttack = CombatMath.computeWeaponATK(snapshot.weaponAtk(), str, dex, isRanged) + statusAtk + skillAtk;
+        derived.physicalAttack = physicalAttack;
+        derived.physicalAttackMin = Math.max(0.0D, CombatMath.computeDamageVarianceFloor(physicalAttack, dex, luk));
+        derived.physicalAttackMax = physicalAttack;
+
+        double hitBonus = ctx.accuracy * 3.0D;
+        if (isBow(main)) hitBonus += ctx.bow * 2.0D;
+        if (ctx.sonicAccel > 0 && isKatar(main)) hitBonus += ctx.sonicAccel * 5.0D;
+        if (ctx.researchWeaponry > 0 && isAxeOrMace(main)) hitBonus += ctx.researchWeaponry * 2.0D;
+        derived.accuracy = CombatMath.computeHIT(dex, luk, level, hitBonus);
+
+        double skillCritChance = 0.0D;
+        double skillCritDamage = 0.0D;
+        if (isRanged) {
+            skillCritChance += ctx.criticalShot * 0.01D;
+            skillCritDamage += ctx.criticalShot * 0.01D;
+        }
+
+        derived.criticalChance = CombatMath.computeCritChance(luk, dex, getCritChance(player) + skillCritChance);
+        derived.criticalDamageMultiplier = CombatMath.computeCritDamageMultiplier(luk, str) + getCritDamage(player) + skillCritDamage;
+        derived.perfectDodge = CombatMath.computePerfectDodge(luk);
     }
 
-    private static void applyMagicalOffense(Player p, DerivedStats d, int INT, int DEX, int LUK, int LVL, double spellBase) {
-        d.magicAttack = Math.max(0, spellBase + CombatMath.computeStatusMATK(INT, DEX, LUK, LVL));
+    private static void applyMagicalOffense(DerivedStats derived, int intel, double weaponMagicAtk) {
+        derived.magicAttackMin = Math.max(0.0D, weaponMagicAtk + CombatMath.computeStatusMATKMin(intel));
+        derived.magicAttackMax = Math.max(derived.magicAttackMin, weaponMagicAtk + CombatMath.computeStatusMATKMax(intel));
+        derived.magicAttack = (derived.magicAttackMin + derived.magicAttackMax) * 0.5D;
     }
 
-    private static void applyDefense(Player p, DerivedStats d, int VIT, int AGI, int INT, int DEX, int LUK, int LVL, double armorEff, double equipMDEF, SkillContext ctx) {
-        double hardDEF = CombatMath.computeHardDEF(armorEff, VIT);
-        d.physicalDamageReduction = CombatMath.computePhysDR(hardDEF) + (ctx.skinTempering * 0.01);
-        d.defense = hardDEF;
-        double mdefBase = CombatMath.computeMDEF(INT, VIT, DEX, LVL, equipMDEF);
-        d.magicDamageReduction = CombatMath.computeMagicDR(mdefBase);
-        d.magicDefense = mdefBase;
-        d.flee = Math.min(CombatMath.computeFLEE(AGI, LUK, LVL, 0), FLEE_DISPLAY_MAX * 100.0);
+    private static void applyDefense(DerivedStats derived, int vit, int agi, int intel, int luk, int level,
+            EquipmentStatSnapshot snapshot, SkillContext ctx) {
+        double hardDef = CombatMath.computeHardDEF(snapshot.armorHardDef(), vit);
+        double softDef = CombatMath.computeSoftDEF(vit, agi, level);
+        derived.hardDefense = hardDef;
+        derived.softDefense = softDef;
+        derived.defense = hardDef + softDef;
+        derived.physicalDamageReduction = CombatMath.computePhysDR(hardDef) + (ctx.skinTempering * 0.01D);
+
+        double hardMdef = CombatMath.computeHardMDEF(snapshot.armorHardMdef());
+        double softMdef = CombatMath.computeSoftMDEF(intel, vit);
+        derived.hardMagicDefense = hardMdef;
+        derived.softMagicDefense = softMdef;
+        derived.magicDefense = hardMdef + softMdef;
+        derived.magicDamageReduction = CombatMath.computeMagicDR(hardMdef);
+        derived.flee = CombatMath.computeFLEE(agi, luk, level, 0.0D);
     }
 
-    private static void applyResources(Player p, DerivedStats d, int STR, int VIT, int INT, int LVL, IPlayerStats s, SkillContext ctx) {
-        double hpMax = CombatMath.computeMaxHP(VIT, LVL, s.getJobId()) + (ctx.faith * 10.0);
-        d.maxHealth = hpMax;
-        d.healthRegenPerSecond = Math.max(0, CombatMath.computeHPRegen(VIT, hpMax));
-        double manaMax = CombatMath.computeMaxMana(INT, LVL, s.getJobId());
-        if (ctx.manaControl > 0) manaMax *= (1.0 + (ctx.manaControl * 0.03));
-        d.maxMana = manaMax;
-        d.manaRegenPerSecond = CombatMath.computeManaRegen(INT, manaMax) + (ctx.arcaneRegen * 0.1);
-        double spMax = CombatMath.computeMaxSP(VIT, STR, LVL, s.getJobId());
-        d.maxSP = spMax;
-        d.spRegenPerSecond = CombatMath.computeSPRegen(STR, spMax);
+    private static void applyResources(DerivedStats derived, int str, int vit, int intel, int level,
+            IPlayerStats stats, SkillContext ctx) {
+        double maxHealth = CombatMath.computeMaxHP(vit, level, stats.getJobId()) + (ctx.faith * 10.0D);
+        derived.maxHealth = maxHealth;
+        derived.healthRegenPerSecond = Math.max(0.0D, CombatMath.computeHPRegen(vit, maxHealth));
+
+        double maxMana = CombatMath.computeMaxMana(intel, level, stats.getJobId());
+        if (ctx.manaControl > 0) {
+            maxMana *= 1.0D + (ctx.manaControl * 0.03D);
+        }
+        derived.maxMana = maxMana;
+        derived.manaRegenPerSecond = CombatMath.computeManaRegen(intel, maxMana) + (ctx.arcaneRegen * 0.1D);
+
+        double maxSp = CombatMath.computeMaxSP(vit, str, level, stats.getJobId());
+        derived.maxSP = maxSp;
+        derived.spRegenPerSecond = CombatMath.computeSPRegen(str, maxSp);
     }
 
-    private static void applyMiscStats(Player p, DerivedStats d, int AGI, int DEX, int INT, int LUK, int STR, double baseCast) {
-        boolean hasShield = p.getOffhandItem().canPerformAction(net.minecraftforge.common.ToolActions.SHIELD_BLOCK) || p.getOffhandItem().getItem() instanceof net.minecraft.world.item.ShieldItem;
-        double aspdBonus = (p.hasEffect(net.minecraft.world.effect.MobEffects.DIG_SPEED) && isAxeOrMace(p.getMainHandItem())) ? 6.0 : 0;
-        int aspdRo = CombatMath.computeASPD_RO(CombatMath.getWeaponBaseASPD(p.getMainHandItem()), hasShield, AGI, DEX, aspdBonus);
+    private static void applyMiscStats(Player player, DerivedStats derived, int agi, int dex,
+            EquipmentStatSnapshot snapshot) {
+        double aspdBonus = (player.hasEffect(net.minecraft.world.effect.MobEffects.DIG_SPEED) && isAxeOrMace(player.getMainHandItem()))
+                ? 6.0D
+                : 0.0D;
+        int aspdRo = CombatMath.computeASPD_RO(snapshot.weaponBaseAspd(), snapshot.hasShield(), agi, dex, aspdBonus);
         double aps = CombatMath.convertASPD_ToAPS(aspdRo);
-        d.attackSpeed = aspdRo;
-        d.globalCooldown = aps > 0 ? 1.0 / aps : 0.0;
-        d.castTime = CombatMath.computeCastTime(baseCast, DEX, INT, false);
-        d.lifeSteal = getLifeSteal(p);
+
+        derived.attackSpeed = aspdRo;
+        derived.globalCooldown = aps > 0.0D ? 1.0D / aps : 0.0D;
+        derived.castTime = CombatMath.computeCastTime(snapshot.baseCastTime(), dex, 0, false);
+        derived.lifeSteal = getLifeSteal(player);
     }
 
-    private static double getCritChance(Player p) {
-        AttributeInstance attr = p.getAttribute(RagnarAttributes.CRIT_CHANCE.get());
-        return attr != null ? attr.getValue() : 0.0;
+    private static double getCritChance(Player player) {
+        AttributeInstance attr = player.getAttribute(RagnarAttributes.CRIT_CHANCE.get());
+        return attr != null ? attr.getValue() : 0.0D;
     }
 
-    private static double getCritDamage(Player p) {
-        AttributeInstance attr = p.getAttribute(RagnarAttributes.CRIT_DAMAGE.get());
-        return attr != null ? Math.max(0, attr.getValue() - 1.5) : 0.0;
+    private static double getCritDamage(Player player) {
+        AttributeInstance attr = player.getAttribute(RagnarAttributes.CRIT_DAMAGE.get());
+        return attr != null ? Math.max(0.0D, attr.getValue() - 1.5D) : 0.0D;
     }
 
-    private static double getLifeSteal(Player p) {
-        AttributeInstance attr = p.getAttribute(RagnarAttributes.LIFE_STEAL.get());
-        return attr != null ? attr.getValue() : 0.0;
+    private static double getLifeSteal(Player player) {
+        AttributeInstance attr = player.getAttribute(RagnarAttributes.LIFE_STEAL.get());
+        return attr != null ? attr.getValue() : 0.0D;
     }
 
-    private static boolean isKatar(net.minecraft.world.item.ItemStack stack) {
-        return stack.getTags().anyMatch(t -> t.location().getPath().contains("katars"));
+    private static boolean isKatar(ItemStack stack) {
+        return stack.getTags().anyMatch(tag -> tag.location().getPath().contains("katars"));
     }
 
-    private static boolean isDualWielding(Player p) {
-        return !p.getMainHandItem().isEmpty() && !p.getOffhandItem().isEmpty() && p.getMainHandItem().getItem() instanceof net.minecraft.world.item.TieredItem && p.getOffhandItem().getItem() instanceof net.minecraft.world.item.TieredItem && !(p.getOffhandItem().getItem() instanceof net.minecraft.world.item.ShieldItem);
+    private static boolean isDualWielding(Player player) {
+        return !player.getMainHandItem().isEmpty()
+                && !player.getOffhandItem().isEmpty()
+                && player.getMainHandItem().getItem() instanceof net.minecraft.world.item.TieredItem
+                && player.getOffhandItem().getItem() instanceof net.minecraft.world.item.TieredItem
+                && !(player.getOffhandItem().getItem() instanceof net.minecraft.world.item.ShieldItem);
     }
 
-    private static boolean isAxeOrMace(net.minecraft.world.item.ItemStack stack) {
-        return !stack.isEmpty() && (stack.getItem() instanceof net.minecraft.world.item.AxeItem || stack.getTags().anyMatch(t -> t.location().getPath().contains("maces")));
+    private static boolean isAxeOrMace(ItemStack stack) {
+        return !stack.isEmpty() && (stack.getItem() instanceof net.minecraft.world.item.AxeItem
+                || stack.getTags().anyMatch(tag -> tag.location().getPath().contains("maces")));
     }
 
-    private static boolean isSword(net.minecraft.world.item.ItemStack stack) {
+    private static boolean isSword(ItemStack stack) {
         return stack.getItem() instanceof net.minecraft.world.item.SwordItem && !isKatar(stack);
     }
 
-    private static boolean isDagger(net.minecraft.world.item.ItemStack stack) {
-        return stack.getTags().anyMatch(t -> t.location().getPath().contains("daggers"));
+    private static boolean isDagger(ItemStack stack) {
+        return stack.getTags().anyMatch(tag -> tag.location().getPath().contains("daggers"));
     }
 
-    private static boolean isMace(net.minecraft.world.item.ItemStack stack) {
-        return stack.getTags().anyMatch(t -> t.location().getPath().contains("maces"));
+    private static boolean isMace(ItemStack stack) {
+        return stack.getTags().anyMatch(tag -> tag.location().getPath().contains("maces"));
     }
 
-    private static boolean isBow(net.minecraft.world.item.ItemStack stack) {
+    private static boolean isBow(ItemStack stack) {
         return stack.getItem() instanceof net.minecraft.world.item.BowItem;
     }
 
-    private static boolean isSpear(net.minecraft.world.item.ItemStack stack) {
-        return stack.getTags().anyMatch(t -> t.location().getPath().contains("spears"));
+    private static boolean isSpear(ItemStack stack) {
+        return stack.getTags().anyMatch(tag -> tag.location().getPath().contains("spears"));
     }
 }

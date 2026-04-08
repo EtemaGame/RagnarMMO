@@ -20,13 +20,8 @@ public final class CombatMath {
 
     // ATK
     private static final double DEX_TO_ATK_DIVISOR = 5.0;
-    private static final double LUK_TO_ATK_DIVISOR = 3.0; // iROWiki Renewal
-    private static final double LEVEL_TO_ATK_MULT = 0.25;
-
-    // MATK
-    private static final double DEX_TO_MATK_DIVISOR = 5.0; // iROWiki Renewal
-    private static final double LUK_TO_MATK_DIVISOR = 3.0; // iROWiki Renewal
-    private static final double LEVEL_TO_MATK_MULT = 0.25;
+    private static final double STR_TO_RANGED_ATK_DIVISOR = 5.0;
+    private static final double LUK_TO_ATK_DIVISOR = 5.0;
 
     // Damage Variance
     private static final double MIN_DAMAGE_ROLL = 0.8;
@@ -67,9 +62,7 @@ public final class CombatMath {
     private static final double DR_PHYS_MAX = 0.99;
 
     // MDEF
-    private static final double MDEF_CONSTANT = 80.0;
-    private static final double DR_MAGIC_MAX = 0.7;
-    private static final double MDEF_SOFT_REDUCTION = 0.25;
+    private static final double DR_MAGIC_MAX = 0.99;
 
     // Cast Time
     private static final double CAST_FIXED_RATIO = 0.2;
@@ -185,27 +178,20 @@ public final class CombatMath {
     // ========================================
 
     public static double computeStatusATK(int STR, int DEX, int LUK, int level, boolean isRanged) {
-        double atk = 0;
-
         if (isRanged) {
-            atk += DEX + Math.pow(Math.floor(DEX / 10.0), 2);
-            atk += STR / DEX_TO_ATK_DIVISOR;
-        } else {
-            atk += STR + Math.pow(Math.floor(STR / 10.0), 2);
-            atk += DEX / DEX_TO_ATK_DIVISOR;
+            return DEX
+                    + Math.pow(Math.floor(DEX / 10.0), 2)
+                    + Math.floor(STR / STR_TO_RANGED_ATK_DIVISOR)
+                    + Math.floor(LUK / LUK_TO_ATK_DIVISOR);
         }
-
-        atk += Math.floor(LUK / LUK_TO_ATK_DIVISOR);
-        atk += level * LEVEL_TO_ATK_MULT;
-
-        return atk;
+        return STR
+                + Math.pow(Math.floor(STR / 10.0), 2)
+                + Math.floor(DEX / DEX_TO_ATK_DIVISOR)
+                + Math.floor(LUK / LUK_TO_ATK_DIVISOR);
     }
 
     public static double computeWeaponATK(double weaponBase, int STR, int DEX, boolean isRanged) {
-        if (isRanged) {
-            return weaponBase * (1.0 + DEX / 200.0);
-        }
-        return weaponBase * (1.0 + STR / 200.0);
+        return Math.max(0.0, weaponBase);
     }
     
     public static int computeRangedDrawTicks(int baseDrawTicks, int agi) {
@@ -252,14 +238,16 @@ public final class CombatMath {
     // MATK (ATAQUE MAGICO)
     // ========================================
 
+    public static double computeStatusMATKMin(int INT) {
+        return INT + Math.pow(Math.floor(INT / 7.0), 2);
+    }
+
+    public static double computeStatusMATKMax(int INT) {
+        return INT + Math.pow(Math.floor(INT / 5.0), 2);
+    }
+
     public static double computeStatusMATK(int INT, int DEX, int LUK, int level) {
-        double matk = INT * 1.5;
-
-        matk += DEX / DEX_TO_MATK_DIVISOR;
-        matk += LUK / LUK_TO_MATK_DIVISOR;
-        matk += level * LEVEL_TO_MATK_MULT;
-
-        return matk;
+        return (computeStatusMATKMin(INT) + computeStatusMATKMax(INT)) * 0.5;
     }
 
     public static double computeTotalMATK(int INT, int DEX, int LUK, int level,
@@ -415,7 +403,9 @@ public final class CombatMath {
     // ========================================
 
     public static double computeSoftDEF(int VIT, int AGI, int level) {
-        return Math.floor((VIT + level) / 2.0) + Math.floor(AGI / 5.0);
+        double vitComponent = Math.floor(VIT * 0.5);
+        double scalingComponent = Math.max(Math.floor(VIT * 0.3), Math.floor((VIT * VIT) / 150.0) - 1.0);
+        return Math.max(0.0, vitComponent + scalingComponent);
     }
 
     public static double computeHardDEF(double armorDEF, int VIT) {
@@ -439,21 +429,25 @@ public final class CombatMath {
     // DEFENSA MAGICA
     // ========================================
 
+    public static double computeSoftMDEF(int INT, int VIT) {
+        return Math.max(0.0, INT + Math.floor(VIT / 2.0));
+    }
+
+    public static double computeHardMDEF(double equipMDEF) {
+        return Math.max(0.0, equipMDEF);
+    }
+
     public static double computeMDEF(int INT, int VIT, int DEX, int level, double equipMDEF) {
-        double soft = INT + (level / 4.0) + ((VIT + level) / 5.0) + (DEX / 5.0);
-        double hard = equipMDEF;
-        return soft + hard;
+        return computeSoftMDEF(INT, VIT) + computeHardMDEF(equipMDEF);
     }
 
-    public static double computeMagicDR(double totalMDEF) {
-        double dr = soft(totalMDEF, MDEF_CONSTANT);
-        return clamp(0, DR_MAGIC_MAX, dr);
+    public static double computeMagicDR(double hardMDEF) {
+        return clamp(0.0, DR_MAGIC_MAX, hardMDEF / 100.0);
     }
 
-    public static double applyMagicDefense(double rawDamage, int INT, double drMagic) {
-        double softReduction = INT * MDEF_SOFT_REDUCTION;
-        double afterSoft = Math.max(rawDamage * 0.1, rawDamage - softReduction);
-        return afterSoft * (1.0 - drMagic);
+    public static double applyMagicDefense(double rawDamage, double softMDEF, double hardMDEF) {
+        double afterHard = rawDamage * (1.0 - computeMagicDR(hardMDEF));
+        return Math.max(1.0, afterHard - softMDEF);
     }
 
     // ========================================
@@ -462,13 +456,8 @@ public final class CombatMath {
 
     public static double computeCastTime(double baseCast, int DEX, int INT,
             boolean useRenewalFormula) {
-        double fixed = baseCast * CAST_FIXED_RATIO;
-        double variable = baseCast * (1.0 - CAST_FIXED_RATIO);
-
-        double castReduction = Math.sqrt(1.0 - Math.min(1.0, (DEX * 2.0 + INT) / 530.0));
-        variable *= castReduction;
-
-        return Math.max(CAST_MIN, fixed + variable);
+        double reductionFactor = 1.0 - Math.min(1.0, DEX / 150.0);
+        return Math.max(CAST_MIN, baseCast * reductionFactor);
     }
 
     public static int computeCastDelay(int baseDelayTicks, net.minecraft.world.entity.player.Player player) {
@@ -606,10 +595,9 @@ public final class CombatMath {
         double variance = 0.9 + rng.nextDouble() * 0.1;
         double damage = totalMATK * variance;
 
-        double mdef = computeMDEF(defenderINT, defenderVIT, attackerDEX, attackerLevel, defenderEquipMDEF);
-        double drMagic = computeMagicDR(mdef);
-
-        damage = applyMagicDefense(damage, defenderINT, drMagic);
+        double softMdef = computeSoftMDEF(defenderINT, defenderVIT);
+        double hardMdef = computeHardMDEF(defenderEquipMDEF);
+        damage = applyMagicDefense(damage, softMdef, hardMdef);
 
         return Math.max(1.0, damage);
     }
@@ -644,14 +632,19 @@ public final class CombatMath {
                     s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT),
                     s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK),
                     s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.AGI),
-                    0 // MDEF legacy fallback
+                    (int) Math.round(EquipmentStatSnapshot.computeArmorHardMdef(p))
                 );
             }
         } else {
             var stats = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(entity).resolve();
             if (stats.isPresent()) {
                 var s = stats.get();
-                return new TargetStats(s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT), s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT), s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK), s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.AGI), 0);
+                return new TargetStats(
+                        s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT),
+                        s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT),
+                        s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK),
+                        s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.AGI),
+                        0);
             }
         }
         return new TargetStats(1, 1, 1, 1, 0);

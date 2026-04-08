@@ -19,6 +19,8 @@ public class DerivedStatsSyncPacket {
     public final double physicalAttackMin;
     public final double physicalAttackMax;
     public final double magicAttack;
+    public final double magicAttackMin;
+    public final double magicAttackMax;
     public final double accuracy;
     public final double criticalChance;
     public final double criticalDamageMultiplier;
@@ -35,12 +37,18 @@ public class DerivedStatsSyncPacket {
     public final double manaRegenPerSecond;
     public final double defense;
     public final double magicDefense;
+    public final double hardDefense;
+    public final double softDefense;
+    public final double hardMagicDefense;
+    public final double softMagicDefense;
 
     public DerivedStatsSyncPacket(DerivedStats d) {
         this.physicalAttack = d.physicalAttack;
         this.physicalAttackMin = d.physicalAttackMin;
         this.physicalAttackMax = d.physicalAttackMax;
         this.magicAttack = d.magicAttack;
+        this.magicAttackMin = d.magicAttackMin;
+        this.magicAttackMax = d.magicAttackMax;
         this.accuracy = d.accuracy;
         this.criticalChance = d.criticalChance;
         this.criticalDamageMultiplier = d.criticalDamageMultiplier;
@@ -57,19 +65,27 @@ public class DerivedStatsSyncPacket {
         this.manaRegenPerSecond = d.manaRegenPerSecond;
         this.defense = d.defense;
         this.magicDefense = d.magicDefense;
+        this.hardDefense = d.hardDefense;
+        this.softDefense = d.softDefense;
+        this.hardMagicDefense = d.hardMagicDefense;
+        this.softMagicDefense = d.softMagicDefense;
     }
 
     public DerivedStatsSyncPacket(
             double physicalAttack, double physicalAttackMin, double physicalAttackMax,
-            double magicAttack, double accuracy, double criticalChance,
+            double magicAttack, double magicAttackMin, double magicAttackMax,
+            double accuracy, double criticalChance,
             double criticalDamageMultiplier, double flee, double perfectDodge, double attackSpeed,
             double castTime, double globalCooldown, double physicalDamageReduction,
             double magicDamageReduction, double maxHealth, double healthRegenPerSecond,
-            double maxMana, double manaRegenPerSecond, double defense, double magicDefense) {
+            double maxMana, double manaRegenPerSecond, double defense, double magicDefense,
+            double hardDefense, double softDefense, double hardMagicDefense, double softMagicDefense) {
         this.physicalAttack = physicalAttack;
         this.physicalAttackMin = physicalAttackMin;
         this.physicalAttackMax = physicalAttackMax;
         this.magicAttack = magicAttack;
+        this.magicAttackMin = magicAttackMin;
+        this.magicAttackMax = magicAttackMax;
         this.accuracy = accuracy;
         this.criticalChance = criticalChance;
         this.criticalDamageMultiplier = criticalDamageMultiplier;
@@ -86,6 +102,10 @@ public class DerivedStatsSyncPacket {
         this.manaRegenPerSecond = manaRegenPerSecond;
         this.defense = defense;
         this.magicDefense = magicDefense;
+        this.hardDefense = hardDefense;
+        this.softDefense = softDefense;
+        this.hardMagicDefense = hardMagicDefense;
+        this.softMagicDefense = softMagicDefense;
     }
 
     public static void encode(DerivedStatsSyncPacket m, FriendlyByteBuf buf) {
@@ -93,6 +113,8 @@ public class DerivedStatsSyncPacket {
         buf.writeDouble(m.physicalAttackMin);
         buf.writeDouble(m.physicalAttackMax);
         buf.writeDouble(m.magicAttack);
+        buf.writeDouble(m.magicAttackMin);
+        buf.writeDouble(m.magicAttackMax);
         buf.writeDouble(m.accuracy);
         buf.writeDouble(m.criticalChance);
         buf.writeDouble(m.criticalDamageMultiplier);
@@ -109,17 +131,23 @@ public class DerivedStatsSyncPacket {
         buf.writeDouble(m.manaRegenPerSecond);
         buf.writeDouble(m.defense);
         buf.writeDouble(m.magicDefense);
+        buf.writeDouble(m.hardDefense);
+        buf.writeDouble(m.softDefense);
+        buf.writeDouble(m.hardMagicDefense);
+        buf.writeDouble(m.softMagicDefense);
     }
 
     public static DerivedStatsSyncPacket decode(FriendlyByteBuf buf) {
         return new DerivedStatsSyncPacket(
                 buf.readDouble(), buf.readDouble(), buf.readDouble(),
                 buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                buf.readDouble(), buf.readDouble(),
                 buf.readDouble(), buf.readDouble(), buf.readDouble(),
                 buf.readDouble(), buf.readDouble(), buf.readDouble(),
                 buf.readDouble(), buf.readDouble(), buf.readDouble(),
                 buf.readDouble(), buf.readDouble(), buf.readDouble(),
-                buf.readDouble(),
+                buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                buf.readDouble(), buf.readDouble(),
                 buf.readDouble());
     }
 
@@ -139,6 +167,8 @@ public class DerivedStatsSyncPacket {
         d.physicalAttackMin = this.physicalAttackMin;
         d.physicalAttackMax = this.physicalAttackMax;
         d.magicAttack = this.magicAttack;
+        d.magicAttackMin = this.magicAttackMin;
+        d.magicAttackMax = this.magicAttackMax;
         d.accuracy = this.accuracy;
         d.criticalChance = this.criticalChance;
         d.criticalDamageMultiplier = this.criticalDamageMultiplier;
@@ -155,6 +185,10 @@ public class DerivedStatsSyncPacket {
         d.manaRegenPerSecond = this.manaRegenPerSecond;
         d.defense = this.defense;
         d.magicDefense = this.magicDefense;
+        d.hardDefense = this.hardDefense;
+        d.softDefense = this.softDefense;
+        d.hardMagicDefense = this.hardMagicDefense;
+        d.softMagicDefense = this.softMagicDefense;
         return d;
     }
 }

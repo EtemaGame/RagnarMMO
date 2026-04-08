@@ -205,7 +205,7 @@ public class RagnarCombatEngine {
                 double flee = d.flee;
                 double pd = d.perfectDodge;
                 double criticalShield = Math.floor(lvl / 15.0) + Math.floor(luk / 5.0);
-                double armorEff = d.defense; 
+                double armorEff = d.hardDefense;
                 
                 return new DefenderStats(flee, criticalShield, pd, vit, agi, luk, lvl, armorEff, com.etema.ragnarmmo.combat.element.ElementType.NEUTRAL);
             }

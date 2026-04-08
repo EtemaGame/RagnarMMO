@@ -9,6 +9,7 @@ import com.etema.ragnarmmo.combat.api.CombatHitResultType;
 import com.etema.ragnarmmo.combat.api.CombatResolution;
 import com.etema.ragnarmmo.combat.state.CombatActorState;
 import com.etema.ragnarmmo.combat.util.CombatDebugLog;
+import com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -58,9 +59,8 @@ public class RagnarBasicAttackService {
         }
 
         IPlayerStats attackerStats = statsOpt.get();
-        double weaponAtk = extractMainhandAttackDamage(attacker);
         DerivedStats attackerDerived = RagnarCoreAPI
-                .computeDerivedStats(attacker, attackerStats, weaponAtk, 1.0D, 0.0D, target.getArmorValue(), 1.0D)
+                .computeDerivedStats(attacker, attackerStats, EquipmentStatSnapshot.capture(attacker))
                 .orElse(null);
 
         if (attackerDerived == null) {
@@ -74,8 +74,7 @@ public class RagnarBasicAttackService {
             var targetStatsOpt = RagnarCoreAPI.get(targetPlayer);
             if (targetStatsOpt.isPresent()) {
                 DerivedStats targetDerived = RagnarCoreAPI
-                        .computeDerivedStats(targetPlayer, targetStatsOpt.get(), 0.0D, 1.0D, 0.0D,
-                                targetPlayer.getArmorValue(), 1.0D)
+                        .computeDerivedStats(targetPlayer, targetStatsOpt.get(), EquipmentStatSnapshot.capture(targetPlayer))
                         .orElse(null);
                 if (targetDerived != null) {
                     targetFlee = targetDerived.flee;
@@ -84,7 +83,7 @@ public class RagnarBasicAttackService {
             }
         }
 
-        boolean hit = rollAgainstPercent(attackerDerived.accuracy - targetFlee, attacker.getRandom().nextDouble());
+        boolean hit = attacker.getRandom().nextDouble() < com.etema.ragnarmmo.system.stats.compute.CombatMath.computeHitRate(attackerDerived.accuracy, targetFlee);
         actorState.setLastAcceptedSequenceId(ctx.sequenceId());
         int intervalTicks = Math.max(1, (int) Math.round(Math.max(0.05D, attackerDerived.globalCooldown) * 20.0D));
         cooldownService.markBasicAttackUsed(actorState.getCooldowns(), nowTick, intervalTicks);
@@ -93,7 +92,7 @@ public class RagnarBasicAttackService {
             return CombatResolution.miss(attacker.getId(), target.getId());
         }
 
-        boolean critical = rollAgainstPercent(attackerDerived.criticalChance, attacker.getRandom().nextDouble());
+        boolean critical = attacker.getRandom().nextDouble() < attackerDerived.criticalChance;
         double baseDamage = Math.max(attackerDerived.physicalAttackMin,
                 (attackerDerived.physicalAttackMin + attackerDerived.physicalAttackMax) * 0.5D);
         double damage = Math.max(0.0D, baseDamage * (1.0D - clamp01(targetPhysicalReduction)));
@@ -107,11 +106,6 @@ public class RagnarBasicAttackService {
         }
 
         return CombatResolution.hit(attacker.getId(), target.getId(), baseDamage, damage, critical);
-    }
-
-    private static boolean rollAgainstPercent(double chancePercent, double random01) {
-        double clamped = Math.max(0.0D, Math.min(100.0D, chancePercent));
-        return random01 * 100.0D < clamped;
     }
 
     private static double clamp01(double value) {

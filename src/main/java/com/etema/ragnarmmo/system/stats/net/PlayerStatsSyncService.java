@@ -4,8 +4,8 @@ import com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
 import com.etema.ragnarmmo.common.net.Network;
+import com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot;
 import com.etema.ragnarmmo.system.stats.compute.StatComputer;
-import com.etema.ragnarmmo.system.stats.event.CommonEvents;
 
 import net.minecraft.server.level.ServerPlayer;
 
@@ -40,12 +40,7 @@ public final class PlayerStatsSyncService {
         Network.sendToPlayer(player, new PlayerStatsSyncPacket(stats, syncMask));
 
         if (RoPlayerSyncDomain.requiresDerivedSync(syncMask)) {
-            var derived = StatComputer.compute(player, stats,
-                    CommonEvents.getWeaponDamage(player),
-                    CommonEvents.getWeaponAPS(player),
-                    0,
-                    CommonEvents.getArmorEff(player),
-                    1.0);
+            var derived = StatComputer.compute(player, stats, EquipmentStatSnapshot.capture(player));
             Network.sendToPlayer(player, new DerivedStatsSyncPacket(derived));
         }
     }

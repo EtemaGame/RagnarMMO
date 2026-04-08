@@ -655,12 +655,31 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
     }
 
     public void setHotbarSlot(int slot, String skillId) {
-        if (slot >= 0 && slot < 9) {
-            hotbar[slot] = skillId;
-            if (player instanceof ServerPlayer serverPlayer) {
-                com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
-                        new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(serializeNBT()));
+        if (slot < 0 || slot >= 9) {
+            return;
+        }
+
+        String normalizedSkillId = skillId == null ? "" : skillId.trim();
+        if (normalizedSkillId.isEmpty()) {
+            hotbar[slot] = null;
+        } else {
+            ResourceLocation parsedId = parseMirrorSkillId(normalizedSkillId);
+            if (parsedId == null) {
+                return;
             }
+
+            Optional<ISkillDefinition> definition = SkillRegistry.get(parsedId).map(d -> (ISkillDefinition) d);
+            SkillState state = skills.get(parsedId);
+            if (definition.isEmpty() || state == null || state.getLevel() <= 0 || !definition.get().isActive()) {
+                return;
+            }
+
+            hotbar[slot] = parsedId.toString();
+        }
+
+        if (player instanceof ServerPlayer serverPlayer) {
+            com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
+                    new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(serializeNBT()));
         }
     }
 

@@ -5,6 +5,8 @@ public class DerivedStats {
     public double physicalAttackMin;
     public double physicalAttackMax;
     public double magicAttack;
+    public double magicAttackMin;
+    public double magicAttackMax;
 
     public double accuracy;
     public double criticalChance;
@@ -34,6 +36,10 @@ public class DerivedStats {
 
     public double defense;
     public double magicDefense;
+    public double hardDefense;
+    public double softDefense;
+    public double hardMagicDefense;
+    public double softMagicDefense;
 
     public double lifeSteal;
     public double armorPierce;

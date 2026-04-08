@@ -3,6 +3,7 @@ package com.etema.ragnarmmo.common.api;
 import com.etema.ragnarmmo.common.api.compute.DerivedStats;
 import com.etema.ragnarmmo.common.api.events.StatComputeEvent;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
+import com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -19,10 +20,7 @@ public final class RagnarCoreAPI {
 
     @FunctionalInterface
     public interface ComputeFunction {
-        DerivedStats compute(Player player, IPlayerStats stats,
-                             double weaponATK, double weaponAps,
-                             double spellBase, double armorEfficiency,
-                             double baseCastTime);
+        DerivedStats compute(Player player, IPlayerStats stats, EquipmentStatSnapshot snapshot);
     }
 
     private static final StatsAccessor DEFAULT_ACCESSOR = player -> Optional.empty();
@@ -55,17 +53,14 @@ public final class RagnarCoreAPI {
     }
 
     public static Optional<DerivedStats> computeDerivedStats(Player player, IPlayerStats stats,
-                                                             double weaponATK, double weaponAps,
-                                                             double spellBase, double armorEfficiency,
-                                                             double baseCastTime) {
-        if (player == null || stats == null || COMPUTE_FUNCTIONS.isEmpty()) {
+                                                             EquipmentStatSnapshot snapshot) {
+        if (player == null || stats == null || snapshot == null || COMPUTE_FUNCTIONS.isEmpty()) {
             return Optional.empty();
         }
 
         DerivedStats derived = null;
         for (ComputeFunction function : COMPUTE_FUNCTIONS) {
-            derived = function.compute(player, stats, weaponATK, weaponAps,
-                    spellBase, armorEfficiency, baseCastTime);
+            derived = function.compute(player, stats, snapshot);
             if (derived != null) {
                 break;
             }

@@ -106,7 +106,7 @@ public class RagnarBowWeaponItem extends BowItem implements RagnarRangedWeaponSt
                         
                         // SNAPSHOT LOGIC
                         if (abstractarrow.getOwner() != null) {
-                            snapshotStats(abstractarrow, player, pStack);
+                            snapshotStats(abstractarrow, player, pStack, f);
                         }
                         
                         // Disable vanilla crit to prevent double-dipping
@@ -146,9 +146,9 @@ public class RagnarBowWeaponItem extends BowItem implements RagnarRangedWeaponSt
         }
     }
 
-    private void snapshotStats(AbstractArrow arrow, Player player, ItemStack bow) {
+    private void snapshotStats(AbstractArrow arrow, Player player, ItemStack bow, float drawRatio) {
         CompoundTag snapshot = new CompoundTag();
-        snapshot.putInt("version", 1);
+        snapshot.putInt("version", 2);
         snapshot.putString("family", "bow");
         
         com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(player).ifPresent(stats -> {
@@ -156,14 +156,23 @@ public class RagnarBowWeaponItem extends BowItem implements RagnarRangedWeaponSt
             int powerLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, bow);
             double bonusAtk = (powerLevel > 0) ? (powerLevel * 0.5D + 0.5D) * 10.0 : 0; // Arbitrary scale for RO context
 
-            var derived = com.etema.ragnarmmo.system.stats.compute.StatComputer.compute(player, stats, 
-                rangedWeaponAtk + RoRefineMath.getAttackBonus(bow) + bonusAtk, 0, 0, 0, 0);
-            
+            var baseSnapshot = com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot.capture(player);
+            var rangedSnapshot = new com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot(
+                    rangedWeaponAtk + RoRefineMath.getAttackBonus(bow) + bonusAtk,
+                    baseSnapshot.weaponMagicAtk(),
+                    baseSnapshot.weaponBaseAspd(),
+                    baseSnapshot.armorHardDef(),
+                    baseSnapshot.armorHardMdef(),
+                    baseSnapshot.hasShield(),
+                    true,
+                    baseSnapshot.baseCastTime());
+            var derived = com.etema.ragnarmmo.system.stats.compute.StatComputer.compute(player, stats, rangedSnapshot);
             snapshot.putDouble("atk", derived.physicalAttack);
             snapshot.putInt("dex", (int) StatAttributes.getTotal(player, StatKeys.DEX));
             snapshot.putInt("luk", (int) StatAttributes.getTotal(player, StatKeys.LUK));
             snapshot.putDouble("crit_chance", derived.criticalChance);
             snapshot.putDouble("crit_damage", derived.criticalDamageMultiplier);
+            snapshot.putDouble("draw_ratio", drawRatio);
             snapshot.putString("element", com.etema.ragnarmmo.combat.element.CombatPropertyResolver.getOffensiveElement(player).name());
             snapshot.putUUID("shooter_uuid", player.getUUID());
             

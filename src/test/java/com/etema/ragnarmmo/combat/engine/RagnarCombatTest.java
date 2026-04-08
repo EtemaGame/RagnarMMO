@@ -37,10 +37,10 @@ public class RagnarCombatTest {
         double finalDmg = dmgCalc.applyPhysicalDefense(rawDmg, vit, agi, level, armorEff);
         System.out.println("DEBUG: testPhysicalDefense - raw=" + rawDmg + ", vit=" + vit + ", agi=" + agi + ", lvl=" + level + ", armor=" + armorEff + " -> finalDmg=" + finalDmg);
         
-        // Pre-Renewal Hard DEF 50 = 50% Reduction
-        // Soft DEF = floor((50+99)/2) + floor(30/5) = 74 + 6 = 80
-        // Expected: 1000 * (1 - 0.5) - 80 = 420
-        assertEquals(420.0, finalDmg, 0.1, "finalDmg calculation failure: expected 420.0 but got " + finalDmg);
+        // Pre-Renewal Hard DEF 50 = 50% reduction
+        // Soft DEF = floor(50 * 0.5) + max(floor(50 * 0.3), floor(50^2 / 150) - 1) = 25 + 15 = 40
+        // Expected: 1000 * (1 - 0.5) - 40 = 460
+        assertEquals(460.0, finalDmg, 0.1, "finalDmg calculation failure: expected 460.0 but got " + finalDmg);
     }
 
     @Test
@@ -73,11 +73,38 @@ public class RagnarCombatTest {
         double statusAtk = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStatusATK(str, dex, luk, level, false);
         
         // STR 50: 50 + 5^2 = 75
-        // DEX 50: 50 / 5 = 10
-        // LUK 50: floor(50 / 3) = 16
-        // LVL 99: 99 * 0.25 = 24.75
-        // Total = 75 + 10 + 16 + 24.75 = 125.75
-        assertEquals(125.75, statusAtk, 0.01);
+        // DEX contribution: floor(50 / 5) = 10
+        // LUK contribution: floor(50 / 5) = 10
+        // Total = 95
+        assertEquals(95.0, statusAtk, 0.01);
+    }
+
+    @Test
+    public void testBowStatusAtkUsesDexPrimary() {
+        double statusAtk = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStatusATK(20, 60, 25, 99, true);
+
+        // DEX 60: 60 + 6^2 = 96
+        // STR contribution: floor(20 / 5) = 4
+        // LUK contribution: floor(25 / 5) = 5
+        assertEquals(105.0, statusAtk, 0.01);
+    }
+
+    @Test
+    public void testMagicAttackRangeUsesIntOnly() {
+        assertEquals(170.0, com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStatusMATKMin(70), 0.01);
+        assertEquals(266.0, com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStatusMATKMax(70), 0.01);
+    }
+
+    @Test
+    public void testCastTimeUsesDexOnly() {
+        double castTime = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeCastTime(2.0, 75, 1, false);
+        assertEquals(1.0, castTime, 0.01);
+    }
+
+    @Test
+    public void testMagicDefenseAppliesHardThenSoft() {
+        double finalDmg = com.etema.ragnarmmo.system.stats.compute.CombatMath.applyMagicDefense(100.0, 30.0, 20.0);
+        assertEquals(50.0, finalDmg, 0.01);
     }
 
     @Test

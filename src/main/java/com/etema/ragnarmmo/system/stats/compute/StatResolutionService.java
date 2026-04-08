@@ -31,13 +31,8 @@ public final class StatResolutionService {
 
         // 3. Compute Derived Stats (Server side truth)
         if (player instanceof ServerPlayer sp) {
-            // Fetch current cumulative data from attributes for the computation
-            double weaponAtk = com.etema.ragnarmmo.system.stats.event.CommonEvents.getWeaponDamage(sp);
-            double armorEff = com.etema.ragnarmmo.system.stats.event.CommonEvents.getArmorEff(sp);
-            double equipMdef = com.etema.ragnarmmo.system.stats.event.CommonEvents.getArmorMagicDefense(sp);
-            
-            var derived = StatComputer.compute(sp, stats, weaponAtk, 1.0, 0.0, armorEff, equipMdef, 1.0);
-            
+            var derived = StatComputer.compute(sp, stats, EquipmentStatSnapshot.capture(sp));
+
             // 4. Sync to Client (The HUD must reflect this truth)
             com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService.sync(sp, stats);
         }
@@ -52,12 +47,6 @@ public final class StatResolutionService {
         if (!(player instanceof net.minecraft.server.level.ServerPlayer sp)) {
             return null;
         }
-
-        double weaponAtk = com.etema.ragnarmmo.system.stats.event.CommonEvents.getWeaponDamage(sp);
-        double armorEff = com.etema.ragnarmmo.system.stats.event.CommonEvents.getArmorEff(sp);
-        double equipMdef = com.etema.ragnarmmo.system.stats.event.CommonEvents.getArmorMagicDefense(sp);
-        
-        // Use 1.0 as standard base for calculation
-        return StatComputer.compute(sp, stats, weaponAtk, 1.0, 0.0, armorEff, equipMdef, 1.0);
+        return StatComputer.compute(sp, stats, EquipmentStatSnapshot.capture(sp));
     }
 }

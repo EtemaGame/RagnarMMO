@@ -131,7 +131,8 @@ public class RagnarBarRenderHandler {
 
         String label;
         if (isPassive) {
-            label = "Lv 1 " + name;
+            String passiveLevel = (level == null || level.isEmpty() || level.equals("?") || level.equals("0")) ? "1" : level;
+            label = "Lv " + passiveLevel + " " + name;
         } else {
             String rank = resolver != null ? resolver.getRank(entity) : "";
             if (rank.isEmpty() && entity.level().isClientSide()) {

@@ -16,13 +16,14 @@ public record RoItemRule(
         int requiredBaseLevel, // 0 = no level requirement
         Set<JobType> allowedJobs, // empty = all jobs allowed
         int cardSlots, // number of card slots (for future use)
-        boolean showTooltip // true = show RO combat block even if only fallback data exists
+        boolean showTooltip, // true = show RO combat block even if only fallback data exists
+        RoCombatProfile combatProfile // optional manual combat compatibility for external weapons
 ) {
     /**
      * Empty rule used when no rules apply to an item.
      */
     public static final RoItemRule EMPTY = new RoItemRule(
-            null, Map.of(), 0, Set.of(), 0, false);
+            null, Map.of(), 0, Set.of(), 0, false, RoCombatProfile.EMPTY);
 
     /**
      * Defensive copy constructor to ensure immutability.
@@ -30,6 +31,7 @@ public record RoItemRule(
     public RoItemRule {
         attributeBonuses = attributeBonuses != null ? Map.copyOf(attributeBonuses) : Map.of();
         allowedJobs = allowedJobs != null ? Set.copyOf(allowedJobs) : Set.of();
+        combatProfile = combatProfile != null ? combatProfile : RoCombatProfile.EMPTY;
     }
 
     /**
@@ -46,12 +48,16 @@ public record RoItemRule(
         return !attributeBonuses.isEmpty();
     }
 
+    public boolean hasCombatProfile() {
+        return combatProfile != null && !combatProfile.isEmpty();
+    }
+
     /**
      * @return true if this rule has any meaningful data
      */
     public boolean isEmpty() {
         return this == EMPTY || (!hasRequirements() && !hasAttributeBonuses()
-                && cardSlots == 0 && !showTooltip);
+                && !hasCombatProfile() && cardSlots == 0 && !showTooltip);
     }
 
     /**
@@ -91,6 +97,7 @@ public record RoItemRule(
                 : base.allowedJobs();
         int mergedCardSlots = override.cardSlots() > 0 ? override.cardSlots() : base.cardSlots();
         boolean mergedShowTooltip = base.showTooltip() || override.showTooltip();
+        RoCombatProfile mergedCombatProfile = RoCombatProfile.merge(base.combatProfile(), override.combatProfile());
 
         return new RoItemRule(
                 mergedDisplayName,
@@ -98,6 +105,7 @@ public record RoItemRule(
                 mergedRequiredBaseLevel,
                 mergedAllowedJobs,
                 mergedCardSlots,
-                mergedShowTooltip);
+                mergedShowTooltip,
+                mergedCombatProfile);
     }
 }

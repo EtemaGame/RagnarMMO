@@ -160,10 +160,9 @@ public class SkillEffectHandler {
             int cost = resolveResourceCost(def, effectOpt, level);
             int baseCastTime = resolveBaseCastTime(def, effectOpt, level);
             int castTime = adjustCastTime(player, baseCastTime);
-            com.etema.ragnarmmo.skill.api.ResourceType resType = def.getResourceType();
-            boolean hasEnough = (resType == com.etema.ragnarmmo.skill.api.ResourceType.MANA)
-                    ? stats.getMana() >= cost
-                    : stats.getSP() >= cost;
+            com.etema.ragnarmmo.skill.api.ResourceType resType = resolveEffectiveResourceType(stats, def);
+            boolean hasEnough = resType == com.etema.ragnarmmo.skill.api.ResourceType.COOLDOWN_ONLY
+                    || stats.getCurrentResource() >= cost;
 
             if (hasEnough) {
                 if (castTime > 0) {
@@ -184,9 +183,7 @@ public class SkillEffectHandler {
                     }
                 }
             } else {
-                String msg = (resType == com.etema.ragnarmmo.skill.api.ResourceType.MANA)
-                        ? "message.ragnarmmo.insufficient_mana"
-                        : "message.ragnarmmo.insufficient_sp";
+                String msg = getInsufficientResourceMessage(resType);
                 player.sendSystemMessage(
                         Component.translatable(msg)
                                 .withStyle(ChatFormatting.RED));
@@ -338,15 +335,12 @@ public class SkillEffectHandler {
 
     private static boolean tryConsumeAndExecute(ServerPlayer player, IPlayerStats stats, SkillDefinition def,
             int level, int cost) {
-        com.etema.ragnarmmo.skill.api.ResourceType resType = def.getResourceType();
-        boolean consumed = (resType == com.etema.ragnarmmo.skill.api.ResourceType.MANA)
-                ? stats.consumeMana(cost)
-                : stats.consumeSP(cost);
+        com.etema.ragnarmmo.skill.api.ResourceType resType = resolveEffectiveResourceType(stats, def);
+        boolean consumed = resType == com.etema.ragnarmmo.skill.api.ResourceType.COOLDOWN_ONLY
+                || stats.consumeResource(cost);
 
         if (!consumed) {
-            String msg = (resType == com.etema.ragnarmmo.skill.api.ResourceType.MANA)
-                    ? "message.ragnarmmo.insufficient_mana"
-                    : "message.ragnarmmo.insufficient_sp";
+            String msg = getInsufficientResourceMessage(resType);
             player.sendSystemMessage(Component.translatable(msg)
                     .withStyle(ChatFormatting.RED));
             return false;
@@ -356,12 +350,28 @@ public class SkillEffectHandler {
             return true;
         }
 
-        if (resType == com.etema.ragnarmmo.skill.api.ResourceType.MANA) {
-            stats.addMana(cost);
-        } else {
-            stats.addSP(cost);
+        if (resType != com.etema.ragnarmmo.skill.api.ResourceType.COOLDOWN_ONLY) {
+            stats.addResource(cost);
         }
         return false;
+    }
+
+    private static com.etema.ragnarmmo.skill.api.ResourceType resolveEffectiveResourceType(IPlayerStats stats,
+            SkillDefinition def) {
+        com.etema.ragnarmmo.skill.api.ResourceType declared = def.getResourceType();
+        if (declared == com.etema.ragnarmmo.skill.api.ResourceType.COOLDOWN_ONLY) {
+            return declared;
+        }
+
+        return com.etema.ragnarmmo.common.api.jobs.JobType.fromId(stats.getJobId()).isMagical()
+                ? com.etema.ragnarmmo.skill.api.ResourceType.MANA
+                : com.etema.ragnarmmo.skill.api.ResourceType.SP;
+    }
+
+    private static String getInsufficientResourceMessage(com.etema.ragnarmmo.skill.api.ResourceType resourceType) {
+        return resourceType == com.etema.ragnarmmo.skill.api.ResourceType.MANA
+                ? "message.ragnarmmo.insufficient_mana"
+                : "message.ragnarmmo.insufficient_sp";
     }
 
     private static boolean shouldInterruptCast(ServerPlayer player, ResourceLocation skillId) {

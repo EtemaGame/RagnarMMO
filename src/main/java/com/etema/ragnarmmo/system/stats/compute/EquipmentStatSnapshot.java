@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.system.stats.compute;
 
 import com.etema.ragnarmmo.common.api.attributes.RagnarAttributes;
-import com.etema.ragnarmmo.roitems.runtime.RagnarRangedWeaponStats;
+import com.etema.ragnarmmo.roitems.runtime.RangedWeaponStatsHelper;
 import com.etema.ragnarmmo.roitems.runtime.RoItemNbtHelper;
 import com.etema.ragnarmmo.roitems.runtime.RoRefineMath;
 import com.etema.ragnarmmo.roitems.runtime.WeaponStatHelper;
@@ -46,9 +46,14 @@ public record EquipmentStatSnapshot(
 
         double weaponAtk;
         int weaponBaseAspd = CombatMath.getWeaponBaseASPD(main);
-        if (main.getItem() instanceof RagnarRangedWeaponStats rangedStats) {
-            weaponAtk = rangedStats.getRangedWeaponAtk(main) + RoRefineMath.getAttackBonus(main);
-            weaponBaseAspd = rangedStats.getBaseRangedAspd(main);
+        if (rangedWeapon) {
+            var rangedStats = RangedWeaponStatsHelper.resolve(main);
+            if (rangedStats.isPresent()) {
+                weaponAtk = rangedStats.get().weaponAtk();
+                weaponBaseAspd = rangedStats.get().baseAspd();
+            } else {
+                weaponAtk = resolveMeleeWeaponAttack(main, player);
+            }
         } else {
             weaponAtk = resolveMeleeWeaponAttack(main, player);
         }
@@ -99,6 +104,12 @@ public record EquipmentStatSnapshot(
     }
 
     private static double resolveMeleeWeaponAttack(ItemStack main, Player player) {
+        double configuredAttack = WeaponStatHelper.getConfiguredPhysicalAttackBase(main);
+        if (configuredAttack > 0.0D) {
+            float enchantDamage = EnchantmentHelper.getDamageBonus(main, MobType.UNDEFINED);
+            return configuredAttack + enchantDamage + RoRefineMath.getAttackBonus(main);
+        }
+
         double base = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
         Multimap<Attribute, AttributeModifier> mods = main.getAttributeModifiers(EquipmentSlot.MAINHAND);
 

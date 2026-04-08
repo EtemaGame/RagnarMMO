@@ -246,6 +246,7 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
         int requiredBaseLevel = getIntOrDefault(json, "requiredBaseLevel", 0);
         int cardSlots = getIntOrDefault(json, "cardSlots", 0);
         boolean showTooltip = getBooleanOrDefault(json, "showTooltip", defaultShowTooltip);
+        RoCombatProfile combatProfile = parseCombatProfile(json);
 
         // Parse attribute bonuses
         Map<StatKeys, Integer> attributeBonuses = new EnumMap<>(StatKeys.class);
@@ -272,8 +273,35 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
             });
         }
 
-        return new RoItemRule(displayName, attributeBonuses, requiredBaseLevel, allowedJobs, cardSlots, showTooltip);
+        return new RoItemRule(displayName, attributeBonuses, requiredBaseLevel, allowedJobs, cardSlots, showTooltip,
+                combatProfile);
 
+    }
+
+    private RoCombatProfile parseCombatProfile(JsonObject json) {
+        if (!json.has("combatProfile") || !json.get("combatProfile").isJsonObject()) {
+            return RoCombatProfile.EMPTY;
+        }
+
+        JsonObject combat = json.getAsJsonObject("combatProfile");
+        RoCombatProfile.WeaponMode weaponMode = RoCombatProfile.WeaponMode
+                .fromString(getStringOrNull(combat, "weaponMode"));
+        if (weaponMode == RoCombatProfile.WeaponMode.UNSPECIFIED && getBooleanOrDefault(combat, "ranged", false)) {
+            weaponMode = RoCombatProfile.WeaponMode.RANGED;
+        }
+
+        return new RoCombatProfile(
+                weaponMode,
+                getDoubleOrDefault(combat, "atk", 0.0D),
+                getDoubleOrDefault(combat, "matk", 0.0D),
+                getIntOrDefault(combat, "aspd", 0),
+                getDoubleOrDefault(combat, "range", 0.0D),
+                getIntOrDefault(combat, "drawTicks", 0),
+                (float) getDoubleOrDefault(combat, "projectileVelocity", 0.0D),
+                getStringSet(combat, "atkAttributes"),
+                getStringSet(combat, "matkAttributes"),
+                getStringSet(combat, "aspdAttributes"),
+                getStringSet(combat, "rangeAttributes"));
     }
 
     private String getStringOrNull(JsonObject json, String key) {
@@ -290,11 +318,36 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
         return defaultValue;
     }
 
+    private double getDoubleOrDefault(JsonObject json, String key, double defaultValue) {
+        if (json.has(key) && json.get(key).isJsonPrimitive()) {
+            return json.get(key).getAsDouble();
+        }
+        return defaultValue;
+    }
+
     private boolean getBooleanOrDefault(JsonObject json, String key, boolean defaultValue) {
         if (json.has(key) && json.get(key).isJsonPrimitive()) {
             return json.get(key).getAsBoolean();
         }
         return defaultValue;
+    }
+
+    private Set<String> getStringSet(JsonObject json, String key) {
+        if (!json.has(key) || !json.get(key).isJsonArray()) {
+            return Set.of();
+        }
+
+        Set<String> values = new java.util.LinkedHashSet<>();
+        json.getAsJsonArray(key).forEach(element -> {
+            if (!element.isJsonPrimitive()) {
+                return;
+            }
+            String value = element.getAsString().trim();
+            if (!value.isEmpty()) {
+                values.add(value);
+            }
+        });
+        return values;
     }
 
     /**

@@ -9,6 +9,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 public final class MobAttributeHelper {
+
+    private static final String ORIGINAL_MOVE_SPEED_KEY = "RagnarOriginalMoveSpeed";
     
     private MobAttributeHelper() {}
 
@@ -59,8 +61,17 @@ public final class MobAttributeHelper {
         // Speed
         AttributeInstance movementSpeed = getInstance(mob, Attributes.MOVEMENT_SPEED);
         if (movementSpeed != null) {
-            double base = movementSpeed.getBaseValue();
+            double base = mob.getPersistentData().contains(ORIGINAL_MOVE_SPEED_KEY)
+                    ? mob.getPersistentData().getDouble(ORIGINAL_MOVE_SPEED_KEY)
+                    : movementSpeed.getBaseValue();
+            if (base <= 0.0D) {
+                base = movementSpeed.getBaseValue();
+            }
+
+            mob.getPersistentData().putDouble(ORIGINAL_MOVE_SPEED_KEY, base);
+
             double spd = (base + agi * MobConfig.AGI_TO_SPEED.get()) * stats.getSpeedMultiplier();
+            spd = Math.min(MobConfig.MAX_MOVEMENT_SPEED.get(), Math.max(0.01D, spd));
             movementSpeed.setBaseValue(spd);
         }
 

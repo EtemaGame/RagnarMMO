@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
+import com.etema.ragnarmmo.roitems.data.RoCombatProfile;
 import com.etema.ragnarmmo.roitems.data.RoItemRule;
 import com.etema.ragnarmmo.roitems.data.RoItemRuleSet;
 import com.etema.ragnarmmo.system.loot.cards.CardEquipType;
@@ -98,6 +99,8 @@ public class SyncRoItemRulesPacket {
         // showTooltip
         buf.writeBoolean(rule.showTooltip());
 
+        encodeCombatProfile(buf, rule.combatProfile());
+
         // attributeBonuses
         Map<StatKeys, Integer> bonuses = rule.attributeBonuses();
         buf.writeVarInt(bonuses.size());
@@ -111,6 +114,28 @@ public class SyncRoItemRulesPacket {
         buf.writeVarInt(jobs.size());
         for (JobType job : jobs) {
             buf.writeEnum(job);
+        }
+    }
+
+    private static void encodeCombatProfile(FriendlyByteBuf buf, RoCombatProfile profile) {
+        RoCombatProfile combatProfile = profile != null ? profile : RoCombatProfile.EMPTY;
+        buf.writeEnum(combatProfile.weaponMode());
+        buf.writeDouble(combatProfile.atk());
+        buf.writeDouble(combatProfile.matk());
+        buf.writeVarInt(combatProfile.aspd());
+        buf.writeDouble(combatProfile.range());
+        buf.writeVarInt(combatProfile.drawTicks());
+        buf.writeFloat(combatProfile.projectileVelocity());
+        writeStringSet(buf, combatProfile.atkAttributeIds());
+        writeStringSet(buf, combatProfile.matkAttributeIds());
+        writeStringSet(buf, combatProfile.aspdAttributeIds());
+        writeStringSet(buf, combatProfile.rangeAttributeIds());
+    }
+
+    private static void writeStringSet(FriendlyByteBuf buf, Set<String> values) {
+        buf.writeVarInt(values.size());
+        for (String value : values) {
+            buf.writeUtf(value);
         }
     }
 
@@ -170,6 +195,7 @@ public class SyncRoItemRulesPacket {
         int cardSlots = buf.readVarInt();
 
         boolean showTooltip = buf.readBoolean();
+        RoCombatProfile combatProfile = decodeCombatProfile(buf);
 
         // attributeBonuses
         int bonusCount = buf.readVarInt();
@@ -187,7 +213,31 @@ public class SyncRoItemRulesPacket {
             jobs.add(buf.readEnum(JobType.class));
         }
 
-        return new RoItemRule(displayName, bonuses, requiredBaseLevel, jobs, cardSlots, showTooltip);
+        return new RoItemRule(displayName, bonuses, requiredBaseLevel, jobs, cardSlots, showTooltip, combatProfile);
+    }
+
+    private static RoCombatProfile decodeCombatProfile(FriendlyByteBuf buf) {
+        return new RoCombatProfile(
+                buf.readEnum(RoCombatProfile.WeaponMode.class),
+                buf.readDouble(),
+                buf.readDouble(),
+                buf.readVarInt(),
+                buf.readDouble(),
+                buf.readVarInt(),
+                buf.readFloat(),
+                readStringSet(buf),
+                readStringSet(buf),
+                readStringSet(buf),
+                readStringSet(buf));
+    }
+
+    private static Set<String> readStringSet(FriendlyByteBuf buf) {
+        int count = buf.readVarInt();
+        Set<String> values = new java.util.LinkedHashSet<>();
+        for (int i = 0; i < count; i++) {
+            values.add(buf.readUtf());
+        }
+        return values;
     }
 
     public static void handle(SyncRoItemRulesPacket msg, Supplier<NetworkEvent.Context> ctxSup) {

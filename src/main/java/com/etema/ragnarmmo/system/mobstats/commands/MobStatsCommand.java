@@ -268,10 +268,6 @@ public final class MobStatsCommand {
 
         source.sendSuccess(() -> Component.literal("=== World Difficulty ===").withStyle(ChatFormatting.GOLD), false);
         report.lines().forEach(line -> source.sendSuccess(() -> Component.literal(line), false));
-        source.sendSuccess(
-                () -> Component.literal("Active system: Advanced Zone Scaling (Phase 2)").withStyle(ChatFormatting.GREEN),
-                false);
-
         return 1;
     }
 

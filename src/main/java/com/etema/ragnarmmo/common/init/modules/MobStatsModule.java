@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.common.init.modules;
 
+import com.etema.ragnarmmo.system.mobstats.config.SpeciesConfig;
 import com.etema.ragnarmmo.system.mobstats.events.MobSpawnHandler;
 import com.etema.ragnarmmo.system.mobstats.util.AttributeLimitHelper;
 import com.etema.ragnarmmo.common.net.Network;
@@ -25,6 +26,7 @@ public final class MobStatsModule {
     }
 
     private static void onCommonSetup(final FMLCommonSetupEvent event) {
+        event.enqueueWork(SpeciesConfig::init);
         AttributeLimitHelper.onCommonSetup(event);
     }
 }

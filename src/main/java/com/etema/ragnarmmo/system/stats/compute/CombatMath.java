@@ -313,12 +313,20 @@ public final class CombatMath {
         if (weapon.isEmpty())
             return false;
         Item item = weapon.getItem();
-        return item instanceof BowItem || item instanceof CrossbowItem || item instanceof TridentItem;
+        return item instanceof BowItem
+                || item instanceof CrossbowItem
+                || item instanceof TridentItem
+                || com.etema.ragnarmmo.roitems.runtime.RangedWeaponStatsHelper.hasManualProfile(weapon);
     }
 
     public static int getWeaponBaseASPD(ItemStack weapon) {
         if (weapon.isEmpty())
             return 180; // Puño
+
+        int configuredAspd = com.etema.ragnarmmo.roitems.runtime.WeaponStatHelper.getConfiguredAspd(weapon);
+        if (configuredAspd > 0) {
+            return configuredAspd;
+        }
 
         Item item = weapon.getItem();
         boolean isDagger = weapon.getTags().anyMatch(t -> t.location().getPath().contains("daggers"));

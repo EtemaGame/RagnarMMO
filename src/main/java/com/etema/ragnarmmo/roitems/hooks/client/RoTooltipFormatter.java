@@ -5,6 +5,8 @@ import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.roitems.data.RoItemRule;
+import com.etema.ragnarmmo.roitems.runtime.RagnarRangedWeaponStats;
+import com.etema.ragnarmmo.roitems.runtime.RangedWeaponStatsHelper;
 import com.etema.ragnarmmo.roitems.runtime.RoRefineMath;
 import com.etema.ragnarmmo.roitems.runtime.RoItemNbtHelper;
 import com.etema.ragnarmmo.roitems.runtime.WeaponStatHelper;
@@ -18,6 +20,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -53,7 +56,7 @@ public final class RoTooltipFormatter {
             return;
 
         // Combat stats (ATK, ASPD, DEF) calculated from item attribute modifiers
-        List<Component> combatLines = buildCombatLines(stack, refineLevel);
+        List<Component> combatLines = buildCombatLines(stack, refineLevel, rule);
         boolean hasRuleBonuses = rule != null && rule.hasAttributeBonuses();
         boolean hasRequirements = rule != null && rule.hasRequirements();
         boolean hasSlots = rule != null && rule.cardSlots() > 0;
@@ -183,14 +186,30 @@ public final class RoTooltipFormatter {
 
 
 
-    private static List<Component> buildCombatLines(ItemStack stack, int refineLevel) {
+    private static List<Component> buildCombatLines(ItemStack stack, int refineLevel, RoItemRule rule) {
         List<Component> lines = new ArrayList<>();
         Multimap<Attribute, AttributeModifier> mainhandModifiers = stack.getAttributeModifiers(EquipmentSlot.MAINHAND);
         double refineAtk = refineLevel > 0 ? RoRefineMath.getAttackBonus(stack) : 0.0D;
         double refineDef = refineLevel > 0 ? RoRefineMath.getDefenseBonus(stack) : 0.0D;
         double magicAttack = WeaponStatHelper.getDisplayedMagicAttack(stack);
+        double configuredAtk = WeaponStatHelper.getConfiguredPhysicalAttackBase(stack);
+        int configuredAspd = WeaponStatHelper.getConfiguredAspd(stack);
+        double configuredRange = WeaponStatHelper.getConfiguredRange(stack);
+        var rangedStats = RangedWeaponStatsHelper.resolve(stack);
 
-        if (mainhandModifiers.containsKey(Attributes.ATTACK_DAMAGE)) {
+        if (rangedStats.isPresent() && !(stack.getItem() instanceof RagnarRangedWeaponStats)) {
+            lines.add(formatCombatLine("ATK", String.valueOf(Math.round(rangedStats.get().weaponAtk()))));
+            lines.add(formatCombatLine("ASPD", String.valueOf(rangedStats.get().baseAspd())));
+            boolean showDraw = stack.getItem() instanceof BowItem
+                    || (rule != null && rule.combatProfile() != null && rule.combatProfile().drawTicks() > 0);
+            if (showDraw) {
+                lines.add(formatCombatLine("Draw", String.valueOf(rangedStats.get().drawTicks())));
+            }
+        }
+
+        if (configuredAtk > 0.0D && rangedStats.isEmpty()) {
+            lines.add(formatCombatLine("ATK", String.valueOf(Math.round(configuredAtk + refineAtk))));
+        } else if (mainhandModifiers.containsKey(Attributes.ATTACK_DAMAGE)) {
             // Vanilla base is 1.0, attributes are modifiers
             double damage = 1.0D + sumAttribute(mainhandModifiers, Attributes.ATTACK_DAMAGE) + refineAtk;
             if (damage > 0) {
@@ -202,15 +221,19 @@ public final class RoTooltipFormatter {
             lines.add(0, formatCombatLine("MATK", String.valueOf(Math.round(magicAttack))));
         }
 
-        if (mainhandModifiers.containsKey(Attributes.ATTACK_SPEED)) {
+        if (configuredAspd > 0 && rangedStats.isEmpty()) {
+            lines.add(formatCombatLine("ASPD", String.valueOf(configuredAspd)));
+        } else if (mainhandModifiers.containsKey(Attributes.ATTACK_SPEED)) {
             double speed = 4.0D + sumAttribute(mainhandModifiers, Attributes.ATTACK_SPEED);
             if (speed > 0) {
                 lines.add(formatCombatLine("ASPD", String.format(Locale.ROOT, "%.1f", speed)));
             }
         }
 
-        // Add Range (Reach Distance) - Essential for Better Combat
-        if (mainhandModifiers.containsKey(net.minecraftforge.common.ForgeMod.ENTITY_REACH.get())) {
+        if (configuredRange > 0.0D) {
+            lines.add(formatCombatLine("Range", String.format(Locale.ROOT, "%.1f", configuredRange)));
+        } else if (mainhandModifiers.containsKey(net.minecraftforge.common.ForgeMod.ENTITY_REACH.get())) {
+            // Add Range (Reach Distance) - Essential for Better Combat
             double reach = 3.0D + sumAttribute(mainhandModifiers, net.minecraftforge.common.ForgeMod.ENTITY_REACH.get());
             lines.add(formatCombatLine("Range", String.format(Locale.ROOT, "%.1f", reach)));
         }

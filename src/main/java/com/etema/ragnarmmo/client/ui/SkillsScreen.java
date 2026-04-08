@@ -1072,10 +1072,6 @@ public class SkillsScreen extends Screen {
                                     .withStyle(ChatFormatting.GREEN));
                 }
 
-                tooltipLines
-                        .add(Component.translatable("screen.ragnarmmo.skills.tooltip.primary", type.getPrimaryStat())
-                                .withStyle(ChatFormatting.GRAY));
-
                 tooltipLines.add(Component.literal(""));
                 String descKey = type.getTranslationKey().replace("lifeskill", "skill") + ".desc";
                 if (net.minecraft.client.resources.language.I18n.exists(descKey)) {

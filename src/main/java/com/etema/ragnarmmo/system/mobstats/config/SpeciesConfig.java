@@ -161,6 +161,7 @@ public final class SpeciesConfig {
         }
 
         Path tomlFile = configDir.resolve("mob_species.toml");
+        ensureTemplateExists(tomlFile);
         Map<ResourceLocation, SpeciesSettings> loaded;
 
         if (Files.exists(tomlFile)) {
@@ -173,6 +174,19 @@ public final class SpeciesConfig {
         SPECIES.clear();
         loaded.forEach(SPECIES::put);
         LOGGER.info("Loaded {} mob configurations (TOML)", SPECIES.size());
+    }
+
+    private static void ensureTemplateExists(Path tomlFile) {
+        if (Files.exists(tomlFile)) {
+            return;
+        }
+
+        try {
+            Files.writeString(tomlFile, defaultTemplate(), StandardCharsets.UTF_8);
+            LOGGER.info("Created default mob species template at {}", tomlFile);
+        } catch (IOException ex) {
+            LOGGER.warn("Could not create default mob_species.toml at {}", tomlFile, ex);
+        }
     }
 
     public static SpeciesSettings get(ResourceLocation id) {
@@ -484,5 +498,33 @@ public final class SpeciesConfig {
             return trimmed.substring(1, trimmed.length() - 1);
         }
         return trimmed;
+    }
+
+    private static String defaultTemplate() {
+        return """
+# Manual per-species overrides used by MANUAL_SPECIES scaling mode.
+# Restart the game or server after editing this file.
+#
+# [minecraft:zombie]
+# baseLevel = 5
+# levelVariance = 2
+# maxLevel = 18
+# pointsPerLevel = 3
+# tier = "NORMAL"
+# growth = { str = 14, agi = 10, vit = 12, int = 4, dex = 8, luk = 4 }
+# multipliers = { health = 1.1, damage = 1.0, defense = 1.0, speed = 1.0 }
+#
+# [minecraft:skeleton]
+# baseLevel = 8
+# levelVariance = 3
+# maxLevel = 24
+# growth = { str = 8, agi = 12, vit = 8, int = 6, dex = 18, luk = 6 }
+#
+# [othermod:desert_stalker]
+# baseLevel = 14
+# levelVariance = 2
+# maxLevel = 32
+# tier = "ELITE"
+""";
     }
 }

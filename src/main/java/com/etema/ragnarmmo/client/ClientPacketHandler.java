@@ -191,8 +191,6 @@ public final class ClientPacketHandler {
             stats.setDefenseMultiplier(defMult);
             stats.setSpeedMultiplier(spdMult);
             stats.setInitialized(true);
-            
-            com.etema.ragnarmmo.system.mobstats.util.MobAttributeHelper.applyAttributes(living, stats);
         });
     }
 

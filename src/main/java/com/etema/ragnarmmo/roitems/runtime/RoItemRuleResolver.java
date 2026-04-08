@@ -104,7 +104,8 @@ public final class RoItemRuleResolver {
                 baseRule.requiredBaseLevel(),
                 baseRule.allowedJobs(),
                 baseRule.cardSlots(),
-                baseRule.showTooltip());
+                baseRule.showTooltip(),
+                baseRule.combatProfile());
     }
 
     /**

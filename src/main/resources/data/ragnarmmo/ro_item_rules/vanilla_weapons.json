@@ -26,13 +26,27 @@
     "allowedJobs": [
       "ARCHER",
       "THIEF"
-    ]
+    ],
+    "combatProfile": {
+      "weaponMode": "RANGED",
+      "atk": 15,
+      "aspd": 170,
+      "drawTicks": 20,
+      "projectileVelocity": 1.0
+    }
   },
   "minecraft:crossbow": {
     "requiredBaseLevel": 20,
     "allowedJobs": [
       "ARCHER"
-    ]
+    ],
+    "combatProfile": {
+      "weaponMode": "RANGED",
+      "atk": 22,
+      "aspd": 170,
+      "drawTicks": 25,
+      "projectileVelocity": 1.0
+    }
   },
   "minecraft:trident": {
     "requiredBaseLevel": 25

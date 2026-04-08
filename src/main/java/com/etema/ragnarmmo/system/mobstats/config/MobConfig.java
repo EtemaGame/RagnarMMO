@@ -8,6 +8,13 @@ import java.util.List;
 
 public final class MobConfig {
 
+        public enum LevelScalingMode {
+                PLAYER_LEVEL,
+                DISTANCE,
+                MANUAL_SPECIES,
+                BIOME_DISTANCE
+        }
+
         public static final ForgeConfigSpec SPEC;
 
         // ==========================================
@@ -18,6 +25,7 @@ public final class MobConfig {
         public static final ForgeConfigSpec.DoubleValue MINI_BOSS_CHANCE;
         public static final ForgeConfigSpec.DoubleValue BOSS_CHANCE;
         public static final ForgeConfigSpec.DoubleValue MVP_CHANCE;
+        public static final ForgeConfigSpec.DoubleValue NATURAL_TIER_CHANCE_SCALE;
         public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MOB_EXCLUDE_LIST;
 
         // Attributes (Base & Calculations)
@@ -32,6 +40,7 @@ public final class MobConfig {
         public static final ForgeConfigSpec.DoubleValue VIT_TO_ARMOR;
         public static final ForgeConfigSpec.DoubleValue INT_TO_ARMOR;
         public static final ForgeConfigSpec.DoubleValue AGI_TO_SPEED;
+        public static final ForgeConfigSpec.DoubleValue MAX_MOVEMENT_SPEED;
         public static final ForgeConfigSpec.DoubleValue LUK_TO_KB_RESIST;
 
         // Combat
@@ -73,6 +82,9 @@ public final class MobConfig {
         // ==========================================
         public static final ForgeConfigSpec.BooleanValue ENABLE_BIOME_AUTO_CLASSIFY;
         public static final ForgeConfigSpec.BooleanValue RENDER_NUMERIC_HEALTH;
+        public static final ForgeConfigSpec.EnumValue<LevelScalingMode> LEVEL_SCALING_MODE;
+        public static final ForgeConfigSpec.IntValue PLAYER_LEVEL_RADIUS;
+        public static final ForgeConfigSpec.IntValue PLAYER_LEVEL_VARIANCE;
         public static final DimensionConfig OVERWORLD;
         public static final DimensionConfig NETHER;
         public static final DimensionConfig END;
@@ -102,11 +114,17 @@ public final class MobConfig {
                 public final ForgeConfigSpec.IntValue MAX_CAP;
                 public final ForgeConfigSpec.ConfigValue<List<? extends String>> TIERS;
                 public final ForgeConfigSpec.ConfigValue<List<? extends String>> BIOME_TO_TIER;
+                public final ForgeConfigSpec.ConfigValue<List<? extends String>> DISTANCE_BANDS;
+                public final ForgeConfigSpec.ConfigValue<List<? extends String>> BIOME_DISTANCE_BANDS;
                 public final ForgeConfigSpec.ConfigValue<List<? extends String>> DEPTH_RULES;
                 public final ForgeConfigSpec.ConfigValue<List<? extends String>> STRUCTURE_PROXIMITY;
 
                 public DimensionConfig(ForgeConfigSpec.Builder b, String dimName, int ringSize, double distMult,
-                                int minFloor, int maxCap, java.util.function.Supplier<List<String>> defaultBiomes) {
+                                int minFloor,
+                                int maxCap,
+                                java.util.function.Supplier<List<String>> defaultBiomes,
+                                java.util.function.Supplier<List<String>> defaultDistanceBands,
+                                java.util.function.Supplier<List<String>> defaultBiomeDistanceBands) {
                         b.push(dimName);
                         RING_SIZE = b.comment("Blocks from (0,0) per ring").defineInRange("ring_size", ringSize, 100,
                                         100000);
@@ -119,6 +137,12 @@ public final class MobConfig {
                                         "medium=3-8", "hard=6-12", "very_hard=10-18"), o -> o instanceof String);
                         BIOME_TO_TIER = b.comment("biome=tier").defineList("biome_to_tier", defaultBiomes.get(),
                                         o -> o instanceof String);
+                        DISTANCE_BANDS = b.comment("distance range to level range, format: 0-999=1-5 or 2500+=10-15")
+                                        .defineList("distance_bands", defaultDistanceBands.get(), o -> o instanceof String);
+                        BIOME_DISTANCE_BANDS = b.comment(
+                                        "biome + distance to level range, format: minecraft:plains|0-999=1-5")
+                                        .defineList("biome_distance_bands", defaultBiomeDistanceBands.get(),
+                                                        o -> o instanceof String);
                         DEPTH_RULES = b.comment("sky_visible/y<0=factor").defineList("depth_rules",
                                         List.of("sky_visible=1.0", "no_sky_visible=1.15", "y<0=1.25", "y<-32=1.35"),
                                         o -> o instanceof String);
@@ -139,6 +163,8 @@ public final class MobConfig {
                 MINI_BOSS_CHANCE = b.defineInRange("mini_boss_chance", 0.02D, 0.0D, 1.0D);
                 BOSS_CHANCE = b.defineInRange("boss_chance", 0.01D, 0.0D, 1.0D);
                 MVP_CHANCE = b.defineInRange("mvp_chance", 0.002D, 0.0D, 1.0D);
+                NATURAL_TIER_CHANCE_SCALE = b.comment("Global multiplier applied to natural elite/boss rolls")
+                                .defineInRange("natural_tier_chance_scale", 0.2D, 0.0D, 1.0D);
                 MOB_EXCLUDE_LIST = b.defineList("mob_exclude_list",
                                 List.of("minecraft:armor_stand", "minecraft:villager"), o -> o instanceof String);
 
@@ -154,6 +180,8 @@ public final class MobConfig {
                 VIT_TO_ARMOR = b.defineInRange("vit_to_armor", 0.2D, 0.0D, 1.0E6D);
                 INT_TO_ARMOR = b.defineInRange("int_to_armor", 0.1D, 0.0D, 1.0E6D);
                 AGI_TO_SPEED = b.defineInRange("agi_to_speed", 0.0025D, 0.0D, 1.0D);
+                MAX_MOVEMENT_SPEED = b.comment("Hard cap for final mob movement speed after scaling")
+                                .defineInRange("max_movement_speed", 0.36D, 0.05D, 2.0D);
                 LUK_TO_KB_RESIST = b.defineInRange("luk_to_kb_resist", 0.002D, 0.0D, 1.0D);
                 b.pop(); // attributes
 
@@ -202,6 +230,13 @@ public final class MobConfig {
                                 .define("auto_classify_biomes", true);
                 RENDER_NUMERIC_HEALTH = b.comment("Show numeric health (Current / Max) on mob health bar")
                                 .define("render_numeric_health", true);
+                LEVEL_SCALING_MODE = b.comment(
+                                "How hostile mob levels are chosen: PLAYER_LEVEL, DISTANCE, MANUAL_SPECIES, BIOME_DISTANCE")
+                                .defineEnum("level_scaling_mode", LevelScalingMode.DISTANCE);
+                PLAYER_LEVEL_RADIUS = b.comment("Radius used when anchoring hostile mob level to nearby players")
+                                .defineInRange("player_level_radius", 64, 8, 256);
+                PLAYER_LEVEL_VARIANCE = b.comment("Random variance applied around player-level scaling")
+                                .defineInRange("player_level_variance", 2, 0, 100);
 
                 OVERWORLD = new DimensionConfig(b, "overworld", 1000, 1.35, 1, 160, () -> List.of(
                                 "minecraft:plains=easy",
@@ -255,21 +290,65 @@ public final class MobConfig {
                                 "minecraft:cold_ocean=medium",
                                 "minecraft:deep_cold_ocean=hard",
                                 "minecraft:frozen_ocean=medium",
-                                "minecraft:deep_frozen_ocean=hard"));
+                                "minecraft:deep_frozen_ocean=hard"),
+                                () -> List.of(
+                                                "0-999=1-5",
+                                                "1000-2499=5-10",
+                                                "2500-4999=10-15",
+                                                "5000-8999=15-22",
+                                                "9000-14999=22-30",
+                                                "15000-24999=30-40",
+                                                "25000+=40-55"),
+                                () -> List.of(
+                                                "minecraft:plains|0-999=1-5",
+                                                "minecraft:plains|1000-2499=5-10",
+                                                "minecraft:plains|2500+=10-15",
+                                                "minecraft:desert|0-999=4-9",
+                                                "minecraft:desert|1000-2499=9-14",
+                                                "minecraft:desert|2500+=14-20",
+                                                "minecraft:jungle|0-999=8-12",
+                                                "minecraft:jungle|1000-2499=12-18",
+                                                "minecraft:jungle|2500+=18-26",
+                                                "minecraft:deep_dark|0+=30-45"));
 
                 NETHER = new DimensionConfig(b, "nether", 500, 1.25, 30, 320, () -> List.of(
                                 "minecraft:nether_wastes=medium",
                                 "minecraft:soul_sand_valley=hard",
                                 "minecraft:crimson_forest=medium",
                                 "minecraft:warped_forest=medium",
-                                "minecraft:basalt_deltas=very_hard"));
+                                "minecraft:basalt_deltas=very_hard"),
+                                () -> List.of(
+                                                "0-999=30-38",
+                                                "1000-2499=38-48",
+                                                "2500-4999=48-58",
+                                                "5000-8999=58-70",
+                                                "9000+=70-90"),
+                                () -> List.of(
+                                                "minecraft:nether_wastes|0-999=30-36",
+                                                "minecraft:nether_wastes|1000+=36-45",
+                                                "minecraft:soul_sand_valley|0-999=38-46",
+                                                "minecraft:soul_sand_valley|1000+=46-58",
+                                                "minecraft:basalt_deltas|0-999=45-55",
+                                                "minecraft:basalt_deltas|1000+=55-70"));
 
-                END = new DimensionConfig(b, "end", 1000, 1.22, 50, 420, () -> List.of(
+                END = new DimensionConfig(b, "end", 1000, 1.22, 60, 420, () -> List.of(
                                 "minecraft:the_end=medium",
                                 "minecraft:small_end_islands=medium",
                                 "minecraft:end_midlands=medium",
                                 "minecraft:end_highlands=hard",
-                                "minecraft:end_barrens=hard"));
+                                "minecraft:end_barrens=hard"),
+                                () -> List.of(
+                                                "0-999=60-70",
+                                                "1000-2499=70-82",
+                                                "2500-4999=82-96",
+                                                "5000+=96-115"),
+                                () -> List.of(
+                                                "minecraft:the_end|0-999=60-68",
+                                                "minecraft:the_end|1000+=68-78",
+                                                "minecraft:end_highlands|0-999=70-82",
+                                                "minecraft:end_highlands|1000+=82-96",
+                                                "minecraft:small_end_islands|0-999=62-72",
+                                                "minecraft:small_end_islands|1000+=72-85"));
 
                 b.push("minimums");
                 DIMENSION_MIN_LEVELS = b.comment("id=level").defineList("dimension_min_levels", List.of(),

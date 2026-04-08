@@ -255,10 +255,11 @@ public class MobSpawnHandler {
 
         // Cascading probability roll: MVP > BOSS > MINI_BOSS > ELITE > NORMAL
         double roll = rng.nextDouble();
-        double mvpChance = MobConfig.MVP_CHANCE.get();
-        double bossChance = MobConfig.BOSS_CHANCE.get();
-        double miniBossChance = MobConfig.MINI_BOSS_CHANCE.get();
-        double eliteChance = MobConfig.ELITE_CHANCE.get();
+        double chanceScale = MobConfig.NATURAL_TIER_CHANCE_SCALE.get();
+        double mvpChance = MobConfig.MVP_CHANCE.get() * chanceScale;
+        double bossChance = MobConfig.BOSS_CHANCE.get() * chanceScale;
+        double miniBossChance = MobConfig.MINI_BOSS_CHANCE.get() * chanceScale;
+        double eliteChance = MobConfig.ELITE_CHANCE.get() * chanceScale;
 
         if (roll < mvpChance)
             return MobTier.MVP;

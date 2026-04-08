@@ -45,6 +45,7 @@ public final class PlayerAttributeHandler {
         event.add(playerType, RagnarAttributes.ARMOR_PIERCE.get());
         event.add(playerType, RagnarAttributes.ARMOR_SHRED.get());
         event.add(playerType, RagnarAttributes.OVERHEAL.get());
+        event.add(playerType, RagnarAttributes.MAGIC_DEFENSE.get());
     }
 
     @SuppressWarnings("unchecked")

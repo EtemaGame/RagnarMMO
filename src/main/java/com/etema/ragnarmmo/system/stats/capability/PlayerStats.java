@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.system.stats.capability;
 
+import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain;
 import com.etema.ragnarmmo.common.api.stats.ChangeReason;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
@@ -215,6 +216,9 @@ public class PlayerStats implements IPlayerStats {
     @Override
     public void setLevel(int lvl) {
         level = clampLevel(lvl);
+        if (level >= getLevelCap()) {
+            exp = 0;
+        }
         markDirty(RoPlayerSyncDomain.PROGRESSION);
     }
     @Override
@@ -241,6 +245,9 @@ public class PlayerStats implements IPlayerStats {
     @Override
     public void setJobLevel(int lvl) {
         jobLevel = clampJobLevel(lvl);
+        if (jobLevel >= getJobLevelCap()) {
+            jobExp = 0;
+        }
         markDirty(RoPlayerSyncDomain.PROGRESSION);
     }
     @Override
@@ -285,6 +292,7 @@ public class PlayerStats implements IPlayerStats {
     @Override
     public void setJobId(String id) {
         this.jobId = id;
+        sanitizeProgressionCaps();
         markDirty(RoPlayerSyncDomain.PROGRESSION);
         StatResolutionService.resolve(owner, this);
     }
@@ -292,13 +300,41 @@ public class PlayerStats implements IPlayerStats {
     public void setJobId(String id, ChangeReason reason) { setJobId(id); }
 
     private int clampLevel(int lvl) {
-        int max = com.etema.ragnarmmo.common.config.RagnarConfigs.SERVER.caps.maxLevel.get();
+        int max = getLevelCap();
         return Mth.clamp(lvl, 1, max);
     }
 
     private int clampJobLevel(int lvl) {
-        int max = com.etema.ragnarmmo.common.config.RagnarConfigs.SERVER.caps.maxJobLevel.get();
+        int max = getJobLevelCap();
         return Mth.clamp(lvl, 1, max);
+    }
+
+    private int getLevelCap() {
+        return getCurrentJobType() == JobType.NOVICE
+                ? com.etema.ragnarmmo.common.config.RagnarConfigs.SERVER.caps.noviceMaxLevel.get()
+                : com.etema.ragnarmmo.common.config.RagnarConfigs.SERVER.caps.maxLevel.get();
+    }
+
+    private int getJobLevelCap() {
+        return getCurrentJobType() == JobType.NOVICE
+                ? com.etema.ragnarmmo.common.config.RagnarConfigs.SERVER.caps.noviceMaxJobLevel.get()
+                : com.etema.ragnarmmo.common.config.RagnarConfigs.SERVER.caps.maxJobLevel.get();
+    }
+
+    private JobType getCurrentJobType() {
+        return JobType.fromId(jobId);
+    }
+
+    private void sanitizeProgressionCaps() {
+        level = clampLevel(level);
+        if (level >= getLevelCap()) {
+            exp = 0;
+        }
+
+        jobLevel = clampJobLevel(jobLevel);
+        if (jobLevel >= getJobLevelCap()) {
+            jobExp = 0;
+        }
     }
 
     @Override
@@ -319,13 +355,24 @@ public class PlayerStats implements IPlayerStats {
     @Override
     public int addExpAndProcessLevelUps(int add, int ptsPerLvl, IntUnaryOperator nextFunc) {
         if (add <= 0) return 0;
+        int levelCap = getLevelCap();
+        if (level >= levelCap) {
+            level = levelCap;
+            exp = 0;
+            markDirty(RoPlayerSyncDomain.PROGRESSION);
+            return 0;
+        }
         exp += add;
         int gained = 0;
-        while (exp >= nextFunc.applyAsInt(level)) {
+        while (level < levelCap && exp >= nextFunc.applyAsInt(level)) {
             exp -= nextFunc.applyAsInt(level);
             level++;
             statPoints += StatPointProgression.pointsForLevelUp(level, ptsPerLvl);
             gained++;
+        }
+        if (level >= levelCap) {
+            level = levelCap;
+            exp = 0;
         }
         markDirty(RoPlayerSyncDomain.PROGRESSION);
         return gained;
@@ -334,13 +381,24 @@ public class PlayerStats implements IPlayerStats {
     @Override
     public int addJobExpAndProcessLevelUps(int add, IntUnaryOperator nextFunc) {
         if (add <= 0) return 0;
+        int jobLevelCap = getJobLevelCap();
+        if (jobLevel >= jobLevelCap) {
+            jobLevel = jobLevelCap;
+            jobExp = 0;
+            markDirty(RoPlayerSyncDomain.PROGRESSION);
+            return 0;
+        }
         jobExp += add;
         int gained = 0;
-        while (jobExp >= nextFunc.applyAsInt(jobLevel)) {
+        while (jobLevel < jobLevelCap && jobExp >= nextFunc.applyAsInt(jobLevel)) {
             jobExp -= nextFunc.applyAsInt(jobLevel);
             jobLevel++;
             skillPoints++;
             gained++;
+        }
+        if (jobLevel >= jobLevelCap) {
+            jobLevel = jobLevelCap;
+            jobExp = 0;
         }
         markDirty(RoPlayerSyncDomain.PROGRESSION);
         return gained;
@@ -385,6 +443,7 @@ public class PlayerStats implements IPlayerStats {
             net.minecraft.nbt.CompoundTag s = nbt.getCompound("Stats");
             for (StatKeys k : StatKeys.values()) if (s.contains(k.id())) set(k, s.getInt(k.id()));
         }
+        sanitizeProgressionCaps();
     }
 
     @Override

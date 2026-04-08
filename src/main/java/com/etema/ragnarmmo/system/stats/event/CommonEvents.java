@@ -210,46 +210,82 @@ public class CommonEvents {
 
     @SubscribeEvent(priority = EventPriority.NORMAL)
     public static void onHurt(LivingHurtEvent e) {
-        if (!(e.getSource().getEntity() instanceof Player p))
-            return;
-        if (p.level().isClientSide())
-            return;
-
         var tgt = e.getEntity();
-        if (DamageProcessingGuard.isProcessedPlayer(tgt)) {
+        if (tgt.level().isClientSide()) return;
+        if (DamageProcessingGuard.isProcessedPlayer(tgt)) return;
+
+        Entity direct = e.getSource().getDirectEntity();
+
+        // --- PRIORITY RANGED BRANCH ---
+        if (direct instanceof net.minecraft.world.entity.projectile.AbstractArrow arrow) {
+            net.minecraft.nbt.CompoundTag snapshotTag = arrow.getPersistentData().getCompound("ragnarmmo_snapshot");
+            if (snapshotTag.contains("version") && snapshotTag.getInt("version") == 1) {
+                String family = snapshotTag.getString("family");
+                java.util.UUID shooterUuid = snapshotTag.getUUID("shooter_uuid");
+                Entity owner = arrow.getOwner();
+
+                // Snapshot Validates! (Version, UUID, Owner match, and family)
+                if (owner != null && shooterUuid.equals(owner.getUUID()) && "bow".equals(family)) {
+                    processRangedDamage(e, snapshotTag, owner, tgt);
+                    return; // EXIT EARLY
+                }
+            }
+            // Arrow + INVALID/Missing Snapshot -> Return IMMEDIATELY without marking (Safe vanilla fallback)
             return;
         }
 
-        // If it reaches here, it's a non-engine player attack (vanilla or other mod)
-        // We force it to use RO math via the engine's calculators
+        if (!(e.getSource().getEntity() instanceof Player p))
+            return;
+
+        // --- GENERIC MELEE FALLBACK ---
         RagnarCoreAPI.get(p).ifPresent(stats -> {
-            var hitCalc = new com.etema.ragnarmmo.combat.engine.RagnarHitCalculator();
             var dmgCalc = new com.etema.ragnarmmo.combat.engine.RagnarDamageCalculator();
 
-            // Basic Physical Attack assumption for vanilla hits
             int dex = (int) StatAttributes.getTotal(p, StatKeys.DEX);
             int luk = (int) StatAttributes.getTotal(p, StatKeys.LUK);
             int str = (int) StatAttributes.getTotal(p, StatKeys.STR);
             int lvl = stats.getLevel();
             
             double weaponBaseAtk = getWeaponDamage(p);
+            // Non-ranged hits (like hand punching with a bow) use STR-centric scaling
             double totalBaseAtk = CombatMath.computeTotalATK(str, dex, luk, lvl, weaponBaseAtk, 0, false);
-            double accuracy = CombatMath.computeHIT(dex, luk, lvl, 0);
-            
-            // Defender
-            // We use a simplified version of fetchDefenderStats here or just call it if we can
-            // (Since it's private in RagnarCombatEngine, we might need to expose it or duplicate briefly)
-            // For now, I'll use the calculators directly with simplified logic
             
             double dmg = dmgCalc.computePhysicalDamage(totalBaseAtk, dex, luk, ThreadLocalRandom.current());
             
-            // Apply modifiers
             var attackElement = CombatPropertyResolver.getOffensiveElement(p);
             dmg = dmgCalc.applyModifiers(dmg, p.getMainHandItem(), tgt, attackElement, false);
             
-            e.setAmount((float) dmg);
+            e.setAmount((float) Math.max(1.0, dmg));
             DamageProcessingGuard.markProcessedPlayer(tgt);
         });
+    }
+
+    private static void processRangedDamage(LivingHurtEvent e, net.minecraft.nbt.CompoundTag snapshot, Entity shooter, LivingEntity target) {
+        double atk = snapshot.getDouble("atk");
+        double critChance = snapshot.getDouble("crit_chance");
+        double critMult = snapshot.getDouble("crit_damage");
+        int dex = snapshot.getInt("dex");
+        int luk = snapshot.getInt("luk");
+        com.etema.ragnarmmo.combat.element.ElementType element = com.etema.ragnarmmo.combat.element.ElementType.valueOf(snapshot.getString("element"));
+
+        java.util.Random rng = new java.util.Random();
+        int level = shooter instanceof LivingEntity le ? (le instanceof Player p ? RagnarCoreAPI.get(p).map(s -> s.getLevel()).orElse(1) : 1) : 1;
+        
+        var ts = CombatMath.getTargetStats(target);
+        double armorEff = getArmorEff(target);
+        
+        // STR 0 for purely ranged bow hits as per snapshot model Option A
+        double dmg = CombatMath.calculatePhysicalDamage(
+            0, dex, luk, level,
+            ts.vit, ts.agi, ts.vit, armorEff,
+            atk, 0, critChance, critMult - 1.4, 
+            rng, true
+        );
+        
+        dmg *= CombatPropertyResolver.getElementalModifier(element, CombatPropertyResolver.getDefensiveElement(target));
+        
+        e.setAmount((float) Math.max(1.0, dmg));
+        DamageProcessingGuard.markProcessedPlayer(target);
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)

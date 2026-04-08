@@ -85,9 +85,11 @@ public final class RagnarWeaponItems {
         return item;
     }
 
-    private static RegistryObject<Item> registerBow(String id, String name, String description) {
+    private static RegistryObject<Item> registerBow(String id, String name, String description,
+            double rangedWeaponAtk, int baseRangedAspd, int baseDrawTicks, float projectileVelocity) {
         RegistryObject<Item> item = ITEMS.register("bows/" + id,
-                () -> new RagnarBowWeaponItem(new Item.Properties().stacksTo(1), name, description));
+                () -> new RagnarBowWeaponItem(new Item.Properties().stacksTo(1), name, description,
+                        rangedWeaponAtk, baseRangedAspd, baseDrawTicks, projectileVelocity));
         ALL_WEAPONS.add(item);
         return item;
     }
@@ -176,10 +178,10 @@ public final class RagnarWeaponItems {
 
     private static void registerBows() {
         registerBow("wooden_shortbow", "Wooden Shortbow",
-                "A simple bow for beginners (Lv 1).");
+                "A simple bow for beginners (Lv 1).", 18, 174, 18, 2.8F);
         registerBow("composite_bow", "Composite Bow",
-                "A reinforced bow (Lv 15).");
+                "A reinforced bow (Lv 15).", 32, 170, 22, 3.0F);
         registerBow("hunters_longbow", "Hunter's Longbow",
-                "A professional hunting bow (Lv 30).");
+                "A professional hunting bow (Lv 30).", 48, 166, 26, 3.15F);
     }
 }

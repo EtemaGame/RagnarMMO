@@ -48,6 +48,10 @@ import java.util.Map;
 
 public class StatsScreen extends Screen {
 
+        private static final StatKeys[] BASE_STATS = {
+                        StatKeys.STR, StatKeys.AGI, StatKeys.VIT, StatKeys.INT, StatKeys.DEX, StatKeys.LUK
+        };
+
         // === PANEL CONSTANTS (LOCAL COORDS) ===
         private static final int PANEL_WIDTH = 360;
         private static final int PANEL_HEIGHT = 320;
@@ -230,7 +234,7 @@ public class StatsScreen extends Screen {
 
                                 // compute maxWidth for bars
                                 int maxWidth = 0;
-                                for (var key : StatKeys.values()) {
+                                for (var key : BASE_STATS) {
                                         int value = getStatValue(stats, key);
                                         String statLine = getStatName(key).getString() + ": " + value;
                                         maxWidth = Math.max(maxWidth, mc.font.width(statLine));
@@ -242,7 +246,7 @@ public class StatsScreen extends Screen {
                                 statRowY.clear();
 
                                 // Draw base stats rows and store their Y
-                                for (var key : StatKeys.values()) {
+                                for (var key : BASE_STATS) {
                                         statRowY.put(key, statsY);
 
                                         int value = getStatValue(stats, key);
@@ -643,7 +647,7 @@ public class StatsScreen extends Screen {
                                         return true;
                                 }
 
-                                for (var key : StatKeys.values()) {
+                                for (var key : BASE_STATS) {
                                         Rect rMinus = minusRect.get(key);
                                         Rect rPlus = plusRect.get(key);
                                         if (rMinus == null || rPlus == null)

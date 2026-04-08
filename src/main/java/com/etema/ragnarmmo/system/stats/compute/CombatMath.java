@@ -201,14 +201,24 @@ public final class CombatMath {
         return atk;
     }
 
-    public static double computeWeaponATK(double weaponBase, int STR) {
+    public static double computeWeaponATK(double weaponBase, int STR, int DEX, boolean isRanged) {
+        if (isRanged) {
+            return weaponBase * (1.0 + DEX / 200.0);
+        }
         return weaponBase * (1.0 + STR / 200.0);
+    }
+    
+    public static int computeRangedDrawTicks(int baseDrawTicks, int agi) {
+        // Reducción de tiempo de carga: 1% por cada punto de AGI.
+        // Formula RO style: Ticks * (1 - AGI/100)
+        double reduction = Math.min(0.9, agi / 100.0);
+        return (int) Math.max(1, Math.round(baseDrawTicks * (1.0 - reduction)));
     }
 
     public static double computeTotalATK(int STR, int DEX, int LUK, int level,
             double weaponATK, double bonusATK, boolean isRanged) {
         double status = computeStatusATK(STR, DEX, LUK, level, isRanged);
-        double weapon = computeWeaponATK(weaponATK, STR);
+        double weapon = computeWeaponATK(weaponATK, STR, DEX, isRanged);
         return status + weapon + bonusATK;
     }
 
@@ -558,16 +568,17 @@ public final class CombatMath {
     public static double calculatePhysicalDamage(
             int attackerSTR, int attackerDEX, int attackerLUK, int attackerLevel,
             int defenderVIT, int defenderAGI, int defenderSTR, double defenderArmorDEF,
-            double weaponATK, double bonusATK,
-            boolean isCritical, java.util.Random rng, boolean isRanged) {
+            double weaponATK, double bonusATK, double critChance, double critMultBonus,
+            java.util.Random rng, boolean isRanged) {
 
         double totalATK = computeTotalATK(attackerSTR, attackerDEX, attackerLUK,
                 attackerLevel, weaponATK, bonusATK, isRanged);
 
         double damage = computeDamageVariance(totalATK, attackerDEX, attackerLUK, rng);
 
+        boolean isCritical = rng.nextDouble() < critChance;
         if (isCritical) {
-            double critMult = computeCritDamageMultiplier(attackerLUK, attackerSTR);
+            double critMult = computeCritDamageMultiplier(attackerLUK, attackerSTR) + critMultBonus;
             damage *= critMult;
         }
 
@@ -580,7 +591,6 @@ public final class CombatMath {
         }
 
         damage = applyPhysicalDefense(damage, softDEF, hardDEF, drPhys);
-
         return Math.max(1.0, damage);
     }
 

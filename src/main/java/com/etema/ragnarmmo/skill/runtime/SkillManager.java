@@ -529,6 +529,7 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
 
             // Sync stats (skill points) and skills to client
             if (player instanceof ServerPlayer sp) {
+                SkillEffectHandler.refreshPassiveEffects(sp);
                 com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService.sync(sp, stats,
                         com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.PROGRESSION.bit());
                 com.etema.ragnarmmo.common.net.Network.sendToPlayer(sp,
@@ -1032,26 +1033,142 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
 
     /**
      * Applies a server snapshot to the client-side skill manager.
-     * Updates ONLY levels and XP to match the server's state.
-     * Does NOT reset cooldowns, casts, or other volatile client-side state.
+     * Supports both the current flat capability payload and the legacy nested
+     * "Skills" compound used by older sync packets.
      *
-     * @param nbt The NBT tag containing the 'Skills' compound.
+     * @param nbt The authoritative server snapshot.
      */
     public void applyClientMirror(CompoundTag nbt) {
-        if (!nbt.contains("Skills"))
+        if (nbt == null || nbt.isEmpty())
             return;
 
-        CompoundTag skillsTag = nbt.getCompound("Skills");
+        CompoundTag skillsTag = nbt.contains("Skills") ? nbt.getCompound("Skills") : nbt;
+
+        // Reset learned state first so server-side removals/unlocks are mirrored exactly.
+        for (SkillState state : skills.values()) {
+            state.reset();
+        }
+
         for (String key : skillsTag.getAllKeys()) {
-            ResourceLocation id = new ResourceLocation(key);
+            if (isMirrorReservedKey(key)) {
+                continue;
+            }
+
+            ResourceLocation id = parseMirrorSkillId(key);
+            if (id == null) {
+                continue;
+            }
+
             CompoundTag stateTag = skillsTag.getCompound(key);
 
             SkillState state = skills.computeIfAbsent(id, SkillState::new);
-            state.setLevel(stateTag.getInt("Level"));
-            // SkillRegistry might have different keys, ensure we match exactly "XP" or "Xp" 
-            // In SkillState it's getXp/setXp (lowercase p) but in serializeNBT it was "XP" usually
-            double xpVal = stateTag.contains("XP") ? stateTag.getDouble("XP") : stateTag.getDouble("Xp");
+            int levelVal = stateTag.contains("Level") ? stateTag.getInt("Level") : stateTag.getInt("level");
+            state.setLevel(levelVal);
+
+            // Support both legacy and current field casing.
+            double xpVal = 0.0D;
+            if (stateTag.contains("XP")) {
+                xpVal = stateTag.getDouble("XP");
+            } else if (stateTag.contains("Xp")) {
+                xpVal = stateTag.getDouble("Xp");
+            } else if (stateTag.contains("xp")) {
+                xpVal = stateTag.getDouble("xp");
+            }
             state.setXp(xpVal);
+            if (stateTag.contains("lastProcKv")) {
+                state.setLastProcTime(stateTag.getLong("lastProcKv"));
+            }
         }
+
+        Arrays.fill(hotbar, null);
+        if (nbt.contains("hotbar")) {
+            net.minecraft.nbt.ListTag hotbarTag = nbt.getList("hotbar", 8);
+            for (int i = 0; i < 9 && i < hotbarTag.size(); i++) {
+                hotbar[i] = hotbarTag.getString(i);
+                if (hotbar[i].isEmpty()) {
+                    hotbar[i] = null;
+                }
+            }
+        }
+
+        for (int i = 0; i < cartInventory.getSlots(); i++) {
+            cartInventory.setStackInSlot(i, ItemStack.EMPTY);
+        }
+        if (nbt.contains("cartInventory")) {
+            cartInventory.deserializeNBT(nbt.getCompound("cartInventory"));
+        }
+
+        cooldowns.clear();
+        cooldownDurations.clear();
+        pendingCooldowns.clear();
+        globalCooldownUntil = 0L;
+        globalCooldownDuration = 0;
+
+        if (nbt.contains("cooldowns")) {
+            CompoundTag cooldownTag = nbt.getCompound("cooldowns");
+            for (String key : cooldownTag.getAllKeys()) {
+                ResourceLocation skillId = parseMirrorSkillId(key);
+                if (skillId == null) {
+                    continue;
+                }
+
+                long remaining = cooldownTag.getLong(key);
+                if (remaining > 0) {
+                    pendingCooldowns.put(skillId, remaining);
+                    int duration = SkillRegistry.get(skillId)
+                            .map(ISkillDefinition::getCooldownTicks)
+                            .orElse((int) Math.min(Integer.MAX_VALUE, remaining));
+                    cooldownDurations.put(skillId, Math.max(1, duration));
+                }
+            }
+        }
+
+        if (nbt.contains("globalCooldown") && player != null) {
+            long remaining = nbt.getLong("globalCooldown");
+            if (remaining > 0) {
+                globalCooldownUntil = player.level().getGameTime() + remaining;
+                globalCooldownDuration = nbt.contains("globalCooldownDuration")
+                        ? Math.max(1, nbt.getInt("globalCooldownDuration"))
+                        : (int) Math.min(Integer.MAX_VALUE, remaining);
+            }
+        }
+
+        selectedWarpDestination = 0;
+        Arrays.fill(warpMemos, null);
+        if (nbt.contains("warpPortal")) {
+            CompoundTag warpTag = nbt.getCompound("warpPortal");
+            selectedWarpDestination = Math.max(0,
+                    Math.min(MAX_WARP_MEMOS, warpTag.getInt("selectedDestination")));
+            for (int i = 0; i < MAX_WARP_MEMOS; i++) {
+                String memoKey = "memo_" + (i + 1);
+                if (warpTag.contains(memoKey)) {
+                    warpMemos[i] = WarpMemo.fromNBT(warpTag.getCompound(memoKey));
+                }
+            }
+        }
+
+        applyPendingCooldowns();
+    }
+
+    private static boolean isMirrorReservedKey(String key) {
+        return "Skills".equals(key)
+                || "cartInventory".equals(key)
+                || "hotbar".equals(key)
+                || "cooldowns".equals(key)
+                || "globalCooldown".equals(key)
+                || "globalCooldownDuration".equals(key)
+                || "warpPortal".equals(key);
+    }
+
+    private static ResourceLocation parseMirrorSkillId(String key) {
+        if (key == null || key.isEmpty()) {
+            return null;
+        }
+
+        if (key.contains(":")) {
+            return ResourceLocation.tryParse(key);
+        }
+
+        return ResourceLocation.tryParse(DEFAULT_NAMESPACE + ":" + key.toLowerCase());
     }
 }

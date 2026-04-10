@@ -49,6 +49,11 @@ final class SwordmanCombatUtil {
                     .orElse(CombatMath.HIT_BASE + estimateLevel(entity) + bonus);
         }
 
+        var resolvedHit = CombatMath.tryGetResolvedMobHit(entity);
+        if (resolvedHit.isPresent()) {
+            return resolvedHit.getAsInt() + bonus;
+        }
+
         CombatMath.TargetStats stats = CombatMath.getTargetStats(entity);
         int level = estimateLevel(entity);
         if (level > 0) {
@@ -63,6 +68,11 @@ final class SwordmanCombatUtil {
             return RagnarCoreAPI.get(player)
                     .map(stats -> CombatMath.computeFLEE(stats.getAGI(), stats.getLUK(), stats.getLevel(), 0))
                     .orElse(CombatMath.FLEE_BASE + estimateLevel(entity));
+        }
+
+        var resolvedFlee = CombatMath.tryGetResolvedMobFlee(entity);
+        if (resolvedFlee.isPresent()) {
+            return resolvedFlee.getAsInt();
         }
 
         CombatMath.TargetStats stats = CombatMath.getTargetStats(entity);

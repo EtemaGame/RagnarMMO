@@ -5,6 +5,7 @@ import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntime
 import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
 import net.minecraft.world.item.*;
 
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
 /**
@@ -692,6 +693,50 @@ public final class CombatMath {
             return OptionalInt.of(newProfile.flee());
         }
         return OptionalInt.empty();
+    }
+
+    /**
+     * Returns a normalized final crit chance for manual-runtime mobs when that source exposes it
+     * directly. The value is expressed as a 0..1 chance like the rest of the runtime combat layer.
+     */
+    public static OptionalDouble tryGetResolvedMobCritChance(net.minecraft.world.entity.LivingEntity entity) {
+        if (entity instanceof net.minecraft.world.entity.player.Player) {
+            return OptionalDouble.empty();
+        }
+
+        var newProfile = ManualMobProfileRuntimeStore.get(entity).orElse(null);
+        if (newProfile != null) {
+            return OptionalDouble.of(clamp(0.0D, 1.0D, newProfile.crit() / 100.0D));
+        }
+        return OptionalDouble.empty();
+    }
+
+    /**
+     * Returns the final manual-runtime ASPD in RO scale when that source exposes it directly.
+     */
+    public static OptionalInt tryGetResolvedMobAspd(net.minecraft.world.entity.LivingEntity entity) {
+        if (entity instanceof net.minecraft.world.entity.player.Player) {
+            return OptionalInt.empty();
+        }
+
+        var newProfile = ManualMobProfileRuntimeStore.get(entity).orElse(null);
+        if (newProfile != null && newProfile.aspd() > 0) {
+            return OptionalInt.of(newProfile.aspd());
+        }
+        return OptionalInt.empty();
+    }
+
+    /**
+     * Converts manual-runtime ASPD into a melee attack interval in ticks for vanilla mob AI.
+     */
+    public static OptionalInt tryGetResolvedMobAttackIntervalTicks(net.minecraft.world.entity.LivingEntity entity) {
+        OptionalInt aspd = tryGetResolvedMobAspd(entity);
+        if (aspd.isEmpty()) {
+            return OptionalInt.empty();
+        }
+
+        double aps = convertASPD_ToAPS(aspd.getAsInt());
+        return OptionalInt.of(Math.max(2, (int) Math.round(20.0D / aps)));
     }
 
     public static TargetStats getTargetStats(net.minecraft.world.entity.LivingEntity entity) {

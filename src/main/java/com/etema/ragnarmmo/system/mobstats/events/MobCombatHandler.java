@@ -11,6 +11,7 @@ import com.etema.ragnarmmo.system.stats.compute.CombatMath;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -50,6 +51,16 @@ public final class MobCombatHandler {
                         + attackerStats.dex * MobConfig.DAMAGE_PER_DEX_POINT.get();
                 mult *= resolveDamageMultiplier(atk);
                 amount = (float) Math.max(0.0D, amount * mult);
+
+                if (!isMagicDamage(event.getSource())) {
+                    var critChance = CombatMath.tryGetResolvedMobCritChance(attacker);
+                    if (critChance.isPresent() && CombatMath.rollCritical(critChance.getAsDouble(), attacker.getRandom())) {
+                        amount = (float) Math.max(
+                                0.0D,
+                                amount * CombatMath.computeCritDamageMultiplier(attackerStats.luk, attackerStats.str));
+                    }
+                }
+
                 modified = true;
             }
         }
@@ -86,5 +97,16 @@ public final class MobCombatHandler {
             return Math.max(0.0D, legacyStats.getDefenseMultiplier());
         }
         return 1.0D;
+    }
+
+    private static boolean isMagicDamage(DamageSource source) {
+        if (source.is(net.minecraft.tags.DamageTypeTags.WITCH_RESISTANT_TO)) {
+            return true;
+        }
+        if (source.typeHolder().is(new net.minecraft.resources.ResourceLocation("ragnarmmo", "is_magic"))) {
+            return true;
+        }
+        String msgId = source.getMsgId();
+        return msgId.equals("magic") || msgId.equals("indirectMagic");
     }
 }

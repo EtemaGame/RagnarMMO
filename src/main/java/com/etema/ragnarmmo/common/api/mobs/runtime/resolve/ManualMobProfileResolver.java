@@ -12,6 +12,7 @@ import com.etema.ragnarmmo.common.api.mobs.data.resolve.MobDefinitionResolutionI
 import com.etema.ragnarmmo.common.api.mobs.data.resolve.MobDefinitionResolutionResult;
 import com.etema.ragnarmmo.common.api.mobs.data.resolve.MobDefinitionResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.ComputedMobProfile;
+import com.etema.ragnarmmo.system.stats.compute.CombatMath;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,15 +76,15 @@ public final class ManualMobProfileResolver {
         MobDirectStatsBlock directStats = resolvedDefinition.directStats();
         MobRoStatsBlock roStats = resolvedDefinition.roStats();
 
-        Integer maxHp = resolveFinalIntStat("max_hp", directStats != null ? directStats.maxHp() : null, roStats, issues);
-        Integer atkMin = resolveFinalIntStat("atk_min", directStats != null ? directStats.atkMin() : null, roStats, issues);
-        Integer atkMax = resolveFinalIntStat("atk_max", directStats != null ? directStats.atkMax() : null, roStats, issues);
-        Integer def = resolveFinalIntStat("def", directStats != null ? directStats.def() : null, roStats, issues);
-        Integer mdef = resolveFinalIntStat("mdef", directStats != null ? directStats.mdef() : null, roStats, issues);
-        Integer hit = resolveFinalIntStat("hit", directStats != null ? directStats.hit() : null, roStats, issues);
-        Integer flee = resolveFinalIntStat("flee", directStats != null ? directStats.flee() : null, roStats, issues);
-        Integer crit = resolveFinalIntStat("crit", directStats != null ? directStats.crit() : null, roStats, issues);
-        Integer aspd = resolveFinalIntStat("aspd", directStats != null ? directStats.aspd() : null, roStats, issues);
+        Integer maxHp = resolveFinalIntStat("max_hp", directStats != null ? directStats.maxHp() : null, level, roStats, issues);
+        Integer atkMin = resolveFinalIntStat("atk_min", directStats != null ? directStats.atkMin() : null, level, roStats, issues);
+        Integer atkMax = resolveFinalIntStat("atk_max", directStats != null ? directStats.atkMax() : null, level, roStats, issues);
+        Integer def = resolveFinalIntStat("def", directStats != null ? directStats.def() : null, level, roStats, issues);
+        Integer mdef = resolveFinalIntStat("mdef", directStats != null ? directStats.mdef() : null, level, roStats, issues);
+        Integer hit = resolveFinalIntStat("hit", directStats != null ? directStats.hit() : null, level, roStats, issues);
+        Integer flee = resolveFinalIntStat("flee", directStats != null ? directStats.flee() : null, level, roStats, issues);
+        Integer crit = resolveFinalIntStat("crit", directStats != null ? directStats.crit() : null, level, roStats, issues);
+        Integer aspd = resolveFinalIntStat("aspd", directStats != null ? directStats.aspd() : null, level, roStats, issues);
         Double moveSpeed = resolveFinalDoubleStat(
                 "move_speed",
                 directStats != null ? directStats.moveSpeed() : null,
@@ -152,12 +153,23 @@ public final class ManualMobProfileResolver {
     private static @Nullable Integer resolveFinalIntStat(
             String field,
             @Nullable Integer directValue,
+            @Nullable Integer level,
             @Nullable MobRoStatsBlock roStats,
             List<ManualMobProfileIssue> issues) {
         if (directValue != null) {
             return directValue;
         }
         if (hasCompleteRoStats(roStats)) {
+            Integer derivedValue = tryDeriveFinalIntStat(field, level, roStats);
+            if (derivedValue != null) {
+                return derivedValue;
+            }
+            if (requiresResolvedLevelForDerivation(field) && level == null) {
+                issues.add(incomplete(
+                        field,
+                        field + " requires a resolved level before it can derive from complete ro_stats"));
+                return null;
+            }
             issues.add(derivationUnimplemented(
                     field,
                     field + " requires derivation from complete ro_stats, but manual stat derivation is not implemented yet"));
@@ -165,6 +177,32 @@ public final class ManualMobProfileResolver {
             issues.add(incomplete(field, field + " is unresolved for the manual runtime profile"));
         }
         return null;
+    }
+
+    private static boolean requiresResolvedLevelForDerivation(String field) {
+        return "hit".equals(field) || "flee".equals(field);
+    }
+
+    private static @Nullable Integer tryDeriveFinalIntStat(
+            String field,
+            @Nullable Integer level,
+            @Nullable MobRoStatsBlock roStats) {
+        if (!hasCompleteRoStats(roStats)) {
+            return null;
+        }
+
+        // Only derive fields whose current numeric formula is already represented in the
+        // runtime combat helpers. Broader scalar derivation remains intentionally deferred.
+        return switch (field) {
+            case "hit" -> level == null
+                    ? null
+                    : (int) Math.round(CombatMath.computeHIT(roStats.dex(), roStats.luk(), level, 0.0D));
+            case "flee" -> level == null
+                    ? null
+                    : (int) Math.round(CombatMath.computeFLEE(roStats.agi(), roStats.luk(), level, 0.0D));
+            case "crit" -> (int) Math.round(CombatMath.computeCritChance(roStats.luk(), roStats.dex(), 0.0D) * 100.0D);
+            default -> null;
+        };
     }
 
     private static @Nullable Double resolveFinalDoubleStat(

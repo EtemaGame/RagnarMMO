@@ -1,7 +1,6 @@
 package com.etema.ragnarmmo.system.mobstats.core;
 
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
-import com.etema.ragnarmmo.system.mobstats.config.SpeciesConfig;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -16,43 +15,11 @@ public class MobStatDistributor {
         this.rng = rng;
     }
 
-    public void distribute(MobStats stats, int totalPoints, SpeciesConfig.SpeciesSettings settings) {
+    public void distribute(MobStats stats, int totalPoints) {
         stats.resetStats();
         if (totalPoints <= 0)
             return;
-
-        if (settings == null || settings.randomDistribution() || settings.statWeights().isEmpty()) {
-            distributeRandom(stats, totalPoints);
-            return;
-        }
-
-        Map<StatKeys, Integer> weights = new EnumMap<>(StatKeys.class);
-        int weightSum = 0;
-        for (Map.Entry<StatKeys, Integer> e : settings.statWeights().entrySet()) {
-            int v = Math.max(0, e.getValue());
-            if (v > 0) {
-                weights.put(e.getKey(), v);
-                weightSum += v;
-            }
-        }
-
-        if (weights.isEmpty() || weightSum <= 0) {
-            distributeRandom(stats, totalPoints);
-            return;
-        }
-
-        int allocated = 0;
-        for (Map.Entry<StatKeys, Integer> e : weights.entrySet()) {
-            int base = (int) Math.floor((double) totalPoints * e.getValue() / weightSum);
-            if (base > 0) {
-                stats.set(e.getKey(), base);
-                allocated += base;
-            }
-        }
-        int remaining = totalPoints - allocated;
-        if (remaining > 0) {
-            distributeByWeights(stats, remaining, weights);
-        }
+        distributeRandom(stats, totalPoints);
     }
 
     // NUEVO: distribución por pesos base + overrides string->stat

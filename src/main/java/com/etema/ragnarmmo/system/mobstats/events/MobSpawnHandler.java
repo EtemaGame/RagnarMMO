@@ -2,10 +2,10 @@ package com.etema.ragnarmmo.system.mobstats.events;
 
 import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
+import com.etema.ragnarmmo.common.api.mobs.MobScalingMode;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.system.mobstats.mobs.MobClass;
 import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
-import com.etema.ragnarmmo.system.mobstats.config.SpeciesConfig;
 import com.etema.ragnarmmo.system.mobstats.core.MobStatDistributor;
 import com.etema.ragnarmmo.system.mobstats.core.MobStats;
 import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
@@ -80,8 +80,20 @@ public class MobSpawnHandler {
             return;
 
         ResourceLocation mobId = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
-        if (ManualMobProfileRuntimeStore.get(mob).isPresent()
-                || (mobId != null && ManualMobProfileResolver.resolve(mobId).profile() != null)) {
+        var effectiveMethod = MobLevelManager.resolveEffectiveMethod(mob);
+        if (effectiveMethod.method() == MobScalingMode.MANUAL
+                && effectiveMethod.source() == MobLevelManager.DifficultyMethodSource.DATAPACK) {
+            boolean hasAttachedManualProfile = ManualMobProfileRuntimeStore.get(mob).isPresent();
+            boolean hasResolvedManualProfile = !hasAttachedManualProfile
+                    && mobId != null
+                    && ManualMobProfileResolver.resolve(mobId).profile() != null;
+            RagnarDebugLog.mobSpawns(
+                    "Skipping legacy spawn-time difficulty/stat pipeline for {} because method={} source={} is active [attached={}, resolvedByType={}]",
+                    RagnarDebugLog.entityLabel(mob),
+                    effectiveMethod.method(),
+                    effectiveMethod.source(),
+                    hasAttachedManualProfile,
+                    hasResolvedManualProfile);
             return;
         }
 
@@ -98,13 +110,10 @@ public class MobSpawnHandler {
             if (mobId != null && MobConfig.MOB_EXCLUDE_LIST.get().contains(mobId.toString()))
                 return;
 
-            SpeciesConfig.SpeciesSettings species = mobId != null ? SpeciesConfig.get(mobId)
-                    : SpeciesConfig.SpeciesSettings.EMPTY;
-
             // Passive check also includes WATER_AMBIENT (e.g. Salmons, Cod)
             boolean isPassive = cat == MobCategory.CREATURE || cat == MobCategory.AMBIENT
                     || cat == MobCategory.WATER_CREATURE || cat == MobCategory.WATER_AMBIENT;
-            generateStats(mob, stats, species, isPassive);
+            generateStats(mob, stats, isPassive);
             stats.setInitialized(true);
 
             applyAttributes(mob, stats);
@@ -168,8 +177,7 @@ public class MobSpawnHandler {
         }
     }
 
-    private void generateStats(LivingEntity mob, MobStats stats, SpeciesConfig.SpeciesSettings species,
-            boolean isPassive) {
+    private void generateStats(LivingEntity mob, MobStats stats, boolean isPassive) {
         if (isPassive) {
             stats.setTier(MobTier.NORMAL);
             stats.setLevel(1);
@@ -188,34 +196,27 @@ public class MobSpawnHandler {
 
         MobTier tier = MobSpawnOverrides.consumeForcedTier(mob)
                 .map(this::normalizeNaturalTier)
-                .orElseGet(() -> determineTier(mob, species));
+                .orElseGet(() -> determineTier(mob));
         stats.setTier(tier);
 
-        int level = levelMgr.computeLevel(mob, species, tier);
+        MobLevelManager.LevelResolution levelResolution = levelMgr.computeLevelResolution(mob, tier);
+        int level = levelResolution.level();
         stats.setLevel(level);
 
         MobClass internalClass = assignInternalClass(mob);
         stats.setMobClass(internalClass);
 
-        int ppl = species.pointsPerLevel().orElse(MobConfig.pointsPerLevel(tier));
         int base = MobConfig.basePoints(tier);
+        Map<StatKeys, Integer> weights = new java.util.EnumMap<>(internalClass.getWeights());
+        int ppl = MobConfig.pointsPerLevel(tier);
         int total = Math.max(0, base + level * ppl);
 
-        // Map<StatKeys, Integer> weights = calculateInherentWeights(mob); // Old logic
-        Map<StatKeys, Integer> weights = new java.util.EnumMap<>(internalClass.getWeights());
-        
-        // Allow Species TOML to override inherent weights if provided
-        if (!species.statWeights().isEmpty() && !species.randomDistribution()) {
-            distributor.distribute(stats, total, species);
-        } else {
-            // Use class-based weights
-            distributeWithCalculatedWeights(stats, total, weights);
-        }
+        distributeWithCalculatedWeights(stats, total, weights);
 
-        double hm = MobConfig.healthMultiplier(tier) * species.healthMultiplier().orElse(1.0) * internalClass.getHpMult();
-        double dm = MobConfig.damageMultiplier(tier) * species.damageMultiplier().orElse(1.0) * internalClass.getDmgMult();
-        double df = MobConfig.defenseMultiplier(tier) * species.defenseMultiplier().orElse(1.0) * internalClass.getDefMult();
-        double sp = species.speedMultiplier().orElse(1.0) * internalClass.getSpdMult();
+        double hm = MobConfig.healthMultiplier(tier) * internalClass.getHpMult();
+        double dm = MobConfig.damageMultiplier(tier) * internalClass.getDmgMult();
+        double df = MobConfig.defenseMultiplier(tier) * internalClass.getDefMult();
+        double sp = internalClass.getSpdMult();
 
         // PARTY SCALING
         if (tier != MobTier.NORMAL) {
@@ -256,6 +257,7 @@ public class MobSpawnHandler {
     }
 
     private void distributeWithCalculatedWeights(MobStats stats, int totalPoints, Map<StatKeys, Integer> weights) {
+        stats.resetStats();
         distributor.distributeByWeights(stats, totalPoints, weights);
     }
 
@@ -265,15 +267,7 @@ public class MobSpawnHandler {
      * <p>This remains compatibility behavior for capability-driven mobs, not the semantic rank
      * model of the new mob architecture.</p>
      */
-    private MobTier determineTier(LivingEntity mob, SpeciesConfig.SpeciesSettings species) {
-        if (species != null && species.forcedTier().isPresent())
-            return species.forcedTier().get();
-
-        MobTier weightedTier = determineWeightedTier(species);
-        if (weightedTier != null) {
-            return weightedTier;
-        }
-
+    private MobTier determineTier(LivingEntity mob) {
         // Cascading probability roll: MVP > BOSS > MINI_BOSS > ELITE > NORMAL
         double roll = rng.nextDouble();
         double chanceScale = MobConfig.NATURAL_TIER_CHANCE_SCALE.get();
@@ -307,38 +301,6 @@ public class MobSpawnHandler {
     }
 
 
-
-    /**
-     * Legacy weighted {@link MobTier} chooser used only by {@link SpeciesConfig} /
-     * {@code MANUAL_SPECIES}.
-     */
-    private MobTier determineWeightedTier(SpeciesConfig.SpeciesSettings species) {
-        if (species == null || species.tierWeights().isEmpty()) {
-            return null;
-        }
-
-        double totalWeight = species.tierWeights().values().stream()
-                .filter(weight -> weight != null && weight > 0.0D)
-                .mapToDouble(Double::doubleValue)
-                .sum();
-        if (totalWeight <= 0.0D) {
-            return null;
-        }
-
-        double roll = rng.nextDouble() * totalWeight;
-        for (Map.Entry<MobTier, Double> entry : species.tierWeights().entrySet()) {
-            double weight = entry.getValue() == null ? 0.0D : entry.getValue();
-            if (weight <= 0.0D) {
-                continue;
-            }
-            roll -= weight;
-            if (roll <= 0.0D) {
-                return entry.getKey();
-            }
-        }
-
-        return MobTier.NORMAL;
-    }
 
     private void applyAttributes(LivingEntity mob, MobStats stats) {
         com.etema.ragnarmmo.system.mobstats.util.MobAttributeHelper.applyAttributes(mob, stats);

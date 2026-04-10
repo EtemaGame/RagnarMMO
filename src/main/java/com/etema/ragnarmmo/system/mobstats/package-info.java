@@ -14,7 +14,7 @@
  * <li>{@code core/} - capability and legacy data classes</li>
  * <li>{@code events/} - spawn handlers and other old-pipeline hooks</li>
  * <li>{@code network/} - legacy mob stats sync used by older client consumers</li>
- * <li>{@code config/} - legacy config paths such as {@code MobConfig} and {@code SpeciesConfig}</li>
+ * <li>{@code config/} - config paths such as {@code MobConfig}</li>
  * </ul>
  *
  * <h3>Dependencies</h3>

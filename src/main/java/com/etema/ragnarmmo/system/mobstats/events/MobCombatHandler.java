@@ -1,11 +1,12 @@
 package com.etema.ragnarmmo.system.mobstats.events;
 
+import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
 import com.etema.ragnarmmo.common.util.DamageProcessingGuard;
 import com.etema.ragnarmmo.system.mobstats.RagnarMobStats;
 import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
 import com.etema.ragnarmmo.system.mobstats.core.MobStats;
-import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
+import com.etema.ragnarmmo.system.stats.compute.CombatMath;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -42,20 +43,22 @@ public final class MobCombatHandler {
         Entity src = event.getSource().getEntity();
         if (src instanceof LivingEntity attacker) {
             MobStats atk = MobStatsProvider.get(attacker).orElse(null);
-            if (atk != null && atk.isInitialized()) {
+            if (usesMobCombatScaling(attacker, atk)) {
+                CombatMath.TargetStats attackerStats = CombatMath.getTargetStats(attacker);
                 double mult = 1.0D
-                        + atk.get(StatKeys.STR) * MobConfig.DAMAGE_PER_STR_POINT.get()
-                        + atk.get(StatKeys.DEX) * MobConfig.DAMAGE_PER_DEX_POINT.get();
-                mult *= Math.max(0.0D, atk.getDamageMultiplier());
+                        + attackerStats.str * MobConfig.DAMAGE_PER_STR_POINT.get()
+                        + attackerStats.dex * MobConfig.DAMAGE_PER_DEX_POINT.get();
+                mult *= resolveDamageMultiplier(atk);
                 amount = (float) Math.max(0.0D, amount * mult);
                 modified = true;
             }
         }
 
         MobStats def = MobStatsProvider.get(target).orElse(null);
-        if (def != null && def.isInitialized()) {
-            double reduction = def.get(StatKeys.VIT) * MobConfig.DAMAGE_REDUCTION_PER_VIT_POINT.get();
-            double mult = Math.max(0.0D, 1.0D - reduction * def.getDefenseMultiplier());
+        if (usesMobCombatScaling(target, def)) {
+            CombatMath.TargetStats targetStats = CombatMath.getTargetStats(target);
+            double reduction = targetStats.vit * MobConfig.DAMAGE_REDUCTION_PER_VIT_POINT.get();
+            double mult = Math.max(0.0D, 1.0D - reduction * resolveDefenseMultiplier(def));
             amount = (float) Math.max(0.0D, amount * mult);
             modified = true;
         }
@@ -64,5 +67,24 @@ public final class MobCombatHandler {
             event.setAmount(amount);
             DamageProcessingGuard.markProcessedMob(target);
         }
+    }
+
+    private static boolean usesMobCombatScaling(LivingEntity entity, MobStats legacyStats) {
+        return ManualMobProfileRuntimeStore.get(entity).isPresent()
+                || (legacyStats != null && legacyStats.isInitialized());
+    }
+
+    private static double resolveDamageMultiplier(MobStats legacyStats) {
+        if (legacyStats != null && legacyStats.isInitialized()) {
+            return Math.max(0.0D, legacyStats.getDamageMultiplier());
+        }
+        return 1.0D;
+    }
+
+    private static double resolveDefenseMultiplier(MobStats legacyStats) {
+        if (legacyStats != null && legacyStats.isInitialized()) {
+            return Math.max(0.0D, legacyStats.getDefenseMultiplier());
+        }
+        return 1.0D;
     }
 }

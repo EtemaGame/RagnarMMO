@@ -205,10 +205,12 @@ public final class ManualMobProfileResolver {
         }
 
         return new ComputedMobBaseStats(
+                roStats.str(),
                 roStats.vit(),
                 roStats.int_(),
                 roStats.agi(),
-                roStats.luk());
+                roStats.luk(),
+                roStats.dex());
     }
 
     private static List<ManualMobProfileIssue> mapDeclarativeIssues(List<MobDefinitionResolutionIssue> issues) {

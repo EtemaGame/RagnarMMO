@@ -4,7 +4,10 @@ import com.etema.ragnarmmo.common.api.mobs.query.MobClientCoexistenceView;
 import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerDataOrigin;
 import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.ComputedMobProfile;
+import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
@@ -38,10 +41,18 @@ public class SyncMobCoexistenceViewPacket {
     }
 
     public static Optional<SyncMobCoexistenceViewPacket> fromEntity(LivingEntity entity) {
-        return MobConsumerReadViewResolver.resolve(entity, (com.etema.ragnarmmo.system.mobstats.core.MobStats) null)
+        Optional<SyncMobCoexistenceViewPacket> resolvedRuntimePacket =
+                MobConsumerReadViewResolver.resolve(entity, (com.etema.ragnarmmo.system.mobstats.core.MobStats) null)
                 .filter(readView -> readView.dataOrigin() == MobConsumerDataOrigin.NEW_RUNTIME_PROFILE)
                 .map(MobClientCoexistenceView::fromReadView)
                 .map(view -> new SyncMobCoexistenceViewPacket(entity.getId(), view));
+        if (resolvedRuntimePacket.isPresent()) {
+            return resolvedRuntimePacket;
+        }
+
+        ResourceLocation entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        return Optional.ofNullable(ManualMobProfileResolver.resolve(entityTypeId).profile())
+                .map(profile -> fromProfile(entity.getId(), profile));
     }
 
     public static void encode(SyncMobCoexistenceViewPacket msg, FriendlyByteBuf buf) {

@@ -4,11 +4,15 @@ import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.system.mobstats.core.MobStats;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 
+import java.util.Optional;
 import java.util.function.Supplier;
+
+import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
 
 public class SyncMobStatsPacket {
     private final int entityId;
@@ -24,6 +28,16 @@ public class SyncMobStatsPacket {
         this.dmgMult = stats.getDamageMultiplier();
         this.defMult = stats.getDefenseMultiplier();
         this.spdMult = stats.getSpeedMultiplier();
+    }
+
+    public static Optional<SyncMobStatsPacket> fromEntity(LivingEntity entity) {
+        if (entity == null) {
+            return Optional.empty();
+        }
+
+        return MobStatsProvider.get(entity)
+                .filter(MobStats::isInitialized)
+                .map(stats -> new SyncMobStatsPacket(entity.getId(), stats));
     }
 
     public static void encode(SyncMobStatsPacket msg, FriendlyByteBuf buf) {

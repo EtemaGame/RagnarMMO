@@ -4,7 +4,7 @@ import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.common.init.RagnarMobEffects;
 import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
-import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
+import com.etema.ragnarmmo.system.stats.compute.CombatMath;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -52,10 +52,7 @@ public class SignumCrucisSkillEffect implements ISkillEffect {
         float baseChance = 23.0f + (level * 4.0f);
         int affected = 0;
         for (LivingEntity e : targets) {
-            int targetLevel = MobStatsProvider.get(e)
-                    .resolve()
-                    .map(stats -> stats.getLevel())
-                    .orElse(1);
+            int targetLevel = CombatMath.tryGetTargetLevel(e).orElse(1);
             float levelBonus = Math.max(-15.0f,
                     Math.min(20.0f, (SkillDamageHelper.getBaseLevel(player) - targetLevel) * 2.0f));
             float chance = Math.max(5.0f, Math.min(95.0f, baseChance + levelBonus));

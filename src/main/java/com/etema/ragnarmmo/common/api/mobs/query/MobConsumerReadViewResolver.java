@@ -30,7 +30,13 @@ public final class MobConsumerReadViewResolver {
 
     public static Optional<MobConsumerReadView> resolve(LivingEntity entity) {
         Objects.requireNonNull(entity, "entity");
-        return resolve(entity, MobStatsProvider.get(entity).orElse(null));
+
+        ComputedMobProfile computedProfile = ManualMobProfileRuntimeStore.get(entity).orElse(null);
+        if (computedProfile != null) {
+            return resolve(entity, computedProfile, null);
+        }
+
+        return resolve(entity, null, MobStatsProvider.get(entity).orElse(null));
     }
 
     public static Optional<MobConsumerReadView> resolve(

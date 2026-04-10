@@ -89,6 +89,9 @@ public class RagnarBarRenderHandler {
         String secondaryLabel = "";
         int labelColor = 0xFFFFFF;
         int secondaryLabelColor = 0xD0D0D0;
+        String labelPrefix = "";
+        int barFrameColor = 0xAA202020;
+        int barAccentColor = 0;
 
         if (resolver != null) {
             String resolvedName = resolver.getDisplayName(entity);
@@ -104,6 +107,9 @@ public class RagnarBarRenderHandler {
                 secondaryLabel = secondary;
             labelColor = resolver.getPrimaryLabelColor(entity);
             secondaryLabelColor = resolver.getSecondaryLabelColor(entity);
+            labelPrefix = safeText(resolver.getPrimaryLabelPrefix(entity), "");
+            barFrameColor = resolver.getHealthBarFrameColor(entity);
+            barAccentColor = resolver.getHealthBarAccentColor(entity);
         }
 
         if (level.isEmpty() || level.equals("0"))
@@ -120,13 +126,7 @@ public class RagnarBarRenderHandler {
             String passiveLevel = isMissingLevel(level) ? "1" : level;
             label = "Lv " + passiveLevel + " " + name;
         } else {
-            String rank = resolver != null ? resolver.getRank(entity) : "";
-
-            String icon = "";
-            if ("ELITE".equalsIgnoreCase(rank)) icon = "★ ";
-            else if ("BOSS".equalsIgnoreCase(rank)) icon = "☠ ";
-
-            label = icon + "Lv " + level + " " + name;
+            label = labelPrefix + "Lv " + level + " " + name;
             if (showClazz && !clazz.isEmpty()) {
                 label += " " + clazz;
             }
@@ -156,7 +156,7 @@ public class RagnarBarRenderHandler {
             float max = entity.getMaxHealth();
             if (max > 0f) {
                 float pct = Math.max(0f, Math.min(1f, hp / max));
-                drawCompactBar(ps, barY, pct);
+                drawCompactBar(ps, barY, pct, barFrameColor, barAccentColor);
 
                 if (MobConfig.RENDER_NUMERIC_HEALTH.get()) {
                     String hpText = String.format(java.util.Locale.ROOT, "%.0f / %.0f", hp, max);
@@ -188,11 +188,15 @@ public class RagnarBarRenderHandler {
         ps.popPose();
     }
 
-    private static void drawCompactBar(PoseStack ps, float y, float pct) {
+    private static void drawCompactBar(PoseStack ps, float y, float pct, int frameColor, int accentColor) {
         int width = BAR_WIDTH;
         int height = BAR_HEIGHT;
         int x1 = -width / 2;
-        int filled = Math.round(width * pct);
+        int innerX1 = x1 + 1;
+        int innerY = Math.round(y) + 1;
+        int innerWidth = Math.max(0, width - 2);
+        int innerHeight = Math.max(1, height - 2);
+        int filled = Math.round(innerWidth * pct);
 
         Matrix4f mat = ps.last().pose();
         RenderSystem.enableBlend();
@@ -206,12 +210,31 @@ public class RagnarBarRenderHandler {
         int fill = lerpHpColor(pct);
 
         buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        fillRect(mat, buffer, x1, y, x1 + width, y + height, bg);
+        fillRect(mat, buffer, x1, y, x1 + width, y + height, frameColor);
         BufferUploader.drawWithShader(buffer.end());
 
         buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        fillRect(mat, buffer, x1, y, x1 + filled, y + height, fill);
+        fillRect(mat, buffer, innerX1, innerY, innerX1 + innerWidth, innerY + innerHeight, bg);
         BufferUploader.drawWithShader(buffer.end());
+
+        if (filled > 0) {
+            buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            fillRect(mat, buffer, innerX1, innerY, innerX1 + filled, innerY + innerHeight, fill);
+            BufferUploader.drawWithShader(buffer.end());
+        }
+
+        if (accentColor != 0) {
+            buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            fillRect(mat, buffer, innerX1, innerY, innerX1 + innerWidth, innerY + 1, accentColor);
+            BufferUploader.drawWithShader(buffer.end());
+        }
+
+        if (pct <= 0f) {
+            // keep the bar visible even when no HP fill is drawn
+            buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            fillRect(mat, buffer, innerX1, innerY, innerX1, innerY + innerHeight, fill);
+            BufferUploader.drawWithShader(buffer.end());
+        }
 
         RenderSystem.disableBlend();
     }

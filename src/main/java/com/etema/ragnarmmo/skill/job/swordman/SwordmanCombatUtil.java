@@ -1,7 +1,6 @@
 package com.etema.ragnarmmo.skill.job.swordman;
 
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
-import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
 import com.etema.ragnarmmo.system.stats.compute.CombatMath;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -14,18 +13,8 @@ final class SwordmanCombatUtil {
     }
 
     static int estimateLevel(LivingEntity entity) {
-        if (entity instanceof Player player) {
-            return RagnarCoreAPI.get(player)
-                    .map(com.etema.ragnarmmo.common.api.stats.IPlayerStats::getLevel)
-                    .orElse(Math.max(1, (int) (entity.getMaxHealth() / 10.0)));
-        }
-
-        var mobStats = MobStatsProvider.get(entity).resolve().orElse(null);
-        if (mobStats != null && mobStats.getLevel() > 0) {
-            return mobStats.getLevel();
-        }
-
-        return Math.max(1, (int) (entity.getMaxHealth() / 10.0));
+        return CombatMath.tryGetTargetLevel(entity)
+                .orElse(Math.max(1, (int) (entity.getMaxHealth() / 10.0)));
     }
 
     static boolean rollPhysicalSkillHit(LivingEntity attacker, LivingEntity target, double flatHitBonus, double hitMultiplier) {
@@ -60,13 +49,10 @@ final class SwordmanCombatUtil {
                     .orElse(CombatMath.HIT_BASE + estimateLevel(entity) + bonus);
         }
 
-        var mobStats = MobStatsProvider.get(entity).resolve().orElse(null);
-        if (mobStats != null) {
-            return CombatMath.computeHIT(
-                    mobStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.DEX),
-                    mobStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK),
-                    mobStats.getLevel(),
-                    bonus);
+        CombatMath.TargetStats stats = CombatMath.getTargetStats(entity);
+        int level = estimateLevel(entity);
+        if (level > 0) {
+            return CombatMath.computeHIT(stats.dex, stats.luk, level, bonus);
         }
 
         return CombatMath.HIT_BASE + estimateLevel(entity) + bonus;
@@ -79,13 +65,10 @@ final class SwordmanCombatUtil {
                     .orElse(CombatMath.FLEE_BASE + estimateLevel(entity));
         }
 
-        var mobStats = MobStatsProvider.get(entity).resolve().orElse(null);
-        if (mobStats != null) {
-            return CombatMath.computeFLEE(
-                    mobStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.AGI),
-                    mobStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK),
-                    mobStats.getLevel(),
-                    0);
+        CombatMath.TargetStats stats = CombatMath.getTargetStats(entity);
+        int level = estimateLevel(entity);
+        if (level > 0) {
+            return CombatMath.computeFLEE(stats.agi, stats.luk, level, 0);
         }
 
         return CombatMath.FLEE_BASE + estimateLevel(entity);

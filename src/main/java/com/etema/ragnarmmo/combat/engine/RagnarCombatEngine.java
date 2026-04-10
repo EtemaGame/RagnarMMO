@@ -214,7 +214,8 @@ public class RagnarCombatEngine {
             int lvl = CombatMath.tryGetTargetLevel(mob).orElse(0);
 
             if (lvl > 0) {
-                double flee = CombatMath.computeFLEE(targetStats.agi, targetStats.luk, lvl, 0);
+                double flee = CombatMath.tryGetResolvedMobFlee(mob)
+                        .orElseGet(() -> (int) CombatMath.computeFLEE(targetStats.agi, targetStats.luk, lvl, 0));
                 double pd = CombatMath.computePerfectDodge(targetStats.luk);
                 double criticalShield = Math.floor(lvl / 15.0) + Math.floor(targetStats.luk / 5.0);
                 double armorEff = com.etema.ragnarmmo.system.stats.event.CommonEvents.getArmorEff(mob);

@@ -28,4 +28,8 @@ public final class MobClientCoexistenceReader {
         }
         return MobClientCoexistenceCache.get(entity.getId());
     }
+
+    public static boolean hasEntityId(int entityId) {
+        return MobClientCoexistenceCache.get(entityId).isPresent();
+    }
 }

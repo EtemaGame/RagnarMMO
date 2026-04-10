@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public record MobWorldStateCooldownEntryReadView(
         String encounterKey,
+        String entityTypeId,
         String displayName,
         String dimensionId,
         boolean activeRegistrationPresent,
@@ -18,6 +19,7 @@ public record MobWorldStateCooldownEntryReadView(
 
     public MobWorldStateCooldownEntryReadView {
         encounterKey = requireNonBlank(encounterKey, "encounterKey");
+        entityTypeId = requireNonBlank(entityTypeId, "entityTypeId");
         displayName = requireNonBlank(displayName, "displayName");
         dimensionId = requireNonBlank(dimensionId, "dimensionId");
     }

@@ -1,5 +1,7 @@
 package com.etema.ragnarmmo.system.mobstats.ai;
 
+import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
+import com.etema.ragnarmmo.system.mobstats.core.MobStats;
 import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
@@ -38,10 +40,9 @@ public class MobUseSkillGoal extends Goal {
         if (dist > rangeSqr) return false;
 
         // Check mana if mob has stats
-        var statsOpt = MobStatsProvider.get(mob);
-        if (statsOpt.isPresent()) {
-            return statsOpt.orElseThrow(() -> new IllegalStateException("Missing stats"))
-                .getMana() >= manaCost;
+        MobStats legacyStats = MobStatsProvider.get(mob).orElse(null);
+        if (legacyStats != null) {
+            return legacyStats.getMana() >= manaCost;
         }
         return true;
     }
@@ -53,15 +54,16 @@ public class MobUseSkillGoal extends Goal {
             mob.getLookControl().setLookAt(target, 30.0F, 30.0F);
         }
         
-        // Use skill via SkillRegistry
-        int skillLevel = MobStatsProvider.get(mob).map(s -> Math.max(1, s.getLevel() / 10)).orElse(1);
-        
-        MobStatsProvider.get(mob).ifPresent(stats -> {
-            stats.consumeMana(manaCost);
+        MobStats legacyStats = MobStatsProvider.get(mob).orElse(null);
+        int skillLevel = resolveSkillLevel(legacyStats);
+
+        if (legacyStats != null) {
+            legacyStats.consumeMana(manaCost);
             // This is a simplified execution. In a real scenario, we'd want the full effect.
             // We can now execute the skill since we updated ISkillEffect
-            com.etema.ragnarmmo.skill.data.SkillRegistry.getEffect(skillId).ifPresent(effect -> effect.execute(mob, skillLevel));
-        });
+            com.etema.ragnarmmo.skill.data.SkillRegistry.getEffect(skillId)
+                    .ifPresent(effect -> effect.execute(mob, skillLevel));
+        }
 
         cooldownTicks = cooldown;
     }
@@ -69,5 +71,16 @@ public class MobUseSkillGoal extends Goal {
     @Override
     public boolean isInterruptable() {
         return false;
+    }
+
+    private int resolveSkillLevel(MobStats legacyStats) {
+        var readView = MobConsumerReadViewResolver.resolve(mob, legacyStats).orElse(null);
+        if (readView != null && readView.level() > 0) {
+            return Math.max(1, readView.level() / 10);
+        }
+        if (legacyStats != null && legacyStats.getLevel() > 0) {
+            return Math.max(1, legacyStats.getLevel() / 10);
+        }
+        return 1;
     }
 }

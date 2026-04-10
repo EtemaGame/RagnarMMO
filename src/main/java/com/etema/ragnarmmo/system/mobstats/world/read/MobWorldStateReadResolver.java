@@ -77,9 +77,11 @@ public final class MobWorldStateReadResolver {
 
         return Optional.of(new MobWorldStateEntityReadView(
                 activeEntry.isPresent(),
+                activeEntry.map(ActiveBossesSavedData.BossEntry::entityTypeId).orElse(null),
                 encounterKey,
                 spawnSource,
                 respawnDelayTicks,
+                activeEntry.map(ActiveBossesSavedData.BossEntry::lastSeenGameTime).orElse(null),
                 respawnEntry.isPresent(),
                 respawnEntry.map(entry -> entry.isReady(serverLevel.getGameTime())).orElse(false),
                 respawnEntry.map(ActiveBossesSavedData.RespawnEntry::nextAllowedGameTime).orElse(null),
@@ -100,11 +102,13 @@ public final class MobWorldStateReadResolver {
 
             views.add(new MobWorldStateActiveEntryReadView(
                     entry.entityUuid(),
+                    entry.entityTypeId(),
                     entry.displayName(),
                     entry.dimensionId(),
                     entry.x(),
                     entry.y(),
                     entry.z(),
+                    entry.lastSeenGameTime(),
                     true,
                     encounterKey,
                     entry.spawnSource(),
@@ -168,12 +172,16 @@ public final class MobWorldStateReadResolver {
         String displayName = respawnEntry.map(ActiveBossesSavedData.RespawnEntry::displayName)
                 .or(() -> activeEntry.map(ActiveBossesSavedData.BossEntry::displayName))
                 .orElse("<unknown>");
+        String entityTypeId = respawnEntry.map(ActiveBossesSavedData.RespawnEntry::entityTypeId)
+                .or(() -> activeEntry.map(ActiveBossesSavedData.BossEntry::entityTypeId))
+                .orElse("<unknown>");
         String dimensionId = respawnEntry.map(ActiveBossesSavedData.RespawnEntry::dimensionId)
                 .or(() -> activeEntry.map(ActiveBossesSavedData.BossEntry::dimensionId))
                 .orElse("<unknown>");
 
         return Optional.of(new MobWorldStateCooldownEntryReadView(
                 normalizedKey,
+                entityTypeId,
                 displayName,
                 dimensionId,
                 activeEntry.isPresent(),
@@ -192,6 +200,7 @@ public final class MobWorldStateReadResolver {
         for (ActiveBossesSavedData.RespawnEntry entry : data.getRespawnCooldowns()) {
             views.add(new MobWorldStateCooldownEntryReadView(
                     entry.spawnKey(),
+                    entry.entityTypeId(),
                     entry.displayName(),
                     entry.dimensionId(),
                     data.isSpawnKeyActive(entry.spawnKey()),

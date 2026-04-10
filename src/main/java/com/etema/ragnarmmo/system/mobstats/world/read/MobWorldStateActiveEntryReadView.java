@@ -13,11 +13,13 @@ import org.jetbrains.annotations.Nullable;
  */
 public record MobWorldStateActiveEntryReadView(
         UUID entityUuid,
+        String entityTypeId,
         String displayName,
         String dimensionId,
         int x,
         int y,
         int z,
+        @Nullable Long lastSeenGameTime,
         boolean activeRegistrationPresent,
         @Nullable String encounterKey,
         @Nullable BossSpawnSource spawnSource,
@@ -29,6 +31,7 @@ public record MobWorldStateActiveEntryReadView(
 
     public MobWorldStateActiveEntryReadView {
         Objects.requireNonNull(entityUuid, "entityUuid");
+        entityTypeId = requireNonBlank(entityTypeId, "entityTypeId");
         displayName = requireNonBlank(displayName, "displayName");
         dimensionId = requireNonBlank(dimensionId, "dimensionId");
     }

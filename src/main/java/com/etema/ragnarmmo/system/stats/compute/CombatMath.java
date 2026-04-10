@@ -620,13 +620,17 @@ public final class CombatMath {
     // ========================================
 
     public static class TargetStats {
+        public final int str;
+        public final int dex;
         public final int vit;
         public final int intel;
         public final int luk;
         public final int agi;
         public final int mdef;
 
-        public TargetStats(int vit, int intel, int luk, int agi, int mdef) {
+        public TargetStats(int str, int dex, int vit, int intel, int luk, int agi, int mdef) {
+            this.str = str;
+            this.dex = dex;
             this.vit = vit;
             this.intel = intel;
             this.luk = luk;
@@ -658,12 +662,46 @@ public final class CombatMath {
         return OptionalInt.empty();
     }
 
+    /**
+     * Returns a normalized final HIT value for manual-runtime mobs when that source exposes it
+     * directly. Callers should keep their existing formula-based fallback when this is empty.
+     */
+    public static OptionalInt tryGetResolvedMobHit(net.minecraft.world.entity.LivingEntity entity) {
+        if (entity instanceof net.minecraft.world.entity.player.Player) {
+            return OptionalInt.empty();
+        }
+
+        var newProfile = ManualMobProfileRuntimeStore.get(entity).orElse(null);
+        if (newProfile != null && newProfile.hit() > 0) {
+            return OptionalInt.of(newProfile.hit());
+        }
+        return OptionalInt.empty();
+    }
+
+    /**
+     * Returns a normalized final FLEE value for manual-runtime mobs when that source exposes it
+     * directly. Callers should keep their existing formula-based fallback when this is empty.
+     */
+    public static OptionalInt tryGetResolvedMobFlee(net.minecraft.world.entity.LivingEntity entity) {
+        if (entity instanceof net.minecraft.world.entity.player.Player) {
+            return OptionalInt.empty();
+        }
+
+        var newProfile = ManualMobProfileRuntimeStore.get(entity).orElse(null);
+        if (newProfile != null && newProfile.flee() > 0) {
+            return OptionalInt.of(newProfile.flee());
+        }
+        return OptionalInt.empty();
+    }
+
     public static TargetStats getTargetStats(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player p) {
             var stats = p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).resolve();
             if (stats.isPresent()) {
                 var s = stats.get();
                 return new TargetStats(
+                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.STR),
+                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.DEX),
                     s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT),
                     s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT),
                     s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK),
@@ -678,12 +716,23 @@ public final class CombatMath {
                     : MobConsumerReadViewResolver.resolve(entity).orElse(null);
             var inspectionStats = readView != null ? readView.inspectionStats() : null;
             var baseCombatStats = newProfile != null ? newProfile.baseCombatStats() : null;
+            var legacyStats = MobStatsProvider.get(entity).orElse(null);
 
             // When the new runtime profile can expose base combat attributes safely, prefer that
             // authority directly. This keeps manual-runtime mobs off legacy MobStats for the
             // status-resistance attributes that are already normalized by the new architecture.
             if (baseCombatStats != null) {
                 return new TargetStats(
+                    baseCombatStats.str() != null
+                            ? baseCombatStats.str()
+                            : legacyStats != null
+                                    ? legacyStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.STR)
+                                    : 1,
+                    baseCombatStats.dex() != null
+                            ? baseCombatStats.dex()
+                            : legacyStats != null
+                                    ? legacyStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.DEX)
+                                    : 1,
                     baseCombatStats.vit(),
                     baseCombatStats.intelligence(),
                     baseCombatStats.luk(),
@@ -694,9 +743,10 @@ public final class CombatMath {
 
             // Base attributes are still sourced conservatively from legacy MobStats until the
             // shared read surface exposes them explicitly.
-            var legacyStats = MobStatsProvider.get(entity).orElse(null);
             if (legacyStats != null) {
                 return new TargetStats(
+                    legacyStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.STR),
+                    legacyStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.DEX),
                     legacyStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT),
                     legacyStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT),
                     legacyStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK),
@@ -709,10 +759,10 @@ public final class CombatMath {
             // only consume normalized MDEF when available and keep the remaining values
             // conservative.
             if (inspectionStats != null) {
-                return new TargetStats(1, 1, 1, 1, inspectionStats.mdef());
+                return new TargetStats(1, 1, 1, 1, 1, 1, inspectionStats.mdef());
             }
         }
-        return new TargetStats(1, 1, 1, 1, 0);
+        return new TargetStats(1, 1, 1, 1, 1, 1, 0);
     }
 
     public static float computeStunChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {

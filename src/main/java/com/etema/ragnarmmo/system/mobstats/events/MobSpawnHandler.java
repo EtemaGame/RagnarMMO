@@ -1,5 +1,7 @@
 package com.etema.ragnarmmo.system.mobstats.events;
 
+import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
+import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.system.mobstats.mobs.MobClass;
 import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
@@ -77,6 +79,12 @@ public class MobSpawnHandler {
         if (!(event.getEntity() instanceof LivingEntity mob) || mob instanceof Player)
             return;
 
+        ResourceLocation mobId = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
+        if (ManualMobProfileRuntimeStore.get(mob).isPresent()
+                || (mobId != null && ManualMobProfileResolver.resolve(mobId).profile() != null)) {
+            return;
+        }
+
         MobStatsProvider.get(mob).ifPresent(stats -> {
             if (stats.isInitialized()) {
                 normalizeExistingNaturalCreeperBoss(mob, stats);
@@ -87,7 +95,6 @@ public class MobSpawnHandler {
             // Removed exclusion for CREATURE, AMBIENT, WATER_CREATURE to handle them as Lv
             // 1
 
-            ResourceLocation mobId = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
             if (mobId != null && MobConfig.MOB_EXCLUDE_LIST.get().contains(mobId.toString()))
                 return;
 
@@ -132,7 +139,8 @@ public class MobSpawnHandler {
                     RagnarDebugLog.formatDouble(stats.getSpeedMultiplier()));
 
             // Sincroniza con clientes que ven a este mob (y el propio invocador)
-            Network.sendTrackingEntityAndSelf(mob, new SyncMobStatsPacket(mob.getId(), stats));
+            SyncMobStatsPacket.fromEntity(mob)
+                    .ifPresent(packet -> Network.sendTrackingEntityAndSelf(mob, packet));
             
             // Add AI goals based on assigned class
             addMobClassAI(mob, stats.getMobClass());
@@ -355,7 +363,8 @@ public class MobSpawnHandler {
             ActiveBossesSavedData.get(serverLevel.getServer()).removeBoss(mob.getUUID());
         }
 
-        Network.sendTrackingEntityAndSelf(mob, new SyncMobStatsPacket(mob.getId(), stats));
+        SyncMobStatsPacket.fromEntity(mob)
+                .ifPresent(packet -> Network.sendTrackingEntityAndSelf(mob, packet));
         RagnarDebugLog.bossWorld(
                 "DOWNGRADE natural creeper boss entity={} oldTier={} newTier={}",
                 RagnarDebugLog.entityLabel(mob),

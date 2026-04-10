@@ -16,6 +16,16 @@ public interface EntityStatResolver {
     String getClazz(LivingEntity e);
 
     /**
+     * Optional prefix for the primary label.
+     *
+     * <p>Resolvers may expose a small semantic marker, such as a boss/elite icon, without forcing
+     * renderers to branch on legacy rank strings.</p>
+     */
+    default String getPrimaryLabelPrefix(LivingEntity e) {
+        return "";
+    }
+
+    /**
      * Optional secondary line for compact overlays.
      *
      * <p>This is kept separate from {@link #getClazz(LivingEntity)} so existing inline labels can
@@ -41,5 +51,23 @@ public interface EntityStatResolver {
      */
     default int getSecondaryLabelColor(LivingEntity e) {
         return 0xD0D0D0;
+    }
+
+    /**
+     * Frame color for compact health bars.
+     *
+     * <p>Resolvers may tint the health bar frame when they have normalized semantic data.</p>
+     */
+    default int getHealthBarFrameColor(LivingEntity e) {
+        return 0xAA000000;
+    }
+
+    /**
+     * Accent color for compact health bars.
+     *
+     * <p>Resolvers may provide a subtle accent line when synchronized taxonomy exists.</p>
+     */
+    default int getHealthBarAccentColor(LivingEntity e) {
+        return 0;
     }
 }

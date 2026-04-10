@@ -12,9 +12,11 @@ import org.jetbrains.annotations.Nullable;
  */
 public record MobWorldStateEntityReadView(
         boolean activeRegistrationPresent,
+        @Nullable String entityTypeId,
         @Nullable String encounterKey,
         @Nullable BossSpawnSource spawnSource,
         @Nullable Integer respawnDelayTicks,
+        @Nullable Long lastSeenGameTime,
         boolean cooldownPresent,
         boolean cooldownReady,
         @Nullable Long nextAllowedGameTime,

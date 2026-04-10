@@ -25,9 +25,14 @@ public class MobStatsIntegration implements EntityStatResolver {
     private static final int ELITE_PRIMARY_COLOR = 0xFFD966;
     private static final int BOSS_PRIMARY_COLOR = 0xFF7A7A;
     private static final int DEFAULT_SECONDARY_COLOR = 0xD0D0D0;
+    private static final int DEFAULT_BAR_FRAME_COLOR = 0xAA202020;
 
     private static Optional<MobClientCoexistenceView> getSyncedView(LivingEntity entity) {
         return MobClientCoexistenceReader.get(entity);
+    }
+
+    private static Optional<MobInfoIntegration.CompatibilityMobInfo> getCompatibilityInfo(LivingEntity entity) {
+        return MobInfoIntegration.getCompatibilityMobInfo(entity);
     }
 
     @Override
@@ -42,9 +47,9 @@ public class MobStatsIntegration implements EntityStatResolver {
             return String.valueOf(syncedView.get().level());
         }
 
-        var levelOpt = MobInfoIntegration.getMobLevel(e);
-        if (levelOpt.isPresent()) {
-            int lvl = levelOpt.getAsInt();
+        var compatibilityInfo = getCompatibilityInfo(e);
+        if (compatibilityInfo.isPresent()) {
+            int lvl = compatibilityInfo.get().level();
             if (lvl > 0) {
                 return String.valueOf(lvl);
             }
@@ -65,7 +70,8 @@ public class MobStatsIntegration implements EntityStatResolver {
             return syncedView.get().rank().name();
         }
 
-        return MobInfoIntegration.getLegacyCompatibilityRank(e)
+        return getCompatibilityInfo(e)
+                .map(MobInfoIntegration.CompatibilityMobInfo::rank)
                 .map(Enum::name)
                 .orElse("");
     }
@@ -73,6 +79,17 @@ public class MobStatsIntegration implements EntityStatResolver {
     @Override
     public String getClazz(LivingEntity e) {
         return "";
+    }
+
+    @Override
+    public String getPrimaryLabelPrefix(LivingEntity e) {
+        return resolveCompatibilityRank(e)
+                .map(rank -> switch (rank) {
+                    case ELITE -> "★ ";
+                    case BOSS -> "☠ ";
+                    default -> "";
+                })
+                .orElse("");
     }
 
     @Override
@@ -96,12 +113,29 @@ public class MobStatsIntegration implements EntityStatResolver {
                 .orElse(DEFAULT_SECONDARY_COLOR);
     }
 
+    @Override
+    public int getHealthBarFrameColor(LivingEntity e) {
+        return resolveCompatibilityRank(e)
+                .map(MobStatsIntegration::colorForRank)
+                .map(MobStatsIntegration::withAlphaFrame)
+                .orElse(DEFAULT_BAR_FRAME_COLOR);
+    }
+
+    @Override
+    public int getHealthBarAccentColor(LivingEntity e) {
+        return getSyncedView(e)
+                .map(MobStatsIntegration::colorForElement)
+                .map(MobStatsIntegration::withAlphaAccent)
+                .orElse(0);
+    }
+
     private static Optional<MobRank> resolveCompatibilityRank(LivingEntity entity) {
         var syncedView = getSyncedView(entity);
         if (syncedView.isPresent()) {
             return Optional.of(syncedView.get().rank());
         }
-        return MobInfoIntegration.getLegacyCompatibilityRank(entity);
+        return getCompatibilityInfo(entity)
+                .map(MobInfoIntegration.CompatibilityMobInfo::rank);
     }
 
     private static int colorForRank(MobRank rank) {
@@ -130,6 +164,14 @@ public class MobStatsIntegration implements EntityStatResolver {
             case "UNDEAD" -> 0xB9C48B;
             default -> DEFAULT_SECONDARY_COLOR;
         };
+    }
+
+    private static int withAlphaFrame(int color) {
+        return (0xCC << 24) | (color & 0x00FFFFFF);
+    }
+
+    private static int withAlphaAccent(int color) {
+        return (0xE0 << 24) | (color & 0x00FFFFFF);
     }
 
     private static String formatTaxonomyLine(MobClientCoexistenceView view) {

@@ -3,6 +3,8 @@ package com.etema.ragnarmmo.system.mobstats.integration;
 import com.etema.ragnarmmo.common.api.mobs.LegacyMobTierRankMapper;
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
+import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerDataOrigin;
+import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
 import com.etema.ragnarmmo.system.mobstats.core.MobStats;
 import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
 
@@ -35,17 +37,12 @@ public final class MobInfoIntegration {
      */
     @Nonnull
     public static OptionalInt getMobLevel(@Nullable LivingEntity entity) {
-        if (entity == null) {
-            return OptionalInt.empty();
-        }
-
-        Optional<MobStats> stats = MobStatsProvider.get(entity).resolve();
-        if (stats.isEmpty()) {
-            return OptionalInt.empty();
-        }
-
-        int level = stats.get().getLevel();
-        return level > 0 ? OptionalInt.of(level) : OptionalInt.empty();
+        return getCompatibilityMobInfo(entity)
+                .map(CompatibilityMobInfo::level)
+                .filter(level -> level > 0)
+                .stream()
+                .mapToInt(Integer::intValue)
+                .findFirst();
     }
 
     /**
@@ -58,6 +55,13 @@ public final class MobInfoIntegration {
     public static Optional<MobInfo> getMobInfo(@Nullable LivingEntity entity) {
         if (entity == null) {
             return Optional.empty();
+        }
+
+        var readView = MobConsumerReadViewResolver.resolve(entity).orElse(null);
+        if (readView != null && readView.dataOrigin() == MobConsumerDataOrigin.NEW_RUNTIME_PROFILE) {
+            return Optional.of(new MobInfo(
+                    readView.level(),
+                    LegacyMobTierRankMapper.toCompatibilityTier(readView.rank())));
         }
 
         return MobStatsProvider.get(entity)
@@ -75,10 +79,34 @@ public final class MobInfoIntegration {
      */
     @Nonnull
     public static Optional<MobRank> getLegacyCompatibilityRank(@Nullable LivingEntity entity) {
-        return getMobInfo(entity)
-                .map(MobInfo::tier)
-                .filter(Objects::nonNull)
-                .map(LegacyMobTierRankMapper::toMobRank);
+        return getCompatibilityMobInfo(entity)
+                .map(CompatibilityMobInfo::rank);
+    }
+
+    /**
+     * Gets normalized coexistence-safe level/rank info without exposing raw legacy tiers.
+     *
+     * <p>This prefers the shared read surface when available and otherwise falls back to the old
+     * capability path.</p>
+     */
+    @Nonnull
+    public static Optional<CompatibilityMobInfo> getCompatibilityMobInfo(@Nullable LivingEntity entity) {
+        if (entity == null) {
+            return Optional.empty();
+        }
+
+        var readView = MobConsumerReadViewResolver.resolve(entity).orElse(null);
+        if (readView != null) {
+            return Optional.of(new CompatibilityMobInfo(
+                    readView.level(),
+                    readView.rank()));
+        }
+
+        return MobStatsProvider.get(entity)
+                .resolve()
+                .map(stats -> new CompatibilityMobInfo(
+                        stats.getLevel(),
+                        LegacyMobTierRankMapper.toMobRank(stats.getTier())));
     }
 
     /**
@@ -125,6 +153,14 @@ public final class MobInfoIntegration {
         public String getTierDisplayName() {
             return tier != null ? tier.name().toLowerCase() : "normal";
         }
+    }
+
+    /**
+     * Normalized compatibility snapshot for call sites that only need level/rank semantics.
+     */
+    public record CompatibilityMobInfo(
+            int level,
+            MobRank rank) {
     }
 }
 

@@ -1,8 +1,6 @@
 package com.etema.ragnarmmo.system.mobstats.events;
 
 import com.etema.ragnarmmo.system.mobstats.RagnarMobStats;
-import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
-import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.system.mobstats.network.SyncMobCoexistenceViewPacket;
 import com.etema.ragnarmmo.system.mobstats.network.SyncMobStatsPacket;
@@ -24,14 +22,10 @@ public final class MobTrackingHandler {
         if (event.getTarget() instanceof LivingEntity target
                 && !(target instanceof Player)
                 && event.getEntity() instanceof ServerPlayer player) {
-            MobStatsProvider.get(target).ifPresent(stats -> {
-                if (stats.isInitialized()) {
-                    Network.sendTrackingEntityAndSelf(target, new SyncMobStatsPacket(target.getId(), stats));
-                }
-            });
+            SyncMobStatsPacket.fromEntity(target)
+                    .ifPresent(packet -> Network.sendTrackingEntityAndSelf(target, packet));
 
-            ManualMobProfileRuntimeStore.get(target)
-                    .flatMap(ignored -> SyncMobCoexistenceViewPacket.fromEntity(target))
+            SyncMobCoexistenceViewPacket.fromEntity(target)
                     .ifPresent(packet -> Network.sendToPlayer(player, packet));
         }
     }

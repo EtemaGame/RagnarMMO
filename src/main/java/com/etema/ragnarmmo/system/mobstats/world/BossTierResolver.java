@@ -10,12 +10,12 @@ import net.minecraft.world.entity.LivingEntity;
 
 import java.util.Optional;
 
-final class BossTierResolver {
+public final class BossTierResolver {
 
     private BossTierResolver() {
     }
 
-    static Optional<MobTier> resolveTier(LivingEntity entity) {
+    public static Optional<MobTier> resolveTier(LivingEntity entity) {
         if (entity == null) {
             return Optional.empty();
         }

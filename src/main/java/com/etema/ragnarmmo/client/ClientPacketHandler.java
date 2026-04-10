@@ -180,6 +180,10 @@ public final class ClientPacketHandler {
         if (mc.level == null)
             return;
 
+        if (MobClientCoexistenceReader.hasEntityId(entityId)) {
+            return;
+        }
+
         Entity e = mc.level.getEntity(entityId);
         if (!(e instanceof LivingEntity living))
             return;

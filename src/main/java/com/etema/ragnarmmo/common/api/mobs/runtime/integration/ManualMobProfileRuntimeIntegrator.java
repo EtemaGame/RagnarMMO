@@ -40,6 +40,7 @@ public final class ManualMobProfileRuntimeIntegrator {
         ManualMobProfileResolutionResult result = ManualMobProfileResolver.resolve(entityTypeId);
         if (result.profile() != null) {
             ManualMobProfileRuntimeStore.attach(entity, result.profile());
+            ComputedMobProfileAttributeApplier.apply(entity, result.profile());
         }
     }
 }

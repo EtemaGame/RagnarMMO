@@ -38,6 +38,7 @@ public final class MobAttributes {
             addIfMissing(event, type, RagnarAttributes.INT.get());
             addIfMissing(event, type, RagnarAttributes.DEX.get());
             addIfMissing(event, type, RagnarAttributes.LUK.get());
+            addIfMissing(event, type, RagnarAttributes.MAGIC_DEFENSE.get());
         }
     }
 

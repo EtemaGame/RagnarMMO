@@ -18,6 +18,7 @@ import com.etema.ragnarmmo.system.mobstats.world.BossSpawnMetadata;
 import com.etema.ragnarmmo.system.mobstats.world.BossSpawnService;
 import com.etema.ragnarmmo.system.mobstats.world.BossSpawnSource;
 import com.etema.ragnarmmo.system.mobstats.world.BossSigilItem;
+import com.etema.ragnarmmo.system.mobstats.world.BossTierResolver;
 import com.etema.ragnarmmo.system.mobstats.world.MobSpawnOverrides;
 import com.etema.ragnarmmo.system.mobstats.world.read.MobWorldStateActiveEntryReadView;
 import com.etema.ragnarmmo.system.mobstats.world.read.MobWorldStateCooldownEntryReadView;
@@ -252,7 +253,8 @@ public final class MobStatsCommand {
             promoteToElite(stats);
             applyMinimumLevel(living, stats, minLevel);
             MobAttributeHelper.applyAttributes(living, stats);
-            Network.sendTrackingEntityAndSelf(living, new SyncMobStatsPacket(living.getId(), stats));
+            SyncMobStatsPacket.fromEntity(living)
+                    .ifPresent(packet -> Network.sendTrackingEntityAndSelf(living, packet));
         }
 
         source.sendSuccess(() -> Component.literal(String.format(
@@ -273,7 +275,8 @@ public final class MobStatsCommand {
 
         MobStats stats = MobStatsProvider.get(living).orElse(null);
         if (stats != null) {
-            Network.sendTrackingEntityAndSelf(living, new SyncMobStatsPacket(living.getId(), stats));
+            SyncMobStatsPacket.fromEntity(living)
+                    .ifPresent(packet -> Network.sendTrackingEntityAndSelf(living, packet));
         }
 
         source.sendSuccess(() -> Component.literal(String.format(
@@ -349,12 +352,14 @@ public final class MobStatsCommand {
                     String respawnDelay = entry.respawnDelayTicks() != null
                             ? String.valueOf(entry.respawnDelayTicks())
                             : "<none>";
+                    String lastSeen = formatOptionalLong(entry.lastSeenGameTime());
                     String nextAllowed = formatOptionalLong(entry.nextAllowedGameTime());
                     String lastDefeated = formatOptionalLong(entry.lastDefeatedGameTime());
                     source.sendSuccess(() -> Component.literal(String.format(
                             Locale.ROOT,
-                            "ACTIVE %s @ %s (%d %d %d) registered=%s key=%s source=%s respawnTicks=%s cooldownPresent=%s ready=%s next=%s lastDefeated=%s",
+                            "ACTIVE %s [%s] @ %s (%d %d %d) registered=%s key=%s source=%s respawnTicks=%s lastSeen=%s cooldownPresent=%s ready=%s next=%s lastDefeated=%s",
                             entry.displayName(),
+                            entry.entityTypeId(),
                             entry.dimensionId(),
                             entry.x(),
                             entry.y(),
@@ -363,6 +368,7 @@ public final class MobStatsCommand {
                             encounterKey,
                             spawnSource,
                             respawnDelay,
+                            lastSeen,
                             entry.cooldownPresent() ? "yes" : "no",
                             entry.cooldownReady() ? "yes" : "no",
                             nextAllowed,
@@ -426,13 +432,17 @@ public final class MobStatsCommand {
         String respawnDelay = entityWorldState.respawnDelayTicks() != null
                 ? String.valueOf(entityWorldState.respawnDelayTicks())
                 : "<none>";
+        String entityTypeId = entityWorldState.entityTypeId() != null ? entityWorldState.entityTypeId() : "<none>";
+        String lastSeen = formatOptionalLong(entityWorldState.lastSeenGameTime());
 
         source.sendSuccess(() -> Component.literal(String.format(
                 Locale.ROOT,
-                "World-state -> source=%s key=%s respawnTicks=%s",
+                "World-state -> type=%s source=%s key=%s respawnTicks=%s lastSeen=%s",
+                entityTypeId,
                 spawnSource,
                 encounterKey,
-                respawnDelay)), false);
+                respawnDelay,
+                lastSeen)), false);
 
         if (entityWorldState.encounterKey() == null) {
             source.sendSuccess(() -> Component.literal("Cooldown -> key=<none>").withStyle(ChatFormatting.GRAY), false);
@@ -630,9 +640,10 @@ public final class MobStatsCommand {
         String lastDefeated = formatOptionalLong(worldState.lastDefeatedGameTime());
         source.sendSuccess(() -> Component.literal(String.format(
                 Locale.ROOT,
-                "Cooldown %s (%s @ %s) -> active=%s present=%s ready=%s next=%s lastDefeated=%s",
+                "Cooldown %s (%s [%s] @ %s) -> active=%s present=%s ready=%s next=%s lastDefeated=%s",
                 worldState.encounterKey(),
                 worldState.displayName(),
+                worldState.entityTypeId(),
                 worldState.dimensionId(),
                 worldState.activeRegistrationPresent() ? "yes" : "no",
                 worldState.cooldownPresent() ? "yes" : "no",
@@ -669,9 +680,7 @@ public final class MobStatsCommand {
             return;
         }
 
-        MobStatsProvider.get(living)
-                .resolve()
-                .map(MobStats::getTier)
+        BossTierResolver.resolveTier(living)
                 .filter(MobTier::shouldPersistWorldState)
                 .ifPresent(tier -> ActiveBossesSavedData.get(serverLevel.getServer())
                         .registerBoss(serverLevel, living, tier));

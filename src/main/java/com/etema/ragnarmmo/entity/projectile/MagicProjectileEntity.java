@@ -248,6 +248,11 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
     }
 
     private double getEntityHit(LivingEntity entity) {
+        var resolvedHit = com.etema.ragnarmmo.system.stats.compute.CombatMath.tryGetResolvedMobHit(entity);
+        if (resolvedHit.isPresent()) {
+            return resolvedHit.getAsInt();
+        }
+
         int dex = (int) getSafeAttributeValue(entity, com.etema.ragnarmmo.common.api.stats.StatKeys.DEX);
         int luk = (int) getSafeAttributeValue(entity, com.etema.ragnarmmo.common.api.stats.StatKeys.LUK);
         
@@ -259,6 +264,11 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
     }
 
     private double getEntityFlee(LivingEntity entity) {
+        var resolvedFlee = com.etema.ragnarmmo.system.stats.compute.CombatMath.tryGetResolvedMobFlee(entity);
+        if (resolvedFlee.isPresent()) {
+            return resolvedFlee.getAsInt();
+        }
+
         int agi = (int) getSafeAttributeValue(entity, com.etema.ragnarmmo.common.api.stats.StatKeys.AGI);
         int luk = (int) getSafeAttributeValue(entity, com.etema.ragnarmmo.common.api.stats.StatKeys.LUK);
         

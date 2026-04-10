@@ -1,5 +1,7 @@
 package com.etema.ragnarmmo.system.mobstats.integration;
 
+import com.etema.ragnarmmo.common.api.mobs.LegacyMobTierRankMapper;
+import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.system.mobstats.core.MobStats;
 import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
@@ -13,9 +15,11 @@ import java.util.Optional;
 import java.util.OptionalInt;
 
 /**
- * Integration helper for accessing mob stats information.
- * Used by RagnarBar and other modules to retrieve mob level and class info.
- * Thread-safe and null-safe implementation.
+ * Legacy integration helper over the old {@link MobStats} capability.
+ *
+ * <p>This class remains useful for compatibility paths that still consume legacy mob stats
+ * directly. New migration work should prefer the shared mob read surface or the client
+ * coexistence projection instead of treating this helper as the primary semantic boundary.</p>
  */
 public final class MobInfoIntegration {
 
@@ -24,10 +28,10 @@ public final class MobInfoIntegration {
     }
 
     /**
-     * Gets the level of a mob entity.
+     * Gets the legacy mob level from the old capability path.
      *
      * @param entity the living entity to check (nullable)
-     * @return OptionalInt containing the mob's level, or empty if not available
+     * @return OptionalInt containing the legacy mob level, or empty if not available
      */
     @Nonnull
     public static OptionalInt getMobLevel(@Nullable LivingEntity entity) {
@@ -45,10 +49,10 @@ public final class MobInfoIntegration {
     }
 
     /**
-     * Gets the full mob info for an entity.
+     * Gets legacy mob info from the old capability container.
      *
      * @param entity the living entity to check (nullable)
-     * @return Optional containing MobInfo record, or empty if not available
+     * @return Optional containing a legacy {@link MobInfo} snapshot, or empty if not available
      */
     @Nonnull
     public static Optional<MobInfo> getMobInfo(@Nullable LivingEntity entity) {
@@ -61,6 +65,20 @@ public final class MobInfoIntegration {
                 .map(stats -> new MobInfo(
                         stats.getLevel(),
                         stats.getTier()));
+    }
+
+    /**
+     * Gets the normalized compatibility rank from the old capability path.
+     *
+     * <p>This is the preferred legacy fallback for coexistence consumers that only need the
+     * normalized encounter category and should not keep propagating raw {@link MobTier}.</p>
+     */
+    @Nonnull
+    public static Optional<MobRank> getLegacyCompatibilityRank(@Nullable LivingEntity entity) {
+        return getMobInfo(entity)
+                .map(MobInfo::tier)
+                .filter(Objects::nonNull)
+                .map(LegacyMobTierRankMapper::toMobRank);
     }
 
     /**
@@ -77,11 +95,12 @@ public final class MobInfoIntegration {
     }
 
     /**
-     * Gets the mob tier for an entity.
+     * Gets the legacy {@link MobTier} for an entity.
      *
      * @param entity the entity to check
-     * @return Optional containing the mob tier, or empty if not available
+     * @return Optional containing the old tier compatibility value, or empty if not available
      */
+    @Deprecated(forRemoval = false)
     @Nonnull
     public static Optional<MobTier> getMobTier(@Nullable LivingEntity entity) {
         return getMobInfo(entity)
@@ -90,17 +109,17 @@ public final class MobInfoIntegration {
     }
 
     /**
-     * Record containing mob information for display.
+     * Legacy mob info snapshot from the old mob-stats capability.
      *
-     * @param level    the mob's level (1+)
-     * @param tier     the mob's tier (normal, elite, boss)
+     * @param level the legacy mob level (1+)
+     * @param tier the legacy compatibility tier
      */
     public record MobInfo(
             int level,
             @Nullable MobTier tier) {
 
         /**
-         * Returns the display name for the tier.
+         * Returns the legacy compatibility display name for the old tier value.
          */
         @Nonnull
         public String getTierDisplayName() {

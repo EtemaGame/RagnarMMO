@@ -210,21 +210,27 @@ public class RagnarCombatEngine {
                 return new DefenderStats(flee, criticalShield, pd, vit, agi, luk, lvl, armorEff, com.etema.ragnarmmo.combat.element.ElementType.NEUTRAL);
             }
         } else if (target instanceof net.minecraft.world.entity.Mob mob) {
-            var mobStatsOpt = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(mob);
-            var ms = mobStatsOpt.orElse(null);
-            if (ms != null) {
-                int vit = (int) ms.get(StatKeys.VIT);
-                int agi = (int) ms.get(StatKeys.AGI);
-                int luk = (int) ms.get(StatKeys.LUK);
-                int lvl = ms.getLevel();
-                
-                double flee = CombatMath.computeFLEE(agi, luk, lvl, 0);
-                double pd = CombatMath.computePerfectDodge(luk);
-                double criticalShield = Math.floor(lvl / 15.0) + Math.floor(luk / 5.0);
+            CombatMath.TargetStats targetStats = CombatMath.getTargetStats(mob);
+            int lvl = CombatMath.tryGetTargetLevel(mob).orElse(0);
+
+            if (lvl > 0) {
+                double flee = CombatMath.computeFLEE(targetStats.agi, targetStats.luk, lvl, 0);
+                double pd = CombatMath.computePerfectDodge(targetStats.luk);
+                double criticalShield = Math.floor(lvl / 15.0) + Math.floor(targetStats.luk / 5.0);
                 double armorEff = com.etema.ragnarmmo.system.stats.event.CommonEvents.getArmorEff(mob);
-                com.etema.ragnarmmo.combat.element.ElementType element = ms.getElement();
-                
-                return new DefenderStats(flee, criticalShield, pd, vit, agi, luk, lvl, armorEff, element);
+                com.etema.ragnarmmo.combat.element.ElementType element =
+                        com.etema.ragnarmmo.combat.element.CombatPropertyResolver.getDefensiveElement(mob);
+
+                return new DefenderStats(
+                        flee,
+                        criticalShield,
+                        pd,
+                        targetStats.vit,
+                        targetStats.agi,
+                        targetStats.luk,
+                        lvl,
+                        armorEff,
+                        element);
             }
         }
         

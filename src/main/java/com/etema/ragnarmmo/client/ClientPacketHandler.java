@@ -6,6 +6,7 @@ import com.etema.ragnarmmo.client.effects.EffectVec3;
 import com.etema.ragnarmmo.client.effects.runtime.EffectContext;
 import com.etema.ragnarmmo.client.effects.runtime.SkillEffectSpawner;
 import com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain;
+import com.etema.ragnarmmo.common.api.mobs.query.MobClientCoexistenceView;
 import net.minecraft.resources.ResourceLocation;
 import com.etema.ragnarmmo.common.api.lifeskills.LifeSkillType;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
@@ -192,6 +193,14 @@ public final class ClientPacketHandler {
             stats.setSpeedMultiplier(spdMult);
             stats.setInitialized(true);
         });
+    }
+
+    public static void handleMobCoexistenceViewSync(int entityId, MobClientCoexistenceView view) {
+        if (view == null) {
+            return;
+        }
+
+        MobClientCoexistenceCache.put(entityId, view);
     }
 
     // ═══════════════════════════════════════════════

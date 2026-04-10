@@ -19,13 +19,27 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Legacy hostile-mob level resolver for the old mob-stats pipeline.
+ *
+ * <p>The scaling modes handled here, including {@code MANUAL_SPECIES}, belong to the config-driven
+ * legacy path. They are not the new datapack/manual mob pipeline and should not be treated as the
+ * semantic authority for migrated manual content.</p>
+ */
 public class MobLevelManager {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger("RagnarMobStats/MobLevelManager");
+    private static final AtomicBoolean LEGACY_MANUAL_SPECIES_WARNING_LOGGED = new AtomicBoolean(false);
 
     private final Random rng;
 
@@ -37,7 +51,10 @@ public class MobLevelManager {
         int minByRules = computeMinByRules(mob);
         int level = switch (MobConfig.LEVEL_SCALING_MODE.get()) {
             case PLAYER_LEVEL -> computePlayerAnchoredLevel(mob, tier);
-            case MANUAL_SPECIES -> computeSpeciesAnchoredLevel(mob, settings, tier);
+            case MANUAL_SPECIES -> {
+                warnLegacyManualSpeciesModeOnce();
+                yield computeSpeciesAnchoredLevel(mob, settings, tier);
+            }
             case BIOME_DISTANCE -> computeBiomeDistanceLevel(mob, tier);
             case DISTANCE -> computeDistanceBasedLevel(mob, tier);
         };
@@ -486,13 +503,15 @@ public class MobLevelManager {
         MobConfig.LevelScalingMode mode = MobConfig.LEVEL_SCALING_MODE.get();
         MobConfig.DimensionConfig dimConfig = getDimConfig(level.dimension().location());
 
-        lines.add("Active scaling mode: " + mode.name());
-        lines.add("Available modes: PLAYER_LEVEL, DISTANCE, MANUAL_SPECIES, BIOME_DISTANCE.");
+        lines.add("Active scaling mode: " + describeScalingMode(mode));
+        lines.add("Available modes: PLAYER_LEVEL, DISTANCE, MANUAL_SPECIES (legacy config-only), BIOME_DISTANCE.");
+        lines.add("Note: datapack MANUAL mobs do not use this legacy scaling-mode selector.");
 
         switch (mode) {
             case PLAYER_LEVEL -> lines.add("Hostile mobs anchor to nearby player level, with small random variance.");
             case DISTANCE -> lines.add("Hostile mobs use explicit distance bands from world spawn.");
-            case MANUAL_SPECIES -> lines.add("Species entries in config/ragnarmmo/mob_species.toml take priority; unlisted mobs fall back to distance bands.");
+            case MANUAL_SPECIES -> lines.add(
+                    "Legacy species entries in config/ragnarmmo/mob_species.toml take priority; unlisted mobs fall back to distance bands. This is not the new datapack MANUAL path.");
             case BIOME_DISTANCE -> lines.add("Biome-specific distance bands are used first, then generic distance bands, then legacy biome/depth rules.");
         }
 
@@ -515,6 +534,19 @@ public class MobLevelManager {
     }
 
     public record DifficultyReport(List<String> lines) {
+    }
+
+    private static String describeScalingMode(MobConfig.LevelScalingMode mode) {
+        return mode == MobConfig.LevelScalingMode.MANUAL_SPECIES
+                ? "MANUAL_SPECIES (legacy config-only)"
+                : mode.name();
+    }
+
+    private static void warnLegacyManualSpeciesModeOnce() {
+        if (LEGACY_MANUAL_SPECIES_WARNING_LOGGED.compareAndSet(false, true)) {
+            LOGGER.warn(
+                    "LEVEL_SCALING_MODE=MANUAL_SPECIES is a legacy config-only path backed by mob_species.toml. It is not the new datapack/manual mob pipeline.");
+        }
     }
 
     private record LevelBand(long minDistance, long maxDistance, int minLevel, int maxLevel) {

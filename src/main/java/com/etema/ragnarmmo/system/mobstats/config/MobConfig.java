@@ -8,9 +8,21 @@ import java.util.List;
 
 public final class MobConfig {
 
+        /**
+         * Legacy level-scaling selector for the old mob stats pipeline.
+         *
+         * <p>This enum does not describe the new semantic/manual datapack path. In particular,
+         * {@code MANUAL_SPECIES} remains a legacy config-only mode backed by
+         * {@code SpeciesConfig}.</p>
+         */
         public enum LevelScalingMode {
                 PLAYER_LEVEL,
                 DISTANCE,
+                /**
+                 * Legacy per-species TOML scaling mode backed by {@code mob_species.toml}.
+                 *
+                 * <p>This is not the new datapack/manual path.</p>
+                 */
                 MANUAL_SPECIES,
                 BIOME_DISTANCE
         }
@@ -231,7 +243,8 @@ public final class MobConfig {
                 RENDER_NUMERIC_HEALTH = b.comment("Show numeric health (Current / Max) on mob health bar")
                                 .define("render_numeric_health", true);
                 LEVEL_SCALING_MODE = b.comment(
-                                "How hostile mob levels are chosen: PLAYER_LEVEL, DISTANCE, MANUAL_SPECIES, BIOME_DISTANCE")
+                                "How hostile mob levels are chosen in the legacy mob-stats pipeline: PLAYER_LEVEL, DISTANCE, MANUAL_SPECIES (legacy config-only), BIOME_DISTANCE",
+                                "This selector does not configure the newer datapack/manual mob path.")
                                 .defineEnum("level_scaling_mode", LevelScalingMode.DISTANCE);
                 PLAYER_LEVEL_RADIUS = b.comment("Radius used when anchoring hostile mob level to nearby players")
                                 .defineInRange("player_level_radius", 64, 8, 256);
@@ -380,7 +393,14 @@ public final class MobConfig {
         private MobConfig() {
         }
 
-        // Helpers
+        /**
+         * Legacy {@link MobTier}-based progression and multiplier helpers for the old mob-stats
+         * pipeline.
+         *
+         * <p>These helpers remain compatibility utilities. New migration work should prefer the
+         * semantic mob models and read surfaces instead of treating {@link MobTier} as the primary
+         * encounter model.</p>
+         */
         public static int basePoints(MobTier tier) {
                 return switch (tier) {
                         case NORMAL -> BASE_POINTS_NORMAL.get();

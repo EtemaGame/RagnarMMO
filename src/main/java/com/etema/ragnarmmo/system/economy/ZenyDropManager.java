@@ -1,11 +1,11 @@
 package com.etema.ragnarmmo.system.economy;
 
-import com.etema.ragnarmmo.common.api.mobs.MobTier;
+import com.etema.ragnarmmo.common.api.mobs.MobRank;
+import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadView;
+import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
 import com.etema.ragnarmmo.roitems.ZenyItems;
 import com.etema.ragnarmmo.system.economy.config.ZenyConfig;
-import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
 import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,9 +22,7 @@ public class ZenyDropManager {
 
     public static List<ItemStack> calculateDrops(LivingEntity killed, Player killer, RandomSource random) {
         List<ItemStack> drops = new ArrayList<>();
-        
-        // 1. Get Mob Tier
-        MobTier tier = MobStatsProvider.get(killed).map(stats -> stats.getTier()).orElse(MobTier.NORMAL);
+        ZenyDropProfile dropProfile = resolveDropProfile(killed);
         
         // 2. Get Dimension Multiplier
         double dimMult = getDimensionMultiplier(killed.level().dimension().location());
@@ -33,53 +31,47 @@ public class ZenyDropManager {
         double luckBonus = killer.getCapability(PlayerStatsProvider.CAP).map(stats -> 1.0 + (stats.getLUK() * ZenyConfig.LUK_BONUS_FACTOR.get())).orElse(1.0);
         
         // 4. Calculate final multipliers
-        double tierMult = switch (tier) {
-            case ELITE -> ZenyConfig.ELITE_CHANCE_MULT.get();
-            case MINI_BOSS -> ZenyConfig.ELITE_CHANCE_MULT.get() * 1.75D;
-            case BOSS -> ZenyConfig.BOSS_CHANCE_MULT.get();
-            case MVP -> ZenyConfig.BOSS_CHANCE_MULT.get() * 1.5D;
-            default -> 1.0;
-        };
-
-        double finalMult = dimMult * luckBonus * tierMult;
-        int copperMax = switch (tier) {
-            case NORMAL -> 2;
-            case ELITE -> 5;
-            case MINI_BOSS -> 8;
-            case BOSS -> 12;
-            case MVP -> 16;
-        };
-        int silverCount = switch (tier) {
-            case BOSS -> 1;
-            case MVP -> 2;
-            default -> 0;
-        };
-        int goldCount = tier == MobTier.MVP ? 1 : 0;
+        double finalMult = dimMult * luckBonus * dropProfile.chanceMultiplier();
 
         // Roll for Copper
         if (random.nextDouble() < ZenyConfig.COPPER_BASE_CHANCE.get() * finalMult) {
-            drops.add(new ItemStack(ZenyItems.COPPER_ZENY.get(), 1 + random.nextInt(copperMax)));
+            drops.add(new ItemStack(ZenyItems.COPPER_ZENY.get(), 1 + random.nextInt(dropProfile.copperMax())));
         }
 
         // Roll for Silver
         if (random.nextDouble() < ZenyConfig.SILVER_BASE_CHANCE.get() * finalMult) {
-            drops.add(new ItemStack(ZenyItems.SILVER_ZENY.get(), Math.max(1, silverCount + 1)));
+            drops.add(new ItemStack(ZenyItems.SILVER_ZENY.get(), Math.max(1, dropProfile.guaranteedSilver() + 1)));
         }
 
         // Roll for Gold
         if (random.nextDouble() < ZenyConfig.GOLD_BASE_CHANCE.get() * finalMult) {
-            drops.add(new ItemStack(ZenyItems.GOLD_ZENY.get(), Math.max(1, goldCount + 1)));
+            drops.add(new ItemStack(ZenyItems.GOLD_ZENY.get(), Math.max(1, dropProfile.guaranteedGold() + 1)));
         }
 
-        if (silverCount > 0) {
-            drops.add(new ItemStack(ZenyItems.SILVER_ZENY.get(), silverCount));
+        if (dropProfile.guaranteedSilver() > 0) {
+            drops.add(new ItemStack(ZenyItems.SILVER_ZENY.get(), dropProfile.guaranteedSilver()));
         }
 
-        if (goldCount > 0) {
-            drops.add(new ItemStack(ZenyItems.GOLD_ZENY.get(), goldCount));
+        if (dropProfile.guaranteedGold() > 0) {
+            drops.add(new ItemStack(ZenyItems.GOLD_ZENY.get(), dropProfile.guaranteedGold()));
         }
 
         return drops;
+    }
+
+    private static ZenyDropProfile resolveDropProfile(LivingEntity killed) {
+        MobConsumerReadView readView = MobConsumerReadViewResolver
+                .resolve(killed)
+                .orElse(null);
+        MobRank rank = readView != null ? readView.rank() : MobRank.NORMAL;
+
+        // Economy now reads semantic rank from the shared read surface. Any legacy-only
+        // distinctions not carried by rank collapse conservatively to the lower ELITE/BOSS profile.
+        return switch (rank) {
+            case ELITE -> new ZenyDropProfile(ZenyConfig.ELITE_CHANCE_MULT.get(), 5, 0, 0);
+            case BOSS -> new ZenyDropProfile(ZenyConfig.BOSS_CHANCE_MULT.get(), 12, 1, 0);
+            case NORMAL -> new ZenyDropProfile(1.0D, 2, 0, 0);
+        };
     }
 
     private static double getDimensionMultiplier(ResourceLocation dim) {
@@ -99,5 +91,12 @@ public class ZenyDropManager {
         }
         
         return Math.min(ZenyConfig.DIMENSION_MULT_CAP.get(), DIM_MULT_CACHE.getOrDefault(dim, 1.0D));
+    }
+
+    private record ZenyDropProfile(
+            double chanceMultiplier,
+            int copperMax,
+            int guaranteedSilver,
+            int guaranteedGold) {
     }
 }

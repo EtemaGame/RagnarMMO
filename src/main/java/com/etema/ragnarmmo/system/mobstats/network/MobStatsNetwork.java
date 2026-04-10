@@ -19,6 +19,12 @@ public final class MobStatsNetwork {
                 .consumerMainThread(SyncMobStatsPacket::handle)
                 .add();
 
+        ch.messageBuilder(SyncMobCoexistenceViewPacket.class, id.getAndIncrement(), NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SyncMobCoexistenceViewPacket::encode)
+                .decoder(SyncMobCoexistenceViewPacket::decode)
+                .consumerMainThread(SyncMobCoexistenceViewPacket::handle)
+                .add();
+
         ch.messageBuilder(MobHurtPacket.class, id.getAndIncrement(), NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(MobHurtPacket::encode)
                 .decoder(MobHurtPacket::decode)

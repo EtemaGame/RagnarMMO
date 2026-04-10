@@ -1,5 +1,8 @@
 package com.etema.ragnarmmo.combat.element;
 
+import com.etema.ragnarmmo.common.api.mobs.runtime.projection.ComputedMobProfileReadView;
+import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
+import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
 import com.etema.ragnarmmo.common.tags.RagnarTags;
 import com.etema.ragnarmmo.entity.aoe.FireWallAoe;
 import com.etema.ragnarmmo.entity.aoe.HeavensDriveAoe;
@@ -90,13 +93,19 @@ public final class CombatPropertyResolver {
             return temporary;
         }
 
-        // Check MobStats first for authoritative element
-        if (entity instanceof net.minecraft.world.entity.Mob mob) {
-            var stats = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(mob);
-            if (stats.isPresent()) {
-        return stats.resolve().map(com.etema.ragnarmmo.system.mobstats.core.MobStats::getElement)
-                .orElse(com.etema.ragnarmmo.combat.element.ElementType.NEUTRAL);
+        ComputedMobProfileReadView computedReadView = getComputedMobReadView(entity);
+        if (computedReadView != null) {
+            ElementType normalizedElement = parseElementId(computedReadView.element());
+            if (normalizedElement != null) {
+                return normalizedElement;
             }
+        }
+
+        var legacyStats = entity instanceof net.minecraft.world.entity.Mob mob
+                ? MobStatsProvider.get(mob).orElse(null)
+                : null;
+        if (legacyStats != null) {
+            return legacyStats.getElement();
         }
 
         var type = entity.getType();
@@ -114,6 +123,11 @@ public final class CombatPropertyResolver {
     }
 
     public static String getRaceId(LivingEntity entity) {
+        ComputedMobProfileReadView computedReadView = getComputedMobReadView(entity);
+        if (computedReadView != null) {
+            return computedReadView.race();
+        }
+
         var type = entity.getType();
         if (type.is(RagnarTags.Entities.RACE_UNDEAD)) return "undead";
         if (type.is(RagnarTags.Entities.RACE_DEMON)) return "demon";
@@ -129,6 +143,14 @@ public final class CombatPropertyResolver {
     }
 
     public static CombatMath.MobSize getEntitySize(LivingEntity entity) {
+        ComputedMobProfileReadView computedReadView = getComputedMobReadView(entity);
+        if (computedReadView != null) {
+            CombatMath.MobSize normalizedSize = parseMobSizeId(computedReadView.size());
+            if (normalizedSize != null) {
+                return normalizedSize;
+            }
+        }
+
         if (entity instanceof EnderDragon
                 || entity instanceof WitherBoss
                 || entity instanceof ElderGuardian
@@ -313,5 +335,34 @@ public final class CombatPropertyResolver {
             return null;
         }
         return raw;
+    }
+
+    private static ComputedMobProfileReadView getComputedMobReadView(LivingEntity entity) {
+        return ManualMobProfileRuntimeStore.get(entity)
+                .map(ComputedMobProfileReadView::from)
+                .orElse(null);
+    }
+
+    private static ElementType parseElementId(String elementId) {
+        if (elementId == null || elementId.isBlank()) {
+            return null;
+        }
+        try {
+            return ElementType.valueOf(elementId.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+    private static CombatMath.MobSize parseMobSizeId(String sizeId) {
+        if (sizeId == null || sizeId.isBlank()) {
+            return null;
+        }
+        return switch (sizeId.trim().toLowerCase(Locale.ROOT)) {
+            case "small" -> CombatMath.MobSize.SMALL;
+            case "medium" -> CombatMath.MobSize.MEDIUM;
+            case "large" -> CombatMath.MobSize.LARGE;
+            default -> null;
+        };
     }
 }

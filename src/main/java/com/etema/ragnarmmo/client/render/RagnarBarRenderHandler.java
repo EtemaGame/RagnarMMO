@@ -2,16 +2,12 @@ package com.etema.ragnarmmo.client.render;
 
 import com.etema.ragnarmmo.system.bar.EntityStatResolver;
 import com.etema.ragnarmmo.system.bar.RagnarIntegrationHandler;
-import com.etema.ragnarmmo.system.mobstats.integration.MobInfoIntegration;
 import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
@@ -24,8 +20,6 @@ import net.minecraftforge.fml.common.Mod;
 import org.joml.Matrix4f;
 
 import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.WeakHashMap;
 
 /**
@@ -92,32 +86,24 @@ public class RagnarBarRenderHandler {
         String name = entity.getName().getString();
         boolean showClazz = resolver != null;
         String clazz = "";
+        String secondaryLabel = "";
+        int labelColor = 0xFFFFFF;
+        int secondaryLabelColor = 0xD0D0D0;
 
         if (resolver != null) {
+            String resolvedName = resolver.getDisplayName(entity);
             String lvl = resolver.getLevel(entity);
             String cls = showClazz ? resolver.getClazz(entity) : "";
+            String secondary = resolver.getSecondaryLabel(entity);
+            name = safeText(resolvedName, name);
             if (lvl != null && !lvl.isEmpty())
                 level = lvl;
             if (cls != null && !cls.isEmpty())
                 clazz = cls;
-        }
-
-        boolean missingLevel = level == null || level.isEmpty() || level.equals("?") || level.equals("0");
-        boolean missingClazz = clazz == null || clazz.isEmpty();
-        if ((missingLevel || missingClazz)
-                && entity.level().isClientSide()
-                && RagnarIntegrationHandler.hasRagnarMobStats
-                && !(entity instanceof Player)) {
-            var infoOpt = MobInfoIntegration.getMobInfo(entity);
-            if (missingLevel) {
-                int resolvedLevel = infoOpt
-                        .map(MobInfoIntegration.MobInfo::level)
-                        .filter(lvl -> lvl > 0)
-                        .orElseGet(() -> readPersistentMobLevel(entity).orElse(0));
-                if (resolvedLevel > 0) {
-                    level = String.valueOf(resolvedLevel);
-                }
-            }
+            if (secondary != null && !secondary.isEmpty())
+                secondaryLabel = secondary;
+            labelColor = resolver.getPrimaryLabelColor(entity);
+            secondaryLabelColor = resolver.getSecondaryLabelColor(entity);
         }
 
         if (level.isEmpty() || level.equals("0"))
@@ -131,16 +117,10 @@ public class RagnarBarRenderHandler {
 
         String label;
         if (isPassive) {
-            String passiveLevel = (level == null || level.isEmpty() || level.equals("?") || level.equals("0")) ? "1" : level;
+            String passiveLevel = isMissingLevel(level) ? "1" : level;
             label = "Lv " + passiveLevel + " " + name;
         } else {
             String rank = resolver != null ? resolver.getRank(entity) : "";
-            if (rank.isEmpty() && entity.level().isClientSide()) {
-                rank = MobInfoIntegration.getMobTier(entity).map(t -> t.name()).orElse("");
-            }
-
-            if ("MINI_BOSS".equalsIgnoreCase(rank)) rank = "ELITE";
-            else if ("MVP".equalsIgnoreCase(rank)) rank = "BOSS";
 
             String icon = "";
             if ("ELITE".equalsIgnoreCase(rank)) icon = "★ ";
@@ -151,6 +131,12 @@ public class RagnarBarRenderHandler {
                 label += " " + clazz;
             }
         }
+
+        boolean hasSecondaryLabel = secondaryLabel != null && !secondaryLabel.isEmpty();
+        float mainLabelY = hasSecondaryLabel ? -5.0F : 0.0F;
+        float secondaryLabelY = 6.0F;
+        float barY = hasSecondaryLabel ? 18.0F : 12.0F;
+        float hpLabelY = hasSecondaryLabel ? -17.0F : -12.0F;
 
         // === Render ===
         PoseStack ps = e.getPoseStack();
@@ -170,13 +156,13 @@ public class RagnarBarRenderHandler {
             float max = entity.getMaxHealth();
             if (max > 0f) {
                 float pct = Math.max(0f, Math.min(1f, hp / max));
-                drawCompactBar(ps, 12, pct); // Bar moved down to make room for name in center
+                drawCompactBar(ps, barY, pct);
 
                 if (MobConfig.RENDER_NUMERIC_HEALTH.get()) {
                     String hpText = String.format(java.util.Locale.ROOT, "%.0f / %.0f", hp, max);
                     ps.pushPose();
                     float textScale = 0.5f;
-                    ps.translate(0, -12, 0); // Position ABOVE label
+                    ps.translate(0, hpLabelY, 0);
                     ps.scale(textScale, textScale, textScale);
 
                     font.drawInBatch(hpText, -font.width(hpText) / 2f, 0, 0xFFFFFFFF, true,
@@ -186,9 +172,18 @@ public class RagnarBarRenderHandler {
             }
         }
 
-        // Draw label (Level and Name) at y=0 (Center)
-        font.drawInBatch(label, -font.width(label) / 2f, 0, 0xFFFFFF, false,
+        font.drawInBatch(label, -font.width(label) / 2f, mainLabelY, labelColor, false,
                 ps.last().pose(), e.getMultiBufferSource(), Font.DisplayMode.NORMAL, 0, e.getPackedLight());
+
+        if (hasSecondaryLabel) {
+            ps.pushPose();
+            float secondaryScale = 0.6F;
+            ps.translate(0.0D, secondaryLabelY, 0.0D);
+            ps.scale(secondaryScale, secondaryScale, secondaryScale);
+            font.drawInBatch(secondaryLabel, -font.width(secondaryLabel) / 2f, 0, secondaryLabelColor, false,
+                    ps.last().pose(), e.getMultiBufferSource(), Font.DisplayMode.NORMAL, 0, e.getPackedLight());
+            ps.popPose();
+        }
 
         ps.popPose();
     }
@@ -221,18 +216,12 @@ public class RagnarBarRenderHandler {
         RenderSystem.disableBlend();
     }
 
-    private static OptionalInt readPersistentMobLevel(LivingEntity entity) {
-        return getMobStatsTag(entity)
-                .filter(tag -> tag.contains("Level", Tag.TAG_INT))
-                .map(tag -> OptionalInt.of(Math.max(0, tag.getInt("Level"))))
-                .orElse(OptionalInt.empty());
+    private static boolean isMissingLevel(String level) {
+        return level == null || level.isEmpty() || level.equals("?") || level.equals("0");
     }
 
-    private static Optional<CompoundTag> getMobStatsTag(LivingEntity entity) {
-        if (entity == null) return Optional.empty();
-        CompoundTag data = entity.getPersistentData();
-        if (data == null || !data.contains("RagnarMobStats", Tag.TAG_COMPOUND)) return Optional.empty();
-        return Optional.of(data.getCompound("RagnarMobStats"));
+    private static String safeText(String preferred, String fallback) {
+        return preferred != null && !preferred.isBlank() ? preferred : fallback;
     }
 
     private static void fillRect(Matrix4f mat, BufferBuilder buffer, float x1, float y1, float x2, float y2, int color) {

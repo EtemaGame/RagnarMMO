@@ -41,6 +41,13 @@ import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.monster.EnderMan;
 
+/**
+ * Legacy spawn-time stats and {@link MobTier} assignment handler.
+ *
+ * <p>This class still drives the old capability-based mob-stats pipeline. It coexists with the
+ * new manual/datapack path, but it is not the semantic authority for migrated manual mobs and
+ * should not be treated as the new architecture's primary encounter model.</p>
+ */
 public class MobSpawnHandler {
 
     private final Random rng = new Random();
@@ -244,6 +251,12 @@ public class MobSpawnHandler {
         distributor.distributeByWeights(stats, totalPoints, weights);
     }
 
+    /**
+     * Legacy {@link MobTier} selection for the old spawn pipeline.
+     *
+     * <p>This remains compatibility behavior for capability-driven mobs, not the semantic rank
+     * model of the new mob architecture.</p>
+     */
     private MobTier determineTier(LivingEntity mob, SpeciesConfig.SpeciesSettings species) {
         if (species != null && species.forcedTier().isPresent())
             return species.forcedTier().get();
@@ -287,6 +300,10 @@ public class MobSpawnHandler {
 
 
 
+    /**
+     * Legacy weighted {@link MobTier} chooser used only by {@link SpeciesConfig} /
+     * {@code MANUAL_SPECIES}.
+     */
     private MobTier determineWeightedTier(SpeciesConfig.SpeciesSettings species) {
         if (species == null || species.tierWeights().isEmpty()) {
             return null;

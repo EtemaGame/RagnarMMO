@@ -1,6 +1,11 @@
 package com.etema.ragnarmmo.system.stats.compute;
 
+import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
+import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
+import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
 import net.minecraft.world.item.*;
+
+import java.util.OptionalInt;
 
 /**
  * Formulas de combate basadas en Ragnarok Online (pre-renewal).
@@ -630,6 +635,29 @@ public final class CombatMath {
         }
     }
 
+    /**
+     * Returns a normalized target level when a safe source exists.
+     *
+     * <p>For mobs, this prefers the shared read surface and only falls back to legacy capability
+     * data when needed. Callers that need a vanilla estimate should handle their own fallback.</p>
+     */
+    public static OptionalInt tryGetTargetLevel(net.minecraft.world.entity.LivingEntity entity) {
+        if (entity instanceof net.minecraft.world.entity.player.Player p) {
+            var stats = p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).resolve();
+            if (stats.isPresent() && stats.get().getLevel() > 0) {
+                return OptionalInt.of(stats.get().getLevel());
+            }
+            return OptionalInt.empty();
+        }
+
+        var readView = MobConsumerReadViewResolver.resolve(entity).orElse(null);
+
+        if (readView != null && readView.level() > 0) {
+            return OptionalInt.of(readView.level());
+        }
+        return OptionalInt.empty();
+    }
+
     public static TargetStats getTargetStats(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player p) {
             var stats = p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).resolve();
@@ -644,15 +672,44 @@ public final class CombatMath {
                 );
             }
         } else {
-            var stats = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(entity).resolve();
-            if (stats.isPresent()) {
-                var s = stats.get();
+            var newProfile = ManualMobProfileRuntimeStore.get(entity).orElse(null);
+            var readView = newProfile != null
+                    ? MobConsumerReadViewResolver.resolve(entity, newProfile, null).orElse(null)
+                    : MobConsumerReadViewResolver.resolve(entity).orElse(null);
+            var inspectionStats = readView != null ? readView.inspectionStats() : null;
+            var baseCombatStats = newProfile != null ? newProfile.baseCombatStats() : null;
+
+            // When the new runtime profile can expose base combat attributes safely, prefer that
+            // authority directly. This keeps manual-runtime mobs off legacy MobStats for the
+            // status-resistance attributes that are already normalized by the new architecture.
+            if (baseCombatStats != null) {
                 return new TargetStats(
-                        s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT),
-                        s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT),
-                        s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK),
-                        s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.AGI),
-                        0);
+                    baseCombatStats.vit(),
+                    baseCombatStats.intelligence(),
+                    baseCombatStats.luk(),
+                    baseCombatStats.agi(),
+                    inspectionStats != null ? inspectionStats.mdef() : newProfile.mdef()
+                );
+            }
+
+            // Base attributes are still sourced conservatively from legacy MobStats until the
+            // shared read surface exposes them explicitly.
+            var legacyStats = MobStatsProvider.get(entity).orElse(null);
+            if (legacyStats != null) {
+                return new TargetStats(
+                    legacyStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT),
+                    legacyStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT),
+                    legacyStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK),
+                    legacyStats.get(com.etema.ragnarmmo.common.api.stats.StatKeys.AGI),
+                    inspectionStats != null ? inspectionStats.mdef() : 0
+                );
+            }
+
+            // For new-runtime mobs that still cannot expose normalized base combat attributes,
+            // only consume normalized MDEF when available and keep the remaining values
+            // conservative.
+            if (inspectionStats != null) {
+                return new TargetStats(1, 1, 1, 1, inspectionStats.mdef());
             }
         }
         return new TargetStats(1, 1, 1, 1, 0);

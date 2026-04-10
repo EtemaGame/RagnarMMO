@@ -3,6 +3,8 @@ package com.etema.ragnarmmo.system.stats.event;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.etema.ragnarmmo.combat.element.CombatPropertyResolver;
+import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadView;
+import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
 import com.etema.ragnarmmo.combat.element.ElementType;
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.api.stats.StatAttributes;
@@ -575,7 +577,7 @@ public class CommonEvents {
      */
     private static int applyLevelPenalty(int baseExp, ServerPlayer player, LivingEntity mob, int playerLevel) {
         int mobLevel = estimateMobLevel(mob);
-        boolean isBoss = MobUtils.isMVPBoss(mob);
+        boolean isBoss = MobUtils.isBossLikeForCompatibility(mob);
 
         // MVP/Boss monsters never get EXP penalty
         if (isBoss) {
@@ -627,14 +629,9 @@ public class CommonEvents {
 
 
     private static int estimateMobLevel(LivingEntity mob) {
-        // Try to get actual level from MobStats capability
-        var mobStatsOpt = com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider.get(mob);
-        var stats = mobStatsOpt.resolve().orElse(null);
-        if (stats != null) {
-            int level = stats.getLevel();
-            if (level > 0) {
-                return level;
-            }
+        int normalizedLevel = CombatMath.tryGetTargetLevel(mob).orElse(0);
+        if (normalizedLevel > 0) {
+            return normalizedLevel;
         }
 
         // Fallback: estimate from HP
@@ -677,6 +674,11 @@ public class CommonEvents {
         return WeaponStatHelper.getDisplayedMagicAttack(p.getMainHandItem());
     }
     public static double getArmorEff(LivingEntity ent) {
+        MobConsumerReadView readView = ent instanceof Player ? null : MobConsumerReadViewResolver.resolve(ent).orElse(null);
+        if (readView != null && readView.inspectionStats() != null) {
+            return readView.inspectionStats().def();
+        }
+
         double armorEff = ent.getArmorValue();
 
         for (EquipmentSlot slot : EquipmentSlot.values()) {
@@ -695,6 +697,11 @@ public class CommonEvents {
      * In Ragnarok, MDEF is typically granted by specific armors or refinements.
      */
     public static double getArmorMagicDefense(LivingEntity ent) {
+        MobConsumerReadView readView = ent instanceof Player ? null : MobConsumerReadViewResolver.resolve(ent).orElse(null);
+        if (readView != null && readView.inspectionStats() != null) {
+            return readView.inspectionStats().mdef();
+        }
+
         double equipMdef = 0.0;
         
         // Sum MDEF from armor attributes
@@ -745,7 +752,7 @@ public class CommonEvents {
             if (inst != null && inst.getAmplifier() >= 3) {
                 Entity observer = e.getLookingEntity();
                 if (observer instanceof LivingEntity le) {
-                    if (!MobUtils.isMVPBoss(le)) {
+                    if (!MobUtils.isBossLikeForCompatibility(le)) {
                         e.modifyVisibility(0.0);
                     }
                 } else {
@@ -779,7 +786,7 @@ public class CommonEvents {
                     p.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN)) {
                 var inst = p.getEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN);
                 if (inst != null && inst.getAmplifier() >= 3) {
-                    if (!MobUtils.isMVPBoss(e.getEntity())) {
+                    if (!MobUtils.isBossLikeForCompatibility(e.getEntity())) {
                         e.setCanceled(true);
                     }
                 }

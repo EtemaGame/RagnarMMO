@@ -11,9 +11,12 @@ import com.etema.ragnarmmo.system.stats.StatContainer;
 import java.util.Map;
 
 /**
- * Runtime data container for mob stats that can be persisted through the
- * {@code MobStatsCapability}. A mob always keeps track of its level, tier and
- * the value of each classic Ragnarok stat.
+ * Legacy runtime data container for the old mob-stats capability path.
+ *
+ * <p>This object still persists level, legacy compatibility tier, and classic Ragnarok-style
+ * stats for systems that have not migrated yet. New semantic/runtime authority lives in
+ * {@code ComputedMobProfile}; coexistence consumers should prefer the shared read surface instead
+ * of treating this class as the primary model.</p>
  */
 public class MobStats {
 
@@ -51,6 +54,11 @@ public class MobStats {
         return tier;
     }
 
+    /**
+     * Sets the legacy compatibility tier used by the old capability path.
+     *
+     * <p>This should not be treated as the new semantic encounter authority for migrated code.</p>
+     */
     public void setTier(MobTier tier) {
         this.tier = tier != null ? tier : MobTier.NORMAL;
         // Auto-update multipliers based on tier

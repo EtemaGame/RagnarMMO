@@ -32,7 +32,7 @@ public final class EquipmentCombatModifierResolver {
         String raceId = CombatPropertyResolver.getRaceId(target);
         String sizeId = CombatPropertyResolver.getSizeId(target);
         String elementId = CombatPropertyResolver.getElementId(CombatPropertyResolver.getDefensiveElement(target));
-        boolean boss = MobUtils.isMVPBoss(target);
+        boolean boss = MobUtils.isBossLikeForCompatibility(target);
 
         double modifier = 1.0;
         for (ItemStack stack : getEquippedItems(player)) {
@@ -49,7 +49,7 @@ public final class EquipmentCombatModifierResolver {
         String raceId = attacker != null ? CombatPropertyResolver.getRaceId(attacker) : "";
         String sizeId = attacker != null ? CombatPropertyResolver.getSizeId(attacker) : "";
         String elementId = CombatPropertyResolver.getElementId(attackElement);
-        boolean boss = attacker != null && MobUtils.isMVPBoss(attacker);
+        boolean boss = attacker != null && MobUtils.isBossLikeForCompatibility(attacker);
 
         double modifier = 1.0;
         for (ItemStack stack : getEquippedItems(player)) {

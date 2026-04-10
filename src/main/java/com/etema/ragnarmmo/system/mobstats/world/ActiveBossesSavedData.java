@@ -111,6 +111,13 @@ public class ActiveBossesSavedData extends SavedData {
         return Collections.unmodifiableCollection(activeBosses.values());
     }
 
+    public Optional<BossEntry> getActiveBossEntry(UUID entityUuid) {
+        if (entityUuid == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(activeBosses.get(entityUuid));
+    }
+
     public Collection<RespawnEntry> getRespawnCooldowns() {
         return Collections.unmodifiableCollection(respawnCooldowns.values());
     }

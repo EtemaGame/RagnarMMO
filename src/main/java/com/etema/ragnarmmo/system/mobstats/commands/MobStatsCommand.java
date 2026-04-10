@@ -1,5 +1,8 @@
 package com.etema.ragnarmmo.system.mobstats.commands;
 
+import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadView;
+import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
+import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerInspectionStatsView;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
@@ -16,6 +19,11 @@ import com.etema.ragnarmmo.system.mobstats.world.BossSpawnService;
 import com.etema.ragnarmmo.system.mobstats.world.BossSpawnSource;
 import com.etema.ragnarmmo.system.mobstats.world.BossSigilItem;
 import com.etema.ragnarmmo.system.mobstats.world.MobSpawnOverrides;
+import com.etema.ragnarmmo.system.mobstats.world.read.MobWorldStateActiveEntryReadView;
+import com.etema.ragnarmmo.system.mobstats.world.read.MobWorldStateCooldownEntryReadView;
+import com.etema.ragnarmmo.system.mobstats.world.read.MobWorldStateEncounterReadView;
+import com.etema.ragnarmmo.system.mobstats.world.read.MobWorldStateEntityReadView;
+import com.etema.ragnarmmo.system.mobstats.world.read.MobWorldStateReadResolver;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -61,6 +69,18 @@ public final class MobStatsCommand {
                                         .executes(ctx -> inspectManualBoss(
                                                 ctx.getSource(),
                                                 EntityArgument.getEntity(ctx, "target")))))
+                        .then(Commands.literal("worldstate")
+                                .executes(ctx -> showBossWorldState(ctx.getSource())))
+                        .then(Commands.literal("inspect_target")
+                                .then(Commands.argument("target", EntityArgument.entity())
+                                        .executes(ctx -> inspectBossTarget(
+                                                ctx.getSource(),
+                                                EntityArgument.getEntity(ctx, "target")))))
+                        .then(Commands.literal("cooldown")
+                                .then(Commands.argument("spawn_key", StringArgumentType.word())
+                                        .executes(ctx -> showCooldown(
+                                                ctx.getSource(),
+                                                StringArgumentType.getString(ctx, "spawn_key")))))
                         .then(Commands.literal("mark")
                                 .then(Commands.argument("target", EntityArgument.entity())
                                         .then(Commands.argument("min_level", IntegerArgumentType.integer(1))
@@ -128,30 +148,35 @@ public final class MobStatsCommand {
             return 0;
         }
 
-        MobStats stats = MobStatsProvider.get(living).orElse(null);
-        if (stats == null || !stats.isInitialized()) {
-            source.sendSuccess(() -> Component.literal("The mob has no registered stats."), false);
+        MobConsumerReadView readView = MobConsumerReadViewResolver
+                .resolve(living)
+                .orElse(null);
+        if (readView == null) {
+            source.sendSuccess(() -> Component.literal("The mob has no normalized mob data available."), false);
             return 0;
         }
 
-        net.minecraft.resources.ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(living.getType());
+        ResourceLocation id = readView.entityTypeId();
         Component header = Component.literal(String.format(Locale.ROOT,
                 "Mob %s - Level %d (%s)",
                 id != null ? id.toString() : living.getDisplayName().getString(),
-                stats.getLevel(),
-                stats.getTier().name().toLowerCase(Locale.ROOT)));
+                readView.level(),
+                readView.rank().name().toLowerCase(Locale.ROOT)));
         source.sendSuccess(() -> header, false);
 
-        source.sendSuccess(() -> Component.literal("Stats: " + stats.describeStats()), false);
         source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
-                "Multipliers -> HP %.2f | DMG %.2f | DEF %.2f | SPD %.2f",
-                stats.getHealthMultiplier(),
-                stats.getDamageMultiplier(),
-                stats.getDefenseMultiplier(),
-                stats.getSpeedMultiplier())), false);
-
+                "Read source: %s | new runtime profile: %s",
+                readView.dataOrigin().name().toLowerCase(Locale.ROOT),
+                readView.hasNewRuntimeProfile() ? "yes" : "no")), false);
         source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
-                "Total points: %d", stats.getTotalPoints())), false);
+                "Taxonomy -> race=%s | element=%s | size=%s",
+                readView.race(),
+                readView.element(),
+                readView.size())), false);
+        source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
+                "Compatibility -> bossLike=%s",
+                readView.isBossLikeForCompatibility() ? "yes" : "no")), false);
+        sendInspectionStats(source, readView);
         boolean manualBoss = MobSpawnOverrides.isManualBoss(living);
         int minimumLevel = MobSpawnOverrides.getMinimumLevel(living).orElse(1);
         source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
@@ -167,21 +192,50 @@ public final class MobStatsCommand {
             return 0;
         }
 
+        MobConsumerReadView readView = MobConsumerReadViewResolver
+                .resolve(living)
+                .orElse(null);
+        if (readView == null) {
+            source.sendFailure(Component.literal("The selected mob has no normalized read view available."));
+            return 0;
+        }
+
         boolean manualBoss = MobSpawnOverrides.isManualBoss(living);
         int minimumLevel = MobSpawnOverrides.getMinimumLevel(living).orElse(1);
-        MobTier tier = MobStatsProvider.get(living)
-                .resolve()
-                .map(MobStats::getTier)
-                .orElse(MobTier.NORMAL);
 
         source.sendSuccess(() -> Component.literal(String.format(
                 Locale.ROOT,
-                "Boss inspect -> %s manual=%s tier=%s minLevel=%d",
+                "Boss inspect -> %s manual=%s rank=%s minLevel=%d source=%s",
                 living.getName().getString(),
                 manualBoss ? "yes" : "no",
-                tier.name(),
-                minimumLevel)).withStyle(ChatFormatting.GOLD), false);
+                readView.rank().name().toLowerCase(Locale.ROOT),
+                minimumLevel,
+                readView.dataOrigin().name().toLowerCase(Locale.ROOT))).withStyle(ChatFormatting.GOLD), false);
+        source.sendSuccess(() -> Component.literal(String.format(
+                Locale.ROOT,
+                "Taxonomy -> race=%s | element=%s | size=%s | bossLike=%s",
+                readView.race(),
+                readView.element(),
+                readView.size(),
+                readView.isBossLikeForCompatibility() ? "yes" : "no")), false);
+        sendInspectionStats(source, readView);
         return 1;
+    }
+
+    private static void sendInspectionStats(CommandSourceStack source, MobConsumerReadView readView) {
+        if (readView.inspectionStats() == null) {
+            return;
+        }
+
+        MobConsumerInspectionStatsView stats = readView.inspectionStats();
+        source.sendSuccess(() -> Component.literal(String.format(
+                Locale.ROOT,
+                "Final stats -> maxHp=%d atk=%d-%d def=%d mdef=%d",
+                stats.maxHp(),
+                stats.atkMin(),
+                stats.atkMax(),
+                stats.def(),
+                stats.mdef())), false);
     }
 
     private static int markManualBoss(CommandSourceStack source, Entity entity, int minLevel) {
@@ -276,37 +330,62 @@ public final class MobStatsCommand {
             return 0;
         }
 
-        ActiveBossesSavedData data = ActiveBossesSavedData.get(source.getServer());
+        var server = source.getServer();
+        var activeEntries = MobWorldStateReadResolver.listActiveEntries(server);
+        var cooldownEntries = MobWorldStateReadResolver.listCooldownEntries(server);
         source.sendSuccess(() -> Component.literal(String.format(
                 Locale.ROOT,
                 "Boss world state -> active=%d cooldowns=%d",
-                data.getActiveBosses().size(),
-                data.getRespawnCooldowns().size())).withStyle(ChatFormatting.GOLD), false);
+                activeEntries.size(),
+                cooldownEntries.size())).withStyle(ChatFormatting.GOLD), false);
 
-        data.getActiveBosses().stream()
-                .sorted(Comparator.comparing(ActiveBossesSavedData.BossEntry::displayName))
+        activeEntries.stream()
                 .limit(MAX_LIST_LINES)
-                .forEach(entry -> source.sendSuccess(() -> Component.literal(String.format(
-                        Locale.ROOT,
-                        "ACTIVE %s [%s] @ %s (%d %d %d)%s",
-                        entry.displayName(),
-                        entry.tier().name(),
-                        entry.dimensionId(),
-                        entry.x(),
-                        entry.y(),
-                        entry.z(),
-                        entry.hasSpawnKey() ? " key=" + entry.spawnKey() : "")).withStyle(ChatFormatting.RED), false));
+                .forEach(entry -> {
+                    String encounterKey = entry.encounterKey() != null ? entry.encounterKey() : "<none>";
+                    String spawnSource = entry.spawnSource() != null
+                            ? entry.spawnSource().name().toLowerCase(Locale.ROOT)
+                            : "<none>";
+                    String respawnDelay = entry.respawnDelayTicks() != null
+                            ? String.valueOf(entry.respawnDelayTicks())
+                            : "<none>";
+                    String nextAllowed = formatOptionalLong(entry.nextAllowedGameTime());
+                    String lastDefeated = formatOptionalLong(entry.lastDefeatedGameTime());
+                    source.sendSuccess(() -> Component.literal(String.format(
+                            Locale.ROOT,
+                            "ACTIVE %s @ %s (%d %d %d) registered=%s key=%s source=%s respawnTicks=%s cooldownPresent=%s ready=%s next=%s lastDefeated=%s",
+                            entry.displayName(),
+                            entry.dimensionId(),
+                            entry.x(),
+                            entry.y(),
+                            entry.z(),
+                            entry.activeRegistrationPresent() ? "yes" : "no",
+                            encounterKey,
+                            spawnSource,
+                            respawnDelay,
+                            entry.cooldownPresent() ? "yes" : "no",
+                            entry.cooldownReady() ? "yes" : "no",
+                            nextAllowed,
+                            lastDefeated)).withStyle(ChatFormatting.RED), false);
+                });
 
-        data.getRespawnCooldowns().stream()
-                .sorted(Comparator.comparing(ActiveBossesSavedData.RespawnEntry::spawnKey))
+        cooldownEntries.stream()
                 .limit(MAX_LIST_LINES)
-                .forEach(entry -> source.sendSuccess(() -> Component.literal(String.format(
-                        Locale.ROOT,
-                        "COOLDOWN %s [%s] ready=%s next=%d",
-                        entry.spawnKey(),
-                        entry.tier().name(),
-                        entry.isReady(source.getLevel().getGameTime()) ? "yes" : "no",
-                        entry.nextAllowedGameTime())).withStyle(ChatFormatting.AQUA), false));
+                .forEach(entry -> {
+                    String nextAllowed = formatOptionalLong(entry.nextAllowedGameTime());
+                    String lastDefeated = formatOptionalLong(entry.lastDefeatedGameTime());
+                    source.sendSuccess(() -> Component.literal(String.format(
+                            Locale.ROOT,
+                            "COOLDOWN %s (%s @ %s) active=%s present=%s ready=%s next=%s lastDefeated=%s",
+                            entry.encounterKey(),
+                            entry.displayName(),
+                            entry.dimensionId(),
+                            entry.activeRegistrationPresent() ? "yes" : "no",
+                            entry.cooldownPresent() ? "yes" : "no",
+                            entry.cooldownReady() ? "yes" : "no",
+                            nextAllowed,
+                            lastDefeated)).withStyle(ChatFormatting.AQUA), false);
+                });
 
         return 1;
     }
@@ -317,34 +396,58 @@ public final class MobStatsCommand {
             return 0;
         }
 
-        MobTier tier = MobStatsProvider.get(living)
-                .resolve()
-                .map(MobStats::getTier)
-                .orElse(MobTier.NORMAL);
-        BossSpawnMetadata.SpawnInfo info = BossSpawnMetadata.read(living, tier);
+        MobConsumerReadView readView = MobConsumerReadViewResolver
+                .resolve(living)
+                .orElse(null);
+        if (readView == null) {
+            source.sendFailure(Component.literal("The selected boss has no normalized read view available."));
+            return 0;
+        }
+
+        MobWorldStateEntityReadView entityWorldState = MobWorldStateReadResolver.resolveEntity(living).orElse(null);
 
         source.sendSuccess(() -> Component.literal(String.format(
                 Locale.ROOT,
-                "Boss inspect -> %s tier=%s source=%s key=%s respawnTicks=%d",
+                "Boss inspect -> %s rank=%s",
                 living.getName().getString(),
-                tier.name(),
-                info.source().name(),
-                info.spawnKey().isBlank() ? "<none>" : info.spawnKey(),
-                info.respawnDelayTicks())).withStyle(ChatFormatting.GOLD), false);
+                readView.rank().name().toLowerCase(Locale.ROOT))).withStyle(ChatFormatting.GOLD), false);
 
-        if (source.getServer() != null && !info.spawnKey().isBlank()) {
-            ActiveBossesSavedData data = ActiveBossesSavedData.get(source.getServer());
-            data.getRespawnEntry(info.spawnKey()).ifPresentOrElse(
-                    entry -> source.sendSuccess(() -> Component.literal(String.format(
-                            Locale.ROOT,
-                            "Cooldown -> ready=%s next=%d lastDefeated=%d",
-                            entry.isReady(source.getLevel().getGameTime()) ? "yes" : "no",
-                            entry.nextAllowedGameTime(),
-                            entry.lastDefeatedGameTime())).withStyle(ChatFormatting.AQUA), false),
-                    () -> source.sendSuccess(() -> Component.literal("Cooldown -> none").withStyle(ChatFormatting.GRAY),
-                            false));
+        if (entityWorldState == null) {
+            source.sendSuccess(
+                    () -> Component.literal("World-state -> entity=<unresolved>").withStyle(ChatFormatting.GRAY),
+                    false);
+            return 1;
         }
 
+        String encounterKey = entityWorldState.encounterKey() != null ? entityWorldState.encounterKey() : "<none>";
+        String spawnSource = entityWorldState.spawnSource() != null
+                ? entityWorldState.spawnSource().name().toLowerCase(Locale.ROOT)
+                : "<none>";
+        String respawnDelay = entityWorldState.respawnDelayTicks() != null
+                ? String.valueOf(entityWorldState.respawnDelayTicks())
+                : "<none>";
+
+        source.sendSuccess(() -> Component.literal(String.format(
+                Locale.ROOT,
+                "World-state -> source=%s key=%s respawnTicks=%s",
+                spawnSource,
+                encounterKey,
+                respawnDelay)), false);
+
+        if (entityWorldState.encounterKey() == null) {
+            source.sendSuccess(() -> Component.literal("Cooldown -> key=<none>").withStyle(ChatFormatting.GRAY), false);
+            return 1;
+        }
+
+        String nextAllowed = formatOptionalLong(entityWorldState.nextAllowedGameTime());
+        String lastDefeated = formatOptionalLong(entityWorldState.lastDefeatedGameTime());
+        source.sendSuccess(() -> Component.literal(String.format(
+                Locale.ROOT,
+                "Cooldown -> present=%s ready=%s next=%s lastDefeated=%s",
+                entityWorldState.cooldownPresent() ? "yes" : "no",
+                entityWorldState.cooldownReady() ? "yes" : "no",
+                nextAllowed,
+                lastDefeated)).withStyle(entityWorldState.cooldownPresent() ? ChatFormatting.AQUA : ChatFormatting.GRAY), false);
         return 1;
     }
 
@@ -512,23 +615,35 @@ public final class MobStatsCommand {
         }
 
         String normalizedKey = spawnKey.trim().toLowerCase(Locale.ROOT);
-        ActiveBossesSavedData data = ActiveBossesSavedData.get(source.getServer());
-        boolean active = data.isSpawnKeyActive(normalizedKey);
-        data.getRespawnEntry(normalizedKey).ifPresentOrElse(
-                entry -> source.sendSuccess(() -> Component.literal(String.format(
-                        Locale.ROOT,
-                        "Cooldown %s -> active=%s ready=%s next=%d lastDefeated=%d",
-                        normalizedKey,
-                        active ? "yes" : "no",
-                        entry.isReady(source.getLevel().getGameTime()) ? "yes" : "no",
-                        entry.nextAllowedGameTime(),
-                        entry.lastDefeatedGameTime())).withStyle(ChatFormatting.AQUA), false),
-                () -> source.sendSuccess(() -> Component.literal(String.format(
-                        Locale.ROOT,
-                        "Cooldown %s -> active=%s entry=<none>",
-                        normalizedKey,
-                        active ? "yes" : "no")).withStyle(ChatFormatting.GRAY), false));
+        MobWorldStateCooldownEntryReadView worldState = MobWorldStateReadResolver
+                .resolveCooldownEntry(source.getServer(), normalizedKey)
+                .orElse(null);
+        if (worldState == null) {
+            source.sendSuccess(() -> Component.literal(String.format(
+                    Locale.ROOT,
+                    "Cooldown %s -> worldState=<unresolved>",
+                    normalizedKey.isBlank() ? "<blank>" : normalizedKey)).withStyle(ChatFormatting.GRAY), false);
+            return 0;
+        }
+
+        String nextAllowed = formatOptionalLong(worldState.nextAllowedGameTime());
+        String lastDefeated = formatOptionalLong(worldState.lastDefeatedGameTime());
+        source.sendSuccess(() -> Component.literal(String.format(
+                Locale.ROOT,
+                "Cooldown %s (%s @ %s) -> active=%s present=%s ready=%s next=%s lastDefeated=%s",
+                worldState.encounterKey(),
+                worldState.displayName(),
+                worldState.dimensionId(),
+                worldState.activeRegistrationPresent() ? "yes" : "no",
+                worldState.cooldownPresent() ? "yes" : "no",
+                worldState.cooldownReady() ? "yes" : "no",
+                nextAllowed,
+                lastDefeated)).withStyle(worldState.cooldownPresent() ? ChatFormatting.AQUA : ChatFormatting.GRAY), false);
         return 1;
+    }
+
+    private static String formatOptionalLong(Long value) {
+        return value != null ? String.valueOf(value) : "<none>";
     }
 
     private static int clearCooldown(CommandSourceStack source, String spawnKey) {

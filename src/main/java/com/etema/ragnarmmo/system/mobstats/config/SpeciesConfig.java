@@ -26,14 +26,21 @@ import java.util.OptionalInt;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Carga configuraciones por especie desde mob_species.toml.
- * Este formato soporta:
- * - baseLevel, levelVariance, maxLevel
- * - tier / tiers
- * - pointsPerLevel
- * - growth: { str, agi, vit, int, dex, luk }
- * - multipliers: { health, damage, defense, speed }
- * - random: true/false
+ * Carga configuraciones legacy por especie desde {@code mob_species.toml}.
+ *
+ * <p>Este archivo solo respalda el modo legacy {@code MANUAL_SPECIES} del sistema antiguo de
+ * escalado. No es el path manual nuevo basado en datapacks ni debe tratarse como equivalente del
+ * modo semantico {@code MANUAL} de la arquitectura nueva.</p>
+ *
+ * <p>Este formato soporta:
+ * <ul>
+ * <li>{@code baseLevel}, {@code levelVariance}, {@code maxLevel}</li>
+ * <li>{@code tier} / {@code tiers}</li>
+ * <li>{@code pointsPerLevel}</li>
+ * <li>{@code growth: { str, agi, vit, int, dex, luk }}</li>
+ * <li>{@code multipliers: { health, damage, defense, speed }}</li>
+ * <li>{@code random: true/false}</li>
+ * </ul></p>
  */
 public final class SpeciesConfig {
 
@@ -107,10 +114,22 @@ public final class SpeciesConfig {
             return pointsPerLevel;
         }
 
+        /**
+         * Legacy-only {@link MobTier} override for {@code MANUAL_SPECIES}.
+         *
+         * <p>This is part of the old TOML-driven path and must not be treated as the semantic
+         * encounter category of the new mob architecture.</p>
+         */
         public Optional<MobTier> forcedTier() {
             return forcedTier;
         }
 
+        /**
+         * Legacy-only weighted {@link MobTier} distribution for {@code MANUAL_SPECIES}.
+         *
+         * <p>This remains compatibility input for the old scaling path. New migration work should
+         * not treat these weights as the new semantic rank model.</p>
+         */
         public Map<MobTier, Double> tierWeights() {
             return tierWeights;
         }
@@ -167,13 +186,13 @@ public final class SpeciesConfig {
         if (Files.exists(tomlFile)) {
             loaded = readToml(tomlFile);
         } else {
-            LOGGER.warn("mob_species.toml not found, using empty default configuration");
+            LOGGER.warn("Legacy mob_species.toml for MANUAL_SPECIES not found, using empty legacy species configuration");
             loaded = Collections.emptyMap();
         }
 
         SPECIES.clear();
         loaded.forEach(SPECIES::put);
-        LOGGER.info("Loaded {} mob configurations (TOML)", SPECIES.size());
+        LOGGER.info("Loaded {} legacy MANUAL_SPECIES entries from mob_species.toml", SPECIES.size());
     }
 
     private static void ensureTemplateExists(Path tomlFile) {
@@ -183,12 +202,18 @@ public final class SpeciesConfig {
 
         try {
             Files.writeString(tomlFile, defaultTemplate(), StandardCharsets.UTF_8);
-            LOGGER.info("Created default mob species template at {}", tomlFile);
+            LOGGER.info("Created default legacy MANUAL_SPECIES template at {}", tomlFile);
         } catch (IOException ex) {
             LOGGER.warn("Could not create default mob_species.toml at {}", tomlFile, ex);
         }
     }
 
+    /**
+     * Returns legacy per-species settings for {@code MANUAL_SPECIES}.
+     *
+     * <p>This lookup is part of the old TOML/config path and should not be treated as the new
+     * datapack/manual content source.</p>
+     */
     public static SpeciesSettings get(ResourceLocation id) {
         return SPECIES.getOrDefault(id, SpeciesSettings.EMPTY);
     }
@@ -341,7 +366,7 @@ public final class SpeciesConfig {
         try {
             return Optional.of(MobTier.valueOf(text.toUpperCase(Locale.ROOT)));
         } catch (IllegalArgumentException ex) {
-            LOGGER.warn("Unknown tier in configuration: {}", text);
+            LOGGER.warn("Unknown legacy MobTier in mob_species.toml: {}", text);
             return Optional.empty();
         }
     }
@@ -502,7 +527,9 @@ public final class SpeciesConfig {
 
     private static String defaultTemplate() {
         return """
-# Manual per-species overrides used by MANUAL_SPECIES scaling mode.
+# Legacy per-species overrides used only by MANUAL_SPECIES scaling mode.
+# This file is not the new datapack-based MANUAL path.
+# Use datapacks for new MANUAL-authored mob content.
 # Restart the game or server after editing this file.
 #
 # [minecraft:zombie]

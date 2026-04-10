@@ -38,6 +38,22 @@ public final class BossSpawnMetadata {
         return new SpawnInfo(source, sanitizeSpawnKey(spawnKey), respawnDelayTicks);
     }
 
+    public static Optional<SpawnInfo> readExplicit(LivingEntity entity) {
+        if (entity == null) {
+            return Optional.empty();
+        }
+
+        CompoundTag root = getRoot(entity);
+        if (root == null) {
+            return Optional.empty();
+        }
+
+        BossSpawnSource source = BossSpawnSource.parse(root.getString(SOURCE_KEY)).orElse(BossSpawnSource.NATURAL);
+        String spawnKey = sanitizeSpawnKey(root.getString(SPAWN_KEY));
+        int respawnDelayTicks = Math.max(0, root.getInt(RESPAWN_DELAY_KEY));
+        return Optional.of(new SpawnInfo(source, spawnKey, respawnDelayTicks));
+    }
+
     public static void markNatural(LivingEntity entity) {
         if (entity == null) {
             return;

@@ -1,0 +1,45 @@
+package com.etema.ragnarmmo.common.api.mobs.runtime.integration;
+
+import com.etema.ragnarmmo.RagnarMMO;
+import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolutionResult;
+import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
+import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+
+/**
+ * Narrow runtime seam that associates the new manual mob profile with covered entities.
+ *
+ * <p>This hook only attaches an already-resolved {@code ComputedMobProfile} for the strict manual path.
+ * It does not replace the legacy runtime pipeline, apply attributes, or perform sync.</p>
+ */
+@Mod.EventBusSubscriber(modid = RagnarMMO.MODID)
+public final class ManualMobProfileRuntimeIntegrator {
+
+    private ManualMobProfileRuntimeIntegrator() {
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide()) {
+            return;
+        }
+        if (!(event.getEntity() instanceof LivingEntity entity) || entity instanceof Player) {
+            return;
+        }
+
+        ManualMobProfileRuntimeStore.clear(entity);
+
+        ResourceLocation entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        ManualMobProfileResolutionResult result = ManualMobProfileResolver.resolve(entityTypeId);
+        if (result.profile() != null) {
+            ManualMobProfileRuntimeStore.attach(entity, result.profile());
+        }
+    }
+}

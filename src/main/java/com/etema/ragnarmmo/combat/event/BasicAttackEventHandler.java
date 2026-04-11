@@ -1,9 +1,9 @@
 package com.etema.ragnarmmo.combat.event;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.combat.engine.RagnarBasicAttackService;
-import com.etema.ragnarmmo.combat.engine.RagnarCombatFeedbackService;
-import com.etema.ragnarmmo.combat.util.CombatDebugLog;
+import com.etema.ragnarmmo.combat.api.RagnarAttackRequest;
+import com.etema.ragnarmmo.combat.engine.RagnarCombatEngine;
+import com.etema.ragnarmmo.combat.integration.bettercombat.BetterCombatTargetAdapter;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -19,8 +19,7 @@ import net.minecraftforge.fml.common.Mod;
  */
 @Mod.EventBusSubscriber(modid = RagnarMMO.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class BasicAttackEventHandler {
-    private static final RagnarBasicAttackService BASIC_ATTACKS = new RagnarBasicAttackService();
-    private static final RagnarCombatFeedbackService FEEDBACK = new RagnarCombatFeedbackService();
+    private static final RagnarCombatEngine COMBAT_ENGINE = RagnarCombatEngine.get();
 
     private BasicAttackEventHandler() {
     }
@@ -39,20 +38,12 @@ public final class BasicAttackEventHandler {
         // RagnarMMO must be the combat authority for this slice.
         event.setCanceled(true);
 
-        var resolution = BASIC_ATTACKS.tryResolve(attacker, target);
-        if (resolution == null) {
-            CombatDebugLog.logValidationReject(
-                    new com.etema.ragnarmmo.combat.api.CombatRequestContext(
-                            (net.minecraft.server.level.ServerPlayer) event.getEntity(),
-                            com.etema.ragnarmmo.combat.api.CombatActionType.BASIC_ATTACK,
-                            0, 0, false, 
-                            ((net.minecraft.server.level.ServerPlayer) event.getEntity()).getInventory().selected,
-                            null,
-                            java.util.List.of()),
-                    "basic_attack_service_returned_null");
-            return;
-        }
-
-        FEEDBACK.sendBasicAttackFeedback(attacker, target, resolution);
+        int sequenceId = COMBAT_ENGINE.state(attacker).getLastAcceptedSequenceId() + 1;
+        COMBAT_ENGINE.processBasicAttackRequest(attacker, new RagnarAttackRequest(
+                sequenceId,
+                0,
+                false,
+                attacker.getInventory().selected,
+                java.util.List.of(BetterCombatTargetAdapter.fromEntityId(target.getId()))));
     }
 }

@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:slime",
+    "rank":  "NORMAL",
+    "level":  12,
+    "ro_stats":  {
+                     "str":  14,
+                     "agi":  8,
+                     "vit":  14,
+                     "int":  1,
+                     "dex":  8,
+                     "luk":  2
+                 },
+    "direct_stats":  {
+                         "max_hp":  16,
+                         "atk_min":  2,
+                         "atk_max":  4,
+                         "def":  0,
+                         "mdef":  1,
+                         "aspd":  130,
+                         "move_speed":  0.2
+                     },
+    "race":  "formless",
+    "element":  "earth",
+    "size":  "medium"
+}

@@ -1,61 +1,44 @@
 package com.etema.ragnarmmo.client;
 
-import com.etema.ragnarmmo.skill.api.SkillType;
-import com.etema.ragnarmmo.system.lifeskills.LifeSkillClientHandler;
-import com.etema.ragnarmmo.system.lifeskills.LifeSkillManager;
+import com.etema.ragnarmmo.client.hud.HudConfigSerializer;
+import com.etema.ragnarmmo.client.hud.HudLayoutManager;
+import com.etema.ragnarmmo.client.hud.HudWidgetState;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-
-import java.util.Map;
-
-/**
- * HUD overlay for skill notifications.
- * - Life Skills: Shown on the RIGHT side (lateral)
- * - Combat Skills: Shown CENTER (legacy behavior)
- */
-@Mod.EventBusSubscriber(modid = com.etema.ragnarmmo.RagnarMMO.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class SkillOverlay {
 
-    // === Combat Skills (XP-based, centered) ===
-    private static net.minecraft.resources.ResourceLocation lastSkill;
+    private static ResourceLocation lastSkill;
     private static int lastAmount;
     private static long showTime;
-    private static final long DURATION = 3000;
+    private static final long DURATION = 3000L;
 
-    // Level up (combat skills)
-    private static net.minecraft.resources.ResourceLocation lastLevelUpSkill;
+    private static ResourceLocation lastLevelUpSkill;
     private static int lastLevelUpLevel;
     private static long levelUpShowTime;
 
-    // === Life Skills (Points-based, lateral) ===
-    private static net.minecraft.resources.ResourceLocation lastLifeSkill;
+    private static ResourceLocation lastLifeSkill;
     private static int lastLifePoints;
     private static long lifePointsShowTime;
-    private static final long LIFE_POINTS_DURATION = 2000;
+    private static final long LIFE_POINTS_DURATION = 2000L;
 
-    // Life skill level up
-    private static net.minecraft.resources.ResourceLocation lastLifeLevelUpSkill;
+    private static ResourceLocation lastLifeLevelUpSkill;
     private static int lastLifeLevelUpLevel;
     private static long lifeLevelUpShowTime;
-    private static final long LIFE_LEVEL_UP_DURATION = 5000;
+    private static final long LIFE_LEVEL_UP_DURATION = 5000L;
 
-    // Margins for lateral display
-    private static final int MARGIN_RIGHT = 10;
-    private static final int MARGIN_TOP = 60;
+    private static final int NOTIFICATION_WIDTH = 190;
+    private static final int NOTIFICATION_HEIGHT = 58;
 
-    // === Public methods to trigger displays ===
-
-    public static void showXpGain(net.minecraft.resources.ResourceLocation skillId, int amount) {
-        // Check if it's a life skill - redirect to life skill display
+    public static void showXpGain(ResourceLocation skillId, int amount) {
         if (isLifeSkill(skillId)) {
             showLifePointsGain(skillId, amount);
             return;
@@ -65,8 +48,7 @@ public class SkillOverlay {
         showTime = System.currentTimeMillis();
     }
 
-    public static void showLevelUp(net.minecraft.resources.ResourceLocation skillId, int level) {
-        // Check if it's a life skill
+    public static void showLevelUp(ResourceLocation skillId, int level) {
         if (isLifeSkill(skillId)) {
             showLifeLevelUp(skillId, level);
             return;
@@ -76,216 +58,219 @@ public class SkillOverlay {
         levelUpShowTime = System.currentTimeMillis();
     }
 
-    public static void showLifePointsGain(net.minecraft.resources.ResourceLocation skillId, int points) {
+    public static void showLifePointsGain(ResourceLocation skillId, int points) {
         lastLifeSkill = skillId;
         lastLifePoints = points;
         lifePointsShowTime = System.currentTimeMillis();
     }
 
-    public static void showLifeLevelUp(net.minecraft.resources.ResourceLocation skillId, int level) {
+    public static void showLifeLevelUp(ResourceLocation skillId, int level) {
         lastLifeLevelUpSkill = skillId;
         lastLifeLevelUpLevel = level;
         lifeLevelUpShowTime = System.currentTimeMillis();
     }
 
-    // === Overlay Registration ===
-
     public static final IGuiOverlay HUD_SKILL_XP = (ForgeGui gui, GuiGraphics graphics, float partialTick,
             int screenWidth, int screenHeight) -> {
-        // Combat skills (centered)
-        renderXpGain(graphics, screenWidth, screenHeight);
-        renderLevelUp(graphics, screenWidth, screenHeight);
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null
+                || mc.options.hideGui
+                || !RagnarConfigs.CLIENT.hud.enabled.get()
+                || !RagnarConfigs.CLIENT.hud.notifications.enabled.get()
+                || !hasVisibleNotification()) {
+            return;
+        }
 
-        // Life skills (lateral - right side)
-        renderLifePointsGain(graphics, screenWidth, screenHeight);
-        renderLifeLevelUp(graphics, screenWidth, screenHeight);
+        HudWidgetState state = HudConfigSerializer.read(RagnarConfigs.CLIENT.hud.notifications);
+        HudLayoutManager.HudBounds bounds = HudLayoutManager.bounds(
+                state, getWidth(), getHeight(), screenWidth, screenHeight);
+
+        RenderSystem.enableBlend();
+        HudLayoutManager.renderBackground(graphics, state, bounds);
+        HudLayoutManager.pushWidgetTransform(graphics, bounds);
+        renderXpGain(graphics);
+        renderLevelUp(graphics);
+        renderLifePointsGain(graphics);
+        renderLifeLevelUp(graphics);
+        HudLayoutManager.popWidgetTransform(graphics);
+        RenderSystem.disableBlend();
     };
 
-    // === Combat Skills Rendering (Centered) ===
+    public static int getWidth() {
+        return NOTIFICATION_WIDTH;
+    }
 
-    private static void renderXpGain(GuiGraphics graphics, int screenWidth, int screenHeight) {
-        if (lastSkill == null)
+    public static int getHeight() {
+        return NOTIFICATION_HEIGHT;
+    }
+
+    public static int renderPreview(GuiGraphics graphics, Font font) {
+        Component title = Component.translatable("screen.ragnarmmo.notifications.level_up")
+                .withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+        int titleWidth = font.width(title);
+        graphics.drawString(font, title, (NOTIFICATION_WIDTH - titleWidth) / 2, 0, 0xFFFFD700, true);
+
+        Component xp = Component.translatable("screen.ragnarmmo.notifications.skill_xp", 32, "Bash");
+        int xpWidth = font.width(xp);
+        graphics.drawString(font, xp, (NOTIFICATION_WIDTH - xpWidth) / 2, 14, 0xFFFFFFFF, true);
+
+        Component life = Component.translatable("screen.ragnarmmo.notifications.life_points", "*", 5, "Mining");
+        int lifeWidth = font.width(life);
+        graphics.drawString(font, life, NOTIFICATION_WIDTH - lifeWidth, 32, 0xFF55FF55, true);
+        return NOTIFICATION_HEIGHT;
+    }
+
+    private static void renderXpGain(GuiGraphics graphics) {
+        if (lastSkill == null || isLifeSkill(lastSkill)) {
             return;
-        if (isLifeSkill(lastSkill))
-            return; // Skip life skills here
+        }
 
         long elapsed = System.currentTimeMillis() - showTime;
-        if (elapsed > DURATION)
+        if (elapsed > DURATION) {
             return;
+        }
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.options.hideGui)
-            return;
-
         float alpha = calculateAlpha(elapsed, DURATION);
-        int x = screenWidth / 2;
-        int y = screenHeight / 4;
-
-        RenderSystem.enableBlend();
-        int color = (int) (alpha * 255) << 24 | 0xFFFFFF;
-
-        String displayName = getDisplayName(lastSkill);
-        String text = String.format("+%d %s XP", lastAmount, displayName);
+        int color = ((int) (alpha * 255) << 24) | 0xFFFFFF;
+        Component text = Component.translatable(
+                "screen.ragnarmmo.notifications.skill_xp", lastAmount, getDisplayName(lastSkill));
         int width = mc.font.width(text);
-
-        graphics.drawString(mc.font, Component.literal(text), x - width / 2, y, color);
-        RenderSystem.disableBlend();
+        graphics.drawString(mc.font, text, (NOTIFICATION_WIDTH - width) / 2, 0, color);
     }
 
-    private static void renderLevelUp(GuiGraphics graphics, int screenWidth, int screenHeight) {
-        if (lastLevelUpSkill == null)
+    private static void renderLevelUp(GuiGraphics graphics) {
+        if (lastLevelUpSkill == null || isLifeSkill(lastLevelUpSkill)) {
             return;
-        if (isLifeSkill(lastLevelUpSkill))
-            return;
+        }
 
         long elapsed = System.currentTimeMillis() - levelUpShowTime;
-        long duration = DURATION + 2000;
-        if (elapsed > duration)
+        long duration = DURATION + 2000L;
+        if (elapsed > duration) {
             return;
+        }
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.options.hideGui)
-            return;
-
         float alpha = calculateAlpha(elapsed, duration);
-        int x = screenWidth / 2;
-        int y = screenHeight / 2 - 20;
+        int color = ((int) (alpha * 255) << 24) | 0xFFFF00;
 
-        RenderSystem.enableBlend();
-        int color = (int) (alpha * 255) << 24 | 0xFFFF00;
+        Component title = Component.translatable("screen.ragnarmmo.notifications.level_up")
+                .withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD);
+        Component sub = Component.translatable(
+                "screen.ragnarmmo.notifications.skill_level", getDisplayName(lastLevelUpSkill), lastLevelUpLevel)
+                .withStyle(ChatFormatting.YELLOW);
 
-        Component title = Component.literal("Level Up!").withStyle(
-                net.minecraft.ChatFormatting.BOLD, net.minecraft.ChatFormatting.GOLD);
-        String sub = String.format("%s: %d", getDisplayName(lastLevelUpSkill), lastLevelUpLevel);
-
-        int w1 = mc.font.width(title);
-        int w2 = mc.font.width(sub);
-
-        graphics.drawString(mc.font, title, x - w1 / 2, y, color);
-        graphics.drawString(mc.font, Component.literal(sub).withStyle(net.minecraft.ChatFormatting.YELLOW),
-                x - w2 / 2, y + 12, color);
-        RenderSystem.disableBlend();
+        int titleWidth = mc.font.width(title);
+        int subWidth = mc.font.width(sub);
+        graphics.drawString(mc.font, title, (NOTIFICATION_WIDTH - titleWidth) / 2, 12, color);
+        graphics.drawString(mc.font, sub, (NOTIFICATION_WIDTH - subWidth) / 2, 24, color);
     }
 
-    // === Life Skills Rendering (Lateral - Right Side) ===
-
-    private static void renderLifePointsGain(GuiGraphics graphics, int screenWidth, int screenHeight) {
-        if (lastLifeSkill == null)
+    private static void renderLifePointsGain(GuiGraphics graphics) {
+        if (lastLifeSkill == null) {
             return;
+        }
 
         long elapsed = System.currentTimeMillis() - lifePointsShowTime;
-        if (elapsed > LIFE_POINTS_DURATION)
+        if (elapsed > LIFE_POINTS_DURATION) {
             return;
+        }
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.options.hideGui)
-            return;
-
         float alpha = calculateAlpha(elapsed, LIFE_POINTS_DURATION);
-
-        // Position: Right side, below hotbar area
-        int y = MARGIN_TOP;
-
-        RenderSystem.enableBlend();
-
-        // Format: "⛏ +5 pts Mining" with icon
-        String icon = getSkillIcon(lastLifeSkill);
-        String text = String.format("%s +%d pts %s", icon, lastLifePoints, getDisplayName(lastLifeSkill));
+        int y = 34;
+        Component text = Component.translatable(
+                "screen.ragnarmmo.notifications.life_points",
+                getSkillIcon(lastLifeSkill),
+                lastLifePoints,
+                getDisplayName(lastLifeSkill));
 
         int textWidth = mc.font.width(text);
-        int x = screenWidth - MARGIN_RIGHT - textWidth;
-
-        // Background box for readability
+        int x = NOTIFICATION_WIDTH - textWidth;
         int bgColor = (int) (alpha * 180) << 24;
         graphics.fill(x - 4, y - 2, x + textWidth + 4, y + 10, bgColor);
 
-        // Text color: greenish for points
-        int textColor = (int) (alpha * 255) << 24 | 0x55FF55;
-        graphics.drawString(mc.font, Component.literal(text), x, y, textColor);
-
-        RenderSystem.disableBlend();
+        int textColor = ((int) (alpha * 255) << 24) | 0x55FF55;
+        graphics.drawString(mc.font, text, x, y, textColor);
     }
 
-    private static void renderLifeLevelUp(GuiGraphics graphics, int screenWidth, int screenHeight) {
-        if (lastLifeLevelUpSkill == null)
+    private static void renderLifeLevelUp(GuiGraphics graphics) {
+        if (lastLifeLevelUpSkill == null) {
             return;
+        }
 
         long elapsed = System.currentTimeMillis() - lifeLevelUpShowTime;
-        if (elapsed > LIFE_LEVEL_UP_DURATION)
+        if (elapsed > LIFE_LEVEL_UP_DURATION) {
             return;
+        }
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.options.hideGui)
-            return;
-
         float alpha = calculateAlpha(elapsed, LIFE_LEVEL_UP_DURATION);
-
-        // Position: Right side, higher than points display
-        int y = MARGIN_TOP + 20;
-
-        RenderSystem.enableBlend();
-
-        // Format: "⛏ Mining ↑ Nivel 12"
-        String icon = getSkillIcon(lastLifeLevelUpSkill);
-        String text = String.format("%s %s \u2191 Level %d", icon, getDisplayName(lastLifeLevelUpSkill),
+        int y = 46;
+        Component text = Component.translatable(
+                "screen.ragnarmmo.notifications.life_level",
+                getSkillIcon(lastLifeLevelUpSkill),
+                getDisplayName(lastLifeLevelUpSkill),
                 lastLifeLevelUpLevel);
 
         int textWidth = mc.font.width(text);
-        int x = screenWidth - MARGIN_RIGHT - textWidth;
-
-        // Background box (gold tint for level up)
-        int bgColor = (int) (alpha * 200) << 24 | 0x332200;
+        int x = NOTIFICATION_WIDTH - textWidth;
+        int bgColor = ((int) (alpha * 200) << 24) | 0x332200;
         graphics.fill(x - 4, y - 2, x + textWidth + 4, y + 10, bgColor);
 
-        // Text color: gold for level up
-        int textColor = (int) (alpha * 255) << 24 | 0xFFD700;
-        graphics.drawString(mc.font, Component.literal(text), x, y, textColor);
-
-        RenderSystem.disableBlend();
+        int textColor = ((int) (alpha * 255) << 24) | 0xFFD700;
+        graphics.drawString(mc.font, text, x, y, textColor);
     }
 
-    // === Helper Methods ===
+    private static boolean hasVisibleNotification() {
+        long now = System.currentTimeMillis();
+        return (lastSkill != null && !isLifeSkill(lastSkill) && now - showTime <= DURATION)
+                || (lastLevelUpSkill != null && !isLifeSkill(lastLevelUpSkill) && now - levelUpShowTime <= DURATION + 2000L)
+                || (lastLifeSkill != null && now - lifePointsShowTime <= LIFE_POINTS_DURATION)
+                || (lastLifeLevelUpSkill != null && now - lifeLevelUpShowTime <= LIFE_LEVEL_UP_DURATION);
+    }
 
     private static float calculateAlpha(long elapsed, long duration) {
-        float alpha = 1.0f;
-        long fadeStart = duration - 1000;
+        float alpha = 1.0F;
+        long fadeStart = duration - 1000L;
         if (elapsed > fadeStart) {
-            alpha = 1.0f - (float) (elapsed - fadeStart) / 1000f;
+            alpha = 1.0F - (float) (elapsed - fadeStart) / 1000.0F;
         }
-        return Math.max(0, Math.min(1, alpha));
+        return Math.max(0.0F, Math.min(1.0F, alpha));
     }
 
-    private static boolean isLifeSkill(net.minecraft.resources.ResourceLocation skillId) {
+    private static boolean isLifeSkill(ResourceLocation skillId) {
         return com.etema.ragnarmmo.skill.data.SkillRegistry.get(skillId)
                 .map(def -> def.getCategory() == com.etema.ragnarmmo.skill.api.SkillCategory.LIFE)
                 .orElse(false);
     }
 
-    private static String getDisplayName(net.minecraft.resources.ResourceLocation skillId) {
+    private static Component getDisplayName(ResourceLocation skillId) {
         return com.etema.ragnarmmo.skill.data.SkillRegistry.get(skillId)
-                .map(com.etema.ragnarmmo.skill.api.ISkillDefinition::getDisplayName)
-                .orElse(skillId.getPath());
+                .map(com.etema.ragnarmmo.skill.api.ISkillDefinition::getTranslatedName)
+                .orElseGet(() -> Component.literal(skillId.getPath()));
     }
 
-    private static String getSkillIcon(net.minecraft.resources.ResourceLocation skillId) {
+    private static String getSkillIcon(ResourceLocation skillId) {
         String path = skillId.getPath().toLowerCase(java.util.Locale.ROOT);
-        if (path.contains("mining"))
-            return "\u26CF"; // Pick
-        if (path.contains("woodcutting"))
-            return "\uD83E\uDE93"; // Axe
-        if (path.contains("excavation") || path.contains("digging"))
-            return "\uD83E\uDEA3"; // Shovel
-        if (path.contains("farming"))
-            return "\uD83C\uDF3E"; // Wheat
-        if (path.contains("fishing"))
-            return "\uD83C\uDFA3"; // Fishing rod
-        if (path.contains("exploration"))
-            return "\uD83E\uDDED"; // Compass
-        return "\u2B50"; // Star
-    }
-
-    @SubscribeEvent
-    public static void registerOverlays(RegisterGuiOverlaysEvent event) {
-        event.registerAboveAll("skill_xp", HUD_SKILL_XP);
+        if (path.contains("mining")) {
+            return "\u26CF";
+        }
+        if (path.contains("woodcutting")) {
+            return "Axe";
+        }
+        if (path.contains("excavation") || path.contains("digging")) {
+            return "Shovel";
+        }
+        if (path.contains("farming")) {
+            return "Wheat";
+        }
+        if (path.contains("fishing")) {
+            return "Fishing";
+        }
+        if (path.contains("exploration")) {
+            return "Explore";
+        }
+        return "*";
     }
 }

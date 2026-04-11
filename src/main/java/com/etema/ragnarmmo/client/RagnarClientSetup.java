@@ -12,9 +12,4 @@ public class RagnarClientSetup {
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event) {
     }
-
-    @SubscribeEvent
-    public static void registerOverlays(net.minecraftforge.client.event.RegisterGuiOverlaysEvent event) {
-        event.registerAboveAll("hotbar_overlay", com.etema.ragnarmmo.client.ui.HotbarOverlay.INSTANCE);
-    }
 }

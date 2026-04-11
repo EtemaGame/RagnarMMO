@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:witch",
+    "rank":  "NORMAL",
+    "level":  24,
+    "ro_stats":  {
+                     "str":  12,
+                     "agi":  16,
+                     "vit":  20,
+                     "int":  42,
+                     "dex":  30,
+                     "luk":  14
+                 },
+    "direct_stats":  {
+                         "max_hp":  26,
+                         "atk_min":  4,
+                         "atk_max":  6,
+                         "def":  0,
+                         "mdef":  12,
+                         "aspd":  140,
+                         "move_speed":  0.25
+                     },
+    "race":  "demihuman",
+    "element":  "neutral",
+    "size":  "medium"
+}

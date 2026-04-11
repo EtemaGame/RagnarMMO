@@ -19,7 +19,7 @@ public final class PlayerStatsSyncService {
     }
 
     public static void sync(ServerPlayer player, IPlayerStats stats, int syncMask) {
-        if (player == null || stats == null || syncMask == 0) {
+        if (player == null || stats == null || syncMask == 0 || player.connection == null) {
             return;
         }
 

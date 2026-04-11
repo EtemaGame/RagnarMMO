@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.client.render;
 
 import com.etema.ragnarmmo.system.bar.EntityStatResolver;
 import com.etema.ragnarmmo.system.bar.RagnarIntegrationHandler;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -10,6 +11,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderNameTagEvent;
@@ -30,10 +32,10 @@ import java.util.WeakHashMap;
 public class RagnarBarRenderHandler {
 
     private static final double MAX_DISTANCE = 40.0D;
-    private static final float SCALE = 1.0F;
-    private static final int BAR_WIDTH = 60;
-    private static final int BAR_HEIGHT = 5;
-    private static final long DISPLAY_TIME_MS = 3000;
+    private static final float SCALE = 0.82F;
+    private static final int BAR_WIDTH = 46;
+    private static final int BAR_HEIGHT = 4;
+    private static final long DISPLAY_TIME_MS = 2000;
 
     private static final Map<LivingEntity, Long> lastHitTime = new WeakHashMap<>();
 
@@ -78,6 +80,8 @@ public class RagnarBarRenderHandler {
         if (!entity.isAlive() || entity.isInvisible())
             return;
         if (player.distanceTo(entity) > MAX_DISTANCE)
+            return;
+        if (!(entity instanceof Player) && isRepresentedByTargetFrame(mc, entity))
             return;
 
         // === Datos base ===
@@ -132,11 +136,12 @@ public class RagnarBarRenderHandler {
             }
         }
 
-        boolean hasSecondaryLabel = secondaryLabel != null && !secondaryLabel.isEmpty();
-        float mainLabelY = hasSecondaryLabel ? -5.0F : 0.0F;
+        boolean showDetails = player.isShiftKeyDown();
+        boolean hasSecondaryLabel = showDetails && secondaryLabel != null && !secondaryLabel.isEmpty();
+        float mainLabelY = 0.0F;
         float secondaryLabelY = 6.0F;
-        float barY = hasSecondaryLabel ? 18.0F : 12.0F;
-        float hpLabelY = hasSecondaryLabel ? -17.0F : -12.0F;
+        float barY = hasSecondaryLabel ? 16.0F : 10.0F;
+        float hpLabelY = barY + BAR_HEIGHT + 2.0F;
 
         // === Render ===
         PoseStack ps = e.getPoseStack();
@@ -150,8 +155,9 @@ public class RagnarBarRenderHandler {
         // === Barra de HP si fue golpeado recientemente
         Long lastHit = lastHitTime.get(entity);
         boolean recentlyHit = lastHit != null && (System.currentTimeMillis() - lastHit < DISPLAY_TIME_MS);
+        boolean representedByTargetFrame = isRepresentedByTargetFrame(mc, entity);
 
-        if (recentlyHit) {
+        if (recentlyHit && !representedByTargetFrame) {
             float hp = entity.getHealth();
             float max = entity.getMaxHealth();
             if (max > 0f) {
@@ -161,7 +167,7 @@ public class RagnarBarRenderHandler {
                 if (MobConfig.RENDER_NUMERIC_HEALTH.get()) {
                     String hpText = String.format(java.util.Locale.ROOT, "%.0f / %.0f", hp, max);
                     ps.pushPose();
-                    float textScale = 0.5f;
+                    float textScale = 0.45f;
                     ps.translate(0, hpLabelY, 0);
                     ps.scale(textScale, textScale, textScale);
 
@@ -241,6 +247,17 @@ public class RagnarBarRenderHandler {
 
     private static boolean isMissingLevel(String level) {
         return level == null || level.isEmpty() || level.equals("?") || level.equals("0");
+    }
+
+    private static boolean isRepresentedByTargetFrame(Minecraft mc, LivingEntity entity) {
+        if (mc == null || entity == null) {
+            return false;
+        }
+        if (!RagnarConfigs.CLIENT.hud.enabled.get() || !RagnarConfigs.CLIENT.hud.targetFrame.enabled.get()) {
+            return false;
+        }
+        return mc.hitResult instanceof EntityHitResult entityHit
+                && entityHit.getEntity().getId() == entity.getId();
     }
 
     private static String safeText(String preferred, String fallback) {

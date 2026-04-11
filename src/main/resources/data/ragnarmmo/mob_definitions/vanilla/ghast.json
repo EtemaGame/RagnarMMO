@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:ghast",
+    "rank":  "NORMAL",
+    "level":  34,
+    "ro_stats":  {
+                     "str":  26,
+                     "agi":  16,
+                     "vit":  12,
+                     "int":  36,
+                     "dex":  42,
+                     "luk":  8
+                 },
+    "direct_stats":  {
+                         "max_hp":  10,
+                         "atk_min":  4,
+                         "atk_max":  9,
+                         "def":  0,
+                         "mdef":  10,
+                         "aspd":  130,
+                         "move_speed":  0.2
+                     },
+    "race":  "demon",
+    "element":  "ghost",
+    "size":  "large"
+}

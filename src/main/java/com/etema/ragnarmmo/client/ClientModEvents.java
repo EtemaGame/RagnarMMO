@@ -2,7 +2,9 @@ package com.etema.ragnarmmo.client;
 
 import com.etema.ragnarmmo.client.command.ClientHudCommands;
 import com.etema.ragnarmmo.client.ui.RagnarStatusOverlay;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.system.stats.RagnarStats;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
@@ -24,9 +26,13 @@ public class ClientModEvents {
     public static class ModBusEvents {
         @SubscribeEvent
         public static void registerOverlays(RegisterGuiOverlaysEvent event) {
-            // Register our custom HUD overlay above all vanilla overlays
+            // Default HUD z-order: status, party, target, hotbar, cast, notifications.
             event.registerAboveAll("ragnar_status", RagnarStatusOverlay.INSTANCE);
+            event.registerAboveAll("party_hud", com.etema.ragnarmmo.client.PartyHudOverlay.PARTY_HUD);
+            event.registerAboveAll("ragnar_target_frame", com.etema.ragnarmmo.client.ui.TargetFrameOverlay.INSTANCE);
+            event.registerAboveAll("hotbar_overlay", com.etema.ragnarmmo.client.ui.HotbarOverlay.INSTANCE);
             event.registerAboveAll("ragnar_cast", com.etema.ragnarmmo.client.ui.CastOverlay.INSTANCE);
+            event.registerAboveAll("skill_xp", com.etema.ragnarmmo.client.SkillOverlay.HUD_SKILL_XP);
         }
 
         @SubscribeEvent
@@ -84,11 +90,14 @@ public class ClientModEvents {
 
         @SubscribeEvent
         public static void onRenderGuiLayerPre(RenderGuiOverlayEvent.Pre event) {
-            if (event.getOverlay().id().equals(VanillaGuiOverlay.FOOD_LEVEL.id())) {
+            var overlayId = event.getOverlay().id();
+            boolean replaceSurvivalBars = shouldReplaceVanillaSurvivalBars();
+
+            if (replaceSurvivalBars && overlayId.equals(VanillaGuiOverlay.FOOD_LEVEL.id())) {
                 event.setCanceled(true);
-            } else if (event.getOverlay().id().equals(VanillaGuiOverlay.PLAYER_HEALTH.id())) {
+            } else if (replaceSurvivalBars && overlayId.equals(VanillaGuiOverlay.PLAYER_HEALTH.id())) {
                 event.setCanceled(true);
-            } else if (event.getOverlay().id().equals(VanillaGuiOverlay.AIR_LEVEL.id())) {
+            } else if (overlayId.equals(VanillaGuiOverlay.AIR_LEVEL.id())) {
                 // Move air bubbles up to avoid overlapping with the skill hotbar
                 event.getGuiGraphics().pose().pushPose();
                 event.getGuiGraphics().pose().translate(0, -32, 0);
@@ -100,6 +109,16 @@ public class ClientModEvents {
             if (event.getOverlay().id().equals(VanillaGuiOverlay.AIR_LEVEL.id())) {
                 event.getGuiGraphics().pose().popPose();
             }
+        }
+
+        private static boolean shouldReplaceVanillaSurvivalBars() {
+            Minecraft mc = Minecraft.getInstance();
+            return RagnarConfigs.CLIENT.hud.replaceVanillaSurvivalBars.get()
+                    && RagnarConfigs.CLIENT.hud.enabled.get()
+                    && RagnarConfigs.CLIENT.hud.status.enabled.get()
+                    && mc.player != null
+                    && !mc.options.hideGui
+                    && !mc.player.isSpectator();
         }
     }
 }

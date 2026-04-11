@@ -12,7 +12,6 @@ import com.etema.ragnarmmo.common.api.mobs.data.resolve.MobDefinitionResolutionI
 import com.etema.ragnarmmo.common.api.mobs.data.resolve.MobDefinitionResolutionResult;
 import com.etema.ragnarmmo.common.api.mobs.data.resolve.MobDefinitionResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.ComputedMobProfile;
-import com.etema.ragnarmmo.system.stats.compute.CombatMath;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -191,16 +190,17 @@ public final class ManualMobProfileResolver {
             return null;
         }
 
-        // Only derive fields whose current numeric formula is already represented in the
-        // runtime combat helpers. Broader scalar derivation remains intentionally deferred.
+        // Pre-renewal-style mob stats: normal mob HIT/FLEE come from level plus
+        // the authored base stat. Normal mob crit is not derived from LUK; special
+        // critical behavior should be authored directly or modeled as a skill later.
         return switch (field) {
             case "hit" -> level == null
                     ? null
-                    : (int) Math.round(CombatMath.computeHIT(roStats.dex(), roStats.luk(), level, 0.0D));
+                    : Math.max(0, level + roStats.dex());
             case "flee" -> level == null
                     ? null
-                    : (int) Math.round(CombatMath.computeFLEE(roStats.agi(), roStats.luk(), level, 0.0D));
-            case "crit" -> (int) Math.round(CombatMath.computeCritChance(roStats.luk(), roStats.dex(), 0.0D) * 100.0D);
+                    : Math.max(0, level + roStats.agi());
+            case "crit" -> 0;
             default -> null;
         };
     }

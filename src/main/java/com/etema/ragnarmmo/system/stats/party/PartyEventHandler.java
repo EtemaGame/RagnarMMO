@@ -15,6 +15,7 @@ public class PartyEventHandler {
 
     // Cleanup interval (5 minutes)
     private static final int CLEANUP_INTERVAL_TICKS = 20 * 60 * 5;
+    private static final int MEMBER_SYNC_INTERVAL_TICKS = 10;
     private static int cleanupCounter = 0;
 
     @SubscribeEvent
@@ -30,7 +31,23 @@ public class PartyEventHandler {
         if (event.getEntity() instanceof ServerPlayer player && player.getServer() != null) {
             PartyService service = PartyService.get(player.getServer());
             service.onPlayerLogout(player);
+            PartyMemberSyncService.clear(player.getUUID());
         }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide()) {
+            return;
+        }
+        if (!(event.player instanceof ServerPlayer player)) {
+            return;
+        }
+        if (player.tickCount % MEMBER_SYNC_INTERVAL_TICKS != 0) {
+            return;
+        }
+
+        PartyMemberSyncService.syncCurrentIfChanged(player);
     }
 
     @SubscribeEvent

@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:zoglin",
+    "rank":  "NORMAL",
+    "level":  36,
+    "ro_stats":  {
+                     "str":  46,
+                     "agi":  18,
+                     "vit":  44,
+                     "int":  3,
+                     "dex":  24,
+                     "luk":  6
+                 },
+    "direct_stats":  {
+                         "max_hp":  40,
+                         "atk_min":  6,
+                         "atk_max":  10,
+                         "def":  2,
+                         "mdef":  3,
+                         "aspd":  135,
+                         "move_speed":  0.3
+                     },
+    "race":  "brute",
+    "element":  "earth",
+    "size":  "large"
+}

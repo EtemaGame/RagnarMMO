@@ -1,6 +1,9 @@
 package com.etema.ragnarmmo.client.ui;
 
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
+import com.etema.ragnarmmo.client.hud.HudConfigSerializer;
+import com.etema.ragnarmmo.client.hud.HudLayoutManager;
+import com.etema.ragnarmmo.client.hud.HudWidgetState;
 import com.etema.ragnarmmo.skill.api.ISkillDefinition;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
@@ -27,10 +30,11 @@ public class HotbarOverlay implements IGuiOverlay {
 
     /** Vertical gap between the top of vanilla hotbar and our skill bar. */
     private static final int HOTBAR_GAP = 17;
+    private static final int VANILLA_HOTBAR_RESERVED_HEIGHT = 22;
 
     @Override
     public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
-        if (!RagnarConfigs.CLIENT.hud.enabled.get()) {
+        if (!RagnarConfigs.CLIENT.hud.enabled.get() || !RagnarConfigs.CLIENT.hud.skillHotbar.enabled.get()) {
             return;
         }
 
@@ -42,25 +46,38 @@ public class HotbarOverlay implements IGuiOverlay {
         boolean combatMode = com.etema.ragnarmmo.client.ClientEvents.isCombatMode();
 
         int totalWidth = TOTAL_SLOTS * (SLOT_SIZE + SLOT_SPACING) - SLOT_SPACING;
-        int x = (screenWidth - totalWidth) / 2;
-        int y = screenHeight - 22 - SLOT_SIZE - HOTBAR_GAP;
+        HudWidgetState state = HudConfigSerializer.read(RagnarConfigs.CLIENT.hud.skillHotbar);
+        HudLayoutManager.HudBounds bounds = HudLayoutManager.bounds(
+                state, totalWidth, getHeight(), screenWidth, screenHeight);
 
-        if (combatMode) {
-            Component combatText = Component.literal("COMBAT MODE").withStyle(ChatFormatting.BOLD);
-            int tw = mc.font.width(combatText);
-            guiGraphics.drawString(mc.font, combatText, (screenWidth - tw) / 2, y - 12, 0xFFFF5555, true);
+        RenderSystem.enableBlend();
+        if (state.showBackground() && state.backgroundAlpha() > 0) {
+            int bgAlpha = combatMode ? Math.max(state.backgroundAlpha(), 160) : state.backgroundAlpha();
+            int bgColor = (bgAlpha << 24) | (combatMode ? 0x220000 : 0x000000);
+            int slotRealHeight = Math.max(1, (int) Math.ceil(SLOT_SIZE * bounds.scale()));
+            guiGraphics.fill(
+                    bounds.x() - 2,
+                    bounds.y() - 2,
+                    bounds.x() + bounds.realWidth() + 2,
+                    bounds.y() + slotRealHeight + 2,
+                    bgColor);
         }
 
-        int bgAlpha = combatMode ? 160 : 100;
-        int bgColor = (bgAlpha << 24) | (combatMode ? 0x220000 : 0x000000);
-        guiGraphics.fill(x - 2, y - 2, x + totalWidth + 2, y + SLOT_SIZE + 2, bgColor);
+        HudLayoutManager.pushWidgetTransform(guiGraphics, bounds);
+
+        if (combatMode) {
+            Component combatText = Component.translatable("screen.ragnarmmo.hotbar.combat_mode")
+                    .withStyle(ChatFormatting.BOLD);
+            int tw = mc.font.width(combatText);
+            guiGraphics.drawString(mc.font, combatText, (totalWidth - tw) / 2, -12, 0xFFFF5555, true);
+        }
 
         PlayerSkillsProvider.get(mc.player).ifPresent(skills -> {
             String[] hotbar = skills.getHotbar();
 
             for (int i = 0; i < TOTAL_SLOTS; i++) {
-                int sx = x + i * (SLOT_SIZE + SLOT_SPACING);
-                int sy = y;
+                int sx = i * (SLOT_SIZE + SLOT_SPACING);
+                int sy = 0;
 
                 int outlineColor = combatMode ? 0x80FF5555 : 0x4DFFFFFF;
                 guiGraphics.renderOutline(sx, sy, SLOT_SIZE, SLOT_SIZE, outlineColor);
@@ -98,6 +115,9 @@ public class HotbarOverlay implements IGuiOverlay {
                 guiGraphics.drawString(mc.font, String.valueOf(i + 1), sx + 1, sy + 1, 0xFFE0E0E0, true);
             }
         });
+
+        HudLayoutManager.popWidgetTransform(guiGraphics);
+        RenderSystem.disableBlend();
     }
 
     public static int getWidth() {
@@ -109,7 +129,7 @@ public class HotbarOverlay implements IGuiOverlay {
     }
 
     public static int getHeight() {
-        return SLOT_SIZE;
+        return SLOT_SIZE + HOTBAR_GAP + VANILLA_HOTBAR_RESERVED_HEIGHT;
     }
 
     /**

@@ -2,10 +2,7 @@ package com.etema.ragnarmmo.system.stats.party;
 
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
-import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService;
-import com.etema.ragnarmmo.system.stats.party.net.PartyMemberData;
-import com.etema.ragnarmmo.system.stats.party.net.PartyMemberUpdateS2CPacket;
 import com.etema.ragnarmmo.system.stats.progression.ExpTable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -135,27 +132,7 @@ public class PartyXpService {
      * Called when a member's stats change (HP, XP, level).
      */
     public static void updatePartyMemberHud(ServerPlayer player) {
-        if (player == null || player.getServer() == null)
-            return;
-
-        MinecraftServer server = player.getServer();
-        PartySavedData data = PartySavedData.get(server);
-        Party party = data.getPartyByPlayer(player.getUUID());
-
-        if (party == null)
-            return;
-
-        // Create update packet
-        PartyMemberData memberData = PartyMemberData.fromPlayer(player, party.isLeader(player.getUUID()));
-        if (memberData == null)
-            return;
-
-        PartyMemberUpdateS2CPacket packet = new PartyMemberUpdateS2CPacket(memberData);
-
-        // Send to all online party members
-        for (ServerPlayer member : party.getOnlineMembers(server)) {
-            Network.sendToPlayer(member, packet);
-        }
+        PartyMemberSyncService.syncCurrent(player);
     }
 
     /**
@@ -178,7 +155,7 @@ public class PartyXpService {
         }
         lastHealthUpdateTime.put(uuid, now);
 
-        updatePartyMemberHud(player);
+        PartyMemberSyncService.syncCurrentIfChanged(player);
     }
 
     /**

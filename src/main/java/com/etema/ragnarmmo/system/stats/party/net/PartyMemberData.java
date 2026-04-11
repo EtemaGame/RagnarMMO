@@ -57,12 +57,45 @@ public record PartyMemberData(
     }
 
     /**
+     * Creates offline member data from a player that is disconnecting.
+     */
+    public static PartyMemberData offlineFromPlayer(ServerPlayer player, boolean isLeader) {
+        PartyMemberData current = fromPlayer(player, isLeader);
+        if (current == null) {
+            return null;
+        }
+
+        return new PartyMemberData(
+            current.uuid(),
+            current.name(),
+            0f,
+            current.maxHealth(),
+            current.level(),
+            current.exp(),
+            current.expToNextLevel(),
+            isLeader,
+            false
+        );
+    }
+
+    /**
      * Creates offline member data (minimal info).
      */
     public static PartyMemberData offline(UUID uuid, boolean isLeader) {
+        return offline(uuid, null, isLeader);
+    }
+
+    /**
+     * Creates offline member data with the last known player name when available.
+     */
+    public static PartyMemberData offline(UUID uuid, String name, boolean isLeader) {
+        String displayName = name == null || name.isBlank()
+                ? uuid.toString().substring(0, 8)
+                : name;
+
         return new PartyMemberData(
             uuid,
-            uuid.toString().substring(0, 8),
+            displayName,
             0f,
             20f,
             1,

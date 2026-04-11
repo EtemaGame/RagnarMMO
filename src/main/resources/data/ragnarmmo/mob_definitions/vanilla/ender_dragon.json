@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:ender_dragon",
+    "rank":  "BOSS",
+    "level":  99,
+    "ro_stats":  {
+                     "str":  95,
+                     "agi":  58,
+                     "vit":  95,
+                     "int":  55,
+                     "dex":  70,
+                     "luk":  30
+                 },
+    "direct_stats":  {
+                         "max_hp":  200,
+                         "atk_min":  10,
+                         "atk_max":  15,
+                         "def":  8,
+                         "mdef":  18,
+                         "aspd":  145,
+                         "move_speed":  0.3
+                     },
+    "race":  "dragon",
+    "element":  "dark",
+    "size":  "large"
+}

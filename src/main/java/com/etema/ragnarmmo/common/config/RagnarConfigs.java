@@ -51,8 +51,14 @@ public final class RagnarConfigs {
                         public final ForgeConfigSpec.DoubleValue scale;
                         public final ForgeConfigSpec.IntValue width;
                         public final ForgeConfigSpec.IntValue backgroundAlpha;
+                        public final ForgeConfigSpec.BooleanValue replaceVanillaSurvivalBars;
 
                         public final HudComponent status;
+                        public final HudComponent cast;
+                        public final HudComponent skillHotbar;
+                        public final HudComponent partyFrame;
+                        public final HudComponent targetFrame;
+                        public final HudComponent notifications;
 
                         Hud(ForgeConfigSpec.Builder builder) {
                                 builder.comment("HUD overlay configuration").push("hud");
@@ -73,7 +79,16 @@ public final class RagnarConfigs {
                                                 .comment("DEPRECATED: Background opacity (0-255). Use per-component settings.")
                                                 .defineInRange("background_alpha", 0, 0, 255);
 
-                                status = new HudComponent(builder, "status", 0.0, 0.0);
+                                replaceVanillaSurvivalBars = builder
+                                                .comment("If true, hide vanilla health and food bars while the Ragnar status HUD is active.")
+                                                .define("replace_vanilla_survival_bars", true);
+
+                                status = new HudComponent(builder, "status", 0.0, 0.0, 10);
+                                cast = new HudComponent(builder, "cast", 0.5, 0.65, 40);
+                                skillHotbar = new HudComponent(builder, "skill_hotbar", 0.5, 1.0, 30);
+                                partyFrame = new HudComponent(builder, "party_frame", 0.0, 0.12, 20);
+                                targetFrame = new HudComponent(builder, "target_frame", 0.5, 0.08, 25);
+                                notifications = new HudComponent(builder, "notifications", 1.0, 0.12, 50);
 
                                 builder.pop();
                         }
@@ -85,8 +100,13 @@ public final class RagnarConfigs {
                                 public final ForgeConfigSpec.DoubleValue scale;
                                 public final ForgeConfigSpec.IntValue backgroundAlpha;
                                 public final ForgeConfigSpec.BooleanValue showBackground;
+                                public final ForgeConfigSpec.IntValue zOrder;
 
                                 public HudComponent(ForgeConfigSpec.Builder builder, String name, double x, double y) {
+                                        this(builder, name, x, y, 0);
+                                }
+
+                                public HudComponent(ForgeConfigSpec.Builder builder, String name, double x, double y, int z) {
                                         builder.push(name);
                                         anchorX = builder.defineInRange("anchor_x", x, 0.0, 1.0);
                                         anchorY = builder.defineInRange("anchor_y", y, 0.0, 1.0);
@@ -94,6 +114,7 @@ public final class RagnarConfigs {
                                         scale = builder.defineInRange("scale", 1.0, 0.1, 5.0);
                                         backgroundAlpha = builder.defineInRange("background_alpha", 100, 0, 255);
                                         showBackground = builder.define("show_background", true);
+                                        zOrder = builder.defineInRange("z_order", z, -1000, 1000);
                                         builder.pop();
                                 }
                         }

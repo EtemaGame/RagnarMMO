@@ -120,7 +120,8 @@ public class RagnarCombatEngine {
 
         List<CombatResolution> results = new ArrayList<>();
         for (CombatTargetCandidate candidate : ctx.candidates()) {
-            CombatResolution resolution = resolveSingleBasicHit(attacker, attackerDerived, candidate, ctx.offHand());
+            CombatResolution resolution = resolveSingleBasicHit(attacker, attackerDerived, candidate, ctx.offHand(),
+                    attackerStats.getLevel());
             results.add(resolution);
             applyResolution(attacker, resolution);
             CombatDebugLog.logHitResolution(resolution);
@@ -128,15 +129,16 @@ public class RagnarCombatEngine {
         return results;
     }
 
-    private CombatResolution resolveSingleBasicHit(ServerPlayer attacker, DerivedStats attackerDerived, 
-                                                   CombatTargetCandidate candidate, boolean isOffHand) {
+    private CombatResolution resolveSingleBasicHit(ServerPlayer attacker, DerivedStats attackerDerived,
+                                                   CombatTargetCandidate candidate, boolean isOffHand,
+                                                   int attackerLevel) {
         net.minecraft.world.entity.Entity targetEntity = attacker.serverLevel().getEntity(candidate.entityId());
         if (!(targetEntity instanceof LivingEntity target)) {
             return CombatResolution.miss(attacker.getId(), candidate.entityId());
         }
 
         // Attacker Data from authoritative source
-        int lvl = (int) StatAttributes.getTotal(attacker, StatKeys.LEVEL);
+        int lvl = Math.max(1, attackerLevel);
         ItemStack weapon = isOffHand ? attacker.getOffhandItem() : attacker.getMainHandItem();
         
         double totalBaseAtk = attackerDerived.physicalAttack;

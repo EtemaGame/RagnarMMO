@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:wither",
+    "rank":  "BOSS",
+    "level":  90,
+    "ro_stats":  {
+                     "str":  85,
+                     "agi":  34,
+                     "vit":  92,
+                     "int":  72,
+                     "dex":  55,
+                     "luk":  24
+                 },
+    "direct_stats":  {
+                         "max_hp":  300,
+                         "atk_min":  8,
+                         "atk_max":  12,
+                         "def":  4,
+                         "mdef":  20,
+                         "aspd":  140,
+                         "move_speed":  0.3
+                     },
+    "race":  "undead",
+    "element":  "dark",
+    "size":  "large"
+}

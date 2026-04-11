@@ -26,6 +26,7 @@ import java.util.List;
  * Lightweight visual shell that follows a target while a hard status is active.
  */
 public class StatusOverlayEntity extends Entity {
+    private static final double TARGET_LOOKUP_RANGE = 32.0D;
 
     private static final EntityDataAccessor<Integer> DATA_TARGET_ID = SynchedEntityData.defineId(StatusOverlayEntity.class,
             EntityDataSerializers.INT);
@@ -49,12 +50,14 @@ public class StatusOverlayEntity extends Entity {
     }
 
     public static void spawnOrRefresh(ServerLevel level, LivingEntity target, Variant variant, int durationTicks) {
-        List<StatusOverlayEntity> existing = level.getEntitiesOfClass(StatusOverlayEntity.class,
-                target.getBoundingBox().inflate(1.0),
-                overlay -> overlay.getAttachedTarget() == target && overlay.getVariant() == variant);
+        List<StatusOverlayEntity> existing = findForTarget(level, target);
 
         if (!existing.isEmpty()) {
             existing.get(0).refresh(target, variant, durationTicks);
+            // Cleanup any duplicates that might have existed from previous versions
+            for (int i = 1; i < existing.size(); i++) {
+                existing.get(i).discard();
+            }
             return;
         }
 
@@ -64,12 +67,20 @@ public class StatusOverlayEntity extends Entity {
     }
 
     public static void clearForTarget(Level level, LivingEntity target) {
-        List<StatusOverlayEntity> overlays = level.getEntitiesOfClass(StatusOverlayEntity.class,
-                target.getBoundingBox().inflate(1.0),
-                overlay -> overlay.getAttachedTarget() == target);
+        List<StatusOverlayEntity> overlays = findForTarget(level, target);
         for (StatusOverlayEntity overlay : overlays) {
             overlay.discard();
         }
+    }
+
+    private static List<StatusOverlayEntity> findForTarget(Level level, LivingEntity target) {
+        if (level == null || target == null) {
+            return List.of();
+        }
+
+        return level.getEntitiesOfClass(StatusOverlayEntity.class,
+                target.getBoundingBox().inflate(TARGET_LOOKUP_RANGE),
+                overlay -> overlay.isAttachedTo(target));
     }
 
     public void refresh(LivingEntity target, Variant variant, int durationTicks) {
@@ -97,6 +108,10 @@ public class StatusOverlayEntity extends Entity {
     public LivingEntity getAttachedTarget() {
         Entity entity = level().getEntity(this.entityData.get(DATA_TARGET_ID));
         return entity instanceof LivingEntity living ? living : null;
+    }
+
+    private boolean isAttachedTo(LivingEntity target) {
+        return target != null && this.entityData.get(DATA_TARGET_ID) == target.getId();
     }
 
     @Override

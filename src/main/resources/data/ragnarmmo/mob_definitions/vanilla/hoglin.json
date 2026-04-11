@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:hoglin",
+    "rank":  "NORMAL",
+    "level":  34,
+    "ro_stats":  {
+                     "str":  44,
+                     "agi":  18,
+                     "vit":  42,
+                     "int":  3,
+                     "dex":  22,
+                     "luk":  6
+                 },
+    "direct_stats":  {
+                         "max_hp":  40,
+                         "atk_min":  6,
+                         "atk_max":  10,
+                         "def":  2,
+                         "mdef":  3,
+                         "aspd":  135,
+                         "move_speed":  0.3
+                     },
+    "race":  "brute",
+    "element":  "earth",
+    "size":  "large"
+}

@@ -177,7 +177,7 @@ public final class AchievementItemRenderer {
                                          boolean unlocked, boolean claimed,
                                          boolean hasTitle, boolean isActive) {
         if (unlocked && !claimed) {
-            return Component.translatable("gui.ragnarmmo.achievements.reclaim").getString();
+            return Component.translatable("gui.ragnarmmo.achievements.claimable").getString();
         }
         if (claimed) {
             if (hasTitle) {
@@ -187,7 +187,7 @@ public final class AchievementItemRenderer {
             }
             return Component.translatable("gui.ragnarmmo.achievements.claimed").getString();
         }
-        return "";
+        return Component.translatable("gui.ragnarmmo.achievements.locked").getString();
     }
 
     private static int resolveStatusColor(AchievementDefinition def,
@@ -198,7 +198,7 @@ public final class AchievementItemRenderer {
             if (hasTitle) return isActive ? COL_TEXT_EQUIPPED : COL_TEXT_EQUIP;
             return COL_TEXT_CLAIMED;
         }
-        return 0;
+        return COL_TEXT_LOCKED;
     }
 
     /**

@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:creeper",
+    "rank":  "NORMAL",
+    "level":  16,
+    "ro_stats":  {
+                     "str":  22,
+                     "agi":  10,
+                     "vit":  14,
+                     "int":  2,
+                     "dex":  10,
+                     "luk":  1
+                 },
+    "direct_stats":  {
+                         "max_hp":  20,
+                         "atk_min":  0,
+                         "atk_max":  49,
+                         "def":  0,
+                         "mdef":  1,
+                         "aspd":  120,
+                         "move_speed":  0.25
+                     },
+    "race":  "formless",
+    "element":  "neutral",
+    "size":  "medium"
+}

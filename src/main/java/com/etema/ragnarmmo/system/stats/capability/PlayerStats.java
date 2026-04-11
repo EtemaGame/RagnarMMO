@@ -70,6 +70,7 @@ public class PlayerStats implements IPlayerStats {
     // Helper for easier access to owner's attributes
     public AttributeInstance getInstance(StatKeys key) {
         if (owner == null) return null;
+        if (!isAttributeBackedStat(key)) return null;
         Attribute attr = StatAttributes.get(key);
         return attr != null ? owner.getAttribute(attr) : null;
     }
@@ -135,7 +136,9 @@ public class PlayerStats implements IPlayerStats {
     public int getBonus(StatKeys key) {
         AttributeInstance inst = getInstance(key);
         if (inst == null) return 0;
-        AttributeModifier mod = inst.getModifier(BONUS_IDS.get(key));
+        UUID id = BONUS_IDS.get(key);
+        if (id == null) return 0;
+        AttributeModifier mod = inst.getModifier(id);
         return mod == null ? 0 : (int) Math.round(mod.getAmount());
     }
 
@@ -147,6 +150,7 @@ public class PlayerStats implements IPlayerStats {
         AttributeInstance inst = getInstance(key);
         if (inst == null) return;
         UUID id = BONUS_IDS.get(key);
+        if (id == null) return;
         AttributeModifier existing = inst.getModifier(id);
         if (existing != null) {
             if (existing.getAmount() == v) return;
@@ -157,6 +161,10 @@ public class PlayerStats implements IPlayerStats {
         }
         markDirty(RoPlayerSyncDomain.STATS);
         StatResolutionService.resolve(owner, this);
+    }
+
+    private static boolean isAttributeBackedStat(StatKeys key) {
+        return key != null && key != StatKeys.LEVEL;
     }
 
     @Override
@@ -420,7 +428,11 @@ public class PlayerStats implements IPlayerStats {
         nbt.putDouble("SP", sp);
         nbt.putDouble("SPMax", spMax);
         net.minecraft.nbt.CompoundTag s = new net.minecraft.nbt.CompoundTag();
-        for (StatKeys k : StatKeys.values()) s.putInt(k.id(), get(k));
+        for (StatKeys k : StatKeys.values()) {
+            if (isAttributeBackedStat(k)) {
+                s.putInt(k.id(), get(k));
+            }
+        }
         nbt.put("Stats", s);
         return nbt;
     }
@@ -441,7 +453,16 @@ public class PlayerStats implements IPlayerStats {
         spMax = nbt.getDouble("SPMax");
         if (nbt.contains("Stats")) {
             net.minecraft.nbt.CompoundTag s = nbt.getCompound("Stats");
-            for (StatKeys k : StatKeys.values()) if (s.contains(k.id())) set(k, s.getInt(k.id()));
+            for (StatKeys k : StatKeys.values()) {
+                if (!isAttributeBackedStat(k)) {
+                    continue;
+                }
+                if (s.contains(k.id())) {
+                    int val = s.getInt(k.id());
+                    stats.set(k, val);
+                    syncAttribute(k, val);
+                }
+            }
         }
         sanitizeProgressionCaps();
     }

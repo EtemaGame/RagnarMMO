@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:elder_guardian",
+    "rank":  "BOSS",
+    "level":  65,
+    "ro_stats":  {
+                     "str":  58,
+                     "agi":  22,
+                     "vit":  72,
+                     "int":  42,
+                     "dex":  52,
+                     "luk":  18
+                 },
+    "direct_stats":  {
+                         "max_hp":  80,
+                         "atk_min":  6,
+                         "atk_max":  8,
+                         "def":  4,
+                         "mdef":  14,
+                         "aspd":  135,
+                         "move_speed":  0.3
+                     },
+    "race":  "fish",
+    "element":  "water",
+    "size":  "large"
+}

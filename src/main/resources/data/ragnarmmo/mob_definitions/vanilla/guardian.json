@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:guardian",
+    "rank":  "NORMAL",
+    "level":  32,
+    "ro_stats":  {
+                     "str":  30,
+                     "agi":  18,
+                     "vit":  34,
+                     "int":  18,
+                     "dex":  36,
+                     "luk":  8
+                 },
+    "direct_stats":  {
+                         "max_hp":  30,
+                         "atk_min":  4,
+                         "atk_max":  6,
+                         "def":  2,
+                         "mdef":  10,
+                         "aspd":  145,
+                         "move_speed":  0.3
+                     },
+    "race":  "fish",
+    "element":  "water",
+    "size":  "medium"
+}

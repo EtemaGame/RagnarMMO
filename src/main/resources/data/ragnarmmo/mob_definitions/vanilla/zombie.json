@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:zombie",
+    "rank":  "NORMAL",
+    "level":  12,
+    "ro_stats":  {
+                     "str":  18,
+                     "agi":  8,
+                     "vit":  18,
+                     "int":  3,
+                     "dex":  12,
+                     "luk":  2
+                 },
+    "direct_stats":  {
+                         "max_hp":  20,
+                         "atk_min":  2,
+                         "atk_max":  4,
+                         "def":  2,
+                         "mdef":  2,
+                         "aspd":  140,
+                         "move_speed":  0.23
+                     },
+    "race":  "undead",
+    "element":  "undead",
+    "size":  "medium"
+}

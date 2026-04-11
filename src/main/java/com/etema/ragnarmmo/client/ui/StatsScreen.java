@@ -236,7 +236,7 @@ public class StatsScreen extends Screen {
                                 int maxWidth = 0;
                                 for (var key : BASE_STATS) {
                                         int value = getStatValue(stats, key);
-                                        String statLine = getStatName(key).getString() + ": " + value;
+                                        Component statLine = getStatName(key).copy().append(": " + value);
                                         maxWidth = Math.max(maxWidth, mc.font.width(statLine));
                                 }
 
@@ -257,7 +257,7 @@ public class StatsScreen extends Screen {
                                         g.fill(leftX - 2, statsY - 2, leftX + maxWidth + 60, statsY + 12, 0x44000000);
 
                                         Component statName = getStatName(key);
-                                        g.drawString(mc.font, statName.getString() + ":", leftX, statsY, 0xFFCCCCCC,
+                                        g.drawString(mc.font, statName.copy().append(":"), leftX, statsY, 0xFFCCCCCC,
                                                         false);
                                         g.drawString(mc.font, String.valueOf(value), leftX + 75, statsY, 0xFFFFFFFF,
                                                         true);
@@ -318,7 +318,7 @@ public class StatsScreen extends Screen {
 
                                         if (hoverPlus && !canSpend) {
                                                 this.deferredTooltip = java.util.List.of(
-                                                                Component.literal(statName.getString())
+                                                                statName.copy()
                                                                                 .withStyle(ChatFormatting.YELLOW),
                                                                 createTooltipLine(value, maxStat, cost));
                                         }
@@ -501,7 +501,7 @@ public class StatsScreen extends Screen {
 
                                 boolean hoverReset = BTN_RESET_STATS.contains(mx, my);
                                 drawButton(g, BTN_RESET_STATS, Component
-                                                .translatable("screen.ragnarmmo.button.reset_stats").getString(),
+                                                .translatable("screen.ragnarmmo.button.reset_stats"),
                                                 hoverReset, true);
 
                                 // Change Class moved to header
@@ -510,7 +510,7 @@ public class StatsScreen extends Screen {
 
                 // HEADER BUTTONS (skills + gear + class)
                 boolean hoverSkills = BTN_SKILLS.contains(mx, my);
-                drawButton(g, BTN_SKILLS, Component.translatable("screen.ragnarmmo.button.skills").getString(),
+                drawButton(g, BTN_SKILLS, Component.translatable("screen.ragnarmmo.button.skills"),
                                 hoverSkills, true);
 
                 // Show when the current job still has a valid promotion path.
@@ -519,8 +519,7 @@ public class StatsScreen extends Screen {
                         if (showChangeClass) {
                                 boolean hoverChange = BTN_CHANGE_CLASS.contains(mx, my);
                                 drawButton(g, BTN_CHANGE_CLASS,
-                                                Component.translatable("screen.ragnarmmo.button.change_class")
-                                                                .getString(),
+                                                Component.translatable("screen.ragnarmmo.button.change_class"),
                                                 hoverChange, true);
                         }
                 });
@@ -540,7 +539,7 @@ public class StatsScreen extends Screen {
 
         // ===== Drawing helpers =====
 
-        private void drawButton(GuiGraphics g, Rect r, String label, boolean hovered, boolean enabled) {
+        private void drawButton(GuiGraphics g, Rect r, Component label, boolean hovered, boolean enabled) {
                 int bg;
                 if (!enabled)
                         bg = 0xFF2A2A2A;

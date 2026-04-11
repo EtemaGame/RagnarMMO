@@ -70,15 +70,16 @@ public final class RoTooltipHook {
             Component c = tooltip.get(i);
             String text = c.getString();
 
-            // Check for vanilla slot headers
-            if (text.startsWith("When in ") || text.startsWith("Al estar en ")) {
+            // Check for vanilla slot headers. Weapons use "When in Main Hand";
+            // armor uses "When on Head/Body/Legs/Feet".
+            if (isVanillaAttributeHeader(text)) {
                 // Remove this line and subsequent lines until we hit an empty line or another header
                 tooltip.remove(i);
                 while (i < tooltip.size()) {
                     Component next = tooltip.get(i);
                     String nextText = next.getString();
                     // Vanilla modifiers are indented with spaces
-                    if (nextText.startsWith(" ") || nextText.isEmpty()) {
+                    if (nextText.startsWith(" ") || nextText.isEmpty() || isVanillaAttributeModifierLine(nextText)) {
                         tooltip.remove(i);
                     } else {
                         break;
@@ -87,5 +88,18 @@ public final class RoTooltipHook {
                 i--; // Re-check current index
             }
         }
+    }
+
+    private static boolean isVanillaAttributeHeader(String text) {
+        return text.startsWith("When in ")
+                || text.startsWith("When on ")
+                || text.startsWith("Al estar en ");
+    }
+
+    private static boolean isVanillaAttributeModifierLine(String text) {
+        if (text == null || text.isBlank()) {
+            return true;
+        }
+        return text.startsWith("+") || text.startsWith("-");
     }
 }

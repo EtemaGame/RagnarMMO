@@ -2,7 +2,6 @@ package com.etema.ragnarmmo.client.ui;
 
 import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.skill.api.ISkillDefinition;
-import com.etema.ragnarmmo.skill.api.SkillType;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
@@ -12,11 +11,13 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.ChatFormatting;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -29,21 +30,22 @@ public class JobSelectionScreen extends Screen {
     // === LAYOUT CONSTANTS ===
     private static final int WINDOW_WIDTH = 480;
     private static final int WINDOW_HEIGHT = 320;
-    private final Screen parent;
     private static final int HEADER_HEIGHT = 35;
     private static final int FOOTER_HEIGHT = 45;
     private static final int LEFT_PANEL_WIDTH = 140;
-
-    // Textures removed
-    @SuppressWarnings("removal")
-    private static final ResourceLocation SLOT_EMPTY = new ResourceLocation("ragnarmmo",
-            "textures/gui/skills/slot_empty.png");
-    @SuppressWarnings("removal")
-    private static final ResourceLocation SLOT_HOVER = new ResourceLocation("ragnarmmo",
-            "textures/gui/skills/slot_hover.png");
+    private static final int JOB_SLOT_HEIGHT = 28;
+    private static final int JOB_SLOT_GAP = 5;
+    private static final int DETAIL_TOP_PADDING = 15;
+    private static final int DETAIL_BOTTOM_PADDING = 8;
+    private static final int DETAIL_LINE_HEIGHT = 11;
+    private static final int SCROLL_STEP = 15;
+    private final Screen parent;
 
     private JobType selectedJob = null;
     private Button confirmButton;
+
+    private double leftScrollAmount = 0;
+    private double rightScrollAmount = 0;
 
     // Window position
     private int windowX;
@@ -54,7 +56,7 @@ public class JobSelectionScreen extends Screen {
     private int popupTimer = 0;
 
     public JobSelectionScreen(Screen parent) {
-        super(Component.literal("Class Selection"));
+        super(Component.translatable("screen.ragnarmmo.job_selection.title"));
         this.parent = parent;
     }
 
@@ -83,7 +85,7 @@ public class JobSelectionScreen extends Screen {
                 .build());
 
         // Confirm Button
-        this.confirmButton = Button.builder(Component.literal("Change Job"), b -> {
+        this.confirmButton = Button.builder(Component.translatable("screen.ragnarmmo.job_selection.change_job"), b -> {
             if (selectedJob != null) {
                 boolean hasUnspentPoints = false;
                 boolean lowJobLevel = false;
@@ -168,8 +170,10 @@ public class JobSelectionScreen extends Screen {
         g.renderOutline(windowX, windowY, WINDOW_WIDTH, WINDOW_HEIGHT, GuiConstants.COLOR_PANEL_BORDER);
 
         // === HEADER ===
-        g.drawString(this.font, "Class Selection", windowX + 15, windowY + 12, 0xFFFFAA00, true);
-        g.drawString(this.font, "— Choose your path", windowX + 110, windowY + 12, 0xFF888888, false);
+        g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.title"),
+                windowX + 15, windowY + 12, 0xFFFFAA00, true);
+        g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.subtitle"),
+                windowX + 110, windowY + 12, 0xFF888888, false);
 
         // === LEFT PANEL: Job Slots ===
         int panelX = windowX + 15;
@@ -182,15 +186,19 @@ public class JobSelectionScreen extends Screen {
         renderBorder(g, panelX, panelY, panelX + panelWidth, panelY + panelHeight, 0xFF555555);
 
         // Job slots
-        int slotY = panelY + 8;
-        int slotHeight = 28;
-        int slotGap = 5;
+        int slotHeight = JOB_SLOT_HEIGHT;
+        int slotGap = JOB_SLOT_GAP;
 
         List<JobType> eligibleJobs = getEligibleJobs();
+        int leftMaxScroll = getLeftMaxScroll(eligibleJobs.size(), panelHeight);
+        leftScrollAmount = Mth.clamp(leftScrollAmount, 0, leftMaxScroll);
+        int slotY = panelY + 8 - (int) leftScrollAmount;
 
+        g.enableScissor(panelX, panelY, panelX + panelWidth, panelY + panelHeight);
         for (JobType job : eligibleJobs) {
             boolean isHovered = mouseX >= panelX + 5 && mouseX <= panelX + panelWidth - 5 &&
-                    mouseY >= slotY && mouseY <= slotY + slotHeight;
+                    mouseY >= slotY && mouseY <= slotY + slotHeight &&
+                    mouseY >= panelY && mouseY <= panelY + panelHeight;
             boolean isSelected = selectedJob == job;
 
             // Slot background
@@ -203,10 +211,13 @@ public class JobSelectionScreen extends Screen {
 
             // Job name
             int textColor = isSelected ? 0xFFFFD700 : (isHovered ? 0xFFFFFFFF : 0xFFAAAAAA);
-            g.drawString(this.font, job.getDisplayName(), panelX + 12, slotY + 10, textColor, isSelected);
+            g.drawString(this.font, jobName(job), panelX + 12, slotY + 10, textColor, isSelected);
 
             slotY += slotHeight + slotGap;
         }
+        g.disableScissor();
+        renderScrollBar(g, panelX + panelWidth - 4, panelY + 2, panelHeight - 4, getLeftContentHeight(eligibleJobs.size()),
+                panelHeight, (int) leftScrollAmount);
 
         // === RIGHT PANEL: Job Details ===
         int rightX = windowX + LEFT_PANEL_WIDTH + 15;
@@ -220,26 +231,39 @@ public class JobSelectionScreen extends Screen {
 
         if (selectedJob != null) {
             int contentX = rightX + 15;
-            int contentY = rightY + 15;
+            int rightMaxScroll = getRightMaxScroll(selectedJob, rightWidth, rightHeight);
+            rightScrollAmount = Mth.clamp(rightScrollAmount, 0, rightMaxScroll);
+            int contentY = rightY + DETAIL_TOP_PADDING - (int) rightScrollAmount;
+            ResourceLocation hoveredSkill = null;
+
+            g.enableScissor(rightX, rightY, rightX + rightWidth, rightY + rightHeight);
 
             // === Job Title ===
             g.fill(contentX - 5, contentY - 3, rightX + rightWidth - 15, contentY + 14, 0x44FFAA00);
-            g.drawString(this.font, selectedJob.getDisplayName(), contentX, contentY, 0xFFFFD700, true);
+            g.drawString(this.font, jobName(selectedJob), contentX, contentY, 0xFFFFD700, true);
             contentY += 22;
 
             // === Role Description ===
-            g.drawString(this.font, "Role:", contentX, contentY, 0xFF888888, false);
+            g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.role"),
+                    contentX, contentY, 0xFF888888, false);
             g.drawString(this.font, getRoleDescription(selectedJob), contentX + 35, contentY, 0xFFFFFFFF, false);
             contentY += 14;
 
             // === Primary Stats ===
-            g.drawString(this.font, "Primary:", contentX, contentY, 0xFF888888, false);
-            String primaryStats = getPrimaryStats(selectedJob);
+            g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.primary"),
+                    contentX, contentY, 0xFF888888, false);
+            Component primaryStats = getPrimaryStats(selectedJob);
             g.drawString(this.font, primaryStats, contentX + 50, contentY, 0xFF00FF00, false);
             contentY += 12;
 
+            g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.resource"),
+                    contentX, contentY, 0xFF888888, false);
+            g.drawString(this.font, getResourceType(selectedJob), contentX + 60, contentY, 0xFF88CCFF, false);
+            contentY += 12;
+
             // === Stat Growth (Max Job Bonus) ===
-            g.drawString(this.font, "Bonus:", contentX, contentY, 0xFF888888, false);
+            g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.bonus"),
+                    contentX, contentY, 0xFF888888, false);
             com.etema.ragnarmmo.common.api.stats.Stats6 maxBonus = com.etema.ragnarmmo.system.stats.progression.JobBonusData
                     .getBonus(selectedJob, 50);
 
@@ -257,70 +281,91 @@ public class JobSelectionScreen extends Screen {
             if (maxBonus.luk() > 0)
                 bonusStr.append("LUK+").append(maxBonus.luk()).append(" ");
 
-            String finalBonus = bonusStr.isEmpty() ? "None" : bonusStr.toString().trim();
+            Component finalBonus = bonusStr.isEmpty()
+                    ? Component.translatable("screen.ragnarmmo.job_selection.none")
+                    : Component.translatable("screen.ragnarmmo.job_selection.bonus.list", bonusStr.toString().trim());
             g.drawString(this.font, finalBonus, contentX + 50, contentY, 0xFF55FF55, false);
             contentY += 18;
 
+            g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.reset_preview"),
+                    contentX, contentY, 0xFFFFCC66, false);
+            contentY += 14;
+
             // === Flavor Description ===
-            String desc = getClassDescription(selectedJob);
-            List<net.minecraft.util.FormattedCharSequence> descLines = this.font.split(Component.literal(desc),
-                    rightWidth - 40);
+            Component desc = getClassDescription(selectedJob);
+            List<net.minecraft.util.FormattedCharSequence> descLines = this.font.split(desc, rightWidth - 40);
             for (net.minecraft.util.FormattedCharSequence line : descLines) {
                 g.drawString(this.font, line, contentX, contentY, 0xFFAAAAAA, false);
-                contentY += 11;
+                contentY += DETAIL_LINE_HEIGHT;
             }
             contentY += 6;
 
             // === Skills Section ===
             g.fill(contentX - 5, contentY - 3, contentX + 140, contentY + 12, 0x33FFAA00);
-            g.drawString(this.font, "Class Skills:", contentX, contentY, 0xFFFFAA00, true);
+            g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.class_skills"),
+                    contentX, contentY, 0xFFFFAA00, true);
             contentY += 18;
 
-            var skills = selectedJob.getAllowedSkills();
-            int skillCount = 0;
-            for (SkillType skill : skills) {
-                if (skillCount >= 6) {
-                    g.drawString(this.font, "... and more", contentX + 10, contentY, 0xFF666666, false);
-                    break;
-                }
-
+            List<ResourceLocation> skills = selectedJob.getAllowedSkillIds().stream()
+                    .sorted(Comparator.comparing(ResourceLocation::toString))
+                    .toList();
+            for (ResourceLocation skill : skills) {
                 // Look up display name from SkillRegistry
-                String skillDisplayName = SkillRegistry.get(skill.toResourceLocation())
-                        .map(ISkillDefinition::getDisplayName)
-                        .orElse(skill.getId());
+                Component skillDisplayName = SkillRegistry.get(skill)
+                        .map(ISkillDefinition::getTranslatedName)
+                        .orElseGet(() -> Component.translatable(
+                                "screen.ragnarmmo.job_selection.skill_fallback", skill.getPath()));
 
-                double mult = selectedJob.getXpMultiplier(skill);
+                Component skillLine = Component.translatable("screen.ragnarmmo.job_selection.skill_bullet",
+                        skillDisplayName);
+                List<net.minecraft.util.FormattedCharSequence> skillLines = this.font.split(skillLine, rightWidth - 50);
+                int skillBlockHeight = Math.max(12, skillLines.size() * DETAIL_LINE_HEIGHT);
                 boolean isHovered2 = mouseX >= contentX && mouseX <= rightX + rightWidth - 20 &&
-                        mouseY >= contentY && mouseY <= contentY + 12;
+                        mouseY >= contentY && mouseY <= contentY + skillBlockHeight &&
+                        mouseY >= rightY && mouseY <= rightY + rightHeight;
 
                 int skillColor = isHovered2 ? 0xFFFFFFFF : 0xFFCCCCCC;
-                g.drawString(this.font, "• " + skillDisplayName, contentX + 10, contentY, skillColor, false);
-
-                if (isHovered2) {
-                    renderSkillTooltip(g, skill, mouseX, mouseY);
+                int skillLineY = contentY;
+                for (net.minecraft.util.FormattedCharSequence line : skillLines) {
+                    g.drawString(this.font, line, contentX + 10, skillLineY, skillColor, false);
+                    skillLineY += DETAIL_LINE_HEIGHT;
                 }
 
-                contentY += 14;
-                skillCount++;
+                if (isHovered2) {
+                    hoveredSkill = skill;
+                }
+
+                contentY += skillBlockHeight + 3;
             }
 
             if (skills.isEmpty()) {
-                g.drawString(this.font, "Uses advanced skill tree", contentX + 10, contentY, 0xFF666666, false);
+                g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.advanced_skill_tree"),
+                        contentX + 10, contentY, 0xFF666666, false);
+                contentY += 14;
             }
 
             // === Warning ===
-            int warningY = rightY + rightHeight - 50;
-            if (warningY > contentY + 10) {
-                g.fill(rightX + 5, warningY - 3, rightX + rightWidth - 5, warningY + 35, 0x40FF0000);
-                renderBorder(g, rightX + 5, warningY - 3, rightX + rightWidth - 5, warningY + 35, 0xFFFF4444);
-                g.drawString(this.font, "\u26A0 WARNING", rightX + 12, warningY, 0xFFFF4444, true);
-                g.drawString(this.font, "Base Level and stats stay.", rightX + 12, warningY + 12, 0xFFFFAAAA, false);
-                g.drawString(this.font, "Job Level resets to 1.", rightX + 12, warningY + 23, 0xFFFFAAAA, false);
+            contentY += 10;
+            g.fill(rightX + 5, contentY - 3, rightX + rightWidth - 5, contentY + 35, 0x40FF0000);
+            renderBorder(g, rightX + 5, contentY - 3, rightX + rightWidth - 5, contentY + 35, 0xFFFF4444);
+            g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.warning.title"),
+                    rightX + 12, contentY, 0xFFFF4444, true);
+            g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.warning.base"),
+                    rightX + 12, contentY + 12, 0xFFFFAAAA, false);
+            g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.warning.job"),
+                    rightX + 12, contentY + 23, 0xFFFFAAAA, false);
+
+            g.disableScissor();
+            renderScrollBar(g, rightX + rightWidth - 4, rightY + 2, rightHeight - 4,
+                    getRightContentHeight(selectedJob, rightWidth), rightHeight, (int) rightScrollAmount);
+
+            if (hoveredSkill != null) {
+                renderSkillTooltip(g, hoveredSkill, mouseX, mouseY);
             }
 
         } else {
             // No job selected
-            g.drawCenteredString(this.font, "Select a class to view details",
+            g.drawCenteredString(this.font, Component.translatable("screen.ragnarmmo.job_selection.select_class"),
                     rightX + rightWidth / 2, rightY + rightHeight / 2 - 5, 0xFF666666);
         }
 
@@ -360,17 +405,22 @@ public class JobSelectionScreen extends Screen {
             int panelX = windowX + 15;
             int panelY = windowY + HEADER_HEIGHT + 10;
             int panelWidth = LEFT_PANEL_WIDTH - 10;
+            int panelHeight = WINDOW_HEIGHT - HEADER_HEIGHT - FOOTER_HEIGHT - 20;
 
-            int slotY = panelY + 8;
-            int slotHeight = 28;
-            int slotGap = 5;
+            int slotHeight = JOB_SLOT_HEIGHT;
+            int slotGap = JOB_SLOT_GAP;
 
             List<JobType> eligibleJobs = getEligibleJobs();
+            int leftMaxScroll = getLeftMaxScroll(eligibleJobs.size(), panelHeight);
+            leftScrollAmount = Mth.clamp(leftScrollAmount, 0, leftMaxScroll);
+            int slotY = panelY + 8 - (int) leftScrollAmount;
 
             for (JobType job : eligibleJobs) {
                 if (mouseX >= panelX + 5 && mouseX <= panelX + panelWidth - 5 &&
-                        mouseY >= slotY && mouseY <= slotY + slotHeight) {
+                        mouseY >= slotY && mouseY <= slotY + slotHeight &&
+                        mouseY >= panelY && mouseY <= panelY + panelHeight) {
                     this.selectedJob = job;
+                    this.rightScrollAmount = 0; // Reset details scroll on new job
                     updateConfirmButton();
                     minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                     return true;
@@ -381,14 +431,110 @@ public class JobSelectionScreen extends Screen {
         return false;
     }
 
-    private void renderSkillTooltip(GuiGraphics g, SkillType skill, int mouseX, int mouseY) {
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        int panelX = windowX + 15;
+        int panelWidth = LEFT_PANEL_WIDTH - 10;
+        int rightX = windowX + LEFT_PANEL_WIDTH + 15;
+        int rightWidth = WINDOW_WIDTH - LEFT_PANEL_WIDTH - 35;
+        int panelY = windowY + HEADER_HEIGHT + 10;
+        int panelHeight = WINDOW_HEIGHT - HEADER_HEIGHT - FOOTER_HEIGHT - 20;
+
+        if (mouseX >= panelX && mouseX <= panelX + panelWidth && mouseY >= panelY && mouseY <= panelY + panelHeight) {
+            int maxScroll = getLeftMaxScroll(getEligibleJobs().size(), panelHeight);
+            this.leftScrollAmount = Mth.clamp(this.leftScrollAmount - delta * SCROLL_STEP, 0, maxScroll);
+            return true;
+        }
+
+        if (mouseX >= rightX && mouseX <= rightX + rightWidth && mouseY >= panelY && mouseY <= panelY + panelHeight) {
+            int maxScroll = selectedJob == null ? 0 : getRightMaxScroll(selectedJob, rightWidth, panelHeight);
+            this.rightScrollAmount = Mth.clamp(this.rightScrollAmount - delta * SCROLL_STEP, 0, maxScroll);
+            return true;
+        }
+
+        return super.mouseScrolled(mouseX, mouseY, delta);
+    }
+
+    private int getLeftContentHeight(int jobCount) {
+        if (jobCount <= 0) {
+            return 16;
+        }
+        return 16 + (jobCount * JOB_SLOT_HEIGHT) + ((jobCount - 1) * JOB_SLOT_GAP);
+    }
+
+    private int getLeftMaxScroll(int jobCount, int panelHeight) {
+        return Math.max(0, getLeftContentHeight(jobCount) - panelHeight);
+    }
+
+    private int getRightMaxScroll(JobType job, int rightWidth, int rightHeight) {
+        return Math.max(0, getRightContentHeight(job, rightWidth) - rightHeight);
+    }
+
+    private int getRightContentHeight(JobType job, int rightWidth) {
+        if (job == null) {
+            return 0;
+        }
+
+        int contentHeight = DETAIL_TOP_PADDING;
+        contentHeight += 22; // Title
+        contentHeight += 14; // Role
+        contentHeight += 12; // Primary stats
+        contentHeight += 12; // Resource
+        contentHeight += 18; // Stat bonus
+        contentHeight += 14; // Reset preview
+        contentHeight += this.font.split(getClassDescription(job), rightWidth - 40).size() * DETAIL_LINE_HEIGHT + 6;
+        contentHeight += 18; // Skills header
+
+        List<ResourceLocation> skills = job.getAllowedSkillIds().stream()
+                .sorted(Comparator.comparing(ResourceLocation::toString))
+                .toList();
+        for (ResourceLocation skill : skills) {
+            Component skillDisplayName = SkillRegistry.get(skill)
+                    .map(ISkillDefinition::getTranslatedName)
+                    .orElseGet(() -> Component.translatable(
+                            "screen.ragnarmmo.job_selection.skill_fallback", skill.getPath()));
+            Component skillLine = Component.translatable("screen.ragnarmmo.job_selection.skill_bullet",
+                    skillDisplayName);
+            contentHeight += Math.max(12, this.font.split(skillLine, rightWidth - 50).size() * DETAIL_LINE_HEIGHT) + 3;
+        }
+
+        if (skills.isEmpty()) {
+            contentHeight += 14;
+        }
+
+        contentHeight += 10; // Warning gap
+        contentHeight += 38; // Warning box
+        contentHeight += DETAIL_BOTTOM_PADDING;
+        return contentHeight;
+    }
+
+    private void renderScrollBar(GuiGraphics g, int x, int y, int height, int contentHeight, int viewportHeight,
+            int scrollAmount) {
+        if (contentHeight <= viewportHeight || height <= 0) {
+            return;
+        }
+
+        int thumbHeight = Mth.clamp((int) Math.round((double) viewportHeight / (double) contentHeight * height), 12,
+                height);
+        int maxScroll = Math.max(1, contentHeight - viewportHeight);
+        int travel = Math.max(0, height - thumbHeight);
+        int thumbY = y + (int) Math.round(travel * (scrollAmount / (double) maxScroll));
+
+        g.fill(x, y, x + 2, y + height, 0x44000000);
+        g.fill(x, thumbY, x + 2, thumbY + thumbHeight, 0x99FFFFFF);
+    }
+
+    private void renderSkillTooltip(GuiGraphics g, ResourceLocation skill, int mouseX, int mouseY) {
         List<Component> lines = new ArrayList<>();
-        var defOpt = SkillRegistry.get(skill.toResourceLocation());
-        String displayName = defOpt.map(ISkillDefinition::getDisplayName).orElse(skill.getId());
+        var defOpt = SkillRegistry.get(skill);
+        Component displayName = defOpt.map(ISkillDefinition::getTranslatedName)
+                .orElseGet(() -> Component.translatable("screen.ragnarmmo.job_selection.skill_fallback", skill.getPath()));
         String scalingStat = defOpt.map(ISkillDefinition::getScalingStat).orElse("STR");
-        lines.add(Component.literal(displayName).withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));
-        lines.add(Component.translatable("skill.ragnarmmo." + skill.getId() + ".desc").withStyle(ChatFormatting.GRAY));
-        lines.add(Component.literal("Primary: " + scalingStat).withStyle(ChatFormatting.DARK_GRAY));
+        lines.add(displayName.copy().withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));
+        lines.add(Component.translatable("skill." + skill.getNamespace() + "." + skill.getPath() + ".desc")
+                .withStyle(ChatFormatting.GRAY));
+        lines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.primary", scalingStat)
+                .withStyle(ChatFormatting.DARK_GRAY));
         g.renderComponentTooltip(this.font, lines, mouseX, mouseY);
     }
 
@@ -399,69 +545,27 @@ public class JobSelectionScreen extends Screen {
         g.fill(x2 - 1, y1, x2, y2, color); // Right
     }
 
-    private String getRoleDescription(JobType job) {
-        return switch (job) {
-            case SWORDSMAN -> "Melee Tank / DPS";
-            case MAGE -> "Magic Burst DPS";
-            case ARCHER -> "Ranged Physical DPS";
-            case MERCHANT -> "Utility & Trading";
-            case THIEF -> "Evasion & Speed";
-            case ACOLYTE -> "Support & Healing";
-            case KNIGHT -> "Heavy Tank / AoE DPS";
-            case WIZARD -> "Arcane Burst / AoE DPS";
-            case HUNTER -> "Ranged DPS / Trapper";
-            case PRIEST -> "Healer / Buffer";
-            case ASSASSIN -> "Burst Melee / Stealth";
-            case BLACKSMITH -> "Bruiser / Economy";
-            default -> "Beginner class";
-        };
+    private static Component jobName(JobType job) {
+        return Component.translatable(jobKey(job));
     }
 
-    private String getPrimaryStats(JobType job) {
-        return switch (job) {
-            case SWORDSMAN -> "STR, VIT";
-            case MAGE -> "INT, DEX";
-            case ARCHER -> "DEX, AGI";
-            case MERCHANT -> "LUK, STR";
-            case THIEF -> "AGI, LUK";
-            case ACOLYTE -> "INT, VIT";
-            case KNIGHT -> "STR, VIT, DEX";
-            case WIZARD -> "INT, DEX";
-            case HUNTER -> "DEX, AGI, INT";
-            case PRIEST -> "INT, VIT, DEX";
-            case ASSASSIN -> "AGI, STR, DEX";
-            case BLACKSMITH -> "STR, DEX, VIT";
-            default -> "All";
-        };
+    private static Component getRoleDescription(JobType job) {
+        return Component.translatable(jobKey(job) + ".role");
     }
 
-    private String getClassDescription(JobType job) {
-        return switch (job) {
-            case SWORDSMAN ->
-                "Front-line warriors who excel at close combat. They possess high vitality and can wield swords with lethal precision.";
-            case MAGE ->
-                "Scholars of the arcane arts who channel elemental magic. Fragile but devastating from range with powerful spells.";
-            case ARCHER ->
-                "Masters of ranged combat who strike from afar with unmatched precision. Agile and deadly with a bow.";
-            case THIEF ->
-                "Swift and cunning fighters who rely on speed, evasion, and critical strikes. Experts in poison and stealth.";
-            case MERCHANT ->
-                "Resourceful traders with surprising combat ability. They specialize in item crafting, overcharging, and support.";
-            case ACOLYTE ->
-                "Devoted servants of the divine, channeling holy power to heal allies and ward off darkness.";
-            case KNIGHT ->
-                "Elite mounted warriors clad in heavy armor. Masters of spear and sword, capable of devastating charge attacks.";
-            case WIZARD ->
-                "Supreme arcane casters who command ice, lightning, and fire. Their spells can annihilate entire groups of enemies.";
-            case HUNTER ->
-                "Expert marksmen who set traps and command falcons. They combine ranged attacks with tactical area control.";
-            case PRIEST ->
-                "Holy healers who protect allies with blessings, powerful heals, and sacred sanctuaries that purify the battlefield.";
-            case ASSASSIN ->
-                "Silent executioners who blend speed, poison, and explosive melee bursts. They thrive on positioning, stealth, and punishing exposed targets.";
-            case BLACKSMITH ->
-                "Battle-hardened craftsmen who turn economy into power. They fight with brute force, weapon mastery, and utility tied to gear and preparation.";
-            default -> "A beginning adventurer.";
-        };
+    private static Component getPrimaryStats(JobType job) {
+        return Component.translatable(jobKey(job) + ".primary");
+    }
+
+    private static Component getResourceType(JobType job) {
+        return Component.translatable("screen.ragnarmmo.job_selection.resource." + (job.isMagical() ? "mana" : "sp"));
+    }
+
+    private static Component getClassDescription(JobType job) {
+        return Component.translatable(jobKey(job) + ".desc");
+    }
+
+    private static String jobKey(JobType job) {
+        return "job.ragnarmmo." + job.getId();
     }
 }

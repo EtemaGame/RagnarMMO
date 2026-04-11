@@ -1,5 +1,11 @@
 package com.etema.ragnarmmo.client.ui;
 
+import com.etema.ragnarmmo.client.PartyHudOverlay;
+import com.etema.ragnarmmo.client.SkillOverlay;
+import com.etema.ragnarmmo.client.hud.HudConfigSerializer;
+import com.etema.ragnarmmo.client.hud.HudLayoutManager;
+import com.etema.ragnarmmo.client.hud.HudWidgetDefinition;
+import com.etema.ragnarmmo.client.hud.HudWidgetState;
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
@@ -14,6 +20,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
@@ -21,6 +28,7 @@ import java.util.function.ToIntFunction;
 public class HudOverlayConfigScreen extends Screen {
     private static final int MIN_WIDTH = 120;
     private static final int MAX_WIDTH = 400;
+    private static final int SNAP_DISTANCE = 6;
 
     private final List<DraggableComponent> components = new ArrayList<>();
     private DraggableComponent selectedComponent;
@@ -42,8 +50,40 @@ public class HudOverlayConfigScreen extends Screen {
         super.init();
 
         components.clear();
-        addComponent(RagnarConfigs.CLIENT.hud.status, "Status", RagnarStatusOverlay::getStatusHeight,
+        addComponent(RagnarConfigs.CLIENT.hud.status,
+                Component.translatable("screen.ragnarmmo.overlay.widget.status"),
+                font -> Mth.clamp(RagnarConfigs.CLIENT.hud.width.get(), MIN_WIDTH, MAX_WIDTH),
+                RagnarStatusOverlay::getStatusHeight,
                 RagnarStatusOverlay::renderStatus);
+        addComponent(RagnarConfigs.CLIENT.hud.cast,
+                Component.translatable("screen.ragnarmmo.overlay.widget.cast"),
+                font -> CastOverlay.getCastWidth(),
+                CastOverlay::getCastHeight,
+                (g, f, s, p, w) -> CastOverlay.renderPreview(g, f, w));
+        addComponent(RagnarConfigs.CLIENT.hud.skillHotbar,
+                Component.translatable("screen.ragnarmmo.overlay.widget.skill_hotbar"),
+                font -> HotbarOverlay.getWidth(),
+                font -> HotbarOverlay.getHeight(),
+                (g, f, s, p, w) -> {
+                    HotbarOverlay.renderPreview(g, 0, 6);
+                    return HotbarOverlay.getHeight();
+                });
+        addComponent(RagnarConfigs.CLIENT.hud.partyFrame,
+                Component.translatable("screen.ragnarmmo.overlay.widget.party_frame"),
+                font -> PartyHudOverlay.getWidth(),
+                PartyHudOverlay::getPreviewHeight,
+                (g, f, s, p, w) -> PartyHudOverlay.renderPreview(g, f));
+        addComponent(RagnarConfigs.CLIENT.hud.targetFrame,
+                Component.translatable("screen.ragnarmmo.overlay.widget.target_frame"),
+                font -> TargetFrameOverlay.getWidth(),
+                TargetFrameOverlay::getHeight,
+                (g, f, s, p, w) -> TargetFrameOverlay.renderPreview(g, f));
+        addComponent(RagnarConfigs.CLIENT.hud.notifications,
+                Component.translatable("screen.ragnarmmo.overlay.widget.notifications"),
+                font -> SkillOverlay.getWidth(),
+                font -> SkillOverlay.getHeight(),
+                (g, f, s, p, w) -> SkillOverlay.renderPreview(g, f));
+        components.sort(Comparator.comparingInt(component -> component.zOrder));
 
         int buttonWidth = 80;
         int buttonHeight = 20;
@@ -62,7 +102,7 @@ public class HudOverlayConfigScreen extends Screen {
         // Scale Slider
         scaleSlider = new RangeSlider(
                 controlX, controlY, controlWidth, 20,
-                Component.literal("Scale: "),
+                Component.translatable("screen.ragnarmmo.overlay.control.scale"),
                 0.1, 3.0, 1.0, 0.1, true,
                 val -> {
                     if (selectedComponent != null) {
@@ -74,7 +114,7 @@ public class HudOverlayConfigScreen extends Screen {
         // Alpha Slider
         alphaSlider = new RangeSlider(
                 controlX, controlY + 25, controlWidth, 20,
-                Component.literal("Alpha: "),
+                Component.translatable("screen.ragnarmmo.overlay.control.alpha"),
                 0, 255, 100, 5, false,
                 val -> {
                     if (selectedComponent != null) {
@@ -86,7 +126,7 @@ public class HudOverlayConfigScreen extends Screen {
         // Background Checkbox
         showBgCheckbox = new ToggleCheckbox(
                 controlX, controlY + 50, controlWidth, 20,
-                Component.literal("Show Background"),
+                Component.translatable("screen.ragnarmmo.overlay.control.show_background"),
                 true,
                 val -> {
                     if (selectedComponent != null) {
@@ -98,23 +138,17 @@ public class HudOverlayConfigScreen extends Screen {
         updateControls();
     }
 
-    // Helper to render hotbar preview
-    private void renderHotbarPreview(GuiGraphics guiGraphics, Font font, int startIndex, int count) {
-        int SLOT_SIZE = 20;
-        int SLOT_SPACING = 2;
-
-        for (int i = 0; i < count; i++) {
-            int x = i * (SLOT_SIZE + SLOT_SPACING);
-            guiGraphics.renderOutline(x, 0, SLOT_SIZE, SLOT_SIZE, 0x4DFFFFFF);
-            guiGraphics.drawString(font, String.valueOf(startIndex + i + 1), x + 1, 1, 0xFFE0E0E0, true);
+    private void addComponent(RagnarConfigs.Client.Hud.HudComponent config, Component name,
+            ToIntFunction<Font> widthProvider, ToIntFunction<Font> heightProvider, RenderConsumer renderer) {
+        if (config.enabled.get()) {
+            components.add(new DraggableComponent(config,
+                    new HudWidgetDefinition(configName(config), name, config.zOrder.get()),
+                    widthProvider, heightProvider, renderer));
         }
     }
 
-    private void addComponent(RagnarConfigs.Client.Hud.HudComponent config, String name,
-            ToIntFunction<Font> heightProvider, RenderConsumer renderer) {
-        if (config.enabled.get()) {
-            components.add(new DraggableComponent(config, name, heightProvider, renderer));
-        }
+    private static String configName(RagnarConfigs.Client.Hud.HudComponent config) {
+        return "hud_widget_" + Integer.toHexString(System.identityHashCode(config));
     }
 
     private void updateControls() {
@@ -145,10 +179,12 @@ public class HudOverlayConfigScreen extends Screen {
                 this.width / 2, 20, 0xFFFFFF);
 
         if (selectedComponent != null) {
-            graphics.drawString(this.font, "Selected: " + selectedComponent.name, 10, this.height / 2 - 60, 0xFFFFFF,
-                    false);
+            graphics.drawString(this.font,
+                    Component.translatable("screen.ragnarmmo.overlay.selected", selectedComponent.definition.displayName()),
+                    10, this.height / 2 - 60, 0xFFFFFF, false);
         } else {
-            graphics.drawString(this.font, "Select a component to edit", 10, this.height / 2 - 60, 0xAAAAAA, false);
+            graphics.drawString(this.font, Component.translatable("screen.ragnarmmo.overlay.select_component"),
+                    10, this.height / 2 - 60, 0xAAAAAA, false);
         }
 
         if (player != null) {
@@ -171,7 +207,10 @@ public class HudOverlayConfigScreen extends Screen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
-            boolean clickedComponent = false;
+            if (super.mouseClicked(mouseX, mouseY, button)) {
+                return true;
+            }
+
             // Reverse iteration (top-most first)
             for (int i = components.size() - 1; i >= 0; i--) {
                 DraggableComponent comp = components.get(i);
@@ -183,21 +222,14 @@ public class HudOverlayConfigScreen extends Screen {
                     dragOffsetX = (int) (mouseX - pos[0]);
                     dragOffsetY = (int) (mouseY - pos[1]);
 
-                    clickedComponent = true;
                     updateControls();
                     return true;
                 }
             }
 
-            // Check widgets (sliders/checkbox)
-            if (super.mouseClicked(mouseX, mouseY, button)) {
-                return true;
-            }
-
-            if (!clickedComponent) {
-                selectedComponent = null;
-                updateControls();
-            }
+            selectedComponent = null;
+            updateControls();
+            return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -240,7 +272,8 @@ public class HudOverlayConfigScreen extends Screen {
 
     private class DraggableComponent {
         final RagnarConfigs.Client.Hud.HudComponent config;
-        final String name;
+        final HudWidgetDefinition definition;
+        final ToIntFunction<Font> widthProvider;
         final ToIntFunction<Font> heightProvider;
         final RenderConsumer renderer;
 
@@ -248,94 +281,87 @@ public class HudOverlayConfigScreen extends Screen {
         double scale;
         int alpha;
         boolean showBg;
+        int zOrder;
 
-        DraggableComponent(RagnarConfigs.Client.Hud.HudComponent config, String name,
-                ToIntFunction<Font> heightProvider, RenderConsumer renderer) {
+        DraggableComponent(RagnarConfigs.Client.Hud.HudComponent config, HudWidgetDefinition definition,
+                ToIntFunction<Font> widthProvider, ToIntFunction<Font> heightProvider, RenderConsumer renderer) {
             this.config = config;
-            this.name = name;
+            this.definition = definition;
+            this.widthProvider = widthProvider;
             this.heightProvider = heightProvider;
             this.renderer = renderer;
-            this.anchorX = Mth.clamp(config.anchorX.get(), 0.0, 1.0);
-            this.anchorY = Mth.clamp(config.anchorY.get(), 0.0, 1.0);
-            this.scale = config.scale.get();
-            this.alpha = config.backgroundAlpha.get();
-            this.showBg = config.showBackground.get();
+            HudWidgetState state = HudConfigSerializer.read(config);
+            this.anchorX = Mth.clamp(state.anchorX(), 0.0, 1.0);
+            this.anchorY = Mth.clamp(state.anchorY(), 0.0, 1.0);
+            this.scale = state.scale();
+            this.alpha = state.backgroundAlpha();
+            this.showBg = state.showBackground();
+            this.zOrder = state.zOrder();
         }
 
         int[] getPosition(Font font, int screenWidth, int screenHeight) {
-            int width = RagnarConfigs.CLIENT.hud.width.get();
-            int realWidth = (int) (width * scale);
-
-            int x = (int) Math.round(anchorX * Math.max(0, screenWidth - realWidth));
-            int y = (int) Math.round(anchorY * Math.max(0, screenHeight - 0));
-            return new int[] { x, y };
+            HudLayoutManager.HudBounds bounds = getBounds(font, screenWidth, screenHeight);
+            return new int[] { bounds.x(), bounds.y() };
         }
 
         void render(GuiGraphics graphics, Font font, IPlayerStats stats, Player player,
                 int screenWidth, int screenHeight) {
-            int width = RagnarConfigs.CLIENT.hud.width.get();
-            int[] pos = getPosition(font, screenWidth, screenHeight);
-
-            // Preview logic: calculate dimensions
-            // We use the renderer to get height if possible, or provider
+            int width = getWidth(font);
             int height = heightProvider.applyAsInt(font);
-
-            int realW = (int) (width * scale);
-            int realH = (int) (height * scale);
+            HudLayoutManager.HudBounds bounds = getBounds(font, screenWidth, screenHeight);
 
             // Draw BG
-            if (showBg && alpha > 0) {
-                int bgColor = (alpha << 24) | 0x000000;
-                graphics.fill(pos[0] - 2, pos[1] - 2, pos[0] + realW + 2, pos[1] + realH + 2, bgColor);
-            }
+            HudLayoutManager.renderBackground(graphics, currentState(), bounds);
 
-            graphics.pose().pushPose();
-            graphics.pose().translate(pos[0], pos[1], 0);
-            graphics.pose().scale((float) scale, (float) scale, 1.0f);
-
+            HudLayoutManager.pushWidgetTransform(graphics, bounds);
             renderer.render(graphics, font, stats, player, width);
-
-            graphics.pose().popPose();
+            HudLayoutManager.popWidgetTransform(graphics);
         }
 
         void renderSelection(GuiGraphics graphics, Font font, int screenWidth,
                 int screenHeight) {
-            int width = RagnarConfigs.CLIENT.hud.width.get();
-            int[] pos = getPosition(font, screenWidth, screenHeight);
-            int h = heightProvider.applyAsInt(font);
-            int realW = (int) (width * scale);
-            int realH = (int) (h * scale);
+            HudLayoutManager.HudBounds bounds = getBounds(font, screenWidth, screenHeight);
 
-            graphics.fillGradient(pos[0] - 2, pos[1] - 2, pos[0] + realW + 2, pos[1] + realH + 2, 0x40FFFFFF,
+            graphics.fillGradient(bounds.x() - 2, bounds.y() - 2,
+                    bounds.x() + bounds.realWidth() + 2, bounds.y() + bounds.realHeight() + 2, 0x40FFFFFF,
                     0x40FFFFFF);
-            graphics.renderOutline(pos[0] - 2, pos[1] - 2, realW + 4, realH + 4, 0xFFFFFFFF);
+            graphics.renderOutline(bounds.x() - 2, bounds.y() - 2,
+                    bounds.realWidth() + 4, bounds.realHeight() + 4, 0xFFFFFFFF);
         }
 
         boolean isMouseOver(double mouseX, double mouseY, Font font, int screenWidth,
                 int screenHeight) {
-            int width = RagnarConfigs.CLIENT.hud.width.get();
-            int[] pos = getPosition(font, screenWidth, screenHeight);
-            int h = heightProvider.applyAsInt(font);
-            int realW = (int) (width * scale);
-            int realH = (int) (h * scale);
-
-            return mouseX >= pos[0] - 2 && mouseX <= pos[0] + realW + 2 &&
-                    mouseY >= pos[1] - 2 && mouseY <= pos[1] + realH + 2;
+            HudLayoutManager.HudBounds bounds = getBounds(font, screenWidth, screenHeight);
+            return mouseX >= bounds.x() - 2 && mouseX <= bounds.x() + bounds.realWidth() + 2 &&
+                    mouseY >= bounds.y() - 2 && mouseY <= bounds.y() + bounds.realHeight() + 2;
         }
 
         void updateAnchor(int pixelX, int pixelY, Font font, int screenWidth,
                 int screenHeight) {
-            int width = RagnarConfigs.CLIENT.hud.width.get();
-            int realWidth = (int) (width * scale);
+            int width = getWidth(font);
+            int height = heightProvider.applyAsInt(font);
+            int realWidth = Math.max(1, (int) Math.round(width * scale));
+            int realHeight = Math.max(1, (int) Math.round(height * scale));
+            pixelX = snapCoordinate(pixelX, realWidth, screenWidth);
+            pixelY = snapCoordinate(pixelY, realHeight, screenHeight);
+            HudLayoutManager.Anchor anchor = HudLayoutManager.anchorFromPixel(
+                    pixelX, pixelY, currentState(), width, height, screenWidth, screenHeight);
+            this.anchorX = anchor.x();
+            this.anchorY = anchor.y();
+        }
 
-            int maxX = Math.max(0, screenWidth - realWidth);
-            int maxY = Math.max(0, screenHeight - 0);
+        void reloadFromConfig() {
+            HudWidgetState state = HudConfigSerializer.read(config);
+            this.anchorX = Mth.clamp(state.anchorX(), 0.0, 1.0);
+            this.anchorY = Mth.clamp(state.anchorY(), 0.0, 1.0);
+            this.scale = state.scale();
+            this.alpha = state.backgroundAlpha();
+            this.showBg = state.showBackground();
+            this.zOrder = state.zOrder();
+        }
 
-            int clampedX = Mth.clamp(pixelX, 0, maxX);
-            int clampedY = Mth.clamp(pixelY, 0, maxY);
-
-            this.anchorX = maxX == 0 ? 0.0 : (double) clampedX / (double) maxX;
-            this.anchorY = maxY == 0 ? 0.0 : (double) clampedY / (double) maxY;
+        int getWidth(Font font) {
+            return Math.max(1, widthProvider.applyAsInt(font));
         }
 
         void setScale(double s) {
@@ -363,12 +389,36 @@ public class HudOverlayConfigScreen extends Screen {
         }
 
         void save() {
-            config.anchorX.set(anchorX);
-            config.anchorY.set(anchorY);
-            config.scale.set(scale);
-            config.backgroundAlpha.set(alpha);
-            config.showBackground.set(showBg);
+            HudConfigSerializer.write(config, currentState());
         }
+
+        private HudLayoutManager.HudBounds getBounds(Font font, int screenWidth, int screenHeight) {
+            return HudLayoutManager.bounds(
+                    currentState(),
+                    getWidth(font),
+                    heightProvider.applyAsInt(font),
+                    screenWidth,
+                    screenHeight);
+        }
+
+        private HudWidgetState currentState() {
+            return new HudWidgetState(config.enabled.get(), anchorX, anchorY, scale, alpha, showBg, zOrder);
+        }
+    }
+
+    private static int snapCoordinate(int pixel, int widgetSize, int screenSize) {
+        int max = Math.max(0, screenSize - widgetSize);
+        int center = max / 2;
+        if (Math.abs(pixel) <= SNAP_DISTANCE) {
+            return 0;
+        }
+        if (Math.abs(pixel - center) <= SNAP_DISTANCE) {
+            return center;
+        }
+        if (Math.abs(pixel - max) <= SNAP_DISTANCE) {
+            return max;
+        }
+        return Mth.clamp(pixel, 0, max);
     }
 
     private static class RangeSlider extends AbstractSliderButton {

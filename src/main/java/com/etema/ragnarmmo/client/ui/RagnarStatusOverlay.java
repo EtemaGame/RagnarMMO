@@ -1,6 +1,9 @@
 package com.etema.ragnarmmo.client.ui;
 
 import com.etema.ragnarmmo.client.hud.HudRenderUtil;
+import com.etema.ragnarmmo.client.hud.HudConfigSerializer;
+import com.etema.ragnarmmo.client.hud.HudLayoutManager;
+import com.etema.ragnarmmo.client.hud.HudWidgetState;
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.jobs.JobType;
@@ -65,37 +68,21 @@ public class RagnarStatusOverlay implements IGuiOverlay {
             ComponentRenderer renderer,
             java.util.function.ToIntFunction<Font> heightProvider) {
 
-        if (!config.enabled.get())
+        HudWidgetState state = HudConfigSerializer.read(config);
+        if (!state.enabled())
             return;
 
-        double scale = config.scale.get();
         int panelW = Mth.clamp(RagnarConfigs.CLIENT.hud.width.get(), 120, 400);
         int compH = heightProvider.applyAsInt(font);
-
-        int realW = (int) (panelW * scale);
-        int realH = (int) (compH * scale);
-
-        double anchorX = config.anchorX.get();
-        double anchorY = config.anchorY.get();
-        int x = (int) Math.round(anchorX * Math.max(0, screenWidth - realW));
-        int y = (int) Math.round(anchorY * Math.max(0, screenHeight));
-
-        int alpha = config.backgroundAlpha.get();
-        boolean showBg = config.showBackground.get();
+        HudLayoutManager.HudBounds bounds = HudLayoutManager.bounds(state, panelW, compH, screenWidth, screenHeight);
 
         // Optional background
-        if (showBg && alpha > 0) {
-            int bgColor = (alpha << 24) | 0x000000;
-            graphics.fill(x - 2, y - 2, x + realW + 2, y + realH + 2, bgColor);
-        }
+        HudLayoutManager.renderBackground(graphics, state, bounds);
 
-        graphics.pose().pushPose();
-        graphics.pose().translate(x, y, 0);
-        graphics.pose().scale((float) scale, (float) scale, 1.0f);
+        HudLayoutManager.pushWidgetTransform(graphics, bounds);
+        renderer.render(graphics, font, bounds.width());
 
-        renderer.render(graphics, font, panelW);
-
-        graphics.pose().popPose();
+        HudLayoutManager.popWidgetTransform(graphics);
     }
 
     @FunctionalInterface

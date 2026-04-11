@@ -1,6 +1,8 @@
 package com.etema.ragnarmmo.client;
 
-import com.etema.ragnarmmo.RagnarMMO;
+import com.etema.ragnarmmo.client.hud.HudConfigSerializer;
+import com.etema.ragnarmmo.client.hud.HudLayoutManager;
+import com.etema.ragnarmmo.client.hud.HudWidgetState;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.system.stats.party.PartyClientData;
 import com.etema.ragnarmmo.system.stats.party.net.PartyMemberData;
@@ -9,12 +11,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.Mth;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +22,6 @@ import java.util.UUID;
  * Compact RO-style party HUD.
  * Shows only: Name / Lv / HP (SP/Mana reserved for future, not rendered here).
  */
-@Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD, modid = RagnarMMO.MODID)
 public class PartyHudOverlay {
 
     private static final int MAX_MEMBERS = 6;
@@ -61,7 +58,11 @@ public class PartyHudOverlay {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.options.hideGui || mc.screen != null) return;
 
-        if (!RagnarConfigs.CLIENT.partyHud.enabled.get()) return;
+        if (!RagnarConfigs.CLIENT.hud.enabled.get()
+                || !RagnarConfigs.CLIENT.partyHud.enabled.get()
+                || !RagnarConfigs.CLIENT.hud.partyFrame.enabled.get()) {
+            return;
+        }
         if (!PartyClientData.hasParty()) {
             cachedMembers = List.of();
             return;
@@ -76,31 +77,13 @@ public class PartyHudOverlay {
         int contentHeight = visibleCount * layout.entryHeight + Math.max(0, visibleCount - 1) * ROW_GAP;
         int overlayHeight = PADDING_Y * 2 + contentHeight;
 
-        float scale = (float) (double) RagnarConfigs.CLIENT.partyHud.scale.get();
-        scale = Mth.clamp(scale, 0.75f, 1.5f);
-
-        int realWidth = (int) Math.ceil(OVERLAY_WIDTH * scale);
-        int realHeight = (int) Math.ceil(overlayHeight * scale);
-
-        int xOffset = RagnarConfigs.CLIENT.partyHud.xOffset.get();
-        int yOffset = RagnarConfigs.CLIENT.partyHud.yOffset.get();
-
-        RagnarConfigs.Client.HudAnchor anchor = RagnarConfigs.CLIENT.partyHud.anchor.get();
-        int x = switch (anchor) {
-            case TOP_LEFT, BOTTOM_LEFT -> xOffset;
-            case TOP_RIGHT, BOTTOM_RIGHT -> screenWidth - realWidth - xOffset;
-        };
-        int y = switch (anchor) {
-            case TOP_LEFT, TOP_RIGHT -> yOffset;
-            case BOTTOM_LEFT, BOTTOM_RIGHT -> screenHeight - realHeight - yOffset;
-        };
+        HudWidgetState state = HudConfigSerializer.read(RagnarConfigs.CLIENT.hud.partyFrame);
+        HudLayoutManager.HudBounds bounds = HudLayoutManager.bounds(
+                state, OVERLAY_WIDTH, overlayHeight, screenWidth, screenHeight);
 
         RenderSystem.enableBlend();
-        graphics.pose().pushPose();
-        graphics.pose().translate(x, y, 0);
-        graphics.pose().scale(scale, scale, 1.0f);
-
-        graphics.fill(0, 0, OVERLAY_WIDTH, overlayHeight, COLOR_BG);
+        HudLayoutManager.renderBackground(graphics, state, bounds);
+        HudLayoutManager.pushWidgetTransform(graphics, bounds);
 
         int currentY = PADDING_Y;
         for (int i = 0; i < visibleCount; i++) {
@@ -108,8 +91,40 @@ public class PartyHudOverlay {
             currentY += layout.entryHeight + ROW_GAP;
         }
 
-        graphics.pose().popPose();
+        HudLayoutManager.popWidgetTransform(graphics);
         RenderSystem.disableBlend();
+    }
+
+    public static int getWidth() {
+        return OVERLAY_WIDTH;
+    }
+
+    public static int getPreviewHeight(Font font) {
+        return getHeight(font, 3);
+    }
+
+    private static int getHeight(Font font, int memberCount) {
+        Layout layout = Layout.get(font);
+        int visibleCount = Mth.clamp(memberCount, 1, MAX_MEMBERS);
+        int contentHeight = visibleCount * layout.entryHeight + Math.max(0, visibleCount - 1) * ROW_GAP;
+        return PADDING_Y * 2 + contentHeight;
+    }
+
+    public static int renderPreview(GuiGraphics graphics, Font font) {
+        Layout layout = Layout.get(font);
+        int currentY = PADDING_Y;
+        renderMember(graphics, font, layout,
+                new CachedMember("Alice", "Lv 24", font.width("Lv 24"), 0.85F, true),
+                PADDING_X, currentY);
+        currentY += layout.entryHeight + ROW_GAP;
+        renderMember(graphics, font, layout,
+                new CachedMember(">You", "Lv 18", font.width("Lv 18"), 0.55F, true),
+                PADDING_X, currentY);
+        currentY += layout.entryHeight + ROW_GAP;
+        renderMember(graphics, font, layout,
+                new CachedMember("Offline", "Lv 12", font.width("Lv 12"), 0.0F, false),
+                PADDING_X, currentY);
+        return getPreviewHeight(font);
     }
 
     private static void renderMember(GuiGraphics graphics, Font font, Layout layout, CachedMember member, int x,
@@ -236,10 +251,5 @@ public class PartyHudOverlay {
             }
             return cached;
         }
-    }
-
-    @SubscribeEvent
-    public static void registerOverlays(RegisterGuiOverlaysEvent event) {
-        event.registerAboveAll("party_hud", PARTY_HUD);
     }
 }

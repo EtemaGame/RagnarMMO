@@ -84,6 +84,9 @@ public final class Network {
         /* ─── Helpers ─── */
 
         public static <T> void sendToPlayer(ServerPlayer player, T msg) {
+                if (player.connection == null) {
+                        return;
+                }
                 CH.send(PacketDistributor.PLAYER.with(() -> player), msg);
         }
 

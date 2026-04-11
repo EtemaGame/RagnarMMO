@@ -48,13 +48,13 @@ public class RagnarBasicAttackService {
 
         com.etema.ragnarmmo.combat.api.CombatRejectReason reject = validationService.validateBasicAttack(ctx, actorState, nowTick, cooldownService);
         if (reject != null) {
-            CombatDebugLog.logValidationReject(ctx, reject.name());
+            CombatDebugLog.logValidationReject(ctx, "REJECT_" + reject.name());
             return null;
         }
 
         var statsOpt = RagnarCoreAPI.get(attacker);
         if (statsOpt.isEmpty()) {
-            CombatDebugLog.logValidationReject(ctx, "missing_attacker_stats");
+            CombatDebugLog.logValidationReject(ctx, "REJECT_MISSING_STATS");
             return null;
         }
 
@@ -64,7 +64,7 @@ public class RagnarBasicAttackService {
                 .orElse(null);
 
         if (attackerDerived == null) {
-            CombatDebugLog.logValidationReject(ctx, "missing_attacker_derived_stats");
+            CombatDebugLog.logValidationReject(ctx, "REJECT_MISSING_DERIVED_STATS");
             return null;
         }
 

@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:blaze",
+    "rank":  "NORMAL",
+    "level":  28,
+    "ro_stats":  {
+                     "str":  18,
+                     "agi":  18,
+                     "vit":  18,
+                     "int":  28,
+                     "dex":  24,
+                     "luk":  8
+                 },
+    "direct_stats":  {
+                         "max_hp":  20,
+                         "atk_min":  4,
+                         "atk_max":  6,
+                         "def":  0,
+                         "mdef":  8,
+                         "aspd":  155,
+                         "move_speed":  0.23
+                     },
+    "race":  "demon",
+    "element":  "fire",
+    "size":  "medium"
+}

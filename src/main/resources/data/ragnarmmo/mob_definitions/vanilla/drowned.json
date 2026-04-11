@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:drowned",
+    "rank":  "NORMAL",
+    "level":  15,
+    "ro_stats":  {
+                     "str":  17,
+                     "agi":  8,
+                     "vit":  18,
+                     "int":  4,
+                     "dex":  14,
+                     "luk":  3
+                 },
+    "direct_stats":  {
+                         "max_hp":  20,
+                         "atk_min":  2,
+                         "atk_max":  8,
+                         "def":  2,
+                         "mdef":  4,
+                         "aspd":  145,
+                         "move_speed":  0.23
+                     },
+    "race":  "undead",
+    "element":  "water",
+    "size":  "medium"
+}

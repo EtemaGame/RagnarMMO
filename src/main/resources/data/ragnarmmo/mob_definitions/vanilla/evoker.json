@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:evoker",
+    "rank":  "ELITE",
+    "level":  36,
+    "ro_stats":  {
+                     "str":  18,
+                     "agi":  18,
+                     "vit":  22,
+                     "int":  52,
+                     "dex":  36,
+                     "luk":  14
+                 },
+    "direct_stats":  {
+                         "max_hp":  24,
+                         "atk_min":  4,
+                         "atk_max":  6,
+                         "def":  0,
+                         "mdef":  14,
+                         "aspd":  140,
+                         "move_speed":  0.35
+                     },
+    "race":  "demihuman",
+    "element":  "neutral",
+    "size":  "medium"
+}

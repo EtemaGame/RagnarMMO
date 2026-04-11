@@ -10,6 +10,7 @@ import com.etema.ragnarmmo.system.achievements.network.SetTitlePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
@@ -17,6 +18,7 @@ import net.minecraft.util.Mth;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
@@ -48,6 +50,8 @@ public class AchievementScreen extends Screen {
     private static final int PAD          = 8;
     private static final int HEADER_H     = 36;
     private static final int TAB_BAR_H    = 22;
+    private static final int SEARCH_H     = 18;
+    private static final int CATEGORY_H   = 12;
     /** Must stay in sync with AchievementItemRenderer.ITEM_HEIGHT */
     private static final int ITEM_HEIGHT  = AchievementItemRenderer.ITEM_HEIGHT;
     private static final int SCROLLBAR_W  = 6;
@@ -83,6 +87,7 @@ public class AchievementScreen extends Screen {
     // ── Data state ────────────────────────────────────────────────────────────
     private AchievementCategory selectedCategory = AchievementCategory.BASIC;
     private List<AchievementDefinition> filteredAchievements;
+    private EditBox searchBox;
 
     // ── Scroll state ──────────────────────────────────────────────────────────
     /** Fractional item-index offset — used for smooth animation. */
@@ -108,6 +113,7 @@ public class AchievementScreen extends Screen {
         refreshList();
         buildTabWidgets();
         buildUnequipButton();
+        buildSearchBox();
     }
 
     @Override
@@ -128,8 +134,8 @@ public class AchievementScreen extends Screen {
         leftPos = (this.width  - guiW) / 2;
         topPos  = (this.height - guiH) / 2;
 
-        listY = topPos + HEADER_H + TAB_BAR_H + PAD;
-        listH = guiH - HEADER_H - TAB_BAR_H - PAD * 2;
+        listY = topPos + HEADER_H + TAB_BAR_H + PAD + SEARCH_H + CATEGORY_H;
+        listH = Math.max(ITEM_HEIGHT, guiH - HEADER_H - TAB_BAR_H - SEARCH_H - CATEGORY_H - PAD * 2);
         visibleItems = Math.max(1, listH / ITEM_HEIGHT);
 
         scrollbarX = leftPos + guiW - SCROLLBAR_W - SCROLLBAR_PAD;
@@ -174,6 +180,7 @@ public class AchievementScreen extends Screen {
                             // then rebuild the unequip button that was cleared.
                             buildTabWidgets();
                             buildUnequipButton();
+                            buildSearchBox();
                         }
                     }
             ));
@@ -199,14 +206,51 @@ public class AchievementScreen extends Screen {
         );
     }
 
+    private void buildSearchBox() {
+        String previous = searchBox == null ? "" : searchBox.getValue();
+        int searchX = leftPos + PAD;
+        int searchY = topPos + HEADER_H + TAB_BAR_H + 3;
+        int searchW = guiW - PAD * 2 - SCROLLBAR_W - SCROLLBAR_PAD;
+        searchBox = new EditBox(
+                this.font,
+                searchX,
+                searchY,
+                searchW,
+                SEARCH_H,
+                Component.translatable("gui.ragnarmmo.achievements.search"));
+        searchBox.setHint(Component.translatable("gui.ragnarmmo.achievements.search"));
+        searchBox.setMaxLength(64);
+        searchBox.setValue(previous);
+        searchBox.setResponder(value -> {
+            scrollOffset = 0f;
+            scrollTarget = 0f;
+            refreshList();
+        });
+        this.addRenderableWidget(searchBox);
+    }
+
     // ── Data ──────────────────────────────────────────────────────────────────
 
     private void refreshList() {
         filteredAchievements = AchievementRegistry.getInstance().getAll().values().stream()
                 .filter(a -> a.category() == selectedCategory)
+                .filter(this::matchesSearch)
                 .sorted(Comparator.comparing(AchievementDefinition::id))
                 .collect(Collectors.toList());
         clampScroll();
+    }
+
+    private boolean matchesSearch(AchievementDefinition definition) {
+        if (searchBox == null || searchBox.getValue().isBlank()) {
+            return true;
+        }
+
+        String query = searchBox.getValue().trim().toLowerCase(Locale.ROOT);
+        return definition.id().toLowerCase(Locale.ROOT).contains(query)
+                || Component.translatable(definition.name()).getString().toLowerCase(Locale.ROOT).contains(query)
+                || Component.translatable(definition.description()).getString().toLowerCase(Locale.ROOT).contains(query)
+                || (definition.title() != null
+                        && Component.translatable(definition.title()).getString().toLowerCase(Locale.ROOT).contains(query));
     }
 
     private int maxScrollIndex() {
@@ -297,8 +341,19 @@ public class AchievementScreen extends Screen {
 
     /** Small category label above the list area. */
     private void drawCategoryHeader(GuiGraphics g) {
-        String catLabel = "— " + Component.translatable(selectedCategory.getTranslationKey()).getString() + " —";
+        String categoryName = Component.translatable(selectedCategory.getTranslationKey()).getString();
+        String catLabel = Component.translatable(
+                "gui.ragnarmmo.achievements.category_count",
+                categoryName,
+                filteredAchievements.size(),
+                categoryTotal()).getString();
         g.drawString(this.font, catLabel, leftPos + PAD, listY - 11, COL_TEXT_CAT_HEADER, false);
+    }
+
+    private int categoryTotal() {
+        return (int) AchievementRegistry.getInstance().getAll().values().stream()
+                .filter(a -> a.category() == selectedCategory)
+                .count();
     }
 
     /**

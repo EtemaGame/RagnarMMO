@@ -2,6 +2,8 @@ package com.etema.ragnarmmo.system.stats.party;
 
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.common.net.Network;
+import com.etema.ragnarmmo.system.stats.party.net.PartyMemberData;
+import com.etema.ragnarmmo.system.stats.party.net.PartyMemberUpdateS2CPacket;
 import com.etema.ragnarmmo.system.stats.party.net.PartySnapshotS2CPacket;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -480,6 +482,41 @@ public class PartyService {
     }
 
     /**
+     * Syncs one member's live HUD data to all online party members.
+     */
+    public void syncMemberToMembers(ServerPlayer player) {
+        if (player == null) return;
+
+        Party party = data.getPartyByPlayer(player.getUUID());
+        if (party == null) return;
+
+        PartyMemberData memberData = PartyMemberData.fromPlayer(player, party.isLeader(player.getUUID()));
+        syncMemberToMembers(party, memberData);
+    }
+
+    /**
+     * Syncs one member's live HUD data to all online party members.
+     */
+    public void syncMemberToMembers(Party party, PartyMemberData memberData) {
+        syncMemberToMembers(party, memberData, null);
+    }
+
+    /**
+     * Syncs one member's live HUD data to all online party members except one optional UUID.
+     */
+    public void syncMemberToMembers(Party party, PartyMemberData memberData, UUID excludedMember) {
+        if (party == null || memberData == null) return;
+
+        PartyMemberUpdateS2CPacket packet = new PartyMemberUpdateS2CPacket(memberData);
+        for (ServerPlayer member : party.getOnlineMembers(server)) {
+            if (excludedMember != null && excludedMember.equals(member.getUUID())) {
+                continue;
+            }
+            Network.sendToPlayer(member, packet);
+        }
+    }
+
+    /**
      * Syncs empty party state to a player (when they leave or are kicked).
      */
     public void syncEmptyPartyToPlayer(ServerPlayer player) {
@@ -513,8 +550,7 @@ public class PartyService {
     public void onPlayerLogin(ServerPlayer player) {
         Party party = data.getPartyByPlayer(player.getUUID());
         if (party != null) {
-            PartySnapshotS2CPacket packet = PartySnapshotS2CPacket.create(party, server);
-            Network.sendToPlayer(player, packet);
+            syncPartyToMembers(party);
 
             // Notify other members
             for (ServerPlayer member : party.getOnlineMembers(server)) {
@@ -531,6 +567,10 @@ public class PartyService {
     public void onPlayerLogout(ServerPlayer player) {
         Party party = data.getPartyByPlayer(player.getUUID());
         if (party != null) {
+            PartyMemberData offlineData = PartyMemberData.offlineFromPlayer(
+                    player, party.isLeader(player.getUUID()));
+            syncMemberToMembers(party, offlineData, player.getUUID());
+
             for (ServerPlayer member : party.getOnlineMembers(server)) {
                 if (!member.getUUID().equals(player.getUUID())) {
                     member.sendSystemMessage(Component.translatable("party.member.offline", player.getName().getString()));

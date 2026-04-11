@@ -1,0 +1,25 @@
+{
+    "entity":  "minecraft:warden",
+    "rank":  "BOSS",
+    "level":  95,
+    "ro_stats":  {
+                     "str":  110,
+                     "agi":  36,
+                     "vit":  120,
+                     "int":  38,
+                     "dex":  58,
+                     "luk":  20
+                 },
+    "direct_stats":  {
+                         "max_hp":  500,
+                         "atk_min":  30,
+                         "atk_max":  45,
+                         "def":  20,
+                         "mdef":  20,
+                         "aspd":  115,
+                         "move_speed":  0.3
+                     },
+    "race":  "brute",
+    "element":  "earth",
+    "size":  "large"
+}

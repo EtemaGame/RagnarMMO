@@ -3,6 +3,9 @@ package com.etema.ragnarmmo.skill.job.merchant;
 import com.etema.ragnarmmo.roitems.ZenyItems;
 import com.etema.ragnarmmo.roitems.runtime.ZenyWalletHelper;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillDefinition;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skill.execution.EconomicSkillHelper;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -34,17 +37,18 @@ public class MammoniteSkillEffect implements ISkillEffect {
             return;
         }
 
-        int costGold = level;
-        int cost = costGold * ZenyWalletHelper.GOLD_VALUE;
+        SkillDefinition definition = SkillRegistry.get(ID).orElse(null);
+        int cost = EconomicSkillHelper.zenyCost(definition, level, level * ZenyWalletHelper.GOLD_VALUE);
         int found = ZenyWalletHelper.getTotalZeny(player);
         if (found < cost) {
             player.sendSystemMessage(Component.literal(
-                    "Mammonite needs " + costGold + " Gold Zeny worth of funds (you have "
+                    "Mammonite needs " + ZenyWalletHelper.formatZeny(cost) + " (you have "
                             + ZenyWalletHelper.formatZeny(found) + ")"));
             return;
         }
 
-        LivingEntity target = getMeleeTarget(player);
+        double range = definition != null ? definition.getLevelDouble("range", level, 3.5D) : 3.5D;
+        LivingEntity target = getMeleeTarget(player, range);
         if (target == null) {
             player.sendSystemMessage(Component.literal("No target in range."));
             return;
@@ -55,8 +59,11 @@ public class MammoniteSkillEffect implements ISkillEffect {
             return;
         }
 
+        float damagePercent = definition != null
+                ? (float) definition.getLevelDouble("damage_percent", level, 100.0D + 50.0D * level)
+                : 100.0f + 50.0f * level;
         float damage = Math.max(com.etema.ragnarmmo.combat.damage.SkillDamageHelper.MIN_ATK,
-                com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByATK(player, 100f + 50f * level));
+                com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByATK(player, damagePercent));
 
         com.etema.ragnarmmo.skill.runtime.SkillSequencer.schedule(3, () -> {
             if (!target.isAlive()) {
@@ -84,14 +91,15 @@ public class MammoniteSkillEffect implements ISkillEffect {
                         10, 0.2, 0.4, 0.2, 0.05);
             }
 
-            player.displayClientMessage(Component.literal("-" + costGold + " Gold Zeny  Mammonite!"), true);
+            player.displayClientMessage(Component.literal("-" + ZenyWalletHelper.formatZeny(cost) + " Mammonite!"),
+                    true);
         });
     }
 
-    private LivingEntity getMeleeTarget(ServerPlayer player) {
+    private LivingEntity getMeleeTarget(ServerPlayer player, double range) {
         Vec3 start = player.getEyePosition();
-        Vec3 end = start.add(player.getLookAngle().scale(3.5));
-        AABB box = player.getBoundingBox().inflate(3.5);
+        Vec3 end = start.add(player.getLookAngle().scale(range));
+        AABB box = player.getBoundingBox().inflate(range);
         LivingEntity closest = null;
         double dist = Double.MAX_VALUE;
         for (LivingEntity entity : player.level().getEntitiesOfClass(LivingEntity.class, box,

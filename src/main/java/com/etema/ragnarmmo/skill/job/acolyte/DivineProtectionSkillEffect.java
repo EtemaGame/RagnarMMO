@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.skill.job.acolyte;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.MobType;
@@ -54,7 +55,10 @@ public class DivineProtectionSkillEffect implements ISkillEffect {
                     || event.getSource().getEntity().getType().is(RAIDER_TAG);
 
             if (isUndeadOrDemon) {
-                float reductionMultiplier = 1.0f - (level * 0.03f); // Max 30% reduction
+                float reductionPercent = SkillRegistry.get(ID)
+                        .map(def -> (float) def.getLevelDouble("damage_reduction_percent", level, 3.0D * level))
+                        .orElse(3.0f * level);
+                float reductionMultiplier = 1.0f - (reductionPercent / 100.0f);
                 event.setAmount(event.getAmount() * Math.max(0.1f, reductionMultiplier));
             }
         }

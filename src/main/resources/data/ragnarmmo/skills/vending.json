@@ -11,15 +11,31 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 30,
-        "cost_per_level": 2
+        "base_cost": 0,
+        "cost_per_level": 0
     },
-    "cooldown_ticks": 100,
+    "cooldown_ticks": 0,
     "jobs": [
         "MERCHANT"
     ],
     "requirements": {
         "ragnarmmo:pushcart": 3
+    },
+    "reference": {
+        "source_name": "RagnarMMO Pre-Renewal Port Policy",
+        "notes": "MC_INSPIRED: marks the cart as a personal shop; broadcast radius and shop slots are explicit tuning."
+    },
+    "level_data": {
+        "1": { "sp_cost": 30, "vendor_slot_count": 3, "broadcast_radius": 20, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 100 },
+        "2": { "sp_cost": 32, "vendor_slot_count": 4, "broadcast_radius": 22, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 100 },
+        "3": { "sp_cost": 34, "vendor_slot_count": 5, "broadcast_radius": 24, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 100 },
+        "4": { "sp_cost": 36, "vendor_slot_count": 6, "broadcast_radius": 26, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 100 },
+        "5": { "sp_cost": 38, "vendor_slot_count": 7, "broadcast_radius": 28, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 100 },
+        "6": { "sp_cost": 40, "vendor_slot_count": 8, "broadcast_radius": 30, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 100 },
+        "7": { "sp_cost": 42, "vendor_slot_count": 9, "broadcast_radius": 32, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 100 },
+        "8": { "sp_cost": 44, "vendor_slot_count": 10, "broadcast_radius": 34, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 100 },
+        "9": { "sp_cost": 46, "vendor_slot_count": 11, "broadcast_radius": 36, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 100 },
+        "10": { "sp_cost": 48, "vendor_slot_count": 12, "broadcast_radius": 38, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 100 }
     },
     "ui": {
         "texture": "merchant/merchant_vending",

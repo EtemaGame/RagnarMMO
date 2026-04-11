@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.skill.job.thief;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,7 +31,10 @@ public class DetoxifySkillEffect implements ISkillEffect {
 
         // Cures poison. Works on self or targeted ally.
 
-        LivingEntity target = getTarget(player);
+        double range = SkillRegistry.get(ID)
+                .map(def -> def.getLevelDouble("range", level, 5.0D))
+                .orElse(5.0D);
+        LivingEntity target = getTarget(player, range);
         if (target == null) {
             target = player; // Default to self
         }
@@ -56,12 +60,12 @@ public class DetoxifySkillEffect implements ISkillEffect {
         }
     }
 
-    private LivingEntity getTarget(Player player) {
+    private LivingEntity getTarget(Player player, double range) {
         Vec3 start = player.getEyePosition();
         Vec3 look = player.getLookAngle();
-        Vec3 end = start.add(look.scale(5.0));
+        Vec3 end = start.add(look.scale(range));
 
-        AABB searchBox = player.getBoundingBox().inflate(5.0);
+        AABB searchBox = player.getBoundingBox().inflate(range);
         List<LivingEntity> possibleTargets = player.level().getEntitiesOfClass(LivingEntity.class, searchBox,
                 e -> e != player && e.isAlive());
 

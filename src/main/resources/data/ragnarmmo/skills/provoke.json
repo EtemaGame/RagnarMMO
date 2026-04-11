@@ -11,10 +11,10 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 3,
-        "cost_per_level": 1
+        "base_cost": 0,
+        "cost_per_level": 0
     },
-    "cooldown_ticks": 20,
+    "cooldown_ticks": 0,
     "jobs": [
         "SWORDSMAN"
     ],
@@ -23,6 +23,21 @@
         "texture": "swordman/swordman_provoke",
         "grid_x": 2,
         "grid_y": 0
+    },
+    "reference": {
+        "notes": "Provoke: RO_ADAPTED debuff that raises target ATK, lowers target DEF, and forces aggro on the caster."
+    },
+    "level_data": {
+        "1": { "sp_cost": 4, "success_chance": 0.53, "duration_ticks": 600, "def_reduction_percent": 10, "attack_bonus_percent": 5, "aggro_bonus": 1.0, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "2": { "sp_cost": 5, "success_chance": 0.56, "duration_ticks": 600, "def_reduction_percent": 15, "attack_bonus_percent": 8, "aggro_bonus": 1.0, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "3": { "sp_cost": 6, "success_chance": 0.59, "duration_ticks": 600, "def_reduction_percent": 20, "attack_bonus_percent": 11, "aggro_bonus": 1.0, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "4": { "sp_cost": 7, "success_chance": 0.62, "duration_ticks": 600, "def_reduction_percent": 25, "attack_bonus_percent": 14, "aggro_bonus": 1.0, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "5": { "sp_cost": 8, "success_chance": 0.65, "duration_ticks": 600, "def_reduction_percent": 30, "attack_bonus_percent": 17, "aggro_bonus": 1.0, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "6": { "sp_cost": 9, "success_chance": 0.68, "duration_ticks": 600, "def_reduction_percent": 35, "attack_bonus_percent": 20, "aggro_bonus": 1.0, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "7": { "sp_cost": 10, "success_chance": 0.71, "duration_ticks": 600, "def_reduction_percent": 40, "attack_bonus_percent": 23, "aggro_bonus": 1.0, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "8": { "sp_cost": 11, "success_chance": 0.74, "duration_ticks": 600, "def_reduction_percent": 45, "attack_bonus_percent": 26, "aggro_bonus": 1.0, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "9": { "sp_cost": 12, "success_chance": 0.77, "duration_ticks": 600, "def_reduction_percent": 50, "attack_bonus_percent": 29, "aggro_bonus": 1.0, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "10": { "sp_cost": 13, "success_chance": 0.80, "duration_ticks": 600, "def_reduction_percent": 55, "attack_bonus_percent": 32, "aggro_bonus": 1.0, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.swordman.ProvokeSkillEffect"
 }

@@ -11,10 +11,10 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 24,
-        "cost_per_level": 5
+        "base_cost": 0,
+        "cost_per_level": 0
     },
-    "cooldown_ticks": 40,
+    "cooldown_ticks": 0,
     "jobs": [
         "MAGE"
     ],
@@ -25,6 +25,21 @@
         "texture": "mage/mage_thunder_storm",
         "grid_x": 1,
         "grid_y": 6
+    },
+    "reference": {
+        "notes": "Thunder Storm: RO_ADAPTED ground-targeted wind AoE with one strike per skill level."
+    },
+    "level_data": {
+        "1": { "sp_cost": 29, "hit_count": 1, "damage_percent": 80, "aoe_radius": 2.5, "range": 15, "hit_spacing_ticks": 5, "cast_time_ticks": 20, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "2": { "sp_cost": 34, "hit_count": 2, "damage_percent": 80, "aoe_radius": 2.5, "range": 15, "hit_spacing_ticks": 5, "cast_time_ticks": 40, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "3": { "sp_cost": 39, "hit_count": 3, "damage_percent": 80, "aoe_radius": 2.5, "range": 15, "hit_spacing_ticks": 5, "cast_time_ticks": 60, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "4": { "sp_cost": 44, "hit_count": 4, "damage_percent": 80, "aoe_radius": 2.5, "range": 15, "hit_spacing_ticks": 5, "cast_time_ticks": 80, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "5": { "sp_cost": 49, "hit_count": 5, "damage_percent": 80, "aoe_radius": 2.5, "range": 15, "hit_spacing_ticks": 5, "cast_time_ticks": 100, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "6": { "sp_cost": 54, "hit_count": 6, "damage_percent": 80, "aoe_radius": 2.5, "range": 15, "hit_spacing_ticks": 5, "cast_time_ticks": 120, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "7": { "sp_cost": 59, "hit_count": 7, "damage_percent": 80, "aoe_radius": 2.5, "range": 15, "hit_spacing_ticks": 5, "cast_time_ticks": 140, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "8": { "sp_cost": 64, "hit_count": 8, "damage_percent": 80, "aoe_radius": 2.5, "range": 15, "hit_spacing_ticks": 5, "cast_time_ticks": 160, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "9": { "sp_cost": 69, "hit_count": 9, "damage_percent": 80, "aoe_radius": 2.5, "range": 15, "hit_spacing_ticks": 5, "cast_time_ticks": 180, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "10": { "sp_cost": 74, "hit_count": 10, "damage_percent": 80, "aoe_radius": 2.5, "range": 15, "hit_spacing_ticks": 5, "cast_time_ticks": 200, "cast_delay_ticks": 40, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.mage.ThunderStormSkillEffect"
 }

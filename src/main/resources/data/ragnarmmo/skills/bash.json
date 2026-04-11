@@ -11,10 +11,10 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 8,
+        "base_cost": 0,
         "cost_per_level": 0
     },
-    "cooldown_ticks": 10,
+    "cooldown_ticks": 0,
     "jobs": [
         "SWORDSMAN"
     ],
@@ -28,16 +28,16 @@
         "notes": "Bash: 130%-400% ATK, +5 to +50 Accuracy, 8 SP at Lv1-5 and 15 SP at Lv6-10. Fatal Blow adds 5%-25% stun chance from Bash Lv6+."
     },
     "level_data": {
-        "1": { "damage_percent": 130, "accuracy_bonus": 5, "sp_cost": 8, "stun_chance_percent": 0 },
-        "2": { "damage_percent": 160, "accuracy_bonus": 10, "sp_cost": 8, "stun_chance_percent": 0 },
-        "3": { "damage_percent": 190, "accuracy_bonus": 15, "sp_cost": 8, "stun_chance_percent": 0 },
-        "4": { "damage_percent": 220, "accuracy_bonus": 20, "sp_cost": 8, "stun_chance_percent": 0 },
-        "5": { "damage_percent": 250, "accuracy_bonus": 25, "sp_cost": 8, "stun_chance_percent": 0 },
-        "6": { "damage_percent": 280, "accuracy_bonus": 30, "sp_cost": 15, "stun_chance_percent": 5 },
-        "7": { "damage_percent": 310, "accuracy_bonus": 35, "sp_cost": 15, "stun_chance_percent": 10 },
-        "8": { "damage_percent": 340, "accuracy_bonus": 40, "sp_cost": 15, "stun_chance_percent": 15 },
-        "9": { "damage_percent": 370, "accuracy_bonus": 45, "sp_cost": 15, "stun_chance_percent": 20 },
-        "10": { "damage_percent": 400, "accuracy_bonus": 50, "sp_cost": 15, "stun_chance_percent": 25 }
+        "1": { "damage_percent": 130, "accuracy_bonus": 5, "sp_cost": 8, "stun_chance_percent": 0, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "2": { "damage_percent": 160, "accuracy_bonus": 10, "sp_cost": 8, "stun_chance_percent": 0, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "3": { "damage_percent": 190, "accuracy_bonus": 15, "sp_cost": 8, "stun_chance_percent": 0, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "4": { "damage_percent": 220, "accuracy_bonus": 20, "sp_cost": 8, "stun_chance_percent": 0, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "5": { "damage_percent": 250, "accuracy_bonus": 25, "sp_cost": 8, "stun_chance_percent": 0, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "6": { "damage_percent": 280, "accuracy_bonus": 30, "sp_cost": 15, "stun_chance_percent": 5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "7": { "damage_percent": 310, "accuracy_bonus": 35, "sp_cost": 15, "stun_chance_percent": 10, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "8": { "damage_percent": 340, "accuracy_bonus": 40, "sp_cost": 15, "stun_chance_percent": 15, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "9": { "damage_percent": 370, "accuracy_bonus": 45, "sp_cost": 15, "stun_chance_percent": 20, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "10": { "damage_percent": 400, "accuracy_bonus": 50, "sp_cost": 15, "stun_chance_percent": 25, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.swordman.BashSkillEffect"
 }

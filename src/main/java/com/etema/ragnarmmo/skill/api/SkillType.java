@@ -9,11 +9,14 @@ import java.util.Optional;
 
 /**
  * Legacy skill type constants used for backward compatibility with
- * the data-driven {@link SkillRegistry} system.
+ * the data-driven {@link SkillRegistry} system. This enum is an ID bridge only:
+ * do not add balancing, layout, tuning, or canonical defaults here.
  * <p>
  * Each constant provides a {@link #toResourceLocation()} bridge to the
  * new data-driven system. Metadata (displayName, grid position, etc.)
- * is now defined in JSON definitions, not in this enum.
+ * is now defined in JSON definitions, not in this enum. Missing canonical
+ * skills are treated as data errors by the loader rather than reconstructed
+ * from this enum.
  *
  * @deprecated Prefer using {@link ResourceLocation} IDs directly and
  *             looking up metadata via {@link SkillRegistry}.

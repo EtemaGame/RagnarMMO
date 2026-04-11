@@ -30,7 +30,9 @@ public class HealSkillEffect extends InstantTargetSkillEffect {
 
     @Override
     protected double getRange(int level) {
-        return 5.0;
+        return SkillRegistry.get(ID)
+                .map(def -> def.getLevelDouble("range", level, 5.0D))
+                .orElse(5.0D);
     }
 
     @Override
@@ -72,8 +74,19 @@ public class HealSkillEffect extends InstantTargetSkillEffect {
         // Validation: Target should not be null (defaults to self in getTarget)
         if (target == null) target = user;
 
-        float healAmount = SkillDamageHelper.getHealAmount(user, level);
-        float undeadDamageRatio = SkillRegistry.get(ID)
+        var defOpt = SkillRegistry.get(ID);
+        float healBase = defOpt
+                .map(def -> (float) def.getLevelDouble("heal_base", level, 4.0D + (8.0D * level)))
+                .orElse(4.0f + (8.0f * level));
+        float healAmount = healBase;
+        if (user instanceof net.minecraft.world.entity.player.Player player) {
+            double healMultiplier = Math.max(1.0D,
+                    Math.floor((SkillDamageHelper.getBaseLevel(player) + SkillDamageHelper.getINT(player)) / 8.0D));
+            healAmount = (float) (healBase * healMultiplier);
+        } else {
+            healAmount = SkillDamageHelper.getHealAmount(user, level);
+        }
+        float undeadDamageRatio = defOpt
                 .map(def -> (float) def.getLevelDouble("undead_damage_ratio", level, 0.5))
                 .orElse(0.5f);
 

@@ -3,6 +3,7 @@ package com.etema.ragnarmmo.skill.job.swordman;
 import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.combat.aggro.AggroManager;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import com.etema.ragnarmmo.system.mobstats.util.MobUtils;
 import net.minecraft.core.particles.ParticleTypes;
@@ -42,7 +43,11 @@ public class ProvokeSkillEffect implements ISkillEffect {
             return;
 
 
-        LivingEntity target = getTarget(user);
+        var defOpt = SkillRegistry.get(ID);
+        double range = defOpt
+                .map(def -> def.getLevelDouble("range", level, 5.0D))
+                .orElse(5.0D);
+        LivingEntity target = getTarget(user, range);
         if (target == null || target == user)
             return;
 
@@ -66,8 +71,12 @@ public class ProvokeSkillEffect implements ISkillEffect {
 
         user.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
 
-        int durationTicks = 30 * 20;
-        double baseChance = 0.53 + ((level - 1) * 0.03);
+        int durationTicks = defOpt
+                .map(def -> def.getLevelInt("duration_ticks", level, 30 * 20))
+                .orElse(30 * 20);
+        double baseChance = defOpt
+                .map(def -> def.getLevelDouble("success_chance", level, 0.53D + ((level - 1) * 0.03D)))
+                .orElse(0.53D + ((level - 1) * 0.03D));
         int levelDiff = SwordmanCombatUtil.estimateLevel(user) - SwordmanCombatUtil.estimateLevel(target);
         double successChance = Mth.clamp(baseChance + (levelDiff * 0.01), 0.05, 0.95);
 
@@ -91,7 +100,9 @@ public class ProvokeSkillEffect implements ISkillEffect {
         var armorAttr = mob.getAttribute(Attributes.ARMOR);
         if (armorAttr != null) {
             armorAttr.removeModifier(PROVOKE_DEF_DEBUFF_UUID); 
-            double defReduction = -(0.05 + 0.05 * level);
+            double defReduction = -defOpt
+                    .map(def -> def.getLevelDouble("def_reduction_percent", level, 5.0D + (5.0D * level)))
+                    .orElse(5.0D + (5.0D * level)) / 100.0D;
             armorAttr.addTransientModifier(new AttributeModifier(
                 PROVOKE_DEF_DEBUFF_UUID,
                 PROVOKE_DEF_DEBUFF_NAME,
@@ -103,7 +114,9 @@ public class ProvokeSkillEffect implements ISkillEffect {
         var atkAttr = mob.getAttribute(Attributes.ATTACK_DAMAGE);
         if (atkAttr != null) {
             atkAttr.removeModifier(PROVOKE_ATK_BUFF_UUID);
-            double atkIncrease = (2.0 + (3.0 * level)) / 100.0;
+            double atkIncrease = defOpt
+                    .map(def -> def.getLevelDouble("attack_bonus_percent", level, 2.0D + (3.0D * level)))
+                    .orElse(2.0D + (3.0D * level)) / 100.0D;
             atkAttr.addTransientModifier(new AttributeModifier(
                 PROVOKE_ATK_BUFF_UUID,
                 PROVOKE_ATK_BUFF_NAME,
@@ -133,11 +146,11 @@ public class ProvokeSkillEffect implements ISkillEffect {
         }
     }
 
-    private LivingEntity getTarget(LivingEntity user) {
+    private LivingEntity getTarget(LivingEntity user, double range) {
         Vec3 start = user.getEyePosition();
         Vec3 look = user.getLookAngle();
-        Vec3 end = start.add(look.scale(5.0)); // 5-block range for Provoke
-        AABB searchBox = user.getBoundingBox().inflate(5.0);
+        Vec3 end = start.add(look.scale(range));
+        AABB searchBox = user.getBoundingBox().inflate(range);
 
         List<LivingEntity> possibleTargets = user.level().getEntitiesOfClass(LivingEntity.class, searchBox,
                 e -> e != user && e.isAlive());

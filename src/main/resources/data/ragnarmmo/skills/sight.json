@@ -11,10 +11,10 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 10,
+        "base_cost": 0,
         "cost_per_level": 0
     },
-    "cooldown_ticks": 20,
+    "cooldown_ticks": 0,
     "jobs": [
         "MAGE"
     ],
@@ -23,6 +23,12 @@
         "texture": "mage/mage_sight",
         "grid_x": 0,
         "grid_y": 1
+    },
+    "reference": {
+        "notes": "Sight: RO_ADAPTED reveal aura for hidden/cloaked entities."
+    },
+    "level_data": {
+        "1": { "sp_cost": 10, "duration_ticks": 200, "reveal_radius": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.mage.SightSkillEffect"
 }

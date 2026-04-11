@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.skill.job.swordman;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -36,6 +37,9 @@ public class SwordMasterySkillEffect implements ISkillEffect {
                 .anyMatch(tag -> tag.location().toString().equals("ragnarmmo:two_handed"));
         if (isTwoHanded) return;
 
-        event.setAmount(event.getAmount() + (4.0f * level));
+        float atkBonus = SkillRegistry.get(ID)
+                .map(def -> (float) def.getLevelDouble("atk_bonus", level, 4.0D * level))
+                .orElse(4.0f * level);
+        event.setAmount(event.getAmount() + atkBonus);
     }
 }

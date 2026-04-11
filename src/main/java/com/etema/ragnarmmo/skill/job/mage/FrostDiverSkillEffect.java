@@ -3,6 +3,7 @@ package com.etema.ragnarmmo.skill.job.mage;
 import com.etema.ragnarmmo.entity.effect.StatusOverlayEntity;
 import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
@@ -30,14 +31,18 @@ public class FrostDiverSkillEffect implements ISkillEffect {
 
     @Override
     public int getCastTime(int level) {
-        return 16; // 0.8s
+        return SkillRegistry.get(ID)
+                .map(def -> def.getLevelInt("cast_time_ticks", level, 16))
+                .orElse(16);
     }
 
     @Override
     public void execute(ServerPlayer player, int level) {
         if (level <= 0) return;
 
-        LivingEntity target = MageTargetUtil.raycast(player, 12.0);
+        var definition = SkillRegistry.require(ID);
+        double range = definition.getLevelDouble("range", level, 12.0D);
+        LivingEntity target = MageTargetUtil.raycast(player, range);
         if (target == null) return;
 
         // Restriction: Boss and Undead monsters
@@ -48,19 +53,18 @@ public class FrostDiverSkillEffect implements ISkillEffect {
             return;
         }
 
-        // Damage: 110% + 10% per level above 1
-        float matkPercent = 110.0f + (level - 1) * 10.0f;
+        float matkPercent = (float) definition.getLevelDouble("damage_percent", level,
+                110.0D + (level - 1) * 10.0D);
         float damage = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByMATK(player, matkPercent);
         
         boolean hit = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.dealSkillDamage(target, 
                 player.level().damageSources().magic(), damage);
 
         if (hit) {
-            // Freezing Chance: 38% + 3% per level above 1
-            float freezeChance = 0.38f + (level - 1) * 0.03f;
+            float freezeChance = (float) definition.getLevelDouble("status_chance", level,
+                    0.38D + (level - 1) * 0.03D);
             if (player.getRandom().nextFloat() <= freezeChance) {
-                // Duration: 3s + 3s per level
-                int durationTicks = level * 3 * 20;
+                int durationTicks = definition.getLevelInt("duration_ticks", level, level * 3 * 20);
                 target.addEffect(new MobEffectInstance(com.etema.ragnarmmo.common.init.RagnarMobEffects.FROZEN.get(), durationTicks));
                 
                 // Visual freeze overlay/ticks

@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.skill.job.acolyte;
 
 import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -42,7 +43,9 @@ public class TeleportationSkillEffect implements ISkillEffect {
             return;
         }
 
-        double radius = 30 + level * 20;
+        double radius = SkillRegistry.get(ID)
+                .map(def -> def.getLevelDouble("random_radius", level, 30.0D + level * 20.0D))
+                .orElse(30.0D + level * 20.0D);
         var random = player.getRandom();
 
         for (int attempt = 0; attempt < 15; attempt++) {

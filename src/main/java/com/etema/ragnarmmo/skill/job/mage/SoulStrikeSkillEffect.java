@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.skill.job.mage;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,41 +23,23 @@ public class SoulStrikeSkillEffect implements ISkillEffect {
 
     @Override
     public int getCastTime(int level) {
-        return switch (level) {
-            case 1 -> 24;
-            case 2 -> 28;
-            case 3 -> 32;
-            case 4 -> 36;
-            case 5 -> 40;
-            case 6 -> 44;
-            case 7 -> 48;
-            case 8 -> 52;
-            case 9 -> 56;
-            case 10 -> 54;
-            default -> 24;
-        };
+        return SkillRegistry.get(ID)
+                .map(def -> def.getLevelInt("cast_time_ticks", level, 24))
+                .orElse(24);
     }
 
     @Override
     public int getCastDelay(int level) {
-        return 10;
+        return SkillRegistry.get(ID)
+                .map(def -> def.getLevelInt("cast_delay_ticks", level, 10))
+                .orElse(10);
     }
 
     @Override
     public int getResourceCost(int level, int defaultCost) {
-        return switch (level) {
-            case 1 -> 18;
-            case 2 -> 14;
-            case 3 -> 24;
-            case 4 -> 20;
-            case 5 -> 30;
-            case 6 -> 26;
-            case 7 -> 36;
-            case 8 -> 32;
-            case 9 -> 42;
-            case 10 -> 38;
-            default -> defaultCost;
-        };
+        return SkillRegistry.get(ID)
+                .map(def -> def.getLevelInt("sp_cost", level, defaultCost))
+                .orElse(defaultCost);
     }
 
     @Override
@@ -64,16 +47,16 @@ public class SoulStrikeSkillEffect implements ISkillEffect {
         if (level <= 0)
             return;
 
-        LivingEntity target = getTarget(player);
+        var definition = SkillRegistry.require(ID);
+        LivingEntity target = getTarget(player, definition.getLevelDouble("range", level, 12.0D));
         // Allow shooting even if target is null
 
-        int hits = (level + 1) / 2; // RO: 1-5 hits based on level
-        // RO: Soul Strike deals 100% MATK per hit.
-        float rawDamage = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByMATK(player, 100.0f);
+        int hits = definition.getLevelInt("hit_count", level, (level + 1) / 2);
+        float damagePercent = (float) definition.getLevelDouble("damage_percent", level, 100.0D);
+        float rawDamage = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByMATK(player, damagePercent);
 
         if (target != null && target.getMobType() == net.minecraft.world.entity.MobType.UNDEAD) {
-            // RO: deals extra damage to undead (approx 5% per level in some versions, or just holy property)
-            rawDamage *= (1.0f + (level * 0.05f));
+            rawDamage *= (float) definition.getLevelDouble("undead_multiplier", level, 1.0D + (level * 0.05D));
         }
 
         final float finalDamage = rawDamage;
@@ -122,12 +105,12 @@ public class SoulStrikeSkillEffect implements ISkillEffect {
         }
     }
 
-    private LivingEntity getTarget(Player player) {
+    private LivingEntity getTarget(Player player, double range) {
         Vec3 start = player.getEyePosition();
         Vec3 look = player.getLookAngle();
-        Vec3 end = start.add(look.scale(12.0));
+        Vec3 end = start.add(look.scale(range));
 
-        AABB searchBox = player.getBoundingBox().inflate(12.0);
+        AABB searchBox = player.getBoundingBox().inflate(range);
         List<LivingEntity> possibleTargets = player.level().getEntitiesOfClass(LivingEntity.class, searchBox,
                 e -> e != player && e.isAlive());
 

@@ -11,8 +11,8 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 23,
-        "cost_per_level": 2
+        "base_cost": 0,
+        "cost_per_level": 0
     },
     "cooldown_ticks": 0,
     "cast_delay_ticks": 70,
@@ -32,16 +32,16 @@
         "notes": "Angelus: 0.5 sec cast, 3.5 sec skill delay, 23-50 SP, 30-300 sec duration by level."
     },
     "level_data": {
-        "1": { "sp_cost": 23, "duration_ticks": 600 },
-        "2": { "sp_cost": 26, "duration_ticks": 1200 },
-        "3": { "sp_cost": 29, "duration_ticks": 1800 },
-        "4": { "sp_cost": 32, "duration_ticks": 2400 },
-        "5": { "sp_cost": 35, "duration_ticks": 3000 },
-        "6": { "sp_cost": 38, "duration_ticks": 3600 },
-        "7": { "sp_cost": 41, "duration_ticks": 4200 },
-        "8": { "sp_cost": 44, "duration_ticks": 4800 },
-        "9": { "sp_cost": 47, "duration_ticks": 5400 },
-        "10": { "sp_cost": 50, "duration_ticks": 6000 }
+        "1": { "sp_cost": 23, "duration_ticks": 600, "effect_amplifier": 0, "cast_time_ticks": 10, "cast_delay_ticks": 70, "cooldown_ticks": 0 },
+        "2": { "sp_cost": 26, "duration_ticks": 1200, "effect_amplifier": 1, "cast_time_ticks": 10, "cast_delay_ticks": 70, "cooldown_ticks": 0 },
+        "3": { "sp_cost": 29, "duration_ticks": 1800, "effect_amplifier": 2, "cast_time_ticks": 10, "cast_delay_ticks": 70, "cooldown_ticks": 0 },
+        "4": { "sp_cost": 32, "duration_ticks": 2400, "effect_amplifier": 3, "cast_time_ticks": 10, "cast_delay_ticks": 70, "cooldown_ticks": 0 },
+        "5": { "sp_cost": 35, "duration_ticks": 3000, "effect_amplifier": 4, "cast_time_ticks": 10, "cast_delay_ticks": 70, "cooldown_ticks": 0 },
+        "6": { "sp_cost": 38, "duration_ticks": 3600, "effect_amplifier": 5, "cast_time_ticks": 10, "cast_delay_ticks": 70, "cooldown_ticks": 0 },
+        "7": { "sp_cost": 41, "duration_ticks": 4200, "effect_amplifier": 6, "cast_time_ticks": 10, "cast_delay_ticks": 70, "cooldown_ticks": 0 },
+        "8": { "sp_cost": 44, "duration_ticks": 4800, "effect_amplifier": 7, "cast_time_ticks": 10, "cast_delay_ticks": 70, "cooldown_ticks": 0 },
+        "9": { "sp_cost": 47, "duration_ticks": 5400, "effect_amplifier": 8, "cast_time_ticks": 10, "cast_delay_ticks": 70, "cooldown_ticks": 0 },
+        "10": { "sp_cost": 50, "duration_ticks": 6000, "effect_amplifier": 9, "cast_time_ticks": 10, "cast_delay_ticks": 70, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.AngelusSkillEffect"
 }

@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.skill.job.thief;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -33,7 +34,8 @@ public class HidingSkillEffect implements ISkillEffect {
         // later if needed,
         // but Minecraft inherently handles targeting loss somewhat natively.
 
-        int durationTicks = (30 * level) * 20; // 30s at lv1, 300s at lv10
+        var definition = SkillRegistry.require(ID);
+        int durationTicks = definition.getLevelInt("duration_ticks", level, (30 * level) * 20);
 
         if (player.hasEffect(MobEffects.INVISIBILITY)) {
             // Toggle off if already active
@@ -44,8 +46,8 @@ public class HidingSkillEffect implements ISkillEffect {
         } else {
             // Add full invisibility and scaling Slowness
             player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, durationTicks, 0, false, false, true));
-            int slownessAmp = Math.max(0, (10 - level) / 3); // Lvl 1: Amp 3, Lvl 10: Amp 0 (or remove)
-            if (level < 10) {
+            int slownessAmp = definition.getLevelInt("slowness_amplifier", level, Math.max(0, (10 - level) / 3));
+            if (slownessAmp >= 0) {
                 player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, durationTicks, slownessAmp, false, false, true));
             }
             
@@ -53,7 +55,8 @@ public class HidingSkillEffect implements ISkillEffect {
                     SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8f, 0.4f);
 
             // Force nearby mobs to lose target
-            AABB area = player.getBoundingBox().inflate(32);
+            double revealRadius = definition.getLevelDouble("reveal_radius", level, 32.0D);
+            AABB area = player.getBoundingBox().inflate(revealRadius);
             player.level().getEntitiesOfClass(Mob.class, area).forEach(mob -> {
                 if (mob.getTarget() == player && !MobUtils.isMVPBoss(mob)) {
                     mob.setTarget(null);

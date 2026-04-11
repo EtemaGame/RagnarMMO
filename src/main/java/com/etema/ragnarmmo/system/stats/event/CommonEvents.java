@@ -264,7 +264,15 @@ public class CommonEvents {
 
     private static void processRangedDamage(LivingHurtEvent e, net.minecraft.nbt.CompoundTag snapshot, Entity shooter, LivingEntity target) {
         double drawRatio = snapshot.contains("draw_ratio") ? snapshot.getDouble("draw_ratio") : 1.0D;
-        double atk = snapshot.getDouble("atk") * Math.max(0.1D, Math.min(1.0D, drawRatio));
+        double skillDamageMultiplier = snapshot.contains("skill_damage_multiplier")
+                ? snapshot.getDouble("skill_damage_multiplier")
+                : 1.0D;
+        if (skillDamageMultiplier <= 0.0D) {
+            skillDamageMultiplier = 1.0D;
+        }
+        double atk = snapshot.getDouble("atk")
+                * Math.max(0.1D, Math.min(1.0D, drawRatio))
+                * skillDamageMultiplier;
         double critChance = snapshot.getDouble("crit_chance");
         double critMult = snapshot.getDouble("crit_damage");
         int dex = snapshot.getInt("dex");

@@ -11,10 +11,10 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 35,
-        "cost_per_level": -2
+        "base_cost": 0,
+        "cost_per_level": 0
     },
-    "cooldown_ticks": 60,
+    "cooldown_ticks": 0,
     "cast_delay_ticks": 20,
     "cast_time_ticks": 20,
     "jobs": [
@@ -29,10 +29,10 @@
         "grid_y": 1
     },
     "level_data": {
-        "1": { "sp_cost": 35, "duration_ticks": 200 },
-        "2": { "sp_cost": 32, "duration_ticks": 300 },
-        "3": { "sp_cost": 29, "duration_ticks": 400 },
-        "4": { "sp_cost": 26, "duration_ticks": 500 }
+        "1": { "sp_cost": 35, "duration_ticks": 200, "cast_time_ticks": 20, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "2": { "sp_cost": 32, "duration_ticks": 300, "cast_time_ticks": 20, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "3": { "sp_cost": 29, "duration_ticks": 400, "cast_time_ticks": 20, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "4": { "sp_cost": 26, "duration_ticks": 500, "cast_time_ticks": 20, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.WarpPortalSkillEffect"
 }

@@ -4,6 +4,7 @@ import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.entity.effect.StatusOverlayEntity;
 import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -35,7 +36,10 @@ public class CureSkillEffect implements ISkillEffect {
     public void execute(ServerPlayer player, int level) {
         if (level <= 0) return;
 
-        LivingEntity target = getTarget(player, 5.0);
+        double range = SkillRegistry.get(ID)
+                .map(def -> def.getLevelDouble("range", level, 5.0D))
+                .orElse(5.0D);
+        LivingEntity target = getTarget(player, range);
 
         // Remove negative status effects
         target.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);

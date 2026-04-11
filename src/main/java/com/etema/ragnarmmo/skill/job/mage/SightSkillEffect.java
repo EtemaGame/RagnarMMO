@@ -4,6 +4,7 @@ import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.init.RagnarMobEffects;
 import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -25,8 +26,10 @@ public class SightSkillEffect implements ISkillEffect {
     public void execute(ServerPlayer player, int level) {
         if (level <= 0) return;
 
-        // Apply the duration-based SIGHT effect (200 ticks = 10 seconds)
-        player.addEffect(new MobEffectInstance(RagnarMobEffects.SIGHT.get(), 200, level - 1, false, false, true));
+        int durationTicks = SkillRegistry.get(ID)
+                .map(def -> def.getLevelInt("duration_ticks", level, 200))
+                .orElse(200);
+        player.addEffect(new MobEffectInstance(RagnarMobEffects.SIGHT.get(), durationTicks, level - 1, false, false, true));
         
         // Play the specialized Sight sound
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),

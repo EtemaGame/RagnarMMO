@@ -21,6 +21,22 @@
     "requirements": {
         "ragnarmmo:enlarge_weight_limit": 5
     },
+    "reference": {
+        "source_name": "RagnarMMO Pre-Renewal Port Policy",
+        "notes": "MC_INSPIRED: opens the mod cart inventory; level controls available rows and cart weight reduction."
+    },
+    "level_data": {
+        "1": { "sp_cost": 0, "cart_rows": 1, "cart_weight_reduction": 0.04, "cast_time_ticks": 0, "cast_delay_ticks": 0, "cooldown_ticks": 20 },
+        "2": { "sp_cost": 0, "cart_rows": 1, "cart_weight_reduction": 0.08, "cast_time_ticks": 0, "cast_delay_ticks": 0, "cooldown_ticks": 20 },
+        "3": { "sp_cost": 0, "cart_rows": 2, "cart_weight_reduction": 0.12, "cast_time_ticks": 0, "cast_delay_ticks": 0, "cooldown_ticks": 20 },
+        "4": { "sp_cost": 0, "cart_rows": 2, "cart_weight_reduction": 0.16, "cast_time_ticks": 0, "cast_delay_ticks": 0, "cooldown_ticks": 20 },
+        "5": { "sp_cost": 0, "cart_rows": 3, "cart_weight_reduction": 0.20, "cast_time_ticks": 0, "cast_delay_ticks": 0, "cooldown_ticks": 20 },
+        "6": { "sp_cost": 0, "cart_rows": 4, "cart_weight_reduction": 0.24, "cast_time_ticks": 0, "cast_delay_ticks": 0, "cooldown_ticks": 20 },
+        "7": { "sp_cost": 0, "cart_rows": 4, "cart_weight_reduction": 0.28, "cast_time_ticks": 0, "cast_delay_ticks": 0, "cooldown_ticks": 20 },
+        "8": { "sp_cost": 0, "cart_rows": 5, "cart_weight_reduction": 0.32, "cast_time_ticks": 0, "cast_delay_ticks": 0, "cooldown_ticks": 20 },
+        "9": { "sp_cost": 0, "cart_rows": 5, "cart_weight_reduction": 0.36, "cast_time_ticks": 0, "cast_delay_ticks": 0, "cooldown_ticks": 20 },
+        "10": { "sp_cost": 0, "cart_rows": 6, "cart_weight_reduction": 0.40, "cast_time_ticks": 0, "cast_delay_ticks": 0, "cooldown_ticks": 20 }
+    },
     "ui": {
         "texture": "merchant/merchant_pushcart",
         "grid_x": 0,

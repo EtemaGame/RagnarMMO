@@ -19,5 +19,20 @@
         "grid_x": 0,
         "grid_y": 0
     },
+    "reference": {
+        "notes": "Double Attack: RO_EXACT dagger proc chance, represented as a second logical hit multiplier."
+    },
+    "level_data": {
+        "1": { "proc_chance": 0.05, "damage_multiplier": 2.0 },
+        "2": { "proc_chance": 0.10, "damage_multiplier": 2.0 },
+        "3": { "proc_chance": 0.15, "damage_multiplier": 2.0 },
+        "4": { "proc_chance": 0.20, "damage_multiplier": 2.0 },
+        "5": { "proc_chance": 0.25, "damage_multiplier": 2.0 },
+        "6": { "proc_chance": 0.30, "damage_multiplier": 2.0 },
+        "7": { "proc_chance": 0.35, "damage_multiplier": 2.0 },
+        "8": { "proc_chance": 0.40, "damage_multiplier": 2.0 },
+        "9": { "proc_chance": 0.45, "damage_multiplier": 2.0 },
+        "10": { "proc_chance": 0.50, "damage_multiplier": 2.0 }
+    },
     "effect_class": "com.etema.ragnarmmo.skill.job.thief.DoubleAttackSkillEffect"
 }

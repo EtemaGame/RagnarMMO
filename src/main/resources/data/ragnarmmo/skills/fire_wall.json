@@ -11,10 +11,10 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 40,
+        "base_cost": 0,
         "cost_per_level": 0
     },
-    "cooldown_ticks": 60,
+    "cooldown_ticks": 0,
     "cast_delay_ticks": 0,
     "cast_time_ticks": 0,
     "jobs": [
@@ -28,6 +28,21 @@
         "texture": "mage/mage_fire_wall",
         "grid_x": 1,
         "grid_y": 1
+    },
+    "reference": {
+        "notes": "Fire Wall: RO_ADAPTED persistent fire line with explicit duration and hit budget."
+    },
+    "level_data": {
+        "1": { "sp_cost": 40, "damage_percent": 50, "duration_ticks": 100, "max_hits": 3, "segment_count": 3, "range": 2.5, "cast_time_ticks": 40, "cast_delay_ticks": 0, "cooldown_ticks": 0 },
+        "2": { "sp_cost": 40, "damage_percent": 50, "duration_ticks": 120, "max_hits": 4, "segment_count": 3, "range": 2.5, "cast_time_ticks": 37, "cast_delay_ticks": 0, "cooldown_ticks": 0 },
+        "3": { "sp_cost": 40, "damage_percent": 50, "duration_ticks": 140, "max_hits": 5, "segment_count": 3, "range": 2.5, "cast_time_ticks": 34, "cast_delay_ticks": 0, "cooldown_ticks": 0 },
+        "4": { "sp_cost": 40, "damage_percent": 50, "duration_ticks": 160, "max_hits": 6, "segment_count": 3, "range": 2.5, "cast_time_ticks": 31, "cast_delay_ticks": 0, "cooldown_ticks": 0 },
+        "5": { "sp_cost": 40, "damage_percent": 50, "duration_ticks": 180, "max_hits": 7, "segment_count": 3, "range": 2.5, "cast_time_ticks": 28, "cast_delay_ticks": 0, "cooldown_ticks": 0 },
+        "6": { "sp_cost": 40, "damage_percent": 50, "duration_ticks": 200, "max_hits": 8, "segment_count": 3, "range": 2.5, "cast_time_ticks": 25, "cast_delay_ticks": 0, "cooldown_ticks": 0 },
+        "7": { "sp_cost": 40, "damage_percent": 50, "duration_ticks": 220, "max_hits": 9, "segment_count": 3, "range": 2.5, "cast_time_ticks": 22, "cast_delay_ticks": 0, "cooldown_ticks": 0 },
+        "8": { "sp_cost": 40, "damage_percent": 50, "duration_ticks": 240, "max_hits": 10, "segment_count": 3, "range": 2.5, "cast_time_ticks": 19, "cast_delay_ticks": 0, "cooldown_ticks": 0 },
+        "9": { "sp_cost": 40, "damage_percent": 50, "duration_ticks": 260, "max_hits": 11, "segment_count": 3, "range": 2.5, "cast_time_ticks": 16, "cast_delay_ticks": 0, "cooldown_ticks": 0 },
+        "10": { "sp_cost": 40, "damage_percent": 50, "duration_ticks": 280, "max_hits": 12, "segment_count": 3, "range": 2.5, "cast_time_ticks": 13, "cast_delay_ticks": 0, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.mage.FireWallSkillEffect"
 }

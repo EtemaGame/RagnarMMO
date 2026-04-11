@@ -11,14 +11,21 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 5,
+        "base_cost": 0,
         "cost_per_level": 0
     },
-    "cooldown_ticks": 10,
+    "cooldown_ticks": 0,
     "jobs": [
         "MERCHANT"
     ],
     "requirements": {},
+    "reference": {
+        "source_name": "RagnarMMO Pre-Renewal Port Policy",
+        "notes": "MC_INSPIRED: reads RagnarMMO item metadata; cost and timing are explicit despite max level 1."
+    },
+    "level_data": {
+        "1": { "sp_cost": 5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 10 }
+    },
     "ui": {
         "texture": "merchant/merchant_identify",
         "grid_x": 1,

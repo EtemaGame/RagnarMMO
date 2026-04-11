@@ -18,5 +18,20 @@
         "grid_x": 0,
         "grid_y": 1
     },
+    "reference": {
+        "notes": "Divine Protection: RO_ADAPTED defensive reduction against undead/demon analog targets."
+    },
+    "level_data": {
+        "1": { "damage_reduction_percent": 3 },
+        "2": { "damage_reduction_percent": 6 },
+        "3": { "damage_reduction_percent": 9 },
+        "4": { "damage_reduction_percent": 12 },
+        "5": { "damage_reduction_percent": 15 },
+        "6": { "damage_reduction_percent": 18 },
+        "7": { "damage_reduction_percent": 21 },
+        "8": { "damage_reduction_percent": 24 },
+        "9": { "damage_reduction_percent": 27 },
+        "10": { "damage_reduction_percent": 30 }
+    },
     "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.DivineProtectionSkillEffect"
 }

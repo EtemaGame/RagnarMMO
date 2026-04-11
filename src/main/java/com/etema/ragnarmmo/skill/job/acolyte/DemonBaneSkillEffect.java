@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.skill.job.acolyte;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.MobType;
@@ -46,7 +47,10 @@ public class DemonBaneSkillEffect implements ISkillEffect {
                     || event.getEntity().getType().is(RAIDER_TAG);
 
             if (isUndeadOrDemon) {
-                float damageMultiplier = 1.0f + (level * 0.04f); // Max 40% bonus
+                float damageBonusPercent = SkillRegistry.get(ID)
+                        .map(def -> (float) def.getLevelDouble("damage_bonus_percent", level, 4.0D * level))
+                        .orElse(4.0f * level);
+                float damageMultiplier = 1.0f + (damageBonusPercent / 100.0f);
                 event.setAmount(event.getAmount() * damageMultiplier);
             }
         }

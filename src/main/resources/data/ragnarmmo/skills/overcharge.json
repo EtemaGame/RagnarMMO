@@ -16,6 +16,22 @@
     "requirements": {
         "ragnarmmo:discount": 3
     },
+    "reference": {
+        "source_name": "RagnarMMO Pre-Renewal Port Policy",
+        "notes": "RO_ADAPTED: table uses classic 7/9/.../24% NPC sell bonus translated to Zeny-based villager rewards."
+    },
+    "level_data": {
+        "1": { "vendor_sell_bonus": 0.07 },
+        "2": { "vendor_sell_bonus": 0.09 },
+        "3": { "vendor_sell_bonus": 0.11 },
+        "4": { "vendor_sell_bonus": 0.13 },
+        "5": { "vendor_sell_bonus": 0.15 },
+        "6": { "vendor_sell_bonus": 0.17 },
+        "7": { "vendor_sell_bonus": 0.19 },
+        "8": { "vendor_sell_bonus": 0.21 },
+        "9": { "vendor_sell_bonus": 0.23 },
+        "10": { "vendor_sell_bonus": 0.24 }
+    },
     "ui": {
         "texture": "merchant/merchant_overcharge",
         "grid_x": 0,

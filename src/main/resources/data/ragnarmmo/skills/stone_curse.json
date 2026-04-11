@@ -11,10 +11,10 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 26,
-        "cost_per_level": -1
+        "base_cost": 0,
+        "cost_per_level": 0
     },
-    "cooldown_ticks": 40,
+    "cooldown_ticks": 0,
     "jobs": [
         "MAGE"
     ],
@@ -23,6 +23,21 @@
         "texture": "mage/mage_stone_curse",
         "grid_x": 0,
         "grid_y": 4
+    },
+    "reference": {
+        "notes": "Stone Curse: RO_ADAPTED petrify approximation with success and duration table."
+    },
+    "level_data": {
+        "1": { "sp_cost": 25, "success_chance": 0.24, "duration_ticks": 60, "range": 12, "cast_time_ticks": 20, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "2": { "sp_cost": 24, "success_chance": 0.28, "duration_ticks": 80, "range": 12, "cast_time_ticks": 20, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "3": { "sp_cost": 23, "success_chance": 0.32, "duration_ticks": 100, "range": 12, "cast_time_ticks": 20, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "4": { "sp_cost": 22, "success_chance": 0.36, "duration_ticks": 120, "range": 12, "cast_time_ticks": 20, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "5": { "sp_cost": 21, "success_chance": 0.40, "duration_ticks": 140, "range": 12, "cast_time_ticks": 20, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "6": { "sp_cost": 20, "success_chance": 0.44, "duration_ticks": 160, "range": 12, "cast_time_ticks": 20, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "7": { "sp_cost": 19, "success_chance": 0.48, "duration_ticks": 180, "range": 12, "cast_time_ticks": 20, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "8": { "sp_cost": 18, "success_chance": 0.52, "duration_ticks": 200, "range": 12, "cast_time_ticks": 20, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "9": { "sp_cost": 17, "success_chance": 0.56, "duration_ticks": 220, "range": 12, "cast_time_ticks": 20, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "10": { "sp_cost": 16, "success_chance": 0.60, "duration_ticks": 240, "range": 12, "cast_time_ticks": 20, "cast_delay_ticks": 40, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.mage.StoneCurseSkillEffect"
 }

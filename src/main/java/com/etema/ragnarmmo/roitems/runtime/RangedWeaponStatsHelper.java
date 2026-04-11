@@ -5,6 +5,7 @@ import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.combat.element.CombatPropertyResolver;
 import com.etema.ragnarmmo.roitems.data.RoCombatProfile;
+import com.etema.ragnarmmo.skill.execution.projectile.ProjectileSkillHelper;
 import com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot;
 import com.etema.ragnarmmo.system.stats.compute.StatComputer;
 import net.minecraft.nbt.CompoundTag;
@@ -100,6 +101,11 @@ public final class RangedWeaponStatsHelper {
             return 1.0F;
         }
 
+        if (arrow.getPersistentData().contains(ProjectileSkillHelper.FORCED_DRAW_RATIO_TAG)) {
+            return Mth.clamp((float) arrow.getPersistentData()
+                    .getDouble(ProjectileSkillHelper.FORCED_DRAW_RATIO_TAG), 0.1F, 1.0F);
+        }
+
         if (weapon.getItem() instanceof CrossbowItem) {
             return 1.0F;
         }
@@ -152,6 +158,8 @@ public final class RangedWeaponStatsHelper {
             snapshot.putDouble("crit_chance", derived.criticalChance);
             snapshot.putDouble("crit_damage", derived.criticalDamageMultiplier);
             snapshot.putDouble("draw_ratio", Mth.clamp(drawRatio, 0.1F, 1.0F));
+            snapshot.putDouble("skill_damage_multiplier", arrow.getPersistentData()
+                    .getDouble(ProjectileSkillHelper.SKILL_DAMAGE_MULTIPLIER_TAG));
             snapshot.putString("element", CombatPropertyResolver.getOffensiveElement(player).name());
             snapshot.putUUID("shooter_uuid", player.getUUID());
             arrow.getPersistentData().put("ragnarmmo_snapshot", snapshot);

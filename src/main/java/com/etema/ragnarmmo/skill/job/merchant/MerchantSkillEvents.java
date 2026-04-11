@@ -3,6 +3,8 @@ package com.etema.ragnarmmo.skill.job.merchant;
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.common.WeightConstants;
 import com.etema.ragnarmmo.roitems.ZenyItems;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skill.execution.EconomicSkillHelper;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
 import com.etema.ragnarmmo.util.AttrUtil;
@@ -43,7 +45,8 @@ public class MerchantSkillEvents {
     // ── Skill ResourceLocations ──────────────────────────────────────────────
     private static final ResourceLocation DISCOUNT   = new ResourceLocation("ragnarmmo", "discount");
     private static final ResourceLocation OVERCHARGE = new ResourceLocation("ragnarmmo", "overcharge");
-    private static final ResourceLocation CART_STR   = new ResourceLocation("ragnarmmo", "cart_strength");
+    private static final ResourceLocation ENLARGE_WEIGHT_LIMIT = new ResourceLocation("ragnarmmo", "enlarge_weight_limit");
+    private static final ResourceLocation PUSHCART = new ResourceLocation("ragnarmmo", "pushcart");
 
     // ── Encumbrance ──────────────────────────────────────────────────────────
     private static final UUID ENCUMBRANCE_SPEED_UUID =
@@ -61,12 +64,13 @@ public class MerchantSkillEvents {
         if (player.tickCount % 20 != 0) return;
 
         PlayerSkillsProvider.get(player).ifPresent(skills -> {
-            int cartLevel = skills.getSkillLevel(CART_STR);
+            int weightLimitLevel = skills.getSkillLevel(ENLARGE_WEIGHT_LIMIT);
+            int pushcartLevel = skills.getSkillLevel(PUSHCART);
             int str = getStrength(player);
 
             double capacity = WeightConstants.BASE_CAPACITY
                     + (str * WeightConstants.STR_CAPACITY_PER_POINT)
-                    + (cartLevel * WeightConstants.CAPACITY_PER_CART_LEVEL);
+                    + capacityBonusFromEnlargeWeightLimit(weightLimitLevel);
 
             double totalWeight = 0.0D;
             for (ItemStack s : player.getInventory().items) {
@@ -81,8 +85,7 @@ public class MerchantSkillEvents {
                 }
             }
 
-            double cartReduction = Math.min(WeightConstants.CART_WEIGHT_REDUCTION_CAP,
-                    cartLevel * WeightConstants.CART_WEIGHT_REDUCTION_PER_LEVEL);
+            double cartReduction = cartWeightReduction(pushcartLevel);
             totalWeight += cartWeight * (1.0D - cartReduction);
 
             double overweight = totalWeight - capacity;
@@ -115,26 +118,58 @@ public class MerchantSkillEvents {
 
                 if (discountLvl <= 0 && overchargeLvl <= 0) return;
 
-                // We calculate multipliers
-                // Discount: (2 + level*3)% reduction -> 1.0 - (0.02 + level*0.03)
-                double discountFactor = 1.0 - (0.02 + discountLvl * 0.03);
-                // Overcharge: (2 + level*3)% bonus -> 1.0 + (0.02 + level*0.03)
-                double overchargeFactor = 1.0 + (0.02 + overchargeLvl * 0.03);
+                double discountRate = discountLvl > 0
+                        ? SkillRegistry.get(DISCOUNT)
+                                .map(def -> EconomicSkillHelper.vendorBuyDiscount(def, discountLvl))
+                                .orElse(0.0D)
+                        : 0.0D;
+                double overchargeRate = overchargeLvl > 0
+                        ? SkillRegistry.get(OVERCHARGE)
+                                .map(def -> EconomicSkillHelper.vendorSellBonus(def, overchargeLvl))
+                                .orElse(0.0D)
+                        : 0.0D;
+
+                double discountFactor = 1.0D - clampRate(discountRate);
+                double overchargeFactor = 1.0D + clampRate(overchargeRate);
 
                 var offers = menu.getOffers();
                 for (MerchantOffer offer : offers) {
-                    // Apply Discount to costs
-                    applyModifier(offer.getCostA(), discountFactor, true);
-                    applyModifier(offer.getCostB(), discountFactor, true);
+                    if (discountRate > 0.0D) {
+                        applyModifier(offer.getCostA(), discountFactor, true);
+                        applyModifier(offer.getCostB(), discountFactor, true);
+                    }
 
-                    // Apply Overcharge to result (if selling to villager)
-                    // Result is now Gold Zeny if player is selling items.
-                    if (offer.getResult().is(ZenyItems.GOLD_ZENY.get())) {
+                    if (overchargeRate > 0.0D && offer.getResult().is(ZenyItems.GOLD_ZENY.get())) {
                         applyModifier(offer.getResult(), overchargeFactor, false);
                     }
                 }
             });
         }
+    }
+
+    public static double capacityBonusFromEnlargeWeightLimit(int level) {
+        if (level <= 0) {
+            return 0.0D;
+        }
+        return SkillRegistry.get(ENLARGE_WEIGHT_LIMIT)
+                .map(def -> def.getLevelDouble("weight_limit_bonus", level, level * 200.0D))
+                .orElse(level * 200.0D);
+    }
+
+    public static double cartWeightReduction(int level) {
+        if (level <= 0) {
+            return 0.0D;
+        }
+        double fallback = Math.min(WeightConstants.CART_WEIGHT_REDUCTION_CAP,
+                level * WeightConstants.CART_WEIGHT_REDUCTION_PER_LEVEL);
+        double configured = SkillRegistry.get(PUSHCART)
+                .map(def -> def.getLevelDouble("cart_weight_reduction", level, fallback))
+                .orElse(fallback);
+        return Math.min(WeightConstants.CART_WEIGHT_REDUCTION_CAP, Math.max(0.0D, configured));
+    }
+
+    private static double clampRate(double rate) {
+        return Math.min(0.95D, Math.max(0.0D, rate));
     }
 
     private static void applyModifier(ItemStack stack, double factor, boolean isDiscount) {

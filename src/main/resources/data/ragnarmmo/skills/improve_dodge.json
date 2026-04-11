@@ -19,5 +19,20 @@
         "grid_x": 1,
         "grid_y": 0
     },
+    "reference": {
+        "notes": "Improve Dodge: RO_EXACT FLEE bonus. Movement bonus is reserved for future second-job tuning."
+    },
+    "level_data": {
+        "1": { "flee_bonus": 3 },
+        "2": { "flee_bonus": 6 },
+        "3": { "flee_bonus": 9 },
+        "4": { "flee_bonus": 12 },
+        "5": { "flee_bonus": 15 },
+        "6": { "flee_bonus": 18 },
+        "7": { "flee_bonus": 21 },
+        "8": { "flee_bonus": 24 },
+        "9": { "flee_bonus": 27 },
+        "10": { "flee_bonus": 30 }
+    },
     "effect_class": "com.etema.ragnarmmo.skill.job.thief.ImproveDodgeSkillEffect"
 }

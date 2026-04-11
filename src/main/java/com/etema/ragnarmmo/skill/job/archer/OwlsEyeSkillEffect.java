@@ -1,27 +1,28 @@
 package com.etema.ragnarmmo.skill.job.archer;
 
-import com.etema.ragnarmmo.common.api.stats.StatKeys;
+import com.etema.ragnarmmo.common.api.attributes.RagnarAttributes;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.event.TickEvent;
 
 import java.util.Set;
+import java.util.UUID;
 
 /**
- * Owl's Eye — Passive
- * RO: Permanently adds +level DEX (accuracy/ranged attack power).
- *
- * Fixed: was using non-existent RagnarCoreAPI.get(), now uses PlayerStatsProvider.CAP.
- * Uses onPeriodicTick to keep the bonus set (idempotent: only writes if changed).
+ * Owl's Eye - passive DEX bonus. Tuning lives in level_data.dex_bonus.
  */
 public class OwlsEyeSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "owls_eye");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "owls_eye");
+    private static final UUID DEX_BONUS_ID = UUID.fromString("2e83bd5d-e2a8-4c2f-a1d1-516d10f24701");
 
     @Override
-    public ResourceLocation getSkillId() { return ID; }
+    public ResourceLocation getSkillId() {
+        return ID;
+    }
 
     @Override
     public Set<TriggerType> getSupportedTriggers() {
@@ -30,13 +31,26 @@ public class OwlsEyeSkillEffect implements ISkillEffect {
 
     @Override
     public void onPeriodicTick(TickEvent.PlayerTickEvent event, ServerPlayer player, int level) {
-        if (level <= 0) return;
+        if (level <= 0) {
+            return;
+        }
 
-        player.getCapability(PlayerStatsProvider.CAP).ifPresent(stats -> {
-            int currentBonus = stats.getBonus(StatKeys.DEX);
-            if (currentBonus != level) {
-                stats.setBonus(StatKeys.DEX, level);
-            }
-        });
+        int dexBonus = SkillRegistry.get(ID)
+                .map(def -> def.getLevelInt("dex_bonus", level, level))
+                .orElse(level);
+        var dex = player.getAttribute(RagnarAttributes.DEX.get());
+        if (dex == null) {
+            return;
+        }
+
+        AttributeModifier existing = dex.getModifier(DEX_BONUS_ID);
+        if (existing != null && Math.abs(existing.getAmount() - dexBonus) <= 1.0E-4D) {
+            return;
+        }
+        if (existing != null) {
+            dex.removeModifier(existing);
+        }
+        dex.addTransientModifier(new AttributeModifier(
+                DEX_BONUS_ID, "ragnarmmo_owls_eye_dex", dexBonus, AttributeModifier.Operation.ADDITION));
     }
 }

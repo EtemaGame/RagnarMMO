@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.roitems.hooks.server;
 
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.roitems.runtime.RangedWeaponStatsHelper;
+import com.etema.ragnarmmo.skill.execution.projectile.ProjectileSkillHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
@@ -28,11 +29,11 @@ public final class RangedWeaponSnapshotHook {
             return;
         }
 
-        if (arrow.getPersistentData().contains("ragnarmmo_snapshot")) {
+        if (!(arrow.getOwner() instanceof Player player)) {
             return;
         }
 
-        if (!(arrow.getOwner() instanceof Player player)) {
+        if (arrow.getPersistentData().contains("ragnarmmo_snapshot")) {
             return;
         }
 
@@ -41,7 +42,9 @@ public final class RangedWeaponSnapshotHook {
             return;
         }
 
+        // Estimate draw before passive velocity tuning so range buffs do not become damage buffs.
         float drawRatio = RangedWeaponStatsHelper.estimateDrawRatio(arrow, weapon);
+        ProjectileSkillHelper.applyPassiveProjectileModifiers(arrow, player);
         RangedWeaponStatsHelper.snapshotArrow(arrow, player, weapon, drawRatio);
         arrow.setCritArrow(false);
     }

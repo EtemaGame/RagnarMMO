@@ -58,8 +58,8 @@ public class RagnarMobEffects {
 
     public static final RegistryObject<MobEffect> IMPROVE_CONCENTRATION = MOB_EFFECTS.register("improve_concentration", 
             () -> new StandardMobEffect(MobEffectCategory.BENEFICIAL, 0x98FB98)
-                    .addAttributeModifier(com.etema.ragnarmmo.common.api.attributes.RagnarAttributes.AGI.get(), "7107DE5E-7CE8-4030-940E-514C1F160898", 0.02D, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_BASE)
-                    .addAttributeModifier(com.etema.ragnarmmo.common.api.attributes.RagnarAttributes.DEX.get(), "7107DE5E-7CE8-4030-940E-514C1F160899", 0.02D, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_BASE));
+                    .addAttributeModifier(com.etema.ragnarmmo.common.api.attributes.RagnarAttributes.AGI.get(), "7107DE5E-7CE8-4030-940E-514C1F160898", 1.0D, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION)
+                    .addAttributeModifier(com.etema.ragnarmmo.common.api.attributes.RagnarAttributes.DEX.get(), "7107DE5E-7CE8-4030-940E-514C1F160899", 1.0D, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION));
 
     public static final RegistryObject<MobEffect> CRAZY_UPROAR = MOB_EFFECTS.register("crazy_uproar", 
             () -> new StandardMobEffect(MobEffectCategory.BENEFICIAL, 0xFF6347)

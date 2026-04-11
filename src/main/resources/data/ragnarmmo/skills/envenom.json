@@ -11,10 +11,10 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 12,
+        "base_cost": 0,
         "cost_per_level": 0
     },
-    "cooldown_ticks": 10,
+    "cooldown_ticks": 0,
     "jobs": [
         "THIEF"
     ],
@@ -23,6 +23,21 @@
         "texture": "thief/thief_envenom",
         "grid_x": 0,
         "grid_y": 2
+    },
+    "reference": {
+        "notes": "Envenom: RO_EXACT-ish poison attack; chance and duration are data-driven."
+    },
+    "level_data": {
+        "1": { "sp_cost": 12, "damage_percent": 50, "status_chance": 0.14, "duration_ticks": 220, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "2": { "sp_cost": 12, "damage_percent": 70, "status_chance": 0.18, "duration_ticks": 240, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "3": { "sp_cost": 12, "damage_percent": 90, "status_chance": 0.22, "duration_ticks": 260, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "4": { "sp_cost": 12, "damage_percent": 110, "status_chance": 0.26, "duration_ticks": 280, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "5": { "sp_cost": 12, "damage_percent": 130, "status_chance": 0.30, "duration_ticks": 300, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "6": { "sp_cost": 12, "damage_percent": 150, "status_chance": 0.34, "duration_ticks": 320, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "7": { "sp_cost": 12, "damage_percent": 170, "status_chance": 0.38, "duration_ticks": 340, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "8": { "sp_cost": 12, "damage_percent": 190, "status_chance": 0.42, "duration_ticks": 360, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "9": { "sp_cost": 12, "damage_percent": 210, "status_chance": 0.46, "duration_ticks": 380, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "10": { "sp_cost": 12, "damage_percent": 230, "status_chance": 0.50, "duration_ticks": 400, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.thief.EnvenomSkillEffect"
 }

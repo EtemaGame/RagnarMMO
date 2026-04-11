@@ -1,81 +1,74 @@
 package com.etema.ragnarmmo.skill.job.archer;
 
-import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
+import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skill.execution.TargetingSkillHelper;
+import com.etema.ragnarmmo.skill.execution.projectile.ProjectileSkillHelper;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
 /**
- * Arrow Shower — Active AoE
- * RO: 3x3 AoE damage.
- * 
- * Minecraft implementation:
- * - Circular AoE around the point the player is looking at.
- * - Damage: 75% + 5% * level ATK.
- * - Knockback: Pushes enemies away from the center of the impact.
+ * Arrow Shower - adapted area cleanup/control skill.
  */
 public class ArrowShowerSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "arrow_shower");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "arrow_shower");
 
     @Override
-    public ResourceLocation getSkillId() { return ID; }
+    public ResourceLocation getSkillId() {
+        return ID;
+    }
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0) return;
-
-        // Find impact point (block or entity)
-        HitResult hit = player.pick(12.0, 0.0f, false);
-        Vec3 pos = hit.getLocation();
-        
-        if (!(player.level() instanceof ServerLevel serverLevel)) return;
-
-        double radius = 3.0; // 3x3 RO area
-        AABB area = new AABB(pos.x - radius, pos.y - 2, pos.z - radius,
-                             pos.x + radius, pos.y + 2, pos.z + radius);
-        
-        List<LivingEntity> targets = serverLevel.getEntitiesOfClass(LivingEntity.class, area,
-                e -> e != player && e.isAlive());
-
-        // RO: (75 + 5×level)% ATK
-        float pct = 75f + (5f * level);
-        float damage = Math.max(SkillDamageHelper.MIN_ATK,
-                SkillDamageHelper.scaleByATK(player, pct));
-
-        for (LivingEntity victim : targets) {
-            // Damage
-            SkillDamageHelper.dealSkillDamage(
-                    victim, player.damageSources().playerAttack(player), damage);
-
-            // RO-accurate knockback (away from center of shower)
-            Vec3 knockDir = victim.position().subtract(pos).normalize();
-            victim.knockback(0.8, -knockDir.x, -knockDir.z);
-
-            // Particles at each hit
-            serverLevel.sendParticles(ParticleTypes.CRIT,
-                    victim.getX(), victim.getY() + 1, victim.getZ(),
-                    6, 0.3, 0.3, 0.3, 0.1);
+        if (level <= 0 || !ProjectileSkillHelper.requireBow(player)) {
+            return;
+        }
+        if (!(player.level() instanceof ServerLevel serverLevel)) {
+            return;
         }
 
-        // --- Visual & Audio Feedback ---
-        serverLevel.playSound(null, pos.x, pos.y, pos.z,
-                net.minecraft.sounds.SoundEvents.ARROW_SHOOT, net.minecraft.sounds.SoundSource.PLAYERS, 1.2f, 0.6f);
-        
-        // Denser arrow rain effect at impact
+        var definition = SkillRegistry.require(ID);
+        double range = definition.getLevelDouble("range", level, 12.0D);
+        Vec3 center = TargetingSkillHelper.targetPoint(player, range);
+        double radius = definition.getLevelDouble("aoe_radius", level, 3.0D);
+        float damagePercent = (float) definition.getLevelDouble("damage_percent", level, 75.0D + (5.0D * level));
+        double knockbackStrength = definition.getLevelDouble("knockback_strength", level, 0.35D);
+        float damage = Math.max(SkillDamageHelper.MIN_ATK, SkillDamageHelper.scaleByATK(player, damagePercent));
+
+        List<LivingEntity> targets = TargetingSkillHelper.livingAround(player, center, radius, 2.0D,
+                entity -> TargetingSkillHelper.isHostileTo(player, entity));
+
+        for (LivingEntity victim : targets) {
+            SkillDamageHelper.dealSkillDamage(victim, player.damageSources().playerAttack(player), damage);
+
+            if (knockbackStrength > 0.0D) {
+                Vec3 knockDir = victim.position().subtract(center).normalize();
+                victim.knockback(knockbackStrength, -knockDir.x, -knockDir.z);
+            }
+
+            serverLevel.sendParticles(ParticleTypes.CRIT,
+                    victim.getX(), victim.getY() + 1.0D, victim.getZ(),
+                    6, 0.3D, 0.3D, 0.3D, 0.1D);
+        }
+
+        serverLevel.playSound(null, center.x, center.y, center.z,
+                net.minecraft.sounds.SoundEvents.ARROW_SHOOT,
+                net.minecraft.sounds.SoundSource.PLAYERS, 1.2F, 0.6F);
+
         for (int i = 0; i < 20; i++) {
-            double rx = pos.x + (player.getRandom().nextDouble() - 0.5) * radius * 1.8;
-            double rz = pos.z + (player.getRandom().nextDouble() - 0.5) * radius * 1.8;
-            serverLevel.sendParticles(ParticleTypes.CRIT, rx, pos.y + 4.0, rz, 1, 0, -1.0, 0, 0.6);
-            serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT, rx, pos.y + 0.5, rz, 2, 0.1, 0.1, 0.1, 0);
+            double rx = center.x + (player.getRandom().nextDouble() - 0.5D) * radius * 1.8D;
+            double rz = center.z + (player.getRandom().nextDouble() - 0.5D) * radius * 1.8D;
+            serverLevel.sendParticles(ParticleTypes.CRIT, rx, center.y + 4.0D, rz, 1, 0.0D, -1.0D, 0.0D, 0.6D);
+            serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT, rx, center.y + 0.5D, rz,
+                    2, 0.1D, 0.1D, 0.1D, 0.0D);
         }
     }
 }

@@ -3,6 +3,10 @@ package com.etema.ragnarmmo.skill.job.archer;
 import com.etema.ragnarmmo.common.init.RagnarMobEffects;
 import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skill.execution.BuffSkillHelper;
+import com.etema.ragnarmmo.skill.execution.TargetingSkillHelper;
+import com.etema.ragnarmmo.skill.job.mage.SightMobEffect;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -17,48 +21,53 @@ import net.minecraft.world.phys.AABB;
 import java.util.List;
 
 /**
- * Improve Concentration — Active
- * RO: Temporarily raises DEX and AGI by (2 + level)% for (40 + 20*level) seconds.
- *     Also reveals all nearby hidden/cloaked enemies.
+ * Improve Concentration - DEX/AGI buff plus separate reveal pulse.
  */
 public class ImproveConcentrationSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "improve_concentration");
+    private static final ResourceLocation ID =
+            ResourceLocation.fromNamespaceAndPath("ragnarmmo", "improve_concentration");
 
     @Override
-    public ResourceLocation getSkillId() { return ID; }
+    public ResourceLocation getSkillId() {
+        return ID;
+    }
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0) return;
-
-        int durationTicks = (40 + 20 * level) * 20;
-
-        // Apply MobEffect (Handles AGI and DEX % bonuses via AttributeModifiers)
-        player.addEffect(new MobEffectInstance(RagnarMobEffects.IMPROVE_CONCENTRATION.get(), durationTicks, level - 1));
-
-        // Reveal nearby hidden entities (same as Mage Sight)
-        AABB area = player.getBoundingBox().inflate(7.0);
-        List<LivingEntity> nearby = player.level().getEntitiesOfClass(LivingEntity.class, area,
-                e -> e != player && e.isAlive());
-        for (LivingEntity e : nearby) {
-            if (e.getPersistentData().contains("ragnar_cloaked_until")) {
-                e.getPersistentData().remove("ragnar_cloaked_until");
-                e.setInvisible(false);
-            }
-            e.addEffect(new MobEffectInstance(MobEffects.GLOWING, 60, 0, false, false, false));
+        if (level <= 0) {
+            return;
         }
 
-        // Sounds and particles
+        var definition = SkillRegistry.require(ID);
+        int durationTicks = definition.getLevelInt("duration_ticks", level, (40 + 20 * level) * 20);
+        int effectAmplifier = definition.getLevelInt("effect_amplifier", level, level - 1);
+        double revealRadius = definition.getLevelDouble("reveal_radius", level, 7.0D);
+
+        BuffSkillHelper.applyMobEffect(player, RagnarMobEffects.IMPROVE_CONCENTRATION.get(),
+                durationTicks, effectAmplifier);
+
+        AABB area = player.getBoundingBox().inflate(revealRadius);
+        List<LivingEntity> nearby = player.level().getEntitiesOfClass(LivingEntity.class, area,
+                entity -> entity != player && entity.isAlive() && TargetingSkillHelper.isHostileTo(player, entity));
+        for (LivingEntity target : nearby) {
+            if (target.getPersistentData().contains(SightMobEffect.CLOAKED_TAG)) {
+                target.getPersistentData().remove(SightMobEffect.CLOAKED_TAG);
+                target.setInvisible(false);
+            }
+            target.removeEffect(MobEffects.INVISIBILITY);
+            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 60, 0, false, false, false));
+        }
+
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 RagnarSounds.CONCENTRATION.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.6f, 1.5f);
 
-        if (player.level() instanceof ServerLevel sl) {
-            sl.sendParticles(ParticleTypes.ENCHANT,
-                    player.getX(), player.getY() + 1, player.getZ(),
-                    30, 0.6, 1.0, 0.6, 0.08);
+        if (player.level() instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(ParticleTypes.ENCHANT,
+                    player.getX(), player.getY() + 1.0D, player.getZ(),
+                    30, 0.6D, 1.0D, 0.6D, 0.08D);
         }
     }
 }

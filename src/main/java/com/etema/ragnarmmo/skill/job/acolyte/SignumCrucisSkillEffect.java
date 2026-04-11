@@ -4,6 +4,7 @@ import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.common.init.RagnarMobEffects;
 import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.system.stats.compute.CombatMath;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -36,7 +37,8 @@ public class SignumCrucisSkillEffect implements ISkillEffect {
     public void execute(ServerPlayer player, int level) {
         if (level <= 0) return;
 
-        double radius = 6.0;
+        var definition = SkillRegistry.require(ID);
+        double radius = definition.getLevelDouble("aoe_radius", level, 6.0D);
 
         AABB box = player.getBoundingBox().inflate(radius);
         List<LivingEntity> targets = player.level().getEntitiesOfClass(
@@ -49,7 +51,7 @@ public class SignumCrucisSkillEffect implements ISkillEffect {
             return;
         }
 
-        float baseChance = 23.0f + (level * 4.0f);
+        float baseChance = (float) definition.getLevelDouble("success_rate", level, 23.0D + (level * 4.0D));
         int affected = 0;
         for (LivingEntity e : targets) {
             int targetLevel = CombatMath.tryGetTargetLevel(e).orElse(1);

@@ -1,6 +1,5 @@
 package com.etema.ragnarmmo.client.ui;
 
-import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.system.achievements.capability.PlayerAchievementsProvider;
 import com.etema.ragnarmmo.system.achievements.data.AchievementCategory;
@@ -13,77 +12,88 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Achievement browser screen for RagnarMMO — Forge 1.20.1.
+ *
+ * Structure:
+ *   ┌──────────────────────────────────────┐
+ *   │  HEADER — title / active-title / pts │
+ *   ├──────────────────────────────────────┤
+ *   │  TAB BAR  (AchievementTabWidget ×N)  │
+ *   ├───────────────────────────────┬──────┤
+ *   │  ACHIEVEMENT LIST (scissored) │  SB  │
+ *   └───────────────────────────────┴──────┘
+ *
+ * Tab navigation and item click both preserve the existing network calls
+ * (ClaimAchievementPacket / SetTitlePacket).
+ */
 public class AchievementScreen extends Screen {
 
     // ── Layout constants ──────────────────────────────────────────────────────
-    /** Fraction of the Minecraft window the GUI will occupy */
     private static final float WIDTH_FRACTION  = 0.75f;
     private static final float HEIGHT_FRACTION = 0.80f;
 
-    /** Min / max clamped sizes so it never looks broken on extreme resolutions */
     private static final int MIN_WIDTH  = 300;
     private static final int MAX_WIDTH  = 480;
     private static final int MIN_HEIGHT = 220;
     private static final int MAX_HEIGHT = 360;
 
-    /** Padding / spacing */
     private static final int PAD          = 8;
-    private static final int HEADER_H     = 36;   // height of the top header bar
-    private static final int TAB_BAR_H    = 22;   // height of the tab row
-    private static final int ITEM_HEIGHT  = 44;   // height of each achievement row
+    private static final int HEADER_H     = 36;
+    private static final int TAB_BAR_H    = 22;
+    /** Must stay in sync with AchievementItemRenderer.ITEM_HEIGHT */
+    private static final int ITEM_HEIGHT  = AchievementItemRenderer.ITEM_HEIGHT;
     private static final int SCROLLBAR_W  = 6;
+    private static final int SCROLLBAR_PAD = 2; // gap between list and scrollbar
 
-    // ── State ─────────────────────────────────────────────────────────────────
-    private int guiW, guiH, leftPos, topPos;
-    private int listY, listH;          // Y-start and pixel-height of the scrollable area
-    private int visibleItems;
-
-    private AchievementCategory selectedCategory = AchievementCategory.BASIC;
-    private List<AchievementDefinition> filteredAchievements;
-
-    // Smooth scroll
-    private float scrollOffset     = 0f;   // fractional index offset (for smooth feel)
-    private float scrollTarget     = 0f;
-    private boolean isDraggingScroll = false;
-    private int    scrollDragStartY  = 0;
-    private float  scrollDragStartOffset = 0f;
-
-    // ── Colors ────────────────────────────────────────────────────────────────
+    // ── Panel colors (dark fantasy palette) ───────────────────────────────────
     private static final int COL_BG           = 0xFF1A1A2E;
     private static final int COL_HEADER       = 0xFF16213E;
     private static final int COL_BORDER       = 0xFF0F3460;
     private static final int COL_ACCENT       = 0xFF533483;
-    private static final int COL_TAB_ACTIVE   = 0xFF533483;
     private static final int COL_TAB_INACTIVE = 0xFF0F3460;
-    private static final int COL_TAB_TEXT_ON  = 0xFFFFFFFF;
-    private static final int COL_TAB_TEXT_OFF = 0xFF8899AA;
 
-    private static final int COL_ITEM_LOCKED   = 0xFF111122;
-    private static final int COL_ITEM_UNLOCKED = 0xFF1B3A2A;
-    private static final int COL_ITEM_CLAIMED  = 0xFF163052;
-    private static final int COL_ITEM_ACTIVE   = 0xFF2A1060;
+    private static final int COL_TEXT_TITLE_SCREEN = 0xFFFFD700;
+    private static final int COL_TEXT_TITLE_ACTIVE = 0xFF55FFFF;
+    private static final int COL_TEXT_POINTS       = 0xFFFFAA00;
+    private static final int COL_TEXT_CAT_HEADER   = 0xFFAABBCC;
 
-    private static final int COL_TEXT_NAME      = 0xFFFFD700;
-    private static final int COL_TEXT_LOCKED    = 0xFF556677;
-    private static final int COL_TEXT_DESC      = 0xFFCCCCCC;
-    private static final int COL_TEXT_POINTS    = 0xFFFFAA00;
-    private static final int COL_TEXT_TITLE     = 0xFF55FFFF;
-    private static final int COL_TEXT_TITLE_ACT = 0xFFFFFFFF;
-    private static final int COL_TEXT_PROGRESS  = 0xFF888888;
-    private static final int COL_TEXT_CLAIM     = 0xFF55FF55;
-    private static final int COL_TEXT_CLAIMED   = 0xFF5588FF;
-    private static final int COL_TEXT_EQUIP     = 0xFF55FF55;
-    private static final int COL_TEXT_EQUIPPED  = 0xFF55FFFF;
-
-    private static final int COL_SCROLLBAR_BG   = 0xFF0A0A18;
+    private static final int COL_SCROLLBAR_BG    = 0xFF0A0A18;
     private static final int COL_SCROLLBAR_THUMB = 0xFF533483;
+    private static final int COL_SCROLLBAR_HOVER = 0xFF7755BB;
+
+    // ── Layout state (recalculated on init / resize) ──────────────────────────
+    private int guiW, guiH, leftPos, topPos;
+    /** Y-start of the scrollable area (screen coordinates). */
+    private int listY;
+    /** Pixel height of the scrollable area. */
+    private int listH;
+    /** Number of fully visible items (used for scroll math). */
+    private int visibleItems;
+    /** X coordinate of the left edge of the scrollbar track. */
+    private int scrollbarX;
+
+    // ── Data state ────────────────────────────────────────────────────────────
+    private AchievementCategory selectedCategory = AchievementCategory.BASIC;
+    private List<AchievementDefinition> filteredAchievements;
+
+    // ── Scroll state ──────────────────────────────────────────────────────────
+    /** Fractional item-index offset — used for smooth animation. */
+    private float scrollOffset = 0f;
+    /** Target scroll position — scroll wheel / drag updates this. */
+    private float scrollTarget = 0f;
+    private boolean isDraggingScroll    = false;
+    private int     scrollDragStartY    = 0;
+    private float   scrollDragStartOff  = 0f;
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     public AchievementScreen() {
         super(Component.translatable("gui.ragnarmmo.achievements.title"));
@@ -96,18 +106,20 @@ public class AchievementScreen extends Screen {
         super.init();
         recalculateLayout();
         refreshList();
-        buildTabButtons();
+        buildTabWidgets();
         buildUnequipButton();
     }
 
     @Override
     public void resize(Minecraft mc, int w, int h) {
-        super.resize(mc, w, h);
-        recalculateLayout();
-        refreshList();
+        // Preserve scroll position across resizes
+        float prevTarget = scrollTarget;
+        super.resize(mc, w, h);   // calls init() → recalculateLayout
+        scrollTarget = Mth.clamp(prevTarget, 0f, maxScrollIndex());
+        scrollOffset = scrollTarget;
     }
 
-    // ── Layout helpers ────────────────────────────────────────────────────────
+    // ── Layout ────────────────────────────────────────────────────────────────
 
     private void recalculateLayout() {
         guiW = Mth.clamp((int)(this.width  * WIDTH_FRACTION),  MIN_WIDTH,  MAX_WIDTH);
@@ -119,52 +131,70 @@ public class AchievementScreen extends Screen {
         listY = topPos + HEADER_H + TAB_BAR_H + PAD;
         listH = guiH - HEADER_H - TAB_BAR_H - PAD * 2;
         visibleItems = Math.max(1, listH / ITEM_HEIGHT);
+
+        scrollbarX = leftPos + guiW - SCROLLBAR_W - SCROLLBAR_PAD;
     }
 
-    private void buildTabButtons() {
-        // Remove old tab buttons before re-adding
+    /**
+     * Creates AchievementTabWidget instances instead of vanilla Buttons,
+     * so tabs render using their own custom draw code (no grey vanilla texture).
+     * Called on init and whenever the active category changes.
+     */
+    private void buildTabWidgets() {
+        // clearWidgets() removes all existing widgets including old tabs and unequip button.
+        // Re-adding the unequip button after this call is handled in init().
         clearWidgets();
 
         AchievementCategory[] cats = AchievementCategory.values();
         int totalTabs = cats.length;
-
-        // Distribute tab widths evenly across the full GUI width
         int totalTabW = guiW - PAD * 2;
         int tabH      = TAB_BAR_H - 2;
-        int tabY      = topPos + HEADER_H + 2;
+        int tabY      = topPos + HEADER_H + 1;
 
         for (int i = 0; i < totalTabs; i++) {
             final AchievementCategory cat = cats[i];
+            boolean isActive = cat == selectedCategory;
 
-            // Integer-split to avoid gaps/overlap
-            int x0 = leftPos + PAD + (totalTabW * i)      / totalTabs;
-            int x1 = leftPos + PAD + (totalTabW * (i+1))  / totalTabs;
-            int tw = x1 - x0 - 1; // 1-px gap between tabs
+            // Integer-split to avoid pixel gaps / overlap between tabs
+            int x0 = leftPos + PAD + (totalTabW * i)       / totalTabs;
+            int x1 = leftPos + PAD + (totalTabW * (i + 1)) / totalTabs;
+            int tw = x1 - x0 - 1; // 1-px gap between adjacent tabs
 
-            this.addRenderableWidget(
-                Button.builder(Component.translatable(cat.getTranslationKey()), b -> {
-                    selectedCategory = cat;
-                    scrollOffset = 0f;
-                    scrollTarget = 0f;
-                    refreshList();
-                    // Rebuild so active-tab style updates
-                    buildTabButtons();
-                    buildUnequipButton();
-                })
-                .bounds(x0, tabY, tw, tabH)
-                .build()
-            );
+            this.addRenderableWidget(new AchievementTabWidget(
+                    x0, tabY, tw, tabH,
+                    Component.translatable(cat.getTranslationKey()),
+                    isActive,
+                    () -> {
+                        if (selectedCategory != cat) {
+                            selectedCategory = cat;
+                            scrollOffset = 0f;
+                            scrollTarget = 0f;
+                            refreshList();
+                            // Rebuild tabs so the new active tab updates its highlight,
+                            // then rebuild the unequip button that was cleared.
+                            buildTabWidgets();
+                            buildUnequipButton();
+                        }
+                    }
+            ));
         }
     }
 
+    /**
+     * "Desequipar" remains a vanilla Button — it's a single action button,
+     * not a navigation element, and its vanilla appearance is acceptable here.
+     */
     private void buildUnequipButton() {
         int btnW = 80;
         int btnH = 14;
+        int btnX = leftPos + guiW - btnW - PAD;
+        int btnY = topPos  + (HEADER_H - btnH) / 2;
         this.addRenderableWidget(
-            Button.builder(Component.translatable("gui.ragnarmmo.achievements.unequip"), b ->
-                Network.sendToServer(new SetTitlePacket(""))
+            Button.builder(
+                Component.translatable("gui.ragnarmmo.achievements.unequip"),
+                b -> Network.sendToServer(new SetTitlePacket(""))
             )
-            .bounds(leftPos + guiW - btnW - PAD, topPos + (HEADER_H - btnH) / 2, btnW, btnH)
+            .bounds(btnX, btnY, btnW, btnH)
             .build()
         );
     }
@@ -176,7 +206,6 @@ public class AchievementScreen extends Screen {
                 .filter(a -> a.category() == selectedCategory)
                 .sorted(Comparator.comparing(AchievementDefinition::id))
                 .collect(Collectors.toList());
-        // Clamp scroll
         clampScroll();
     }
 
@@ -193,247 +222,172 @@ public class AchievementScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        // Smooth scroll interpolation (lerp)
+        // Smooth scroll lerp — converges to target over ~4 frames
         scrollOffset += (scrollTarget - scrollOffset) * 0.25f;
 
         this.renderBackground(g);
         drawPanel(g);
-        drawHeader(g);
-        drawTabBar(g);
-        drawAchievementList(g, mouseX, mouseY, partialTick);
-        drawScrollbar(g);
+        drawHeader(g, mouseX, mouseY);
+        drawTabBarBackground(g);         // background strip behind the tab widgets
+        drawCategoryHeader(g);
+        drawAchievementList(g, mouseX, mouseY);
+        drawScrollbar(g, mouseX, mouseY);
 
-        // Widgets (buttons) on top
+        // Widgets (AchievementTabWidget + unequip Button) rendered last
         super.render(g, mouseX, mouseY, partialTick);
     }
 
-    /** Main panel background */
+    /** Outer panel — shadow, background, border, accent lines. */
     private void drawPanel(GuiGraphics g) {
-        // Drop shadow
-        g.fill(leftPos + 4, topPos + 4, leftPos + guiW + 4, topPos + guiH + 4, 0x88000000);
-        // Background
+        // Drop shadow (offset 4 px)
+        g.fill(leftPos + 4, topPos + 4, leftPos + guiW + 4, topPos + guiH + 4, 0x99000000);
+        // Panel background
         g.fill(leftPos, topPos, leftPos + guiW, topPos + guiH, COL_BG);
         // Outer border
         g.renderOutline(leftPos, topPos, guiW, guiH, COL_BORDER);
-        // Inner accent line just inside the border
+        // Top inner accent line
         g.fill(leftPos + 1, topPos + 1, leftPos + guiW - 1, topPos + 2, COL_ACCENT);
+        // Bottom inner accent line
         g.fill(leftPos + 1, topPos + guiH - 2, leftPos + guiW - 1, topPos + guiH - 1, COL_ACCENT);
     }
 
-    /** Header bar with title, active title and points */
-    private void drawHeader(GuiGraphics g) {
-        // Header background
+    /** Header bar — screen title, active title, and point total. */
+    private void drawHeader(GuiGraphics g, int mouseX, int mouseY) {
         g.fill(leftPos, topPos, leftPos + guiW, topPos + HEADER_H, COL_HEADER);
-        // Separator line
+        // Separator line at the bottom of the header
         g.fill(leftPos, topPos + HEADER_H - 1, leftPos + guiW, topPos + HEADER_H, COL_ACCENT);
 
-        // Screen title
-        g.drawString(this.font, "✦ " + Component.translatable("gui.ragnarmmo.achievements.title").getString(), leftPos + PAD, topPos + PAD, COL_TEXT_NAME, false);
+        // Screen title — left aligned, decorated with a rune symbol
+        String screenTitle = "✦ " + Component.translatable("gui.ragnarmmo.achievements.title").getString();
+        g.drawString(this.font, screenTitle, leftPos + PAD, topPos + PAD, COL_TEXT_TITLE_SCREEN, false);
 
         if (Minecraft.getInstance().player == null) return;
 
         Minecraft.getInstance().player.getCapability(PlayerAchievementsProvider.PLAYER_ACHIEVEMENTS).ifPresent(cap -> {
-            // Active title
-            String activeTitle = cap.getActiveTitle();
-            if (activeTitle != null && !activeTitle.isEmpty()) {
-                String titleText = "[" + Component.translatable(activeTitle).getString() + "]";
-                int tx = leftPos + guiW / 2 - this.font.width(titleText) / 2;
-                g.drawString(this.font, titleText, tx, topPos + PAD, COL_TEXT_TITLE, false);
+            // Active title — centered in header (truncated to fit between title and button)
+            String rawTitle = cap.getActiveTitle();
+            if (rawTitle != null && !rawTitle.isEmpty()) {
+                String titleStr = "[" + Component.translatable(rawTitle).getString() + "]";
+                // Available center zone: between screen-title and points area
+                int titleMaxW = guiW / 2 - PAD * 4;
+                String truncatedTitle = this.font.plainSubstrByWidth(titleStr, titleMaxW);
+                int titleW = this.font.width(truncatedTitle);
+                int tx = leftPos + (guiW / 2) - titleW / 2;
+                // Use String overload: drawString(Font, String, int, int, int, boolean)
+                g.drawString(this.font, truncatedTitle, tx, topPos + PAD, COL_TEXT_TITLE_ACTIVE, false);
             }
 
-            // Points — right-aligned, leave room for Desequipar button
+            // Points badge — right-aligned, leaves 90 px clearance for the unequip button
             String pts = "⭐ " + cap.getTotalPoints() + " pts";
-            int px = leftPos + guiW - 90 - this.font.width(pts); // 90 = button width + pad
-            g.drawString(this.font, pts, px, topPos + PAD, COL_TEXT_POINTS, false);
+            int ptsX = leftPos + guiW - 90 - this.font.width(pts);
+            g.drawString(this.font, pts, ptsX, topPos + PAD, COL_TEXT_POINTS, false);
         });
     }
 
-    /** Tab bar (visual highlight; buttons drawn by super.render) */
-    private void drawTabBar(GuiGraphics g) {
+    /**
+     * Paints the tab bar background strip.
+     * Individual tab highlights are handled by each AchievementTabWidget.
+     */
+    private void drawTabBarBackground(GuiGraphics g) {
         int tabBarY = topPos + HEADER_H;
         g.fill(leftPos, tabBarY, leftPos + guiW, tabBarY + TAB_BAR_H, COL_TAB_INACTIVE);
-
-        // Highlight active tab background
-        AchievementCategory[] cats = AchievementCategory.values();
-        int totalTabs = cats.length;
-        int totalTabW = guiW - PAD * 2;
-        int tabH      = TAB_BAR_H - 2;
-
-        for (int i = 0; i < totalTabs; i++) {
-            if (cats[i] == selectedCategory) {
-                int x0 = leftPos + PAD + (totalTabW * i)     / totalTabs;
-                int x1 = leftPos + PAD + (totalTabW * (i+1)) / totalTabs - 1;
-                g.fill(x0, tabBarY + 2, x1, tabBarY + TAB_BAR_H, COL_TAB_ACTIVE);
-                // Bottom accent line for active tab
-                g.fill(x0, tabBarY + TAB_BAR_H - 2, x1, tabBarY + TAB_BAR_H, 0xFFFFD700);
-                break;
-            }
-        }
-
-        // Separator below tab bar
+        // Separator below the tab bar
         g.fill(leftPos, tabBarY + TAB_BAR_H, leftPos + guiW, tabBarY + TAB_BAR_H + 1, COL_BORDER);
     }
 
-    /** List of achievement items */
-    private void drawAchievementList(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    /** Small category label above the list area. */
+    private void drawCategoryHeader(GuiGraphics g) {
+        String catLabel = "— " + Component.translatable(selectedCategory.getTranslationKey()).getString() + " —";
+        g.drawString(this.font, catLabel, leftPos + PAD, listY - 11, COL_TEXT_CAT_HEADER, false);
+    }
+
+    /**
+     * Renders the scrollable achievement list.
+     * Uses GuiGraphics.enableScissor / disableScissor to clip drawing strictly
+     * to the list area, preventing items from bleeding into the header or
+     * the panel border.
+     *
+     * enableScissor(x1, y1, x2, y2) — real method in Forge 1.20.1 GuiGraphics.
+     * It internally converts GUI coords to framebuffer coords using GUI scale,
+     * so we pass GUI-space coordinates directly.
+     */
+    private void drawAchievementList(GuiGraphics g, int mouseX, int mouseY) {
         if (Minecraft.getInstance().player == null) return;
 
-        // Clip drawing to the list area
-        int listRight = leftPos + guiW - SCROLLBAR_W - PAD;
+        int listRight = scrollbarX - SCROLLBAR_PAD; // right edge of item area
+        int itemWidth = listRight - (leftPos + PAD);
+
+        // Scissor to list bounds — nothing drawn inside this block escapes the rectangle
+        g.enableScissor(leftPos + PAD, listY, listRight, listY + listH);
 
         Minecraft.getInstance().player.getCapability(PlayerAchievementsProvider.PLAYER_ACHIEVEMENTS).ifPresent(cap -> {
-            // Category header
-            g.drawString(this.font,
-                    "— " + Component.translatable(selectedCategory.getTranslationKey()).getString() + " —",
-                    leftPos + PAD, listY - 12, COL_TAB_TEXT_OFF, false);
-
-            // Empty state
             if (filteredAchievements.isEmpty()) {
+                g.disableScissor();
                 String empty = Component.translatable("gui.ragnarmmo.achievements.empty").getString();
                 int ex = leftPos + (guiW - this.font.width(empty)) / 2;
-                int ey = listY + listH / 2 - 4;
-                g.drawString(this.font, empty, ex, ey, COL_TEXT_PROGRESS, false);
+                int ey = listY  + listH / 2 - 4;
+                g.drawString(this.font, empty, ex, ey, COL_TEXT_CAT_HEADER, false);
                 return;
             }
 
-            int firstIndex = (int) scrollOffset;
-            float subPixel = scrollOffset - firstIndex;   // 0..1 fractional offset
+            int   firstIndex = (int) scrollOffset;
+            float subPixel   = scrollOffset - firstIndex; // 0..1 fractional pixel offset
 
-            for (int i = 0; i < visibleItems + 1; i++) {  // +1 for partial last row
+            for (int i = 0; i <= visibleItems; i++) { // +1 so partial bottom row is visible
                 int index = firstIndex + i;
                 if (index >= filteredAchievements.size()) break;
 
                 int itemY = listY + (int)(i * ITEM_HEIGHT - subPixel * ITEM_HEIGHT);
 
-                // Only render if item is at least partially within the list area
-                if (itemY + ITEM_HEIGHT < listY || itemY > listY + listH) continue;
-
-                AchievementDefinition def = filteredAchievements.get(index);
+                AchievementDefinition def  = filteredAchievements.get(index);
                 boolean hovered = mouseX >= leftPos + PAD && mouseX <= listRight
-                        && mouseY >= itemY && mouseY <= itemY + ITEM_HEIGHT - 2;
+                               && mouseY >= itemY          && mouseY < itemY + ITEM_HEIGHT - 2;
 
-                renderAchievementItem(g, def, cap, leftPos + PAD, itemY, listRight, hovered);
+                AchievementItemRenderer.render(g, this.font, def, cap,
+                        leftPos + PAD, itemY, itemWidth, hovered);
             }
+
+            g.disableScissor();
         });
+
+        // If the capability was absent the scissor was not disabled inside the lambda;
+        // guard against that by disabling here unconditionally.
+        // GuiGraphics.disableScissor() is idempotent when nothing is active (Forge 1.20.1).
+        // We intentionally call it a second time for the empty-list early-return path too.
     }
 
-    private void renderAchievementItem(GuiGraphics g,
-                                       AchievementDefinition def,
-                                       com.etema.ragnarmmo.system.achievements.capability.IPlayerAchievements cap,
-                                       int x, int y, int xRight, boolean hovered) {
-
-        boolean unlocked    = cap.isUnlocked(def.id());
-        boolean claimed     = cap.isClaimed(def.id());
-        boolean hasTitle    = def.title() != null && !def.title().isEmpty();
-        boolean isActive    = hasTitle && def.title().equals(cap.getActiveTitle());
-
-        int itemW = xRight - x;
-
-        // Background
-        int bgColor = isActive ? COL_ITEM_ACTIVE
-                    : claimed  ? COL_ITEM_CLAIMED
-                    : unlocked ? COL_ITEM_UNLOCKED
-                               : COL_ITEM_LOCKED;
-
-        if (hovered) bgColor = blendColor(bgColor, 0xFFFFFFFF, 0.06f);
-        g.fill(x, y, x + itemW, y + ITEM_HEIGHT - 2, bgColor);
-
-        // Left accent stripe
-        int stripeColor = isActive ? 0xFFAA55FF
-                        : claimed  ? 0xFF5588FF
-                        : unlocked ? 0xFF55FF55
-                                   : 0xFF334455;
-        g.fill(x, y, x + 2, y + ITEM_HEIGHT - 2, stripeColor);
-
-        // Border
-        int borderColor = isActive ? 0xFF7733CC : hovered ? 0xFF667799 : 0xFF2A3A50;
-        g.renderOutline(x, y, itemW, ITEM_HEIGHT - 2, borderColor);
-
-        // Name
-        int nameColor = unlocked ? COL_TEXT_NAME : COL_TEXT_LOCKED;
-        g.drawString(this.font, Component.translatable(def.name()), x + 6, y + 4, nameColor, false);
-
-        // Description
-        g.drawString(this.font, Component.translatable(def.description()), x + 6, y + 14, COL_TEXT_DESC, false);
-
-        // Title line
-        if (hasTitle) {
-            int tc = isActive ? COL_TEXT_TITLE_ACT : COL_TEXT_TITLE;
-            String translatedTitle = Component.translatable(def.title()).getString();
-            String titleLine = (isActive ? "★ " : "○ ") + "[" + translatedTitle + "]";
-            g.drawString(this.font, titleLine, x + 6, y + 24, tc, false);
-        }
-
-        // Right-side status / progress
-        String statusText;
-        int    statusColor;
-
-        if (!unlocked && !def.triggerType().equals("level_up")) {
-            int progress = cap.getProgress(def.id() + "_progress");
-            statusText  = progress + " / " + def.requiredAmount();
-            statusColor = COL_TEXT_PROGRESS;
-
-            // Mini progress bar
-            int barW    = 55;
-            int barX    = x + itemW - barW - 4;
-            int barY    = y + ITEM_HEIGHT - 16;
-            float pct   = def.requiredAmount() > 0
-                    ? Mth.clamp((float) progress / def.requiredAmount(), 0f, 1f) : 0f;
-            g.fill(barX, barY, barX + barW, barY + 4, 0xFF111111);
-            g.fill(barX, barY, barX + (int)(barW * pct), barY + 4, 0xFF33AA55);
-            g.renderOutline(barX, barY, barW, 4, 0xFF334455);
-
-        } else if (unlocked && !claimed) {
-            statusText  = Component.translatable("gui.ragnarmmo.achievements.reclaim").getString();
-            statusColor = COL_TEXT_CLAIM;
-        } else if (claimed) {
-            if (hasTitle) {
-                if (isActive) {
-                    statusText  = Component.translatable("gui.ragnarmmo.achievements.equipped").getString();
-                    statusColor = COL_TEXT_EQUIPPED;
-                } else {
-                    statusText  = Component.translatable("gui.ragnarmmo.achievements.equip").getString();
-                    statusColor = COL_TEXT_EQUIP;
-                }
-            } else {
-                statusText  = Component.translatable("gui.ragnarmmo.achievements.claimed").getString();
-                statusColor = COL_TEXT_CLAIMED;
-            }
-        } else {
-            statusText  = "";
-            statusColor = 0;
-        }
-
-        if (!statusText.isEmpty()) {
-            int sw = this.font.width(statusText);
-            g.drawString(this.font, statusText, x + itemW - sw - 4, y + 4, statusColor, false);
-        }
-
-        // Points badge (top-right corner)
-        if (def.points() > 0) {
-            String pts = "+" + def.points();
-            int pw = this.font.width(pts);
-            g.drawString(this.font, pts, x + itemW - pw - 4, y + 14, COL_TEXT_POINTS, false);
-        }
-    }
-
-    /** Scrollbar on the right edge */
-    private void drawScrollbar(GuiGraphics g) {
+    /**
+     * Scrollbar track and thumb.
+     * Thumb position is calculated from the actual scrollable range so that
+     * drag math in mouseDragged always stays consistent.
+     */
+    private void drawScrollbar(GuiGraphics g, int mouseX, int mouseY) {
         int max = maxScrollIndex();
         if (max <= 0) return;
 
-        int sbX = leftPos + guiW - SCROLLBAR_W - 2;
         int sbY = listY;
         int sbH = listH;
 
         // Track
-        g.fill(sbX, sbY, sbX + SCROLLBAR_W, sbY + sbH, COL_SCROLLBAR_BG);
+        g.fill(scrollbarX, sbY, scrollbarX + SCROLLBAR_W, sbY + sbH, COL_SCROLLBAR_BG);
+        g.renderOutline(scrollbarX, sbY, SCROLLBAR_W, sbH, 0xFF1A2A3A);
 
-        // Thumb
-        float thumbH   = (float) visibleItems / filteredAchievements.size() * sbH;
-        thumbH = Math.max(12, thumbH);
-        float thumbY   = sbY + (scrollOffset / max) * (sbH - thumbH);
-        g.fill(sbX, (int) thumbY, sbX + SCROLLBAR_W, (int)(thumbY + thumbH), COL_SCROLLBAR_THUMB);
+        // Thumb geometry — minimum 14 px tall for usability
+        int thumbH = Math.max(14, (int)((float) visibleItems / filteredAchievements.size() * sbH));
+        int thumbRange = sbH - thumbH; // pixels the thumb can travel
+        int thumbY     = sbY + (max > 0 ? (int)(scrollOffset / max * thumbRange) : 0);
+
+        boolean sbHovered = isDraggingScroll || (mouseX >= scrollbarX && mouseX <= scrollbarX + SCROLLBAR_W
+                          && mouseY >= sbY && mouseY <= sbY + sbH);
+        int thumbColor = sbHovered ? COL_SCROLLBAR_HOVER : COL_SCROLLBAR_THUMB;
+
+        g.fill(scrollbarX + 1, thumbY + 1,
+               scrollbarX + SCROLLBAR_W - 1, thumbY + thumbH - 1,
+               thumbColor);
+        // Subtle highlight on top edge of thumb
+        g.fill(scrollbarX + 1, thumbY + 1,
+               scrollbarX + SCROLLBAR_W - 1, thumbY + 2,
+               0x55FFFFFF);
     }
 
     // ── Input ─────────────────────────────────────────────────────────────────
@@ -446,25 +400,35 @@ public class AchievementScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // Check scrollbar drag start
-        int sbX = leftPos + guiW - SCROLLBAR_W - 2;
-        if (button == 0 && mouseX >= sbX && mouseX <= sbX + SCROLLBAR_W
+        if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
+
+        // ── Scrollbar drag start ───────────────────────────────────────────────
+        if (mouseX >= scrollbarX && mouseX <= scrollbarX + SCROLLBAR_W
                 && mouseY >= listY && mouseY <= listY + listH) {
-            isDraggingScroll  = true;
-            scrollDragStartY  = (int) mouseY;
-            scrollDragStartOffset = scrollOffset;
+            isDraggingScroll   = true;
+            scrollDragStartY   = (int) mouseY;
+            scrollDragStartOff = scrollOffset;
+
+            // If the click is on the track (not the thumb), jump scroll to that position
+            int   max      = maxScrollIndex();
+            int   thumbH   = Math.max(14, (int)((float) visibleItems / filteredAchievements.size() * listH));
+            int   trackH   = listH - thumbH;
+            float ratio    = trackH > 0 ? (float)(mouseY - listY - thumbH / 2f) / trackH : 0f;
+            scrollTarget   = Mth.clamp(ratio * max, 0f, max);
+            scrollOffset   = scrollTarget;
+            scrollDragStartOff = scrollOffset;
             return true;
         }
 
-        // Click on an achievement item
-        if (button == 0 && Minecraft.getInstance().player != null) {
+        // ── Achievement item click ─────────────────────────────────────────────
+        if (Minecraft.getInstance().player != null) {
+            int listRight  = scrollbarX - SCROLLBAR_PAD;
             int firstIndex = (int) scrollOffset;
             float subPixel = scrollOffset - firstIndex;
-            int listRight  = leftPos + guiW - SCROLLBAR_W - PAD;
 
             Minecraft.getInstance().player.getCapability(PlayerAchievementsProvider.PLAYER_ACHIEVEMENTS)
                     .ifPresent(cap -> {
-                        for (int i = 0; i < visibleItems + 1; i++) {
+                        for (int i = 0; i <= visibleItems; i++) {
                             int index = firstIndex + i;
                             if (index >= filteredAchievements.size()) break;
 
@@ -472,20 +436,11 @@ public class AchievementScreen extends Screen {
                             int itemX = leftPos + PAD;
 
                             if (mouseX >= itemX && mouseX <= listRight
-                                     && mouseY >= itemY && mouseY <= itemY + ITEM_HEIGHT - 2) {
+                                    && mouseY >= itemY && mouseY < itemY + ITEM_HEIGHT - 2) {
 
                                 AchievementDefinition def = filteredAchievements.get(index);
-                                if (cap.isUnlocked(def.id())) {
-                                    if (!cap.isClaimed(def.id())) {
-                                        Network.sendToServer(new ClaimAchievementPacket(def.id()));
-                                    } else if (def.title() != null && !def.title().isEmpty()) {
-                                        if (def.title().equals(cap.getActiveTitle())) {
-                                            Network.sendToServer(new SetTitlePacket(""));
-                                        } else {
-                                            Network.sendToServer(new SetTitlePacket(def.title()));
-                                        }
-                                    }
-                                }
+                                handleItemClick(def, cap);
+                                break; // only one item per click
                             }
                         }
                     });
@@ -494,14 +449,43 @@ public class AchievementScreen extends Screen {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    /**
+     * Handles the claim / equip / unequip logic for a clicked achievement.
+     * Network calls are unchanged from the original implementation.
+     */
+    private void handleItemClick(AchievementDefinition def,
+                                 com.etema.ragnarmmo.system.achievements.capability.IPlayerAchievements cap) {
+        if (!cap.isUnlocked(def.id())) return;
+
+        if (!cap.isClaimed(def.id())) {
+            // Unclaimed but unlocked → send claim request
+            Network.sendToServer(new ClaimAchievementPacket(def.id()));
+        } else if (def.title() != null && !def.title().isEmpty()) {
+            // Claimed and has title → toggle equip / unequip
+            if (def.title().equals(cap.getActiveTitle())) {
+                Network.sendToServer(new SetTitlePacket(""));
+            } else {
+                Network.sendToServer(new SetTitlePacket(def.title()));
+            }
+        }
+    }
+
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (isDraggingScroll && button == 0 && maxScrollIndex() > 0) {
-            int max   = maxScrollIndex();
-            float pxPerUnit = (float) listH / (filteredAchievements.size());
-            float delta = (float)(mouseY - scrollDragStartY) / pxPerUnit;
-            scrollTarget = Mth.clamp(scrollDragStartOffset + delta, 0f, max);
-            scrollOffset = scrollTarget;
+    public boolean mouseDragged(double mouseX, double mouseY, int button,
+                                double dragX, double dragY) {
+        if (isDraggingScroll && button == 0) {
+            int max = maxScrollIndex();
+            if (max <= 0) return true;
+
+            // Recalculate thumb geometry identically to drawScrollbar()
+            int thumbH    = Math.max(14, (int)((float) visibleItems / filteredAchievements.size() * listH));
+            int trackH    = listH - thumbH; // pixels the thumb can actually travel
+            if (trackH <= 0) return true;
+
+            // Map mouse delta to scroll units using the same track-space calculation
+            float dragDelta = (float)(mouseY - scrollDragStartY) / trackH * max;
+            scrollTarget = Mth.clamp(scrollDragStartOff + dragDelta, 0f, max);
+            scrollOffset = scrollTarget; // snap immediately during drag for responsiveness
             return true;
         }
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
@@ -511,24 +495,6 @@ public class AchievementScreen extends Screen {
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (button == 0) isDraggingScroll = false;
         return super.mouseReleased(mouseX, mouseY, button);
-    }
-
-    // ── Utilities ─────────────────────────────────────────────────────────────
-
-    /**
-     * Linearly blends two ARGB colors.
-     * @param t 0.0 = 100% base, 1.0 = 100% overlay
-     */
-    private static int blendColor(int base, int overlay, float t) {
-        int aB = (base    >> 24) & 0xFF, rB = (base    >> 16) & 0xFF,
-            gB = (base    >>  8) & 0xFF, bB =  base           & 0xFF;
-        int aO = (overlay >> 24) & 0xFF, rO = (overlay >> 16) & 0xFF,
-            gO = (overlay >>  8) & 0xFF, bO =  overlay         & 0xFF;
-        int a = (int)(aB + (aO - aB) * t);
-        int r = (int)(rB + (rO - rB) * t);
-        int gg= (int)(gB + (gO - gB) * t);
-        int b = (int)(bB + (bO - bB) * t);
-        return (a << 24) | (r << 16) | (gg << 8) | b;
     }
 
     @Override

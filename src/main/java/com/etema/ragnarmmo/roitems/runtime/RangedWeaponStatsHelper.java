@@ -25,6 +25,11 @@ import java.util.Optional;
  */
 public final class RangedWeaponStatsHelper {
 
+    public static final String SNAPSHOT_TAG = "ragnarmmo_snapshot";
+    public static final int SNAPSHOT_VERSION = 3;
+    public static final String DAMAGE_MODE_DEFAULT = "default";
+    public static final String DAMAGE_MODE_ATK_OVERRIDE = "atk_override";
+
     private static final double DEFAULT_BOW_ATK = 15.0D;
     private static final int DEFAULT_BOW_DRAW_TICKS = 20;
     private static final float DEFAULT_BOW_VELOCITY = 1.0F;
@@ -150,7 +155,7 @@ public final class RangedWeaponStatsHelper {
             var derived = StatComputer.compute(player, stats, rangedSnapshot);
 
             CompoundTag snapshot = new CompoundTag();
-            snapshot.putInt("version", 2);
+            snapshot.putInt("version", SNAPSHOT_VERSION);
             snapshot.putString("family", "bow");
             snapshot.putDouble("atk", derived.physicalAttack);
             snapshot.putInt("dex", (int) StatAttributes.getTotal(player, StatKeys.DEX));
@@ -160,9 +165,11 @@ public final class RangedWeaponStatsHelper {
             snapshot.putDouble("draw_ratio", Mth.clamp(drawRatio, 0.1F, 1.0F));
             snapshot.putDouble("skill_damage_multiplier", arrow.getPersistentData()
                     .getDouble(ProjectileSkillHelper.SKILL_DAMAGE_MULTIPLIER_TAG));
+            snapshot.putBoolean("bypass_iframes", false);
+            snapshot.putString("damage_mode", DAMAGE_MODE_DEFAULT);
             snapshot.putString("element", CombatPropertyResolver.getOffensiveElement(player).name());
             snapshot.putUUID("shooter_uuid", player.getUUID());
-            arrow.getPersistentData().put("ragnarmmo_snapshot", snapshot);
+            arrow.getPersistentData().put(SNAPSHOT_TAG, snapshot);
         });
     }
 

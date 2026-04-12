@@ -233,7 +233,6 @@ public final class RoTooltipFormatter {
         if (configuredRange > 0.0D) {
             lines.add(formatCombatLine("Range", String.format(Locale.ROOT, "%.1f", configuredRange)));
         } else if (mainhandModifiers.containsKey(net.minecraftforge.common.ForgeMod.ENTITY_REACH.get())) {
-            // Add Range (Reach Distance) - Essential for Better Combat
             double reach = 3.0D + sumAttribute(mainhandModifiers, net.minecraftforge.common.ForgeMod.ENTITY_REACH.get());
             lines.add(formatCombatLine("Range", String.format(Locale.ROOT, "%.1f", reach)));
         }

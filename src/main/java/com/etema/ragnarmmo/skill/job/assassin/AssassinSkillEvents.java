@@ -17,7 +17,6 @@ public class AssassinSkillEvents {
 
     /**
      * Dual Wield and Katar Mastery Hook: Multiplies damage based on masteries.
-     * Better Combat triggers this via the standard hurt() method.
      */
     @SubscribeEvent
     public static void onAssassinAttack(LivingHurtEvent event) {

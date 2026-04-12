@@ -7,8 +7,6 @@ import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
  * Initializes the server-authoritative combat foundation.
- * Better Combat remains a presentation dependency; final combat truth belongs
- * to RagnarMMO services and packets.
  */
 public final class CombatModule {
     private CombatModule() {

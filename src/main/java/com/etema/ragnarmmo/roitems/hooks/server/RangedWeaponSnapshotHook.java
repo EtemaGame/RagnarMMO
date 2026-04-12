@@ -33,7 +33,7 @@ public final class RangedWeaponSnapshotHook {
             return;
         }
 
-        if (arrow.getPersistentData().contains("ragnarmmo_snapshot")) {
+        if (arrow.getPersistentData().contains(RangedWeaponStatsHelper.SNAPSHOT_TAG)) {
             return;
         }
 

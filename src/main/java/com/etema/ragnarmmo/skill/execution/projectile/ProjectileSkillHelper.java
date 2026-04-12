@@ -121,7 +121,7 @@ public final class ProjectileSkillHelper {
         arrow.getPersistentData().putDouble(FORCED_DRAW_RATIO_TAG, Math.max(0.1D, Math.min(1.0D, forcedDrawRatio)));
     }
 
-    private static void applyGravityMultiplier(AbstractArrow arrow, double gravityMult) {
+    public static void applyGravityMultiplier(AbstractArrow arrow, double gravityMult) {
         double sanitized = Math.max(0.0D, Math.min(2.0D, gravityMult));
         if (Math.abs(sanitized - 1.0D) <= 1.0E-4) {
             return;

@@ -14,6 +14,7 @@ import com.etema.ragnarmmo.combat.api.CombatResolution;
 import com.etema.ragnarmmo.combat.api.CombatTargetCandidate;
 import com.etema.ragnarmmo.combat.api.RagnarAttackRequest;
 import com.etema.ragnarmmo.combat.api.RagnarTargetCandidate;
+import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.combat.state.CombatActorState;
 import com.etema.ragnarmmo.combat.util.CombatDebugLog;
 import com.etema.ragnarmmo.combat.targeting.RagnarTargetResolver;
@@ -280,7 +281,7 @@ public class RagnarCombatEngine {
             DamageProcessingGuard.markProcessedPlayer(livingTarget);
             
             // Use MobAttack source to represent authoritative damage
-            livingTarget.hurt(attacker.damageSources().mobAttack(attacker), damage);
+            SkillDamageHelper.dealSkillDamage(livingTarget, attacker.damageSources().mobAttack(attacker), damage);
         }
 
         feedbackService.sendBasicAttackFeedback(attacker, livingTarget, resolution);

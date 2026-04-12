@@ -1,15 +1,12 @@
 package com.etema.ragnarmmo.combat.event.client;
 
-import java.util.List;
-
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.combat.integration.bettercombat.BetterCombatAttackSnapshot;
-import com.etema.ragnarmmo.combat.integration.bettercombat.BetterCombatBridge;
 import com.etema.ragnarmmo.combat.net.ServerboundRagnarBasicAttackPacket;
 import com.etema.ragnarmmo.common.net.Network;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -17,8 +14,7 @@ import net.minecraftforge.fml.common.Mod;
 
 /**
  * Client-side sender for the first server-authoritative basic attack flow.
- * It uses Better Combat data when available and falls back to crosshair target
- * detection otherwise.
+ * It only sends a request when the vanilla crosshair is on an entity.
  */
 @Mod.EventBusSubscriber(modid = RagnarMMO.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ClientBasicAttackInputHandler {
@@ -60,17 +56,15 @@ public final class ClientBasicAttackInputHandler {
             return;
         }
 
-        BetterCombatAttackSnapshot snapshot = BetterCombatBridge.snapshotCurrentClientAttack(minecraft);
-        List<Integer> ids = snapshot.candidateTargetIds();
-        if (ids == null || ids.isEmpty()) {
+        if (!(minecraft.hitResult instanceof EntityHitResult hitResult)) {
             return;
         }
 
-        int[] targetIds = ids.stream().mapToInt(Integer::intValue).toArray();
+        int[] targetIds = new int[] { hitResult.getEntity().getId() };
         Network.sendToServer(new ServerboundRagnarBasicAttackPacket(
                 sequenceId++,
-                snapshot.comboIndex(),
-                snapshot.offHand(),
+                0,
+                false,
                 player.getInventory().selected,
                 targetIds));
     }

@@ -6,6 +6,7 @@ import com.etema.ragnarmmo.common.api.events.StatComputeEvent;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
+import com.etema.ragnarmmo.combat.hand.AttackHandResolver;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import net.minecraft.resources.ResourceLocation;
@@ -114,7 +115,7 @@ public final class StatComputer {
         if (isAxeOrMace(main)) masteryBonus += ctx.researchWeaponry * 3.0D;
 
         double skillAtk = masteryBonus + (ctx.weaponTrainer * 1.5D);
-        if (isDualWielding(player)) {
+        if (AttackHandResolver.isDualWielding(player)) {
             skillAtk += (ctx.rightHand * 3.0D) + (ctx.leftHand * 3.0D);
         }
 
@@ -241,14 +242,6 @@ public final class StatComputer {
 
     private static boolean isKatar(ItemStack stack) {
         return stack.getTags().anyMatch(tag -> tag.location().getPath().contains("katars"));
-    }
-
-    private static boolean isDualWielding(Player player) {
-        return !player.getMainHandItem().isEmpty()
-                && !player.getOffhandItem().isEmpty()
-                && player.getMainHandItem().getItem() instanceof net.minecraft.world.item.TieredItem
-                && player.getOffhandItem().getItem() instanceof net.minecraft.world.item.TieredItem
-                && !(player.getOffhandItem().getItem() instanceof net.minecraft.world.item.ShieldItem);
     }
 
     private static boolean isAxeOrMace(ItemStack stack) {

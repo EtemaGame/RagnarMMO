@@ -66,6 +66,11 @@ public enum CombatRejectReason {
     INVALID_OFFHAND,
 
     /**
+     * The requested attack hand is not legal for the actor's current equipment.
+     */
+    INVALID_ATTACK_HAND,
+
+    /**
      * No valid LivingEntity targets were found in the candidate list.
      */
     NO_VALID_TARGETS

@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.combat.engine;
 
 import com.etema.ragnarmmo.combat.api.CombatRejectReason;
 import com.etema.ragnarmmo.combat.api.CombatRequestContext;
+import com.etema.ragnarmmo.combat.hand.AttackHandResolver;
 import com.etema.ragnarmmo.combat.state.CombatActorState;
 
 /**
@@ -46,6 +47,9 @@ public class RagnarCombatValidationService {
         }
         if (ctx.comboIndex() < 0 || ctx.comboIndex() > 8) {
             return CombatRejectReason.INVALID_COMBO_INDEX;
+        }
+        if (!AttackHandResolver.isValidAttackHand(ctx.actor(), ctx.offHand())) {
+            return CombatRejectReason.INVALID_ATTACK_HAND;
         }
 
         // ASPD check

@@ -39,6 +39,11 @@ public final class CombatDebugLog {
                 resolution.attackerId(), resolution.targetId(), resolution.resultType(), resolution.finalAmount());
     }
 
+    public static void logAttackPacing(CombatRequestContext ctx, boolean dualWield, double aps, int intervalTicks) {
+        LOGGER.debug("ATTACK_PACING actor={} offHand={} dual={} aps={} interval={}",
+                actorName(ctx), ctx != null && ctx.offHand(), dualWield, aps, intervalTicks);
+    }
+
     public static void logCooldownReject(String actorName, String action, long readyTick, long nowTick) {
         LOGGER.debug("COOLDOWN_REJECT actor={} action={} readyTick={} nowTick={}",
                 actorName, action, readyTick, nowTick);

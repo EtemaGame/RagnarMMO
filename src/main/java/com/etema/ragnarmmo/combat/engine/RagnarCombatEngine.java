@@ -15,6 +15,10 @@ import com.etema.ragnarmmo.combat.api.CombatTargetCandidate;
 import com.etema.ragnarmmo.combat.api.RagnarAttackRequest;
 import com.etema.ragnarmmo.combat.api.RagnarTargetCandidate;
 import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
+import com.etema.ragnarmmo.combat.hand.AttackHandResolver;
+import com.etema.ragnarmmo.combat.profile.HandAttackProfile;
+import com.etema.ragnarmmo.combat.profile.HandAttackProfileResolver;
+import com.etema.ragnarmmo.combat.timing.AttackCadenceCalculator;
 import com.etema.ragnarmmo.combat.state.CombatActorState;
 import com.etema.ragnarmmo.combat.util.CombatDebugLog;
 import com.etema.ragnarmmo.combat.targeting.RagnarTargetResolver;
@@ -102,26 +106,17 @@ public class RagnarCombatEngine {
         var attackerStats = RagnarCoreAPI.get(attacker).orElse(null);
         if (attackerStats == null) return Collections.emptyList();
 
-        DerivedStats attackerDerived = StatResolutionService.computeAuthoritative(attacker, attackerStats);
-        if (attackerDerived == null) return Collections.emptyList();
+        HandAttackProfile attackProfile = HandAttackProfileResolver.resolve(attacker, ctx.offHand()).orElse(null);
+        if (attackProfile == null) return Collections.emptyList();
 
-        // ASPD math determines cooldown ticks - Explicit Hand Resolution
-        int agi = (int) StatAttributes.getTotal(attacker, StatKeys.AGI);
-        int dex = (int) StatAttributes.getTotal(attacker, StatKeys.DEX);
-        double aps = CombatMath.computeAPSForAttack(
-                attacker.getMainHandItem(), 
-                attacker.getOffhandItem(), 
-                ctx.offHand(), 
-                agi, 
-                dex, 
-                0.0);
-        
-        int cooldownTicks = (int) Math.max(2, 20.0 / aps);
+        int cooldownTicks = AttackCadenceCalculator.computeIntervalTicks(attacker, ctx.offHand());
+        CombatDebugLog.logAttackPacing(ctx, AttackHandResolver.isDualWielding(attacker),
+                attackProfile.aps(), cooldownTicks);
         cooldownService.markBasicAttackUsed(actorState.getCooldowns(), nowTick, cooldownTicks);
 
         List<CombatResolution> results = new ArrayList<>();
         for (CombatTargetCandidate candidate : ctx.candidates()) {
-            CombatResolution resolution = resolveSingleBasicHit(attacker, attackerDerived, candidate, ctx.offHand(),
+            CombatResolution resolution = resolveSingleBasicHit(attacker, attackProfile, candidate,
                     attackerStats.getLevel());
             results.add(resolution);
             applyResolution(attacker, resolution);
@@ -130,9 +125,8 @@ public class RagnarCombatEngine {
         return results;
     }
 
-    private CombatResolution resolveSingleBasicHit(ServerPlayer attacker, DerivedStats attackerDerived,
-                                                   CombatTargetCandidate candidate, boolean isOffHand,
-                                                   int attackerLevel) {
+    private CombatResolution resolveSingleBasicHit(ServerPlayer attacker, HandAttackProfile attackProfile,
+                                                   CombatTargetCandidate candidate, int attackerLevel) {
         net.minecraft.world.entity.Entity targetEntity = attacker.serverLevel().getEntity(candidate.entityId());
         if (!(targetEntity instanceof LivingEntity target)) {
             return CombatResolution.miss(attacker.getId(), candidate.entityId());
@@ -140,11 +134,11 @@ public class RagnarCombatEngine {
 
         // Attacker Data from authoritative source
         int lvl = Math.max(1, attackerLevel);
-        ItemStack weapon = isOffHand ? attacker.getOffhandItem() : attacker.getMainHandItem();
+        ItemStack weapon = attackProfile.weapon();
         
-        double totalBaseAtk = attackerDerived.physicalAttack;
-        double accuracy = attackerDerived.accuracy;
-        double critChance = attackerDerived.criticalChance;
+        double totalBaseAtk = attackProfile.physicalAttack();
+        double accuracy = attackProfile.accuracy();
+        double critChance = attackProfile.critChance();
 
         // Defender Data
         DefenderStats def = fetchDefenderStats(target);
@@ -165,13 +159,12 @@ public class RagnarCombatEngine {
         // 3. Damage calculation
         int dex = (int) StatAttributes.getTotal(attacker, StatKeys.DEX);
         int luk = (int) StatAttributes.getTotal(attacker, StatKeys.LUK);
-        int str = (int) StatAttributes.getTotal(attacker, StatKeys.STR);
 
         double dmg = damageCalculator.computePhysicalDamage(totalBaseAtk, dex, luk,
                 new java.util.Random(attacker.getRandom().nextLong()));
 
         if (hitResult == CombatHitResultType.CRIT) {
-            dmg = damageCalculator.applyCriticalModifier(dmg, luk, str);
+            dmg *= Math.max(1.0D, attackProfile.critDamageMultiplier());
         }
 
         // SIZE & ELEMENTAL

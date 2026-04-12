@@ -10,145 +10,100 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 
 /**
- * Syncs derived/computed stats from server to client.
- * These stats are calculated server-side and sent to the client
- * so the UI can display accurate values without local recalculation.
+ * Syncs authoritative derived stats from server to client.
  */
 public class DerivedStatsSyncPacket {
-    public final double physicalAttack;
-    public final double physicalAttackMin;
-    public final double physicalAttackMax;
-    public final double magicAttack;
-    public final double magicAttackMin;
-    public final double magicAttackMax;
-    public final double accuracy;
-    public final double criticalChance;
-    public final double criticalDamageMultiplier;
-    public final double flee;
-    public final double perfectDodge;
-    public final double attackSpeed;
-    public final double castTime;
-    public final double globalCooldown;
-    public final double physicalDamageReduction;
-    public final double magicDamageReduction;
-    public final double maxHealth;
-    public final double healthRegenPerSecond;
-    public final double maxMana;
-    public final double manaRegenPerSecond;
-    public final double defense;
-    public final double magicDefense;
-    public final double hardDefense;
-    public final double softDefense;
-    public final double hardMagicDefense;
-    public final double softMagicDefense;
+    private final DerivedStats stats;
 
-    public DerivedStatsSyncPacket(DerivedStats d) {
-        this.physicalAttack = d.physicalAttack;
-        this.physicalAttackMin = d.physicalAttackMin;
-        this.physicalAttackMax = d.physicalAttackMax;
-        this.magicAttack = d.magicAttack;
-        this.magicAttackMin = d.magicAttackMin;
-        this.magicAttackMax = d.magicAttackMax;
-        this.accuracy = d.accuracy;
-        this.criticalChance = d.criticalChance;
-        this.criticalDamageMultiplier = d.criticalDamageMultiplier;
-        this.flee = d.flee;
-        this.perfectDodge = d.perfectDodge;
-        this.attackSpeed = d.attackSpeed;
-        this.castTime = d.castTime;
-        this.globalCooldown = d.globalCooldown;
-        this.physicalDamageReduction = d.physicalDamageReduction;
-        this.magicDamageReduction = d.magicDamageReduction;
-        this.maxHealth = d.maxHealth;
-        this.healthRegenPerSecond = d.healthRegenPerSecond;
-        this.maxMana = d.maxMana;
-        this.manaRegenPerSecond = d.manaRegenPerSecond;
-        this.defense = d.defense;
-        this.magicDefense = d.magicDefense;
-        this.hardDefense = d.hardDefense;
-        this.softDefense = d.softDefense;
-        this.hardMagicDefense = d.hardMagicDefense;
-        this.softMagicDefense = d.softMagicDefense;
+    public DerivedStatsSyncPacket(DerivedStats stats) {
+        this.stats = copy(stats);
     }
 
-    public DerivedStatsSyncPacket(
-            double physicalAttack, double physicalAttackMin, double physicalAttackMax,
-            double magicAttack, double magicAttackMin, double magicAttackMax,
-            double accuracy, double criticalChance,
-            double criticalDamageMultiplier, double flee, double perfectDodge, double attackSpeed,
-            double castTime, double globalCooldown, double physicalDamageReduction,
-            double magicDamageReduction, double maxHealth, double healthRegenPerSecond,
-            double maxMana, double manaRegenPerSecond, double defense, double magicDefense,
-            double hardDefense, double softDefense, double hardMagicDefense, double softMagicDefense) {
-        this.physicalAttack = physicalAttack;
-        this.physicalAttackMin = physicalAttackMin;
-        this.physicalAttackMax = physicalAttackMax;
-        this.magicAttack = magicAttack;
-        this.magicAttackMin = magicAttackMin;
-        this.magicAttackMax = magicAttackMax;
-        this.accuracy = accuracy;
-        this.criticalChance = criticalChance;
-        this.criticalDamageMultiplier = criticalDamageMultiplier;
-        this.flee = flee;
-        this.perfectDodge = perfectDodge;
-        this.attackSpeed = attackSpeed;
-        this.castTime = castTime;
-        this.globalCooldown = globalCooldown;
-        this.physicalDamageReduction = physicalDamageReduction;
-        this.magicDamageReduction = magicDamageReduction;
-        this.maxHealth = maxHealth;
-        this.healthRegenPerSecond = healthRegenPerSecond;
-        this.maxMana = maxMana;
-        this.manaRegenPerSecond = manaRegenPerSecond;
-        this.defense = defense;
-        this.magicDefense = magicDefense;
-        this.hardDefense = hardDefense;
-        this.softDefense = softDefense;
-        this.hardMagicDefense = hardMagicDefense;
-        this.softMagicDefense = softMagicDefense;
-    }
-
-    public static void encode(DerivedStatsSyncPacket m, FriendlyByteBuf buf) {
-        buf.writeDouble(m.physicalAttack);
-        buf.writeDouble(m.physicalAttackMin);
-        buf.writeDouble(m.physicalAttackMax);
-        buf.writeDouble(m.magicAttack);
-        buf.writeDouble(m.magicAttackMin);
-        buf.writeDouble(m.magicAttackMax);
-        buf.writeDouble(m.accuracy);
-        buf.writeDouble(m.criticalChance);
-        buf.writeDouble(m.criticalDamageMultiplier);
-        buf.writeDouble(m.flee);
-        buf.writeDouble(m.perfectDodge);
-        buf.writeDouble(m.attackSpeed);
-        buf.writeDouble(m.castTime);
-        buf.writeDouble(m.globalCooldown);
-        buf.writeDouble(m.physicalDamageReduction);
-        buf.writeDouble(m.magicDamageReduction);
-        buf.writeDouble(m.maxHealth);
-        buf.writeDouble(m.healthRegenPerSecond);
-        buf.writeDouble(m.maxMana);
-        buf.writeDouble(m.manaRegenPerSecond);
-        buf.writeDouble(m.defense);
-        buf.writeDouble(m.magicDefense);
-        buf.writeDouble(m.hardDefense);
-        buf.writeDouble(m.softDefense);
-        buf.writeDouble(m.hardMagicDefense);
-        buf.writeDouble(m.softMagicDefense);
+    public static void encode(DerivedStatsSyncPacket message, FriendlyByteBuf buf) {
+        DerivedStats d = message.stats;
+        buf.writeDouble(d.physicalAttack);
+        buf.writeDouble(d.physicalAttackMin);
+        buf.writeDouble(d.physicalAttackMax);
+        buf.writeDouble(d.magicAttack);
+        buf.writeDouble(d.magicAttackMin);
+        buf.writeDouble(d.magicAttackMax);
+        buf.writeDouble(d.accuracy);
+        buf.writeDouble(d.criticalChance);
+        buf.writeDouble(d.criticalDamageMultiplier);
+        buf.writeDouble(d.flee);
+        buf.writeDouble(d.perfectDodge);
+        buf.writeDouble(d.attackSpeed);
+        buf.writeDouble(d.castTime);
+        buf.writeDouble(d.globalCooldown);
+        buf.writeDouble(d.physicalDamageReduction);
+        buf.writeDouble(d.magicDamageReduction);
+        buf.writeDouble(d.maxHealth);
+        buf.writeDouble(d.healthRegenPerSecond);
+        buf.writeDouble(d.maxMana);
+        buf.writeDouble(d.manaRegenPerSecond);
+        buf.writeDouble(d.maxSP);
+        buf.writeDouble(d.spRegenPerSecond);
+        buf.writeDouble(d.projectileVelocityMult);
+        buf.writeDouble(d.projectileGravityMult);
+        buf.writeDouble(d.projectileSpreadMult);
+        buf.writeDouble(d.castInterruptResist);
+        buf.writeDouble(d.skillStatusPower);
+        buf.writeDouble(d.threatGenerationBonus);
+        buf.writeDouble(d.revealRadiusBonus);
+        buf.writeDouble(d.defense);
+        buf.writeDouble(d.magicDefense);
+        buf.writeDouble(d.hardDefense);
+        buf.writeDouble(d.softDefense);
+        buf.writeDouble(d.hardMagicDefense);
+        buf.writeDouble(d.softMagicDefense);
+        buf.writeDouble(d.lifeSteal);
+        buf.writeDouble(d.armorPierce);
+        buf.writeDouble(d.armorShred);
+        buf.writeDouble(d.overheal);
     }
 
     public static DerivedStatsSyncPacket decode(FriendlyByteBuf buf) {
-        return new DerivedStatsSyncPacket(
-                buf.readDouble(), buf.readDouble(), buf.readDouble(),
-                buf.readDouble(), buf.readDouble(), buf.readDouble(),
-                buf.readDouble(), buf.readDouble(),
-                buf.readDouble(), buf.readDouble(), buf.readDouble(),
-                buf.readDouble(), buf.readDouble(), buf.readDouble(),
-                buf.readDouble(), buf.readDouble(), buf.readDouble(),
-                buf.readDouble(), buf.readDouble(), buf.readDouble(),
-                buf.readDouble(), buf.readDouble(), buf.readDouble(),
-                buf.readDouble(), buf.readDouble(),
-                buf.readDouble());
+        DerivedStats d = new DerivedStats();
+        d.physicalAttack = buf.readDouble();
+        d.physicalAttackMin = buf.readDouble();
+        d.physicalAttackMax = buf.readDouble();
+        d.magicAttack = buf.readDouble();
+        d.magicAttackMin = buf.readDouble();
+        d.magicAttackMax = buf.readDouble();
+        d.accuracy = buf.readDouble();
+        d.criticalChance = buf.readDouble();
+        d.criticalDamageMultiplier = buf.readDouble();
+        d.flee = buf.readDouble();
+        d.perfectDodge = buf.readDouble();
+        d.attackSpeed = buf.readDouble();
+        d.castTime = buf.readDouble();
+        d.globalCooldown = buf.readDouble();
+        d.physicalDamageReduction = buf.readDouble();
+        d.magicDamageReduction = buf.readDouble();
+        d.maxHealth = buf.readDouble();
+        d.healthRegenPerSecond = buf.readDouble();
+        d.maxMana = buf.readDouble();
+        d.manaRegenPerSecond = buf.readDouble();
+        d.maxSP = buf.readDouble();
+        d.spRegenPerSecond = buf.readDouble();
+        d.projectileVelocityMult = buf.readDouble();
+        d.projectileGravityMult = buf.readDouble();
+        d.projectileSpreadMult = buf.readDouble();
+        d.castInterruptResist = buf.readDouble();
+        d.skillStatusPower = buf.readDouble();
+        d.threatGenerationBonus = buf.readDouble();
+        d.revealRadiusBonus = buf.readDouble();
+        d.defense = buf.readDouble();
+        d.magicDefense = buf.readDouble();
+        d.hardDefense = buf.readDouble();
+        d.softDefense = buf.readDouble();
+        d.hardMagicDefense = buf.readDouble();
+        d.softMagicDefense = buf.readDouble();
+        d.lifeSteal = buf.readDouble();
+        d.armorPierce = buf.readDouble();
+        d.armorShred = buf.readDouble();
+        d.overheal = buf.readDouble();
+        return new DerivedStatsSyncPacket(d);
     }
 
     public static void handle(DerivedStatsSyncPacket msg, Supplier<NetworkEvent.Context> ctxSup) {
@@ -158,37 +113,55 @@ public class DerivedStatsSyncPacket {
         ctx.setPacketHandled(true);
     }
 
-    /**
-     * Creates a DerivedStats object from this packet's data.
-     */
     public DerivedStats toDerivedStats() {
+        return copy(stats);
+    }
+
+    private static DerivedStats copy(DerivedStats source) {
         DerivedStats d = new DerivedStats();
-        d.physicalAttack = this.physicalAttack;
-        d.physicalAttackMin = this.physicalAttackMin;
-        d.physicalAttackMax = this.physicalAttackMax;
-        d.magicAttack = this.magicAttack;
-        d.magicAttackMin = this.magicAttackMin;
-        d.magicAttackMax = this.magicAttackMax;
-        d.accuracy = this.accuracy;
-        d.criticalChance = this.criticalChance;
-        d.criticalDamageMultiplier = this.criticalDamageMultiplier;
-        d.flee = this.flee;
-        d.perfectDodge = this.perfectDodge;
-        d.attackSpeed = this.attackSpeed;
-        d.castTime = this.castTime;
-        d.globalCooldown = this.globalCooldown;
-        d.physicalDamageReduction = this.physicalDamageReduction;
-        d.magicDamageReduction = this.magicDamageReduction;
-        d.maxHealth = this.maxHealth;
-        d.healthRegenPerSecond = this.healthRegenPerSecond;
-        d.maxMana = this.maxMana;
-        d.manaRegenPerSecond = this.manaRegenPerSecond;
-        d.defense = this.defense;
-        d.magicDefense = this.magicDefense;
-        d.hardDefense = this.hardDefense;
-        d.softDefense = this.softDefense;
-        d.hardMagicDefense = this.hardMagicDefense;
-        d.softMagicDefense = this.softMagicDefense;
+        if (source == null) {
+            return d;
+        }
+
+        d.physicalAttack = source.physicalAttack;
+        d.physicalAttackMin = source.physicalAttackMin;
+        d.physicalAttackMax = source.physicalAttackMax;
+        d.magicAttack = source.magicAttack;
+        d.magicAttackMin = source.magicAttackMin;
+        d.magicAttackMax = source.magicAttackMax;
+        d.accuracy = source.accuracy;
+        d.criticalChance = source.criticalChance;
+        d.criticalDamageMultiplier = source.criticalDamageMultiplier;
+        d.flee = source.flee;
+        d.perfectDodge = source.perfectDodge;
+        d.attackSpeed = source.attackSpeed;
+        d.castTime = source.castTime;
+        d.globalCooldown = source.globalCooldown;
+        d.physicalDamageReduction = source.physicalDamageReduction;
+        d.magicDamageReduction = source.magicDamageReduction;
+        d.maxHealth = source.maxHealth;
+        d.healthRegenPerSecond = source.healthRegenPerSecond;
+        d.maxMana = source.maxMana;
+        d.manaRegenPerSecond = source.manaRegenPerSecond;
+        d.maxSP = source.maxSP;
+        d.spRegenPerSecond = source.spRegenPerSecond;
+        d.projectileVelocityMult = source.projectileVelocityMult;
+        d.projectileGravityMult = source.projectileGravityMult;
+        d.projectileSpreadMult = source.projectileSpreadMult;
+        d.castInterruptResist = source.castInterruptResist;
+        d.skillStatusPower = source.skillStatusPower;
+        d.threatGenerationBonus = source.threatGenerationBonus;
+        d.revealRadiusBonus = source.revealRadiusBonus;
+        d.defense = source.defense;
+        d.magicDefense = source.magicDefense;
+        d.hardDefense = source.hardDefense;
+        d.softDefense = source.softDefense;
+        d.hardMagicDefense = source.hardMagicDefense;
+        d.softMagicDefense = source.softMagicDefense;
+        d.lifeSteal = source.lifeSteal;
+        d.armorPierce = source.armorPierce;
+        d.armorShred = source.armorShred;
+        d.overheal = source.overheal;
         return d;
     }
 }

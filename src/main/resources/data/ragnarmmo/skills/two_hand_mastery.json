@@ -21,5 +21,20 @@
         "grid_x": 1,
         "grid_y": 0
     },
+    "reference": {
+        "notes": "Two-Handed Sword Mastery: RO_EXACT flat ATK bonus for two-handed swords."
+    },
+    "level_data": {
+        "1": { "atk_bonus": 4 },
+        "2": { "atk_bonus": 8 },
+        "3": { "atk_bonus": 12 },
+        "4": { "atk_bonus": 16 },
+        "5": { "atk_bonus": 20 },
+        "6": { "atk_bonus": 24 },
+        "7": { "atk_bonus": 28 },
+        "8": { "atk_bonus": 32 },
+        "9": { "atk_bonus": 36 },
+        "10": { "atk_bonus": 40 }
+    },
     "effect_class": "com.etema.ragnarmmo.skill.job.swordman.TwoHandMasterySkillEffect"
 }

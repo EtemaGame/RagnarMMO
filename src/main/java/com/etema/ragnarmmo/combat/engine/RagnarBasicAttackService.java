@@ -43,7 +43,7 @@ public class RagnarBasicAttackService {
                 false,
                 attacker.getInventory().selected,
                 null,
-                java.util.List.of(com.etema.ragnarmmo.combat.api.CombatTargetCandidate.betterCombat(target.getId(),
+                java.util.List.of(com.etema.ragnarmmo.combat.api.CombatTargetCandidate.clientExtended(target.getId(),
                         attacker.distanceTo(target))));
 
         com.etema.ragnarmmo.combat.api.CombatRejectReason reject = validationService.validateBasicAttack(ctx, actorState, nowTick, cooldownService);

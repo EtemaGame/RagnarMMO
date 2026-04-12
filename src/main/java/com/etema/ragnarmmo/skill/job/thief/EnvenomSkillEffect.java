@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.skill.job.thief;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,7 +30,8 @@ public class EnvenomSkillEffect implements ISkillEffect {
         if (level <= 0)
             return;
 
-        LivingEntity target = getMeleeTarget(player);
+        var definition = SkillRegistry.require(ID);
+        LivingEntity target = getMeleeTarget(player, definition.getLevelDouble("range", level, 3.5D));
         
         final Vec3 lookPos = player.getEyePosition().add(player.getLookAngle().scale(2.0));
 
@@ -51,15 +53,17 @@ public class EnvenomSkillEffect implements ISkillEffect {
             }
 
             if (target != null && target.isAlive()) {
-                // RO: (30 + 20×level)% ATK + Poison chance (10 + 4×level)%
+                float damagePercent = (float) definition.getLevelDouble("damage_percent", level, 30.0D + 20.0D * level);
                 float damage = Math.max(com.etema.ragnarmmo.combat.damage.SkillDamageHelper.MIN_ATK,
-                        com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByATK(player, 30f + 20f * level));
+                        com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByATK(player, damagePercent));
                 com.etema.ragnarmmo.combat.damage.SkillDamageHelper.dealSkillDamage(
                         target, player.damageSources().playerAttack(player), damage);
 
-                float basePoisonChance = 0.10f + (level * 0.04f); // 14% at Lv1 to 50% at Lv10
+                float basePoisonChance = (float) definition.getLevelDouble("status_chance", level,
+                        0.10D + (level * 0.04D));
                 float finalPoisonChance = com.etema.ragnarmmo.system.stats.compute.CombatMath.computePoisonChance(basePoisonChance, target);
-                int finalPoisonDuration = com.etema.ragnarmmo.system.stats.compute.CombatMath.computePoisonDuration(200 + (level * 20), target);
+                int poisonDuration = definition.getLevelInt("duration_ticks", level, 200 + (level * 20));
+                int finalPoisonDuration = com.etema.ragnarmmo.system.stats.compute.CombatMath.computePoisonDuration(poisonDuration, target);
 
                 if (finalPoisonDuration > 0 && player.getRandom().nextFloat() < finalPoisonChance) {
                     target.addEffect(new MobEffectInstance(MobEffects.POISON, finalPoisonDuration, 0, false, true, true));
@@ -69,12 +73,12 @@ public class EnvenomSkillEffect implements ISkillEffect {
     }
 
     // (Helper duplicated for clarity across active melee skills)
-    private LivingEntity getMeleeTarget(Player player) {
+    private LivingEntity getMeleeTarget(Player player, double range) {
         Vec3 start = player.getEyePosition();
         Vec3 look = player.getLookAngle();
-        Vec3 end = start.add(look.scale(3.5));
+        Vec3 end = start.add(look.scale(range));
 
-        AABB searchBox = player.getBoundingBox().inflate(3.5);
+        AABB searchBox = player.getBoundingBox().inflate(range);
         List<LivingEntity> possibleTargets = player.level().getEntitiesOfClass(LivingEntity.class, searchBox,
                 e -> e != player && e.isAlive());
 

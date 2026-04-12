@@ -14,6 +14,7 @@ import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
 import com.etema.ragnarmmo.common.util.DamageProcessingGuard;
 import com.etema.ragnarmmo.roitems.runtime.EquipmentCombatModifierResolver;
 import com.etema.ragnarmmo.roitems.runtime.RoRefineMath;
+import com.etema.ragnarmmo.roitems.runtime.RangedWeaponStatsHelper;
 import com.etema.ragnarmmo.roitems.runtime.WeaponStatHelper;
 import com.etema.ragnarmmo.system.stats.RagnarStats;
 import com.etema.ragnarmmo.system.stats.capability.PlayerStats;
@@ -214,23 +215,16 @@ public class CommonEvents {
     public static void onHurt(LivingHurtEvent e) {
         var tgt = e.getEntity();
         if (tgt.level().isClientSide()) return;
-        if (DamageProcessingGuard.isProcessedPlayer(tgt)) return;
 
         Entity direct = e.getSource().getDirectEntity();
 
         // --- PRIORITY RANGED BRANCH ---
         if (direct instanceof net.minecraft.world.entity.projectile.AbstractArrow arrow) {
-            net.minecraft.nbt.CompoundTag snapshotTag = arrow.getPersistentData().getCompound("ragnarmmo_snapshot");
-            if (snapshotTag.contains("version") && snapshotTag.getInt("version") >= 1) {
-                String family = snapshotTag.getString("family");
-                java.util.UUID shooterUuid = snapshotTag.getUUID("shooter_uuid");
-                Entity owner = arrow.getOwner();
-
-                // Snapshot Validates! (Version, UUID, Owner match, and family)
-                if (owner != null && shooterUuid.equals(owner.getUUID()) && "bow".equals(family)) {
-                    processRangedDamage(e, snapshotTag, owner, tgt);
-                    return; // EXIT EARLY
-                }
+            net.minecraft.nbt.CompoundTag snapshotTag = arrow.getPersistentData()
+                    .getCompound(RangedWeaponStatsHelper.SNAPSHOT_TAG);
+            if (isValidBowSnapshot(arrow, snapshotTag)) {
+                processRangedDamage(e, snapshotTag, arrow.getOwner(), tgt);
+                return; // EXIT EARLY
             }
             // Arrow + INVALID/Missing Snapshot -> Return IMMEDIATELY without marking (Safe vanilla fallback)
             return;
@@ -240,6 +234,7 @@ public class CommonEvents {
             return;
 
         // --- GENERIC MELEE FALLBACK ---
+        if (DamageProcessingGuard.isProcessedPlayer(tgt)) return;
         RagnarCoreAPI.get(p).ifPresent(stats -> {
             var dmgCalc = new com.etema.ragnarmmo.combat.engine.RagnarDamageCalculator();
 
@@ -264,7 +259,21 @@ public class CommonEvents {
 
     private static void processRangedDamage(LivingHurtEvent e, net.minecraft.nbt.CompoundTag snapshot, Entity shooter, LivingEntity target) {
         double drawRatio = snapshot.contains("draw_ratio") ? snapshot.getDouble("draw_ratio") : 1.0D;
-        double atk = snapshot.getDouble("atk") * Math.max(0.1D, Math.min(1.0D, drawRatio));
+        double skillDamageMultiplier = snapshot.contains("skill_damage_multiplier")
+                ? snapshot.getDouble("skill_damage_multiplier")
+                : 1.0D;
+        if (skillDamageMultiplier <= 0.0D) {
+            skillDamageMultiplier = 1.0D;
+        }
+        double atk;
+        if (RangedWeaponStatsHelper.DAMAGE_MODE_ATK_OVERRIDE.equals(snapshot.getString("damage_mode"))
+                && snapshot.getDouble("atk_override") > 0.0D) {
+            atk = snapshot.getDouble("atk_override");
+        } else {
+            atk = snapshot.getDouble("atk")
+                    * Math.max(0.1D, Math.min(1.0D, drawRatio))
+                    * skillDamageMultiplier;
+        }
         double critChance = snapshot.getDouble("crit_chance");
         double critMult = snapshot.getDouble("crit_damage");
         int dex = snapshot.getInt("dex");
@@ -290,6 +299,18 @@ public class CommonEvents {
         
         e.setAmount((float) Math.max(1.0, dmg));
         DamageProcessingGuard.markProcessedPlayer(target);
+    }
+
+    private static boolean isValidBowSnapshot(net.minecraft.world.entity.projectile.AbstractArrow arrow,
+            net.minecraft.nbt.CompoundTag snapshotTag) {
+        if (!snapshotTag.contains("version") || snapshotTag.getInt("version") < 1) {
+            return false;
+        }
+        if (!"bow".equals(snapshotTag.getString("family")) || !snapshotTag.hasUUID("shooter_uuid")) {
+            return false;
+        }
+        Entity owner = arrow.getOwner();
+        return owner != null && snapshotTag.getUUID("shooter_uuid").equals(owner.getUUID());
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
@@ -764,6 +785,15 @@ public class CommonEvents {
 
     @SubscribeEvent
     public static void onLivingAttack(net.minecraftforge.event.entity.living.LivingAttackEvent e) {
+        if (!e.getEntity().level().isClientSide()
+                && e.getSource().getDirectEntity() instanceof net.minecraft.world.entity.projectile.AbstractArrow arrow) {
+            net.minecraft.nbt.CompoundTag snapshotTag = arrow.getPersistentData()
+                    .getCompound(RangedWeaponStatsHelper.SNAPSHOT_TAG);
+            if (isValidBowSnapshot(arrow, snapshotTag) && snapshotTag.getBoolean("bypass_iframes")) {
+                e.getEntity().invulnerableTime = 0;
+            }
+        }
+
         if (e.getSource().getEntity() instanceof Player p) {
             if (p.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY) &&
                     p.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN)) {

@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.skill.job.acolyte;
 
 import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.job.mage.SightMobEffect;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
@@ -30,7 +31,8 @@ public class RuwachSkillEffect implements ISkillEffect {
         if (level <= 0)
             return;
 
-        double radius = 5.0; // RO is 5x5 cells -> approx 5 blocks
+        var definition = SkillRegistry.require(ID);
+        double radius = definition.getLevelDouble("reveal_radius", level, 5.0D);
         AABB area = player.getBoundingBox().inflate(radius);
 
         List<Entity> nearby = player.level().getEntities(player, area,
@@ -38,7 +40,9 @@ public class RuwachSkillEffect implements ISkillEffect {
                         && living != player
                         && AcolyteTargetingHelper.isHostileTarget(player, living));
 
-        float damage = Math.max(SkillDamageHelper.MIN_ATK, SkillDamageHelper.scaleByATK(player, 145.0f));
+        float damagePercent = (float) definition.getLevelDouble("damage_percent", level, 145.0D);
+        int glowDurationTicks = definition.getLevelInt("glow_duration_ticks", level, 200);
+        float damage = Math.max(SkillDamageHelper.MIN_ATK, SkillDamageHelper.scaleByATK(player, damagePercent));
         int revealed = 0;
 
         for (Entity e : nearby) {
@@ -53,7 +57,7 @@ public class RuwachSkillEffect implements ISkillEffect {
             target.setInvisible(false);
             target.removeEffect(MobEffects.INVISIBILITY);
             SkillDamageHelper.dealSkillDamage(target, player.damageSources().magic(), damage);
-            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 200, 0, false, false, true));
+            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, glowDurationTicks, 0, false, false, true));
             revealed++;
         }
 

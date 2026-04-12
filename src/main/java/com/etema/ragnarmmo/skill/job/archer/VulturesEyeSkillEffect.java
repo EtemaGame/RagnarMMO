@@ -1,44 +1,21 @@
 package com.etema.ragnarmmo.skill.job.archer;
 
-import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 
-import java.util.Set;
-
+/**
+ * Vulture's Eye - passive accuracy/range tuning.
+ *
+ * Runtime bonuses are resolved in StatComputer and ProjectileSkillHelper. This
+ * effect intentionally does not hook damage events; the skill should improve
+ * consistency, not grant direct damage.
+ */
 public class VulturesEyeSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "vultures_eye");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "vultures_eye");
 
     @Override
     public ResourceLocation getSkillId() {
         return ID;
-    }
-
-    @Override
-    public Set<TriggerType> getSupportedTriggers() {
-        return Set.of(TriggerType.OFFENSIVE_HURT);
-    }
-
-    @Override
-    public void onOffensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
-        if (level <= 0)
-            return;
-
-        // In RO, Vulture's Eye increases HIT (Accuracy).
-        // For Minecraft, we'll simulate this by increasing arrow damage slightly
-        // to represent "more accurate hits" and reward the skill investment.
-        if (event.getSource().getDirectEntity() instanceof AbstractArrow arrow) {
-            if (arrow.getOwner() == player) {
-                // RO: +1 HIT per level. We'll give a +2% damage bonus per level for ranged
-                // attacks.
-                float multiplier = 1.0f + (level * 0.02f);
-                event.setAmount(event.getAmount() * multiplier);
-            }
-        }
     }
 }

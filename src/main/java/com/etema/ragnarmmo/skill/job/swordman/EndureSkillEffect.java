@@ -3,6 +3,7 @@ package com.etema.ragnarmmo.skill.job.swordman;
 import com.etema.ragnarmmo.common.init.RagnarMobEffects;
 import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
@@ -41,18 +42,26 @@ public class EndureSkillEffect implements ISkillEffect {
 
         user.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
 
-        int durationTicks = (10 + ((level - 1) * 3)) * 20;
+        var defOpt = SkillRegistry.get(ID);
+        int durationTicks = defOpt
+                .map(def -> def.getLevelInt("duration_ticks", level, (10 + ((level - 1) * 3)) * 20))
+                .orElse((10 + ((level - 1) * 3)) * 20);
 
         // Max knockback hits blocked: 7 (RO constant)
-        int maxHits = 7;
+        int maxHits = defOpt
+                .map(def -> def.getLevelInt("max_hits", level, 7))
+                .orElse(7);
 
         // Store endure state in PersistentData
         user.getPersistentData().putLong(ENDURE_TAG, user.level().getGameTime() + durationTicks);
         user.getPersistentData().putInt(ENDURE_HITS_TAG, maxHits);
 
         // Visual: Custom Endure MobEffect to show the icon
+        int mdefBonus = defOpt
+                .map(def -> def.getLevelInt("mdef_bonus", level, level))
+                .orElse(level);
         user.addEffect(new MobEffectInstance(RagnarMobEffects.ENDURE.get(), durationTicks,
-                Math.max(0, level - 1), false, true, true));
+                Math.max(0, mdefBonus - 1), false, true, true));
 
         // Sounds & Particles
         user.level().playSound(null, user.getX(), user.getY(), user.getZ(),

@@ -66,7 +66,9 @@ public class MagnumBreakSkillEffect implements ISkillEffect {
         float baseDamage = Math.max(com.etema.ragnarmmo.combat.damage.SkillDamageHelper.MIN_ATK,
                 com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByATK(user, pct));
 
-        double radius = 2.5;
+        double radius = defOpt
+                .map(def -> def.getLevelDouble("aoe_radius", level, 2.5D))
+                .orElse(2.5D);
         double hitMultiplier = defOpt
                 .map(def -> def.getLevelDouble("accuracy_multiplier", level, 1.0 + (0.10 * level)))
                 .orElse(1.0 + (0.10 * level));
@@ -76,6 +78,9 @@ public class MagnumBreakSkillEffect implements ISkillEffect {
         int buffDurationTicks = defOpt
                 .map(def -> def.getLevelInt("buff_duration_ticks", level, 200))
                 .orElse(200);
+        double knockbackStrength = defOpt
+                .map(def -> def.getLevelDouble("knockback_strength", level, 1.0D))
+                .orElse(1.0D);
         AABB area = user.getBoundingBox().inflate(radius);
         List<Entity> nearby = user.level().getEntities(user, area,
                 e -> e instanceof LivingEntity && e != user && e.isAlive());
@@ -101,7 +106,7 @@ public class MagnumBreakSkillEffect implements ISkillEffect {
 
             // Knockback away from caster
             net.minecraft.world.phys.Vec3 knockDir = target.position().subtract(user.position()).normalize();
-            target.knockback(1.0f, -knockDir.x, -knockDir.z);
+            target.knockback(knockbackStrength, -knockDir.x, -knockDir.z);
         }
 
         // Grant +20% fire damage buff for 10 seconds via PersistentData
@@ -166,8 +171,10 @@ public class MagnumBreakSkillEffect implements ISkillEffect {
             return;
         }
 
-        // +20% fire damage bonus while buff is active
-        event.setAmount(event.getAmount() * 1.20f);
+        float fireBonus = SkillRegistry.get(ID)
+                .map(def -> (float) def.getLevelDouble("fire_bonus_percent", level, 20.0D))
+                .orElse(20.0f);
+        event.setAmount(event.getAmount() * (1.0f + (fireBonus / 100.0f)));
     }
 
     private float defaultHpCost(int level) {

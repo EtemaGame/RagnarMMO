@@ -11,14 +11,30 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 5,
+        "base_cost": 0,
         "cost_per_level": 0
     },
-    "cooldown_ticks": 10,
+    "cooldown_ticks": 0,
     "jobs": [
         "MERCHANT"
     ],
     "requirements": {},
+    "reference": {
+        "source_name": "RagnarMMO Pre-Renewal Port Policy",
+        "notes": "RO_ADAPTED: spends explicit Zeny from level_data and scales melee damage by table."
+    },
+    "level_data": {
+        "1": { "sp_cost": 5, "zeny_cost": 100, "damage_percent": 150, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "2": { "sp_cost": 5, "zeny_cost": 200, "damage_percent": 200, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "3": { "sp_cost": 5, "zeny_cost": 300, "damage_percent": 250, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "4": { "sp_cost": 5, "zeny_cost": 400, "damage_percent": 300, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "5": { "sp_cost": 5, "zeny_cost": 500, "damage_percent": 350, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "6": { "sp_cost": 5, "zeny_cost": 600, "damage_percent": 400, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "7": { "sp_cost": 5, "zeny_cost": 700, "damage_percent": 450, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "8": { "sp_cost": 5, "zeny_cost": 800, "damage_percent": 500, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "9": { "sp_cost": 5, "zeny_cost": 900, "damage_percent": 550, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "10": { "sp_cost": 5, "zeny_cost": 1000, "damage_percent": 600, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 }
+    },
     "ui": {
         "texture": "merchant/merchant_mammonite",
         "grid_x": 2,

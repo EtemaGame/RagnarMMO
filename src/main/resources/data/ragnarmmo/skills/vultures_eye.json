@@ -21,5 +21,20 @@
         "grid_x": 0,
         "grid_y": 1
     },
+    "reference": {
+        "notes": "Vulture's Eye: RO_ADAPTED as accuracy and effective projectile range. It must not provide direct damage."
+    },
+    "level_data": {
+        "1": { "accuracy_bonus": 1, "projectile_velocity_mult": 1.01, "projectile_gravity_mult": 0.98, "projectile_spread_mult": 0.98 },
+        "2": { "accuracy_bonus": 2, "projectile_velocity_mult": 1.02, "projectile_gravity_mult": 0.96, "projectile_spread_mult": 0.965 },
+        "3": { "accuracy_bonus": 3, "projectile_velocity_mult": 1.03, "projectile_gravity_mult": 0.94, "projectile_spread_mult": 0.95 },
+        "4": { "accuracy_bonus": 4, "projectile_velocity_mult": 1.04, "projectile_gravity_mult": 0.92, "projectile_spread_mult": 0.935 },
+        "5": { "accuracy_bonus": 5, "projectile_velocity_mult": 1.05, "projectile_gravity_mult": 0.90, "projectile_spread_mult": 0.92 },
+        "6": { "accuracy_bonus": 6, "projectile_velocity_mult": 1.06, "projectile_gravity_mult": 0.88, "projectile_spread_mult": 0.905 },
+        "7": { "accuracy_bonus": 7, "projectile_velocity_mult": 1.07, "projectile_gravity_mult": 0.86, "projectile_spread_mult": 0.89 },
+        "8": { "accuracy_bonus": 8, "projectile_velocity_mult": 1.08, "projectile_gravity_mult": 0.84, "projectile_spread_mult": 0.875 },
+        "9": { "accuracy_bonus": 9, "projectile_velocity_mult": 1.09, "projectile_gravity_mult": 0.82, "projectile_spread_mult": 0.86 },
+        "10": { "accuracy_bonus": 10, "projectile_velocity_mult": 1.10, "projectile_gravity_mult": 0.80, "projectile_spread_mult": 0.85 }
+    },
     "effect_class": "com.etema.ragnarmmo.skill.job.archer.VulturesEyeSkillEffect"
 }

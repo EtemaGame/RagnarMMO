@@ -3,6 +3,7 @@ package com.etema.ragnarmmo.skill.job.mage;
 import com.etema.ragnarmmo.entity.effect.StatusOverlayEntity;
 import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
@@ -40,7 +41,9 @@ public class StoneCurseSkillEffect implements ISkillEffect {
     public void execute(ServerPlayer player, int level) {
         if (level <= 0) return;
 
-        LivingEntity target = MageTargetUtil.raycast(player, 12.0);
+        var definition = SkillRegistry.require(ID);
+        double range = definition.getLevelDouble("range", level, 12.0D);
+        LivingEntity target = MageTargetUtil.raycast(player, range);
         if (target == null) return;
 
         if (target.getMobType() == net.minecraft.world.entity.MobType.UNDEAD ||
@@ -50,7 +53,8 @@ public class StoneCurseSkillEffect implements ISkillEffect {
             return;
         }
 
-        float chance = 0.24f + ((level - 1) * 0.04f);
+        float chance = (float) definition.getLevelDouble("success_chance", level,
+                0.24D + ((level - 1) * 0.04D));
         if (player.getRandom().nextFloat() > chance) {
             player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§7Stone Curse §cfailed§7."));
             // Still show a small miss particle
@@ -60,7 +64,7 @@ public class StoneCurseSkillEffect implements ISkillEffect {
             return;
         }
 
-        int durationTicks = (2 + level) * 20; // 3s to 12s
+        int durationTicks = definition.getLevelInt("duration_ticks", level, (2 + level) * 20);
 
         // Complete immobility
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, durationTicks, 10, false, true, true));

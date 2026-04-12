@@ -25,7 +25,9 @@ public class WarpPortalSkillEffect implements ISkillEffect {
 
     @Override
     public int getCastTime(int level) {
-        return 20;
+        return SkillRegistry.get(ID)
+                .map(def -> def.getLevelInt("cast_time_ticks", level, 20))
+                .orElse(20);
     }
 
     @Override

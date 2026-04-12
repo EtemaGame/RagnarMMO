@@ -15,7 +15,7 @@
     "cooldown_ticks": 10,
     "requirements": {
         "ragnarmmo:mammonite": 10,
-        "ragnarmmo:cart_strength": 5
+        "ragnarmmo:pushcart": 5
     },
     "jobs": [
         "BLACKSMITH"

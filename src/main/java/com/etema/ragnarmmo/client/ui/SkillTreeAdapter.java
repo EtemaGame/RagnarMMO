@@ -141,12 +141,11 @@ public class SkillTreeAdapter {
     /**
      * Fallback: Get skills using the old SkillType enum system.
      */
-    @SuppressWarnings("deprecation")
     private static List<SkillNodeWrapper> getLegacySkills(JobType job, int tier) {
         List<SkillNodeWrapper> result = new ArrayList<>();
+        Set<ResourceLocation> candidateSkillIds = tier == 0 ? JobType.NOVICE.getAllowedSkillIds() : job.getAllowedSkillIds();
 
-        for (SkillType type : SkillType.values()) {
-            ResourceLocation skillId = type.toResourceLocation();
+        for (ResourceLocation skillId : candidateSkillIds) {
             var defOpt = SkillRegistry.get(skillId);
             if (defOpt.isEmpty())
                 continue;
@@ -157,8 +156,7 @@ public class SkillTreeAdapter {
             if (tier == 0) {
                 matches = def.getTier() == SkillTier.NOVICE;
             } else if (tier == 1) {
-                matches = def.getTier() == SkillTier.FIRST &&
-                        job.getAllowedSkills().contains(type);
+                matches = def.getTier() == SkillTier.FIRST;
             }
 
             if (matches) {

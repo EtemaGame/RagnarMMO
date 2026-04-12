@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.skill.job.swordman;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -38,11 +39,21 @@ public class IncreaseHpRecoverySkillEffect implements ISkillEffect {
     @Override
     public void onPeriodicTick(TickEvent.PlayerTickEvent event, ServerPlayer player, int level) {
         if (level <= 0) return;
-        if (player.tickCount % 200 != 0) return;
+        var defOpt = SkillRegistry.get(ID);
+        int intervalTicks = defOpt
+                .map(def -> def.getLevelInt("interval_ticks", level, 200))
+                .orElse(200);
+        if (player.tickCount % Math.max(1, intervalTicks) != 0) return;
         if (player.getHealth() >= player.getMaxHealth()) return;
         if (player.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4 || !player.onGround()) return;
 
-        float healAmount = (5.0f * level) + (float) (player.getMaxHealth() * (0.002 * level));
+        float flat = defOpt
+                .map(def -> (float) def.getLevelDouble("hp_recovery_flat", level, 5.0D * level))
+                .orElse(5.0f * level);
+        float maxHpRatio = defOpt
+                .map(def -> (float) def.getLevelDouble("hp_recovery_max_hp_ratio", level, 0.002D * level))
+                .orElse(0.002f * level);
+        float healAmount = flat + (float) (player.getMaxHealth() * maxHpRatio);
         player.heal(healAmount);
 
         if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
@@ -59,18 +70,21 @@ public class IncreaseHpRecoverySkillEffect implements ISkillEffect {
 
         ItemStack stack = event.getItem();
         float bonusHeal = 0.0f;
+        float itemHealBonusRatio = SkillRegistry.get(ID)
+                .map(def -> (float) def.getLevelDouble("item_heal_bonus_ratio", level, 0.10D * level))
+                .orElse(0.10f * level);
 
         if (stack.isEdible()) {
             var food = stack.getFoodProperties(player);
             if (food != null) {
-                bonusHeal += (float) (food.getNutrition() * (0.10 * level));
+                bonusHeal += food.getNutrition() * itemHealBonusRatio;
             }
         }
 
         for (MobEffectInstance effect : PotionUtils.getMobEffects(stack)) {
             if (effect.getEffect() == MobEffects.HEAL) {
                 float baseHeal = 4.0f * (1 << effect.getAmplifier());
-                bonusHeal += (float) (baseHeal * (0.10 * level));
+                bonusHeal += baseHeal * itemHealBonusRatio;
             }
         }
 

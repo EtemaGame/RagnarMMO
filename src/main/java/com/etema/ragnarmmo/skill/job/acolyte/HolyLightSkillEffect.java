@@ -28,7 +28,9 @@ public class HolyLightSkillEffect implements ISkillEffect {
             return;
 
         var defOpt = SkillRegistry.get(ID);
-        LivingEntity target = getTarget(player);
+        LivingEntity target = getTarget(player, defOpt
+                .map(def -> def.getLevelDouble("range", level, 15.0D))
+                .orElse(15.0D));
         final float damagePercent = defOpt
                 .map(def -> (float) def.getLevelDouble("damage_percent", level, 125.0))
                 .orElse(125.0f);
@@ -87,12 +89,12 @@ public class HolyLightSkillEffect implements ISkillEffect {
     }
 
     // Raycast for target
-    private LivingEntity getTarget(Player player) {
+    private LivingEntity getTarget(Player player, double range) {
         Vec3 start = player.getEyePosition();
         Vec3 look = player.getLookAngle();
-        Vec3 end = start.add(look.scale(15.0)); // 15 block range
+        Vec3 end = start.add(look.scale(range));
 
-        AABB searchBox = player.getBoundingBox().inflate(15.0);
+        AABB searchBox = player.getBoundingBox().inflate(range);
         List<LivingEntity> possibleTargets = player.level().getEntitiesOfClass(LivingEntity.class, searchBox,
                 e -> e != player && e.isAlive());
 

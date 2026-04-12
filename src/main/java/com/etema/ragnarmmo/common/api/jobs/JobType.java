@@ -4,11 +4,11 @@ import com.etema.ragnarmmo.skill.api.SkillType;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.EnumMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Defines various jobs (classes) and their skill bonuses.
@@ -102,7 +102,6 @@ public enum JobType {
             }
             case MERCHANT -> {
                 classTreeSkills.add(SkillType.TRADING_KNOWLEDGE);
-                classTreeSkills.add(SkillType.CART_STRENGTH);
                 classTreeSkills.add(SkillType.WEAPON_MAINTENANCE);
                 classTreeSkills.add(SkillType.ARMOR_MAINTENANCE);
                 classTreeSkills.add(SkillType.OVERCHARGE);
@@ -156,9 +155,35 @@ public enum JobType {
      * @return Set of allowed skill ResourceLocations
      */
     public Set<ResourceLocation> getAllowedSkillIds() {
-        return classTreeSkills.stream()
-                .map(SkillType::toResourceLocation)
-                .collect(Collectors.toSet());
+        return switch (this) {
+            case NOVICE -> skillIds("first_aid", "basic_skill", "play_dead");
+            case SWORDSMAN, KNIGHT -> skillIds(
+                    "sword_mastery", "increase_hp_recovery", "bash", "provoke",
+                    "two_hand_mastery", "magnum_break", "endure");
+            case MAGE, WIZARD -> skillIds(
+                    "increase_sp_recovery", "sight", "napalm_beat", "soul_strike", "safety_wall",
+                    "cold_bolt", "frost_diver", "stone_curse", "fire_bolt", "fire_ball",
+                    "fire_wall", "lightning_bolt", "thunder_storm");
+            case ARCHER, HUNTER -> skillIds(
+                    "owls_eye", "vultures_eye", "improve_concentration", "double_strafe", "arrow_shower");
+            case THIEF, ASSASSIN -> skillIds(
+                    "double_attack", "improve_dodge", "steal", "hiding", "envenom", "detoxify");
+            case MERCHANT, BLACKSMITH -> skillIds(
+                    "enlarge_weight_limit", "discount", "overcharge", "pushcart",
+                    "vending", "buying_store", "identify", "mammonite");
+            case ACOLYTE, PRIEST -> skillIds(
+                    "divine_protection", "demon_bane", "angelus", "blessing", "heal",
+                    "increase_agi", "decrease_agi", "cure", "ruwach", "teleportation",
+                    "warp_portal", "pneuma", "aqua_benedicta", "holy_light", "signum_crucis");
+        };
+    }
+
+    private static Set<ResourceLocation> skillIds(String... paths) {
+        LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
+        for (String path : paths) {
+            ids.add(ResourceLocation.fromNamespaceAndPath("ragnarmmo", path));
+        }
+        return Set.copyOf(ids);
     }
 
     /**

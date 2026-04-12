@@ -11,10 +11,10 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 15,
-        "cost_per_level": 3
+        "base_cost": 0,
+        "cost_per_level": 0
     },
-    "cooldown_ticks": 20,
+    "cooldown_ticks": 0,
     "jobs": [
         "ARCHER"
     ],
@@ -25,6 +25,21 @@
         "texture": "archer/archer_arrow_shower",
         "grid_x": 1,
         "grid_y": 1
+    },
+    "reference": {
+        "notes": "Arrow Shower: RO_ADAPTED as a bow area cleanup/control skill. Knockback is intentionally modest."
+    },
+    "level_data": {
+        "1": { "sp_cost": 15, "damage_percent": 80, "aoe_radius": 2.2, "knockback_strength": 0.20, "range": 12, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "2": { "sp_cost": 15, "damage_percent": 85, "aoe_radius": 2.3, "knockback_strength": 0.20, "range": 12, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "3": { "sp_cost": 15, "damage_percent": 90, "aoe_radius": 2.4, "knockback_strength": 0.22, "range": 12, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "4": { "sp_cost": 15, "damage_percent": 95, "aoe_radius": 2.5, "knockback_strength": 0.22, "range": 12, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "5": { "sp_cost": 15, "damage_percent": 100, "aoe_radius": 2.6, "knockback_strength": 0.24, "range": 12, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "6": { "sp_cost": 15, "damage_percent": 105, "aoe_radius": 2.7, "knockback_strength": 0.24, "range": 12, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "7": { "sp_cost": 15, "damage_percent": 110, "aoe_radius": 2.8, "knockback_strength": 0.26, "range": 12, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "8": { "sp_cost": 15, "damage_percent": 115, "aoe_radius": 2.9, "knockback_strength": 0.26, "range": 12, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "9": { "sp_cost": 15, "damage_percent": 120, "aoe_radius": 3.0, "knockback_strength": 0.28, "range": 12, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "10": { "sp_cost": 15, "damage_percent": 125, "aoe_radius": 3.0, "knockback_strength": 0.30, "range": 12, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.archer.ArrowShowerSkillEffect"
 }

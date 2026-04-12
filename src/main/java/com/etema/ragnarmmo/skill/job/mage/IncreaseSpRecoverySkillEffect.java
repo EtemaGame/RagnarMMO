@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.skill.job.mage;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,14 +33,24 @@ public class IncreaseSpRecoverySkillEffect implements ISkillEffect {
     @Override
     public void onPeriodicTick(TickEvent.PlayerTickEvent event, ServerPlayer player, int level) {
         if (level <= 0) return;
-        if (player.tickCount % 200 != 0) return;
+        var defOpt = SkillRegistry.get(ID);
+        int intervalTicks = defOpt
+                .map(def -> def.getLevelInt("interval_ticks", level, 200))
+                .orElse(200);
+        if (player.tickCount % Math.max(1, intervalTicks) != 0) return;
 
         if (player.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4 || !player.onGround()) return;
 
         player.getCapability(PlayerStatsProvider.CAP).ifPresent(stats -> {
             double max = stats.getMaxResource();
             if (stats.getCurrentResource() < max) {
-                double bonus = (level * 3.0) + (max * (0.002 * level));
+                double flat = defOpt
+                        .map(def -> def.getLevelDouble("resource_recovery_flat", level, level * 3.0D))
+                        .orElse(level * 3.0D);
+                double maxRatio = defOpt
+                        .map(def -> def.getLevelDouble("resource_recovery_max_ratio", level, 0.002D * level))
+                        .orElse(0.002D * level);
+                double bonus = flat + (max * maxRatio);
                 stats.addResource(bonus);
             }
         });

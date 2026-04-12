@@ -11,10 +11,10 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 10,
+        "base_cost": 0,
         "cost_per_level": 0
     },
-    "cooldown_ticks": 200,
+    "cooldown_ticks": 0,
     "jobs": [
         "SWORDSMAN"
     ],
@@ -25,6 +25,21 @@
         "texture": "swordman/swordman_endure",
         "grid_x": 3,
         "grid_y": 0
+    },
+    "reference": {
+        "notes": "Endure: RO_ADAPTED anti-knockback state with explicit hit count and duration."
+    },
+    "level_data": {
+        "1": { "sp_cost": 10, "duration_ticks": 200, "max_hits": 7, "mdef_bonus": 1, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "2": { "sp_cost": 10, "duration_ticks": 260, "max_hits": 7, "mdef_bonus": 2, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "3": { "sp_cost": 10, "duration_ticks": 320, "max_hits": 7, "mdef_bonus": 3, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "4": { "sp_cost": 10, "duration_ticks": 380, "max_hits": 7, "mdef_bonus": 4, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "5": { "sp_cost": 10, "duration_ticks": 440, "max_hits": 7, "mdef_bonus": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "6": { "sp_cost": 10, "duration_ticks": 500, "max_hits": 7, "mdef_bonus": 6, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "7": { "sp_cost": 10, "duration_ticks": 560, "max_hits": 7, "mdef_bonus": 7, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "8": { "sp_cost": 10, "duration_ticks": 620, "max_hits": 7, "mdef_bonus": 8, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "9": { "sp_cost": 10, "duration_ticks": 680, "max_hits": 7, "mdef_bonus": 9, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "10": { "sp_cost": 10, "duration_ticks": 740, "max_hits": 7, "mdef_bonus": 10, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.swordman.EndureSkillEffect"
 }

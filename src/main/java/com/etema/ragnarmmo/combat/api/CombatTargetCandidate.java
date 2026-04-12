@@ -1,16 +1,16 @@
 package com.etema.ragnarmmo.combat.api;
 
 /**
- * Lightweight target candidate descriptor passed from bridge/network layers into
- * the combat engine.
+ * Lightweight target candidate descriptor passed from network layers into the
+ * combat engine.
  */
 public record CombatTargetCandidate(
         int entityId,
         String source,
         double distance,
-        boolean fromBetterCombatHitbox) {
+        boolean fromClientExtendedHitbox) {
 
-    public static CombatTargetCandidate betterCombat(int entityId, double distance) {
-        return new CombatTargetCandidate(entityId, "better_combat", distance, true);
+    public static CombatTargetCandidate clientExtended(int entityId, double distance) {
+        return new CombatTargetCandidate(entityId, "client_extended", distance, true);
     }
 }

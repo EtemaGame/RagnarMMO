@@ -1,9 +1,6 @@
 package com.etema.ragnarmmo.combat.event;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.combat.api.RagnarAttackRequest;
-import com.etema.ragnarmmo.combat.engine.RagnarCombatEngine;
-import com.etema.ragnarmmo.combat.integration.bettercombat.BetterCombatTargetAdapter;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -15,12 +12,10 @@ import net.minecraftforge.fml.common.Mod;
 /**
  * First practical hook that routes basic attacks through RagnarMMO on the
  * server. This intentionally cancels vanilla melee authority for player vs
- * living-entity attacks.
+ * living-entity attacks while the packet path remains the functional authority.
  */
 @Mod.EventBusSubscriber(modid = RagnarMMO.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class BasicAttackEventHandler {
-    private static final RagnarCombatEngine COMBAT_ENGINE = RagnarCombatEngine.get();
-
     private BasicAttackEventHandler() {
     }
 
@@ -37,13 +32,5 @@ public final class BasicAttackEventHandler {
 
         // RagnarMMO must be the combat authority for this slice.
         event.setCanceled(true);
-
-        int sequenceId = COMBAT_ENGINE.state(attacker).getLastAcceptedSequenceId() + 1;
-        COMBAT_ENGINE.processBasicAttackRequest(attacker, new RagnarAttackRequest(
-                sequenceId,
-                0,
-                false,
-                attacker.getInventory().selected,
-                java.util.List.of(BetterCombatTargetAdapter.fromEntityId(target.getId()))));
     }
 }

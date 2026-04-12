@@ -1,50 +1,56 @@
 package com.etema.ragnarmmo.skill.job.merchant;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillDefinition;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * Vending — Active (Merchant)
- * RO: Opens a personal shop for other players.
- * MC: Opens the player's Cart inventory via the existing CartCommands system,
- *     broadcasts a "shop open" message to nearby players, and stores a flag
- *     so others can see the shop (future chest GUI extension possible).
- *     Level controls the price markup the cart applies.
+ * Vending - Active (Merchant).
+ * Opens a data-driven personal shop marker over the player's cart inventory.
  */
 public class VendingSkillEffect implements ISkillEffect {
 
     private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "vending");
 
     @Override
-    public ResourceLocation getSkillId() { return ID; }
+    public ResourceLocation getSkillId() {
+        return ID;
+    }
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0) return;
+        if (level <= 0) {
+            return;
+        }
 
-        // Store vending state and level for future /cart-view integration
+        SkillDefinition definition = SkillRegistry.get(ID).orElse(null);
+        int slotCount = definition != null ? definition.getLevelInt("vendor_slot_count", level, level + 2) : level + 2;
+        double radius = definition != null ? definition.getLevelDouble("broadcast_radius", level, 20.0D) : 20.0D;
+
         player.getPersistentData().putBoolean("vending_active", true);
         player.getPersistentData().putInt("vending_level", level);
+        player.getPersistentData().putInt("vending_slot_count", slotCount);
 
-        // Broadcast to nearby players (<20 blocks)
-        if (player.level() instanceof net.minecraft.server.level.ServerLevel sl) {
-            String shopName = player.getName().getString() + "'s Shop";
-            sl.players().stream()
-                    .filter(p -> p != player && p.distanceTo(player) < 20)
-                    .forEach(p -> p.sendSystemMessage(Component.literal(
-                            "§6[Vending] §f" + player.getName().getString()
-                            + " §fabrió tienda. Usa §e/cart view " + player.getName().getString()
-                            + " §fpara ver.")));
+        if (player.level() instanceof ServerLevel serverLevel) {
+            double radiusSq = radius * radius;
+            serverLevel.players().stream()
+                    .filter(other -> other != player && other.distanceToSqr(player) <= radiusSq)
+                    .forEach(other -> other.sendSystemMessage(Component.literal(
+                            "[Vending] " + player.getName().getString()
+                                    + " opened a shop. Use /cart view " + player.getName().getString() + ".")));
 
-            sl.playSound(null, player.getX(), player.getY(), player.getZ(),
+            serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
                     SoundEvents.VILLAGER_TRADE, SoundSource.PLAYERS, 1.0f, 1.2f);
         }
 
         player.sendSystemMessage(Component.literal(
-                "§6✦ Vending §flv." + level + " — Tu tienda está abierta. §7(/cart para gestionar)"));
+                "Vending lv." + level + " opened with " + slotCount + " shop slots."));
     }
 }

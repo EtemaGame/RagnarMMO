@@ -19,5 +19,20 @@
         "grid_x": 0,
         "grid_y": 0
     },
+    "reference": {
+        "notes": "Increase SP Recovery: RO_ADAPTED passive rest recovery for the current class resource."
+    },
+    "level_data": {
+        "1": { "resource_recovery_flat": 3, "resource_recovery_max_ratio": 0.002, "interval_ticks": 200 },
+        "2": { "resource_recovery_flat": 6, "resource_recovery_max_ratio": 0.004, "interval_ticks": 200 },
+        "3": { "resource_recovery_flat": 9, "resource_recovery_max_ratio": 0.006, "interval_ticks": 200 },
+        "4": { "resource_recovery_flat": 12, "resource_recovery_max_ratio": 0.008, "interval_ticks": 200 },
+        "5": { "resource_recovery_flat": 15, "resource_recovery_max_ratio": 0.010, "interval_ticks": 200 },
+        "6": { "resource_recovery_flat": 18, "resource_recovery_max_ratio": 0.012, "interval_ticks": 200 },
+        "7": { "resource_recovery_flat": 21, "resource_recovery_max_ratio": 0.014, "interval_ticks": 200 },
+        "8": { "resource_recovery_flat": 24, "resource_recovery_max_ratio": 0.016, "interval_ticks": 200 },
+        "9": { "resource_recovery_flat": 27, "resource_recovery_max_ratio": 0.018, "interval_ticks": 200 },
+        "10": { "resource_recovery_flat": 30, "resource_recovery_max_ratio": 0.020, "interval_ticks": 200 }
+    },
     "effect_class": "com.etema.ragnarmmo.skill.job.mage.IncreaseSpRecoverySkillEffect"
 }

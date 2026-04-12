@@ -11,7 +11,7 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 10,
+        "base_cost": 0,
         "cost_per_level": 0
     },
     "cooldown_ticks": 0,
@@ -24,6 +24,12 @@
         "texture": "acolyte/acolyte_aqua_benedicta",
         "grid_x": 0,
         "grid_y": 3
+    },
+    "reference": {
+        "notes": "Aqua Benedicta: RO_ADAPTED utility craft that converts a water bottle into Holy Water while in water."
+    },
+    "level_data": {
+        "1": { "sp_cost": 10, "cast_time_ticks": 0, "cast_delay_ticks": 40, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.AquaBenedictaSkillEffect"
 }

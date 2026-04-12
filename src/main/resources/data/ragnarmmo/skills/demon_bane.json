@@ -21,5 +21,20 @@
         "grid_x": 0,
         "grid_y": 2
     },
+    "reference": {
+        "notes": "Demon Bane: RO_ADAPTED offensive bonus against undead/demon analog targets."
+    },
+    "level_data": {
+        "1": { "damage_bonus_percent": 4 },
+        "2": { "damage_bonus_percent": 8 },
+        "3": { "damage_bonus_percent": 12 },
+        "4": { "damage_bonus_percent": 16 },
+        "5": { "damage_bonus_percent": 20 },
+        "6": { "damage_bonus_percent": 24 },
+        "7": { "damage_bonus_percent": 28 },
+        "8": { "damage_bonus_percent": 32 },
+        "9": { "damage_bonus_percent": 36 },
+        "10": { "damage_bonus_percent": 40 }
+    },
     "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.DemonBaneSkillEffect"
 }

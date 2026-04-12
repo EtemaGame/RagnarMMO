@@ -6,6 +6,7 @@ import com.etema.ragnarmmo.common.api.events.StatComputeEvent;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -39,12 +40,15 @@ public final class StatComputer {
     private static final ResourceLocation RESEARCH_WEAPONRY = new ResourceLocation("ragnarmmo", "research_weaponry");
     private static final ResourceLocation CRITICAL_SHOT = new ResourceLocation("ragnarmmo", "critical_shot");
     private static final ResourceLocation SKIN_TEMPERING = new ResourceLocation("ragnarmmo", "skin_tempering");
+    private static final ResourceLocation VULTURES_EYE = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "vultures_eye");
+    private static final ResourceLocation IMPROVE_DODGE =
+            ResourceLocation.fromNamespaceAndPath("ragnarmmo", "improve_dodge");
 
     private record SkillContext(
             int sword, int dagger, int mace, int bow, int weaponTrainer,
             int faith, int arcaneRegen, int accuracy, int manaControl,
             int spear, int katar, int rightHand, int leftHand, int sonicAccel,
-            int researchWeaponry, int skinTempering, int criticalShot
+            int researchWeaponry, int skinTempering, int criticalShot, int vulturesEye, int improveDodge
     ) {}
 
     public static DerivedStats compute(Player player, IPlayerStats stats, EquipmentStatSnapshot snapshot) {
@@ -66,6 +70,7 @@ public final class StatComputer {
         applyDefense(derived, vit, agi, intel, luk, level, resolvedSnapshot, skillContext);
         applyResources(derived, str, vit, intel, level, stats, skillContext);
         applyMiscStats(player, derived, agi, dex, resolvedSnapshot);
+        applyMinecraftAdaptationStats(derived, skillContext);
 
         MinecraftForge.EVENT_BUS.post(new StatComputeEvent(player, stats, derived));
         return derived;
@@ -74,7 +79,7 @@ public final class StatComputer {
     private static SkillContext fetchSkillContext(Player player) {
         var skillsOpt = PlayerSkillsProvider.get(player).resolve();
         if (skillsOpt.isEmpty()) {
-            return new SkillContext(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            return new SkillContext(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
 
         var skills = skillsOpt.get();
@@ -87,7 +92,8 @@ public final class StatComputer {
                 skills.getSkillLevel(KATAR_MASTERY), skills.getSkillLevel(RIGHTHAND_MASTERY),
                 skills.getSkillLevel(LEFTHAND_MASTERY), skills.getSkillLevel(SONIC_ACCELERATION),
                 skills.getSkillLevel(RESEARCH_WEAPONRY), skills.getSkillLevel(SKIN_TEMPERING),
-                skills.getSkillLevel(CRITICAL_SHOT)
+                skills.getSkillLevel(CRITICAL_SHOT), skills.getSkillLevel(VULTURES_EYE),
+                skills.getSkillLevel(IMPROVE_DODGE)
         );
     }
 
@@ -119,6 +125,9 @@ public final class StatComputer {
 
         double hitBonus = ctx.accuracy * 3.0D;
         if (isBow(main)) hitBonus += ctx.bow * 2.0D;
+        if (isBow(main) && ctx.vulturesEye > 0) {
+            hitBonus += getSkillLevelDouble(VULTURES_EYE, ctx.vulturesEye, "accuracy_bonus", ctx.vulturesEye);
+        }
         if (ctx.sonicAccel > 0 && isKatar(main)) hitBonus += ctx.sonicAccel * 5.0D;
         if (ctx.researchWeaponry > 0 && isAxeOrMace(main)) hitBonus += ctx.researchWeaponry * 2.0D;
         derived.accuracy = CombatMath.computeHIT(dex, luk, level, hitBonus);
@@ -156,7 +165,10 @@ public final class StatComputer {
         derived.softMagicDefense = softMdef;
         derived.magicDefense = hardMdef + softMdef;
         derived.magicDamageReduction = CombatMath.computeMagicDR(hardMdef);
-        derived.flee = CombatMath.computeFLEE(agi, luk, level, 0.0D);
+        double fleeBonus = ctx.improveDodge > 0
+                ? getSkillLevelDouble(IMPROVE_DODGE, ctx.improveDodge, "flee_bonus", ctx.improveDodge * 3.0D)
+                : 0.0D;
+        derived.flee = CombatMath.computeFLEE(agi, luk, level, fleeBonus);
     }
 
     private static void applyResources(DerivedStats derived, int str, int vit, int intel, int level,
@@ -189,6 +201,27 @@ public final class StatComputer {
         derived.globalCooldown = aps > 0.0D ? 1.0D / aps : 0.0D;
         derived.castTime = CombatMath.computeCastTime(snapshot.baseCastTime(), dex, 0, false);
         derived.lifeSteal = getLifeSteal(player);
+    }
+
+    private static void applyMinecraftAdaptationStats(DerivedStats derived, SkillContext ctx) {
+        derived.projectileVelocityMult = 1.0D;
+        derived.projectileGravityMult = 1.0D;
+        derived.projectileSpreadMult = 1.0D;
+
+        if (ctx.vulturesEye > 0) {
+            derived.projectileVelocityMult *= getSkillLevelDouble(
+                    VULTURES_EYE, ctx.vulturesEye, "projectile_velocity_mult", 1.0D);
+            derived.projectileGravityMult *= getSkillLevelDouble(
+                    VULTURES_EYE, ctx.vulturesEye, "projectile_gravity_mult", 1.0D);
+            derived.projectileSpreadMult *= getSkillLevelDouble(
+                    VULTURES_EYE, ctx.vulturesEye, "projectile_spread_mult", 1.0D);
+        }
+    }
+
+    private static double getSkillLevelDouble(ResourceLocation skillId, int level, String key, double fallback) {
+        return SkillRegistry.get(skillId)
+                .map(def -> def.getLevelDouble(key, level, fallback))
+                .orElse(fallback);
     }
 
     private static double getCritChance(Player player) {

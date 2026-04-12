@@ -12,6 +12,8 @@ The `docs` folder was cleaned to keep only living documentation that still helps
   - semantics of `race`, `element`, and `size`
 - `design/mob-stat-derivation-spec.md`
   - semantic meaning of `ro_stats` and final combat stats
+- `rework/`
+  - active Pre-Renewal first-job rework notes, policy, and canonical skill matrix
 
 ## Removed from docs
 

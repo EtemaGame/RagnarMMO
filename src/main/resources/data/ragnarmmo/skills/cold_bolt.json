@@ -11,8 +11,8 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 10,
-        "cost_per_level": 2
+        "base_cost": 0,
+        "cost_per_level": 0
     },
     "cooldown_ticks": 0,
     "cast_delay_ticks": 0,
@@ -30,16 +30,16 @@
         "notes": "Cold Bolt: 1-10 bolts, 0.7-7.0 sec cast, 12-30 SP, 1.0-2.8 sec skill delay."
     },
     "level_data": {
-        "1": { "hit_count": 1, "sp_cost": 12, "cast_time_ticks": 14, "cast_delay_ticks": 20 },
-        "2": { "hit_count": 2, "sp_cost": 14, "cast_time_ticks": 28, "cast_delay_ticks": 24 },
-        "3": { "hit_count": 3, "sp_cost": 16, "cast_time_ticks": 42, "cast_delay_ticks": 28 },
-        "4": { "hit_count": 4, "sp_cost": 18, "cast_time_ticks": 56, "cast_delay_ticks": 32 },
-        "5": { "hit_count": 5, "sp_cost": 20, "cast_time_ticks": 70, "cast_delay_ticks": 36 },
-        "6": { "hit_count": 6, "sp_cost": 22, "cast_time_ticks": 84, "cast_delay_ticks": 40 },
-        "7": { "hit_count": 7, "sp_cost": 24, "cast_time_ticks": 98, "cast_delay_ticks": 44 },
-        "8": { "hit_count": 8, "sp_cost": 26, "cast_time_ticks": 112, "cast_delay_ticks": 48 },
-        "9": { "hit_count": 9, "sp_cost": 28, "cast_time_ticks": 126, "cast_delay_ticks": 52 },
-        "10": { "hit_count": 10, "sp_cost": 30, "cast_time_ticks": 140, "cast_delay_ticks": 56 }
+        "1": { "hit_count": 1, "sp_cost": 12, "cast_time_ticks": 14, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "2": { "hit_count": 2, "sp_cost": 14, "cast_time_ticks": 28, "cast_delay_ticks": 24, "cooldown_ticks": 0 },
+        "3": { "hit_count": 3, "sp_cost": 16, "cast_time_ticks": 42, "cast_delay_ticks": 28, "cooldown_ticks": 0 },
+        "4": { "hit_count": 4, "sp_cost": 18, "cast_time_ticks": 56, "cast_delay_ticks": 32, "cooldown_ticks": 0 },
+        "5": { "hit_count": 5, "sp_cost": 20, "cast_time_ticks": 70, "cast_delay_ticks": 36, "cooldown_ticks": 0 },
+        "6": { "hit_count": 6, "sp_cost": 22, "cast_time_ticks": 84, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
+        "7": { "hit_count": 7, "sp_cost": 24, "cast_time_ticks": 98, "cast_delay_ticks": 44, "cooldown_ticks": 0 },
+        "8": { "hit_count": 8, "sp_cost": 26, "cast_time_ticks": 112, "cast_delay_ticks": 48, "cooldown_ticks": 0 },
+        "9": { "hit_count": 9, "sp_cost": 28, "cast_time_ticks": 126, "cast_delay_ticks": 52, "cooldown_ticks": 0 },
+        "10": { "hit_count": 10, "sp_cost": 30, "cast_time_ticks": 140, "cast_delay_ticks": 56, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.mage.ColdBoltSkillEffect"
 }

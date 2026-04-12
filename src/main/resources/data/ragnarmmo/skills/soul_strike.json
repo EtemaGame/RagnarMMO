@@ -11,10 +11,10 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 15,
-        "cost_per_level": 2
+        "base_cost": 0,
+        "cost_per_level": 0
     },
-    "cooldown_ticks": 10,
+    "cooldown_ticks": 0,
     "jobs": [
         "MAGE"
     ],
@@ -25,6 +25,21 @@
         "texture": "mage/mage_soul_strike",
         "grid_x": 0,
         "grid_y": 1
+    },
+    "reference": {
+        "notes": "Soul Strike: RO_EXACT-ish 1-5 ghost hits with odd/even SP table and undead bonus adaptation."
+    },
+    "level_data": {
+        "1": { "sp_cost": 18, "hit_count": 1, "damage_percent": 100, "undead_multiplier": 1.05, "range": 12, "cast_time_ticks": 24, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "2": { "sp_cost": 14, "hit_count": 1, "damage_percent": 100, "undead_multiplier": 1.10, "range": 12, "cast_time_ticks": 28, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "3": { "sp_cost": 24, "hit_count": 2, "damage_percent": 100, "undead_multiplier": 1.15, "range": 12, "cast_time_ticks": 32, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "4": { "sp_cost": 20, "hit_count": 2, "damage_percent": 100, "undead_multiplier": 1.20, "range": 12, "cast_time_ticks": 36, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "5": { "sp_cost": 30, "hit_count": 3, "damage_percent": 100, "undead_multiplier": 1.25, "range": 12, "cast_time_ticks": 40, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "6": { "sp_cost": 26, "hit_count": 3, "damage_percent": 100, "undead_multiplier": 1.30, "range": 12, "cast_time_ticks": 44, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "7": { "sp_cost": 36, "hit_count": 4, "damage_percent": 100, "undead_multiplier": 1.35, "range": 12, "cast_time_ticks": 48, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "8": { "sp_cost": 32, "hit_count": 4, "damage_percent": 100, "undead_multiplier": 1.40, "range": 12, "cast_time_ticks": 52, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "9": { "sp_cost": 42, "hit_count": 5, "damage_percent": 100, "undead_multiplier": 1.45, "range": 12, "cast_time_ticks": 56, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
+        "10": { "sp_cost": 38, "hit_count": 5, "damage_percent": 100, "undead_multiplier": 1.50, "range": 12, "cast_time_ticks": 54, "cast_delay_ticks": 10, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.mage.SoulStrikeSkillEffect"
 }

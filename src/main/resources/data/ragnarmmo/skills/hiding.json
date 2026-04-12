@@ -11,10 +11,10 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 10,
+        "base_cost": 0,
         "cost_per_level": 0
     },
-    "cooldown_ticks": 40,
+    "cooldown_ticks": 0,
     "jobs": [
         "THIEF"
     ],
@@ -25,6 +25,21 @@
         "texture": "thief/thief_hiding",
         "grid_x": 1,
         "grid_y": 1
+    },
+    "reference": {
+        "notes": "Hiding: RO_ADAPTED invisibility, mob target break, and movement restriction."
+    },
+    "level_data": {
+        "1": { "sp_cost": 10, "duration_ticks": 600, "mob_pull_bonus": -1.0, "reveal_radius": 32, "slowness_amplifier": 3, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "2": { "sp_cost": 10, "duration_ticks": 1200, "mob_pull_bonus": -1.0, "reveal_radius": 32, "slowness_amplifier": 2, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "3": { "sp_cost": 10, "duration_ticks": 1800, "mob_pull_bonus": -1.0, "reveal_radius": 32, "slowness_amplifier": 2, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "4": { "sp_cost": 10, "duration_ticks": 2400, "mob_pull_bonus": -1.0, "reveal_radius": 32, "slowness_amplifier": 2, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "5": { "sp_cost": 10, "duration_ticks": 3000, "mob_pull_bonus": -1.0, "reveal_radius": 32, "slowness_amplifier": 1, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "6": { "sp_cost": 10, "duration_ticks": 3600, "mob_pull_bonus": -1.0, "reveal_radius": 32, "slowness_amplifier": 1, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "7": { "sp_cost": 10, "duration_ticks": 4200, "mob_pull_bonus": -1.0, "reveal_radius": 32, "slowness_amplifier": 1, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "8": { "sp_cost": 10, "duration_ticks": 4800, "mob_pull_bonus": -1.0, "reveal_radius": 32, "slowness_amplifier": 0, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "9": { "sp_cost": 10, "duration_ticks": 5400, "mob_pull_bonus": -1.0, "reveal_radius": 32, "slowness_amplifier": 0, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
+        "10": { "sp_cost": 10, "duration_ticks": 6000, "mob_pull_bonus": -1.0, "reveal_radius": 32, "slowness_amplifier": -1, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.thief.HidingSkillEffect"
 }

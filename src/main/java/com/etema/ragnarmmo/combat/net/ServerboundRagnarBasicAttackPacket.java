@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import com.etema.ragnarmmo.combat.api.CombatActionType;
-import com.etema.ragnarmmo.combat.api.CombatRequestContext;
-import com.etema.ragnarmmo.combat.api.CombatTargetCandidate;
+import com.etema.ragnarmmo.combat.api.RagnarAttackRequest;
+import com.etema.ragnarmmo.combat.api.RagnarTargetCandidate;
+import com.etema.ragnarmmo.combat.api.RagnarTargetSource;
 import com.etema.ragnarmmo.combat.engine.RagnarCombatEngine;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -58,14 +58,12 @@ public class ServerboundRagnarBasicAttackPacket {
                 return;
             }
 
-            // Convert to domain candidates using integration adaptors if necessary
-            List<com.etema.ragnarmmo.combat.api.RagnarTargetCandidate> candidates = new java.util.ArrayList<>(msg.candidateTargetIds.length);
+            List<RagnarTargetCandidate> candidates = new ArrayList<>(msg.candidateTargetIds.length);
             for (int id : msg.candidateTargetIds) {
-                // In the future, this source could be determined by a packet flag
-                candidates.add(com.etema.ragnarmmo.combat.integration.bettercombat.BetterCombatTargetAdapter.fromEntityId(id));
+                candidates.add(RagnarTargetCandidate.from(id, RagnarTargetSource.CLIENT_AIM));
             }
 
-            com.etema.ragnarmmo.combat.api.RagnarAttackRequest request = new com.etema.ragnarmmo.combat.api.RagnarAttackRequest(
+            RagnarAttackRequest request = new RagnarAttackRequest(
                     msg.sequenceId,
                     msg.comboIndex,
                     msg.offHand,

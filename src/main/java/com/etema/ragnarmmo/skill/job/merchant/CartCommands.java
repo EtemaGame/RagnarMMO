@@ -1,13 +1,11 @@
 package com.etema.ragnarmmo.skill.job.merchant;
 
-import com.etema.ragnarmmo.skill.api.SkillType;
 import com.etema.ragnarmmo.common.command.CommandUtil;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
-import com.etema.ragnarmmo.skill.data.progression.SkillProgress;
-import com.etema.ragnarmmo.skill.runtime.SkillManager;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
-import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket;
+import com.etema.ragnarmmo.skill.runtime.SkillManager;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import javax.annotation.Nonnull;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -17,9 +15,9 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.items.ItemStackHandler;
-import javax.annotation.Nonnull;
 
 public class CartCommands {
+    private static final ResourceLocation PUSHCART = new ResourceLocation("ragnarmmo", "pushcart");
 
     public static LiteralArgumentBuilder<CommandSourceStack> createNode() {
         return Commands.literal("cart")
@@ -27,7 +25,7 @@ public class CartCommands {
                     ServerPlayer player = ctx.getSource().getPlayerOrException();
 
                     return PlayerSkillsProvider.get(player).map(skills -> {
-                        int level = skills.getSkillLevel(SkillType.CART_STRENGTH);
+                        int level = skills.getSkillLevel(PUSHCART);
                         if (level <= 0) {
                             CommandUtil.sendFail(ctx.getSource(),
                                     Component.translatable("commands.ragnarmmo.cart.missing_skill"));
@@ -40,8 +38,8 @@ public class CartCommands {
                 });
     }
 
-    private static void openCart(ServerPlayer player, SkillManager skills, int level) {
-        int rows = Math.min(6, level);
+    public static void openCart(ServerPlayer player, SkillManager skills, int level) {
+        int rows = getCartRows(level);
         ItemStackHandler handler = skills.getCartInventory();
         int cartSlots = rows * 9;
 
@@ -78,5 +76,14 @@ public class CartCommands {
                 }
             };
         }, Component.literal("Pushcart (Lv." + level + ")")));
+    }
+
+    public static int getCartRows(int level) {
+        if (level <= 0) {
+            return 0;
+        }
+        return SkillRegistry.get(PUSHCART)
+                .map(def -> Math.max(1, Math.min(6, def.getLevelInt("cart_rows", level, Math.min(6, level)))))
+                .orElse(Math.max(1, Math.min(6, level)));
     }
 }

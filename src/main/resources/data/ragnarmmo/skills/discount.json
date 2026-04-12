@@ -16,6 +16,22 @@
     "requirements": {
         "ragnarmmo:enlarge_weight_limit": 3
     },
+    "reference": {
+        "source_name": "RagnarMMO Pre-Renewal Port Policy",
+        "notes": "RO_ADAPTED: table uses classic 7/9/.../24% NPC buy discount translated to Zeny-based villager costs."
+    },
+    "level_data": {
+        "1": { "vendor_buy_discount": 0.07 },
+        "2": { "vendor_buy_discount": 0.09 },
+        "3": { "vendor_buy_discount": 0.11 },
+        "4": { "vendor_buy_discount": 0.13 },
+        "5": { "vendor_buy_discount": 0.15 },
+        "6": { "vendor_buy_discount": 0.17 },
+        "7": { "vendor_buy_discount": 0.19 },
+        "8": { "vendor_buy_discount": 0.21 },
+        "9": { "vendor_buy_discount": 0.23 },
+        "10": { "vendor_buy_discount": 0.24 }
+    },
     "ui": {
         "texture": "merchant/merchant_discount",
         "grid_x": 0,

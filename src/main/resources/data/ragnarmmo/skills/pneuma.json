@@ -11,12 +11,12 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 10,
+        "base_cost": 0,
         "cost_per_level": 0
     },
     "cooldown_ticks": 0,
     "level_data": {
-        "1": { "duration_ticks": 200 }
+        "1": { "sp_cost": 10, "duration_ticks": 200, "aoe_radius": 1.6, "range": 6, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
     "jobs": [
         "ACOLYTE"

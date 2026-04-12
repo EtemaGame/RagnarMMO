@@ -3,6 +3,7 @@ package com.etema.ragnarmmo.skill.job.mage;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skill.job.mage.MageTargetUtil;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -30,44 +31,28 @@ public class NapalmBeatSkillEffect implements ISkillEffect {
 
     @Override
     public int getResourceCost(int level, int defaultCost) {
-        // Lv 1-3: 9
-        // Lv 4-6: 12
-        // Lv 7-9: 15
-        // Lv 10: 18
-        if (level >= 10) return 18;
-        if (level >= 7) return 15;
-        if (level >= 4) return 12;
-        return 9;
+        return SkillRegistry.get(ID)
+                .map(def -> def.getLevelInt("sp_cost", level, defaultCost))
+                .orElse(defaultCost);
     }
 
     @Override
     public int getCastDelay(int level) {
-        // Lv 1-3: 1.0s (20t)
-        // Lv 4-5: 0.9s (18t)
-        // Lv 6-7: 0.8s (16t)
-        // Lv 8: 0.7s (14t)
-        // Lv 9: 0.6s (12t)
-        // Lv 10: 0.5s (10t)
-        return switch (level) {
-            case 1, 2, 3 -> 20;
-            case 4, 5 -> 18;
-            case 6, 7 -> 16;
-            case 8 -> 14;
-            case 9 -> 12;
-            case 10 -> 10;
-            default -> 20;
-        };
+        return SkillRegistry.get(ID)
+                .map(def -> def.getLevelInt("cast_delay_ticks", level, 20))
+                .orElse(20);
     }
 
     @Override
     public void execute(ServerPlayer player, int level) {
         if (level <= 0) return;
 
-        LivingEntity mainTarget = MageTargetUtil.raycast(player, 10.0);
+        var definition = SkillRegistry.require(ID);
+        double range = definition.getLevelDouble("range", level, 10.0D);
+        LivingEntity mainTarget = MageTargetUtil.raycast(player, range);
         if (mainTarget == null) return;
 
-        // Damage: 0.8 + (level-1)*0.1 MATK
-        float matkPercent = 80.0f + (level - 1) * 10.0f;
+        float matkPercent = (float) definition.getLevelDouble("damage_percent", level, 80.0D + (level - 1) * 10.0D);
         float damage = SkillDamageHelper.scaleByMATK(player, matkPercent);
 
         // Visuals on primary target
@@ -79,7 +64,8 @@ public class NapalmBeatSkillEffect implements ISkillEffect {
         }
 
         // Area Damage (~1.5 block radius = approx 3x3 cells)
-        AABB area = mainTarget.getBoundingBox().inflate(1.5);
+        double radius = definition.getLevelDouble("aoe_radius", level, 1.5D);
+        AABB area = mainTarget.getBoundingBox().inflate(radius);
         List<Entity> targets = player.level().getEntities(player, area, e -> e instanceof LivingEntity && e.isAlive());
 
         for (Entity target : targets) {

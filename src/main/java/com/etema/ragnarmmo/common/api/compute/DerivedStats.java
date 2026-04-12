@@ -34,6 +34,16 @@ public class DerivedStats {
     public double maxSP;
     public double spRegenPerSecond;
 
+    // Minecraft adaptation hooks. These translate RO-like skills into projectile,
+    // status, threat, and reveal behavior without replacing base RO stats.
+    public double projectileVelocityMult = 1.0D;
+    public double projectileGravityMult = 1.0D;
+    public double projectileSpreadMult = 1.0D;
+    public double castInterruptResist;
+    public double skillStatusPower;
+    public double threatGenerationBonus;
+    public double revealRadiusBonus;
+
     public double defense;
     public double magicDefense;
     public double hardDefense;

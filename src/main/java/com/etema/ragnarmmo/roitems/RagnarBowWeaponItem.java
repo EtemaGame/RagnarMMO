@@ -4,6 +4,7 @@ import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.roitems.runtime.RagnarRangedWeaponStats;
 import com.etema.ragnarmmo.roitems.runtime.RangedWeaponStatsHelper;
+import com.etema.ragnarmmo.skill.execution.projectile.ProjectileSkillHelper;
 import com.etema.ragnarmmo.system.stats.compute.CombatMath;
 import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stats;
@@ -102,6 +103,7 @@ public class RagnarBowWeaponItem extends BowItem implements RagnarRangedWeaponSt
                         AbstractArrow abstractarrow = arrowitem.createArrow(pLevel, itemstack, player);
                         abstractarrow = customArrow(abstractarrow);
                         abstractarrow.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, f * 3.0F * projectileVelocity, 1.0F);
+                        ProjectileSkillHelper.applyPassiveProjectileModifiers(abstractarrow, player);
                         
                         // SNAPSHOT LOGIC
                         if (abstractarrow.getOwner() != null) {

@@ -38,7 +38,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import net.minecraftforge.items.ItemStackHandler;
 
-import com.etema.ragnarmmo.skill.api.SkillType;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.common.api.attributes.RagnarAttributes;
 
@@ -62,6 +61,9 @@ public class StatsScreen extends Screen {
         private static final int BTN_SIZE_SMALL = 14;
 
         private static final ResourceLocation TEX_GEAR = new ResourceLocation("ragnarmmo", "textures/gui/gear.png");
+        private static final ResourceLocation ENLARGE_WEIGHT_LIMIT = new ResourceLocation("ragnarmmo",
+                        "enlarge_weight_limit");
+        private static final ResourceLocation PUSHCART = new ResourceLocation("ragnarmmo", "pushcart");
 
         // ===== Scaling placement =====
         private float uiScale = 1.0f;
@@ -113,9 +115,15 @@ public class StatsScreen extends Screen {
         // Uses WeightConstants for sync with server (MerchantSkillEvents)
         // =========================
 
-        private static int uiGetCartLevel(Player player) {
+        private static int uiGetWeightLimitLevel(Player player) {
                 return PlayerSkillsProvider.get(player)
-                                .map(sk -> sk.getSkillLevel(SkillType.CART_STRENGTH))
+                                .map(sk -> sk.getSkillLevel(ENLARGE_WEIGHT_LIMIT))
+                                .orElse(0);
+        }
+
+        private static int uiGetPushcartLevel(Player player) {
+                return PlayerSkillsProvider.get(player)
+                                .map(sk -> sk.getSkillLevel(PUSHCART))
                                 .orElse(0);
         }
 
@@ -136,8 +144,7 @@ public class StatsScreen extends Screen {
                         for (int i = 0; i < cartInv.getSlots(); i++) {
                                 cartWeight += MerchantSkillEvents.computeWeight(cartInv.getStackInSlot(i));
                         }
-                        double red = Math.min(WeightConstants.CART_WEIGHT_REDUCTION_CAP,
-                                        cartLevel * WeightConstants.CART_WEIGHT_REDUCTION_PER_LEVEL);
+                        double red = MerchantSkillEvents.cartWeightReduction(cartLevel);
                         total += cartWeight * (1.0D - red);
                 }
                 return total;
@@ -147,7 +154,7 @@ public class StatsScreen extends Screen {
                 int str = stats.getSTR();
                 return WeightConstants.BASE_CAPACITY
                                 + (str * WeightConstants.STR_CAPACITY_PER_POINT)
-                                + (cartLevel * WeightConstants.CAPACITY_PER_CART_LEVEL);
+                                + MerchantSkillEvents.capacityBonusFromEnlargeWeightLimit(cartLevel);
         }
 
         public StatsScreen() {
@@ -444,9 +451,10 @@ public class StatsScreen extends Screen {
                                         // Capacity and current weight formulas are deterministic based on base stats 
                                         // and inventory, which are already synced. We keep these local as they are 
                                         // strictly UI helpers for the inventory.
-                                        int cartLevel = uiGetCartLevel(player);
-                                        double capacity = uiComputeCapacity(stats, cartLevel);
-                                        double currentW = uiComputeTotalWeight(player, cartLevel);
+                                        int weightLimitLevel = uiGetWeightLimitLevel(player);
+                                        int pushcartLevel = uiGetPushcartLevel(player);
+                                        double capacity = uiComputeCapacity(stats, weightLimitLevel);
+                                        double currentW = uiComputeTotalWeight(player, pushcartLevel);
                                         double highW = capacity;
                                         double maxW = capacity + WeightConstants.OVERWEIGHT_TO_MAX;
 

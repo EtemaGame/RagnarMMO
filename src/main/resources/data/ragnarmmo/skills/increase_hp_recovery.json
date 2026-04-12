@@ -19,5 +19,20 @@
         "grid_x": 0,
         "grid_y": 1
     },
+    "reference": {
+        "notes": "Increase HP Recovery: RO_ADAPTED passive rest recovery and item healing bonus."
+    },
+    "level_data": {
+        "1": { "hp_recovery_flat": 5, "hp_recovery_max_hp_ratio": 0.002, "item_heal_bonus_ratio": 0.10, "interval_ticks": 200 },
+        "2": { "hp_recovery_flat": 10, "hp_recovery_max_hp_ratio": 0.004, "item_heal_bonus_ratio": 0.20, "interval_ticks": 200 },
+        "3": { "hp_recovery_flat": 15, "hp_recovery_max_hp_ratio": 0.006, "item_heal_bonus_ratio": 0.30, "interval_ticks": 200 },
+        "4": { "hp_recovery_flat": 20, "hp_recovery_max_hp_ratio": 0.008, "item_heal_bonus_ratio": 0.40, "interval_ticks": 200 },
+        "5": { "hp_recovery_flat": 25, "hp_recovery_max_hp_ratio": 0.010, "item_heal_bonus_ratio": 0.50, "interval_ticks": 200 },
+        "6": { "hp_recovery_flat": 30, "hp_recovery_max_hp_ratio": 0.012, "item_heal_bonus_ratio": 0.60, "interval_ticks": 200 },
+        "7": { "hp_recovery_flat": 35, "hp_recovery_max_hp_ratio": 0.014, "item_heal_bonus_ratio": 0.70, "interval_ticks": 200 },
+        "8": { "hp_recovery_flat": 40, "hp_recovery_max_hp_ratio": 0.016, "item_heal_bonus_ratio": 0.80, "interval_ticks": 200 },
+        "9": { "hp_recovery_flat": 45, "hp_recovery_max_hp_ratio": 0.018, "item_heal_bonus_ratio": 0.90, "interval_ticks": 200 },
+        "10": { "hp_recovery_flat": 50, "hp_recovery_max_hp_ratio": 0.020, "item_heal_bonus_ratio": 1.00, "interval_ticks": 200 }
+    },
     "effect_class": "com.etema.ragnarmmo.skill.job.swordman.IncreaseHpRecoverySkillEffect"
 }

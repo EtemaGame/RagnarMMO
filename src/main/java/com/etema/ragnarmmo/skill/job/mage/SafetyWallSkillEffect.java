@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.skill.job.mage;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -39,31 +40,25 @@ public class SafetyWallSkillEffect implements ISkillEffect {
 
     @Override
     public int getCastTime(int level) {
-        return switch (level) {
-            case 1 -> 80;
-            case 2 -> 70;
-            case 3 -> 60;
-            case 4 -> 50;
-            case 5 -> 40;
-            case 6 -> 30;
-            case 7, 8, 9, 10 -> 20;
-            default -> 80;
-        };
+        return SkillRegistry.get(ID)
+                .map(def -> def.getLevelInt("cast_time_ticks", level, 80))
+                .orElse(80);
     }
 
     @Override
     public int getResourceCost(int level, int defaultCost) {
-        if (level >= 7) return 40;
-        if (level >= 4) return 35;
-        return 30;
+        return SkillRegistry.get(ID)
+                .map(def -> def.getLevelInt("sp_cost", level, defaultCost))
+                .orElse(defaultCost);
     }
 
     @Override
     public void execute(ServerPlayer player, int level) {
         if (level <= 0) return;
 
-        int maxHits = level + 1;            // Level 1 = 2 hits, Level 10 = 11 hits
-        int durationTicks = (5 + level) * 20; // 6-15 seconds
+        var definition = SkillRegistry.require(ID);
+        int maxHits = definition.getLevelInt("max_hits", level, level + 1);
+        int durationTicks = definition.getLevelInt("duration_ticks", level, (5 + level) * 20);
 
         player.getPersistentData().putInt(SW_HITS_TAG,  maxHits);
         player.getPersistentData().putLong(SW_UNTIL_TAG, player.level().getGameTime() + durationTicks);

@@ -18,5 +18,20 @@
         "grid_x": 0,
         "grid_y": 0
     },
+    "reference": {
+        "notes": "Owl's Eye: passive DEX bonus. Kept as RO_EXACT and tuned per level through level_data.dex_bonus."
+    },
+    "level_data": {
+        "1": { "dex_bonus": 1 },
+        "2": { "dex_bonus": 2 },
+        "3": { "dex_bonus": 3 },
+        "4": { "dex_bonus": 4 },
+        "5": { "dex_bonus": 5 },
+        "6": { "dex_bonus": 6 },
+        "7": { "dex_bonus": 7 },
+        "8": { "dex_bonus": 8 },
+        "9": { "dex_bonus": 9 },
+        "10": { "dex_bonus": 10 }
+    },
     "effect_class": "com.etema.ragnarmmo.skill.job.archer.OwlsEyeSkillEffect"
 }

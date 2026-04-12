@@ -11,15 +11,22 @@
         "can_upgrade_with_points": true
     },
     "costs": {
-        "base_cost": 30,
+        "base_cost": 0,
         "cost_per_level": 0
     },
-    "cooldown_ticks": 100,
+    "cooldown_ticks": 0,
     "jobs": [
         "MERCHANT"
     ],
     "requirements": {
         "ragnarmmo:vending": 1
+    },
+    "reference": {
+        "source_name": "RagnarMMO Pre-Renewal Port Policy",
+        "notes": "MC_INSPIRED: placeholder contract for buy orders; keeps resource and shop scope in data."
+    },
+    "level_data": {
+        "1": { "sp_cost": 30, "buy_order_slots": 5, "broadcast_radius": 20, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 100 }
     },
     "ui": {
         "texture": "merchant/merchant_buying_store",

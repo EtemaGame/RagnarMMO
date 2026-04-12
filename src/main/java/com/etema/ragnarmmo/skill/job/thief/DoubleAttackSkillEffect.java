@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.skill.job.thief;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
+import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.data.progression.SkillProgressManager;
 import com.etema.ragnarmmo.skill.data.progression.SkillProgress;
 import net.minecraft.core.particles.ParticleTypes;
@@ -11,12 +12,15 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraft.world.item.SwordItem; // Daggers will likely extend this or have a tag
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 
 @Mod.EventBusSubscriber(modid = "ragnarmmo")
 public class DoubleAttackSkillEffect implements ISkillEffect {
 
     private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "double_attack");
+    private static final TagKey<Item> DAGGER_TAG = ItemTags.create(new ResourceLocation("ragnarmmo", "daggers"));
 
     @Override
     public ResourceLocation getSkillId() {
@@ -34,16 +38,19 @@ public class DoubleAttackSkillEffect implements ISkillEffect {
 
         SkillProgress progress = SkillProgressManager.getProgress(player, ID);
         if (progress != null && progress.getLevel() > 0) {
-            // Check weapon. In RO it requires a dagger. For MC, we might loosen to
-            // SwordItem or specifically check a "Dagger" tag later.
-            if (!(player.getMainHandItem().getItem() instanceof SwordItem))
+            if (!player.getMainHandItem().is(DAGGER_TAG))
                 return;
 
-            float chance = progress.getLevel() * 0.05f; // 5% per level, max 50%
+            float chance = SkillRegistry.get(ID)
+                    .map(def -> (float) def.getLevelDouble("proc_chance", progress.getLevel(),
+                            progress.getLevel() * 0.05D))
+                    .orElse(progress.getLevel() * 0.05f);
 
             if (player.getRandom().nextFloat() < chance) {
-                // Double the damage
-                event.setAmount(event.getAmount() * 2.0f);
+                float damageMultiplier = SkillRegistry.get(ID)
+                        .map(def -> (float) def.getLevelDouble("damage_multiplier", progress.getLevel(), 2.0D))
+                        .orElse(2.0f);
+                event.setAmount(event.getAmount() * damageMultiplier);
 
                 // Visual / Audio feedback
                 player.level().playSound(null, player.getX(), player.getY(), player.getZ(),

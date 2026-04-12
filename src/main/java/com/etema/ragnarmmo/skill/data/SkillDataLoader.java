@@ -31,12 +31,73 @@ import java.util.*;
  * Loads skill definitions from JSON files in data/{namespace}/skills/.
  * Implements ResourceManagerReloadListener for /reload support.
  *
- * Falls back to SkillType enum for skills not defined in JSON.
+ * Falls back to SkillType enum only for non-canonical legacy skills.
+ * Canonical first-job skills must be supplied by JSON.
  */
 public class SkillDataLoader extends SimpleJsonResourceReloadListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SkillDataLoader.class);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+    private static final Set<ResourceLocation> CANONICAL_FIRST_JOB_SKILL_IDS = Set.of(
+            skillId("owls_eye"),
+            skillId("vultures_eye"),
+            skillId("improve_concentration"),
+            skillId("double_strafe"),
+            skillId("arrow_shower"),
+
+            skillId("sword_mastery"),
+            skillId("increase_hp_recovery"),
+            skillId("bash"),
+            skillId("provoke"),
+            skillId("two_hand_mastery"),
+            skillId("magnum_break"),
+            skillId("endure"),
+
+            skillId("increase_sp_recovery"),
+            skillId("sight"),
+            skillId("napalm_beat"),
+            skillId("soul_strike"),
+            skillId("safety_wall"),
+            skillId("cold_bolt"),
+            skillId("frost_diver"),
+            skillId("stone_curse"),
+            skillId("fire_bolt"),
+            skillId("fire_ball"),
+            skillId("fire_wall"),
+            skillId("lightning_bolt"),
+            skillId("thunder_storm"),
+
+            skillId("divine_protection"),
+            skillId("demon_bane"),
+            skillId("angelus"),
+            skillId("blessing"),
+            skillId("heal"),
+            skillId("increase_agi"),
+            skillId("decrease_agi"),
+            skillId("cure"),
+            skillId("ruwach"),
+            skillId("teleportation"),
+            skillId("warp_portal"),
+            skillId("pneuma"),
+            skillId("aqua_benedicta"),
+            skillId("holy_light"),
+            skillId("signum_crucis"),
+
+            skillId("double_attack"),
+            skillId("improve_dodge"),
+            skillId("steal"),
+            skillId("hiding"),
+            skillId("envenom"),
+            skillId("detoxify"),
+
+            skillId("enlarge_weight_limit"),
+            skillId("discount"),
+            skillId("overcharge"),
+            skillId("pushcart"),
+            skillId("vending"),
+            skillId("buying_store"),
+            skillId("identify"),
+            skillId("mammonite"));
 
     public static final SkillDataLoader INSTANCE = new SkillDataLoader();
 
@@ -78,15 +139,30 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         }
 
         LOGGER.info("Loaded {} skills from JSON ({} errors)", jsonCount, errorCount);
+        boolean enforceCanonicalSkills = !resources.isEmpty();
+        if (!enforceCanonicalSkills) {
+            LOGGER.warn("No skill JSON resources were found in this reload context; skipping canonical validation");
+        } else {
+            validateCanonicalSkillsPresent();
+        }
 
-        // Phase 2: Load remaining skills from legacy enum (fallback)
+        // Phase 2: Load remaining non-canonical skills from legacy enum (fallback)
         int legacyCount = 0;
         for (SkillType type : SkillType.values()) {
             ResourceLocation legacyId = new ResourceLocation(SkillRegistry.getDefaultNamespace(), type.getId());
             if (!SkillRegistry.contains(legacyId)) {
+                if (enforceCanonicalSkills && isCanonicalFirstJobSkill(legacyId)) {
+                    LOGGER.error("Canonical first-job skill {} cannot be loaded from SkillType fallback", legacyId);
+                    throw new IllegalStateException(
+                            "Canonical first-job skill cannot be loaded from SkillType fallback: " + legacyId);
+                }
+
                 SkillDefinition def = convertFromLegacyEnum(type);
                 SkillRegistry.register(def);
                 legacyCount++;
+                LOGGER.warn("Injected legacy skill {} from SkillType fallback; add JSON before balancing it", legacyId);
+            } else {
+                logLegacyJsonMismatch(type, SkillRegistry.require(legacyId));
             }
         }
 
@@ -124,6 +200,58 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         
         // Sync to all connected players after reload if on server
         syncToAll();
+    }
+
+    private static ResourceLocation skillId(String path) {
+        return ResourceLocation.fromNamespaceAndPath(RagnarMMO.MODID, path);
+    }
+
+    private static boolean isCanonicalFirstJobSkill(ResourceLocation id) {
+        return CANONICAL_FIRST_JOB_SKILL_IDS.contains(id);
+    }
+
+    private static void validateCanonicalSkillsPresent() {
+        List<ResourceLocation> missing = CANONICAL_FIRST_JOB_SKILL_IDS.stream()
+                .filter(id -> !SkillRegistry.contains(id))
+                .sorted(Comparator.comparing(ResourceLocation::toString))
+                .toList();
+
+        if (!missing.isEmpty()) {
+            LOGGER.error("Missing canonical first-job skill JSON definitions: {}", missing);
+            throw new IllegalStateException("Missing canonical first-job skill JSON definitions: " + missing);
+        }
+    }
+
+    private void logLegacyJsonMismatch(SkillType type, SkillDefinition jsonDefinition) {
+        SkillDefinition legacyDefinition = convertFromLegacyEnum(type);
+        List<String> mismatchedFields = new ArrayList<>();
+
+        if (!Objects.equals(jsonDefinition.getDisplayName(), legacyDefinition.getDisplayName())) {
+            mismatchedFields.add("display_name");
+        }
+        if (jsonDefinition.getCategory() != legacyDefinition.getCategory()) {
+            mismatchedFields.add("category");
+        }
+        if (jsonDefinition.getTier() != legacyDefinition.getTier()) {
+            mismatchedFields.add("tier");
+        }
+        if (jsonDefinition.getUsageType() != legacyDefinition.getUsageType()) {
+            mismatchedFields.add("usage");
+        }
+        if (jsonDefinition.getMaxLevel() != legacyDefinition.getMaxLevel()) {
+            mismatchedFields.add("max_level");
+        }
+        if (!Objects.equals(jsonDefinition.getEffectClass(), legacyDefinition.getEffectClass())) {
+            mismatchedFields.add("effect_class");
+        }
+        if (!Objects.equals(jsonDefinition.getAllowedJobs(), legacyDefinition.getAllowedJobs())) {
+            mismatchedFields.add("jobs");
+        }
+
+        if (!mismatchedFields.isEmpty()) {
+            LOGGER.warn("JSON skill {} differs from legacy SkillType {} on {}; JSON remains authoritative",
+                    jsonDefinition.getId(), type.name(), String.join(", ", mismatchedFields));
+        }
     }
 
     public void syncToAll() {

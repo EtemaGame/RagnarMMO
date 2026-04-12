@@ -16,11 +16,6 @@ public enum RagnarTargetSource {
     CLIENT_SWEEP,
 
     /**
-     * Target suggested by the Better Combat integration.
-     */
-    BETTER_COMBAT,
-
-    /**
      * Target suggested by a skill's automated targeting logic.
      */
     SKILL_AUTO,

@@ -148,11 +148,9 @@ public class CommonEvents {
             double previousManaMax = stats.getManaMax();
             double previousSPMax = (stats instanceof PlayerStats internal) ? internal.getSPMax() : previousManaMax;
 
-            if (Math.abs(previousManaMax - totalManaMax) > 1e-4 || Math.abs(previousSPMax - totalSpMax) > 1e-4) {
-                stats.setManaMaxClient(totalManaMax);
-                if (stats instanceof PlayerStats internal) {
-                    internal.setSPMaxClient(totalSpMax);
-                }
+            if (Math.abs(previousSPMax - totalSpMax) > 1e-4 || Math.abs(previousManaMax - totalManaMax) > 1e-4) {
+                stats.setSPMaxClient(totalSpMax);
+                stats.setManaMaxClient(totalSpMax); // Mirror
             }
 
             // --- Weight System ---
@@ -180,10 +178,8 @@ public class CommonEvents {
 
             // Natural Regen is disabled if over 50% weight (RO Mechanic)
             if (!over50) {
-                stats.addMana(d.manaRegenPerSecond / 20.0);
-                if (stats instanceof PlayerStats internal) {
-                    internal.addSP(d.spRegenPerSecond / 20.0); // Fix: use SP-specific regen, not mana regen
-                }
+                stats.addSP(d.spRegenPerSecond / 20.0);
+                stats.addMana(d.spRegenPerSecond / 20.0); // Mirror
             }
 
             int dirtyMask = stats instanceof PlayerStats internal ? internal.consumeDirtyMask() : (stats.consumeDirty() ? com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.allMask() : 0);
@@ -203,10 +199,7 @@ public class CommonEvents {
                         maxWeight,
                         over50,
                         over90);
-                Network.sendToPlayer(p, new PlayerStatsSyncPacket(stats, dirtyMask));
-                if (com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.requiresDerivedSync(dirtyMask)) {
-                    Network.sendToPlayer(p, new DerivedStatsSyncPacket(d));
-                }
+                PlayerStatsSyncService.sync(p, stats, dirtyMask);
             }
         });
     }
@@ -313,49 +306,7 @@ public class CommonEvents {
         return owner != null && snapshotTag.getUUID("shooter_uuid").equals(owner.getUUID());
     }
 
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public static void onPlayerHurt(LivingHurtEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer p))
-            return;
-        if (p.level().isClientSide())
-            return;
 
-        if (DamageProcessingGuard.isProcessedPlayer(p))
-            return;
-
-        // Mob-to-player damage handling
-        RagnarCoreAPI.get(p).ifPresent(stats -> {
-            var dmgCalc = new com.etema.ragnarmmo.combat.engine.RagnarDamageCalculator();
-            
-            double rawDamage = e.getAmount();
-            boolean isMagic = isMagicDamage(e.getSource());
-            LivingEntity attacker = e.getSource().getEntity() instanceof LivingEntity living ? living : null;
-            
-            // Stats
-            int vit = (int) StatAttributes.getTotal(p, StatKeys.VIT);
-            int agi = (int) StatAttributes.getTotal(p, StatKeys.AGI);
-            int intel = (int) StatAttributes.getTotal(p, StatKeys.INT);
-            int dex = (int) StatAttributes.getTotal(p, StatKeys.DEX);
-            int lvl = stats.getLevel();
-            double armorEff = getArmorEff(p);
-            double armorMdef = getArmorMagicDefense(p);
-
-            double finalDmg = rawDamage;
-            if (isMagic) {
-                finalDmg = dmgCalc.applyMagicDefense(rawDamage, intel, vit, dex, lvl, armorMdef);
-            } else {
-                finalDmg = dmgCalc.applyPhysicalDefense(rawDamage, vit, agi, lvl, armorEff);
-            }
-
-            // Elemental
-            ElementType attackElement = resolveIncomingAttackElement(attacker, e.getSource().getDirectEntity(), isMagic);
-            ElementType defenseElement = CombatPropertyResolver.getDefensiveElement(p);
-            finalDmg *= CombatPropertyResolver.getElementalModifier(attackElement, defenseElement);
-
-            e.setAmount((float) Math.max(1.0, finalDmg));
-            DamageProcessingGuard.markProcessedPlayer(p);
-        });
-    }
 
     @SubscribeEvent
     public static void onEffectApplicable(net.minecraftforge.event.entity.living.MobEffectEvent.Applicable e) {
@@ -533,8 +484,8 @@ public class CommonEvents {
                     s.getJobLevel(),
                     gained,
                     jobGained);
-            finalSp.sendSystemMessage(Component.translatable("message.ragnarmmo.exp_gain",
-                    baseAward, e.getEntity().getDisplayName()));
+            finalSp.sendSystemMessage(Component.translatable("message.ragnarmmo.exp_gain_dual",
+                    baseAward, jobAward, e.getEntity().getDisplayName()));
             if (gained > 0) {
                 finalSp.sendSystemMessage(Component.translatable("message.ragnarmmo.level_up", gained));
             }
@@ -751,7 +702,7 @@ public class CommonEvents {
      * Uses DamageType tags for semantic correctness. Falls back to msgId only
      * for vanilla legacy sources. "thorns" is physical retaliation in RO, not magic.
      */
-    private static boolean isMagicDamage(net.minecraft.world.damagesource.DamageSource source) {
+    public static boolean isMagicDamage(net.minecraft.world.damagesource.DamageSource source) {
         if (source.is(net.minecraft.tags.DamageTypeTags.WITCH_RESISTANT_TO)) {
             return true;
         }
@@ -834,7 +785,7 @@ public class CommonEvents {
         return CombatPropertyResolver.getEntitySize(entity);
     }
 
-    private static ElementType resolveIncomingAttackElement(LivingEntity attacker, Entity directEntity, boolean isMagic) {
+    public static ElementType resolveIncomingAttackElement(LivingEntity attacker, Entity directEntity, boolean isMagic) {
         if (isMagic) {
             return CombatPropertyResolver.getMagicElement(directEntity);
         }

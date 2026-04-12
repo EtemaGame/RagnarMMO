@@ -31,29 +31,7 @@ public class PacketResetCharacter {
             if (player == null)
                 return;
 
-            RagnarCoreAPI.get(player).ifPresent(stats -> {
-                // Refund points spent on stats
-                int totalRefunded = 0;
-                for (StatKeys key : StatKeys.values()) {
-                    int currentVal = stats.get(key);
-                    // Standard RO refund logic: refund cost of each level spent
-                    for (int v = 1; v < currentVal; v++) {
-                        totalRefunded += StatCost.costToIncrease(v);
-                    }
-                    stats.set(key, 1);
-                }
-
-                // Add refunded points to pool
-                stats.setStatPoints(stats.getStatPoints() + totalRefunded);
-
-                // Reset base stat baseline if needed (start points)
-                if (stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats implementation) {
-                    implementation.setBaseStatPointsGranted(false);
-                    implementation.ensureBaseStatBaseline(RagnarConfigs.SERVER.progression.baseStatPoints.get());
-                }
-
-                PlayerStatsSyncService.sync(player, stats);
-            });
+            com.etema.ragnarmmo.system.stats.service.CharacterResetService.resetAllocatedStats(player);
         });
         ctx.get().setPacketHandled(true);
     }

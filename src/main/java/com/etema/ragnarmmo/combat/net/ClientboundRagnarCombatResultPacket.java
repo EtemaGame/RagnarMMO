@@ -46,7 +46,7 @@ public class ClientboundRagnarCombatResultPacket {
     public static void handle(ClientboundRagnarCombatResultPacket msg, Supplier<NetworkEvent.Context> ctxSupplier) {
         NetworkEvent.Context ctx = ctxSupplier.get();
         ctx.enqueueWork(() -> {
-            // Reserved for future client feedback integration.
+            com.etema.ragnarmmo.client.ClientPacketHandler.handleCombatFeedback(msg.targetId, msg.resultType, msg.amount, msg.critical);
         });
         ctx.setPacketHandled(true);
     }

@@ -669,14 +669,16 @@ public class StatsScreen extends Screen {
 
                                         if (rMinus.contains(mx, my)) {
                                                 if (canRefund) {
-                                                        Network.sendToServer(new DeallocateStatPacket(key));
+                                                        int qty = net.minecraft.client.gui.screens.Screen.hasControlDown() ? 10 : 1;
+                                                        Network.sendToServer(new DeallocateStatPacket(key, qty));
                                                         playClickSound(0.9f);
                                                 }
                                                 return true;
                                         }
                                         if (rPlus.contains(mx, my)) {
                                                 if (canSpend) {
-                                                        Network.sendToServer(new AllocateStatPacket(key));
+                                                        int qty = net.minecraft.client.gui.screens.Screen.hasControlDown() ? 10 : 1;
+                                                        Network.sendToServer(new AllocateStatPacket(key, qty));
                                                         playClickSound(1.0f);
                                                 }
                                                 return true;

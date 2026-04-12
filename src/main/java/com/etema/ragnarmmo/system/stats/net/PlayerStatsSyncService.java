@@ -37,7 +37,7 @@ public final class PlayerStatsSyncService {
                 RagnarDebugLog.formatDouble(stats.getSP()),
                 RagnarDebugLog.formatDouble(stats.getSPMax()));
 
-        Network.sendToPlayer(player, new PlayerStatsSyncPacket(stats, syncMask));
+        Network.sendTrackingEntityAndSelf(player, new PlayerStatsSyncPacket(player.getId(), stats, syncMask));
 
         if (RoPlayerSyncDomain.requiresDerivedSync(syncMask)) {
             var derived = StatComputer.compute(player, stats, EquipmentStatSnapshot.capture(player));

@@ -852,6 +852,18 @@ public class SkillsScreen extends Screen {
                     }
                 }
 
+                if (net.minecraft.client.gui.screens.Screen.hasControlDown()) {
+                    tooltipLines.add(Component.literal(""));
+                    tooltipLines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.advanced").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
+                    
+                    int displayLevel = Math.max(1, totalLevel);
+                    tooltipLines.add(Component.literal(" SP Cost: " + wrapper.getDefinition().getSpCost(displayLevel)).withStyle(ChatFormatting.DARK_GRAY));
+                    tooltipLines.add(Component.literal(" Cast Time: " + (wrapper.getDefinition().getCastTimeTicks(displayLevel) / 20.0f) + "s").withStyle(ChatFormatting.DARK_GRAY));
+                } else {
+                    tooltipLines.add(Component.literal(""));
+                    tooltipLines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.hold_ctrl").withStyle(ChatFormatting.DARK_GRAY));
+                }
+
                 var requirements = wrapper.getRequirements();
                 if (!requirements.isEmpty()) {
                     tooltipLines.add(Component.literal(""));

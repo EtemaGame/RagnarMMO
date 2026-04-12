@@ -81,6 +81,10 @@ public final class Network {
                 CombatNetwork.register(CH, NEXT_ID);
         }
 
+        public static void registerEconomyPackets() {
+                com.etema.ragnarmmo.system.economy.net.EconomyNetwork.register(CH, NEXT_ID);
+        }
+
         /* ─── Helpers ─── */
 
         public static <T> void sendToPlayer(ServerPlayer player, T msg) {

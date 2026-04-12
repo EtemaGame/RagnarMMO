@@ -310,7 +310,7 @@ public final class RagnarConfigs {
 
                                 maxLevel = builder
                                                 .comment("Maximum base level")
-                                                .defineInRange("max_level", 50, 1, 9999);
+                                                .defineInRange("max_level", 99, 1, 9999);
 
                                 maxJobLevel = builder
                                                 .comment("Maximum job level")

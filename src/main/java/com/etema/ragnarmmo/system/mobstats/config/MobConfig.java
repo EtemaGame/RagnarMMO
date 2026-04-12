@@ -232,7 +232,7 @@ public final class MobConfig {
                 LEVEL_SCALING_MODE = b.comment(
                                 "Automatic selector for non-manual hostile mob levels: PLAYER_LEVEL, DISTANCE, BIOME_DISTANCE",
                                 "The datapack MANUAL path bypasses this selector.")
-                                .defineEnum("level_scaling_mode", LevelScalingMode.DISTANCE);
+                                .defineEnum("level_scaling_mode", LevelScalingMode.BIOME_DISTANCE);
                 PLAYER_LEVEL_RADIUS = b.comment("Radius used when anchoring hostile mob level to nearby players")
                                 .defineInRange("player_level_radius", 64, 8, 256);
                 PLAYER_LEVEL_VARIANCE = b.comment("Random variance applied around player-level scaling")

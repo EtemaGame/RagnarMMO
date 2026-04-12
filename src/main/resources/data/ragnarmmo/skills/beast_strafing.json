@@ -1,9 +1,9 @@
 {
     "id": "ragnarmmo:beast_strafing",
     "display_name": "Beast Strafing",
-    "category": "CLASS_ACTIVE",
+    "category": "CLASS_PASSIVE",
     "tier": "SECOND",
-    "usage": "ACTIVE",
+    "usage": "PASSIVE",
     "progression": {
         "max_level": 1,
         "upgrade_cost": 1,
@@ -27,3 +27,4 @@
     },
     "effect_class": "com.etema.ragnarmmo.skill.job.hunter.BeastStrafingSkillEffect"
 }
+

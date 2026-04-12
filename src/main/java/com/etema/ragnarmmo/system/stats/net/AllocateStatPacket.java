@@ -14,17 +14,24 @@ import net.minecraftforge.network.NetworkEvent;
 
 public class AllocateStatPacket {
     public final StatKeys key;
+    public final int amount;
+
+    public AllocateStatPacket(StatKeys k, int amount) {
+        this.key = k;
+        this.amount = amount;
+    }
 
     public AllocateStatPacket(StatKeys k) {
-        this.key = k;
+        this(k, 1);
     }
 
     public static void encode(AllocateStatPacket m, FriendlyByteBuf buf) {
         buf.writeEnum(m.key);
+        buf.writeVarInt(m.amount);
     }
 
     public static AllocateStatPacket decode(FriendlyByteBuf buf) {
-        return new AllocateStatPacket(buf.readEnum(StatKeys.class));
+        return new AllocateStatPacket(buf.readEnum(StatKeys.class), buf.readVarInt());
     }
 
     public static void handle(AllocateStatPacket msg, Supplier<NetworkEvent.Context> ctxSup) {
@@ -36,29 +43,28 @@ public class AllocateStatPacket {
         }
         ctx.enqueueWork(() -> {
             RagnarCoreAPI.get(sp).ifPresent(s -> {
-                // Config enforces the playable ceiling; attribute structural bounds stay
-                // constant.
                 int maxValue = RagnarConfigs.SERVER.caps.maxStatValue.get();
-                int currentValue = getStatValue(s, msg.key);
-                if (currentValue >= maxValue) {
-                    return;
-                }
+                for (int i = 0; i < msg.amount; i++) {
+                    int currentValue = getStatValue(s, msg.key);
+                    if (currentValue >= maxValue) {
+                        break;
+                    }
 
-                int cost = StatCost.costToIncrease(currentValue);
-                if (s.getStatPoints() < cost) {
-                    return;
-                }
+                    int cost = StatCost.costToIncrease(currentValue);
+                    if (s.getStatPoints() < cost) {
+                        break;
+                    }
 
-                switch (msg.key) {
-                    case STR -> s.setSTR(currentValue + 1);
-                    case AGI -> s.setAGI(currentValue + 1);
-                    case VIT -> s.setVIT(currentValue + 1);
-                    case INT -> s.setINT(currentValue + 1);
-                    case DEX -> s.setDEX(currentValue + 1);
-                    case LUK -> s.setLUK(currentValue + 1);
-                    default -> throw new IllegalStateException("Unhandled StatKeys: " + msg.key);
+                    switch (msg.key) {
+                        case STR -> s.setSTR(currentValue + 1);
+                        case AGI -> s.setAGI(currentValue + 1);
+                        case VIT -> s.setVIT(currentValue + 1);
+                        case INT -> s.setINT(currentValue + 1);
+                        case DEX -> s.setDEX(currentValue + 1);
+                        case LUK -> s.setLUK(currentValue + 1);
+                    }
+                    s.setStatPoints(s.getStatPoints() - cost);
                 }
-                s.setStatPoints(s.getStatPoints() - cost);
             });
         });
         ctx.setPacketHandled(true);

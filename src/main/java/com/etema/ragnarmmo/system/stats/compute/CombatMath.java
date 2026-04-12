@@ -520,35 +520,31 @@ public final class CombatMath {
         return Math.min(regen, maxHP * HP_REGEN_MAX_PERCENT);
     }
 
+    @Deprecated
     public static double computeMaxMana(int INT, int level, String jobId) {
+        return computeMaxSP(INT, level, jobId);
+    }
+
+    @Deprecated
+    public static double computeManaRegen(int INT, double maxMana) {
+        return computeSPRegen(INT, maxMana);
+    }
+
+    /**
+     * Replaces previous dual-system with canonical RO SP scaling.
+     * All classes use INT to scale their SP pool and regen.
+     */
+    public static double computeMaxSP(int INT, int level, String jobId) {
         double jobMult = getJobSpMultiplier(jobId);
         double spBase = 100 + ((level - 1) * 3 * jobMult);
         return Math.floor(spBase * (1.0 + INT / 100.0));
     }
 
-    public static double computeManaRegen(int INT, double maxMana) {
-        double regen = maxMana * (MANA_REGEN_BASE_PERCENT + INT * INT_TO_MANA_REGEN);
-        return Math.min(regen, maxMana * MANA_REGEN_MAX_PERCENT);
-    }
-
     /**
-     * SP máximo para clases físicas.
-     * Basado en VIT y STR (stamina física), escalado inversamente al Mana.
-     * Clases físicas (Swordman, Thief) tienen más SP; mágicas tienen menos.
+     * Canonical RO SP regen (INT based for all classes).
      */
-    public static double computeMaxSP(int VIT, int STR, int level, String jobId) {
-        // Inverse multiplier: physical classes with low mana have high SP
-        double jobMult = 2.0 - getJobSpMultiplier(jobId); // ~2.3 for swordsman, ~0.5 for mage
-        jobMult = Math.max(0.3, Math.min(2.3, jobMult));
-        double spBase = 80 + ((level - 1) * 2 * jobMult);
-        return Math.floor(spBase * (1.0 + (VIT * 0.6 + STR * 0.4) / 100.0));
-    }
-
-    /**
-     * SP regen per second — STR/VIT based for physical classes.
-     */
-    public static double computeSPRegen(int STR, double maxSP) {
-        double regen = maxSP * (MANA_REGEN_BASE_PERCENT + STR * 0.0002);
+    public static double computeSPRegen(int INT, double maxSP) {
+        double regen = maxSP * (MANA_REGEN_BASE_PERCENT + INT * INT_TO_MANA_REGEN);
         return Math.min(regen, maxSP * MANA_REGEN_MAX_PERCENT);
     }
 

@@ -96,7 +96,7 @@ public final class RagnarAdminCommands {
     }
 
     private static int resetStats(CommandSourceStack source, ServerPlayer target) {
-        CommandUtil.getStats(target).ifPresent(stats -> stats.resetAll(ChangeReason.ADMIN_COMMAND));
+        com.etema.ragnarmmo.system.stats.service.CharacterResetService.resetAllocatedStats(target);
         source.sendSuccess(
                 () -> Component.literal("Stats reset for " + target.getName().getString()).withStyle(ChatFormatting.GREEN),
                 true);
@@ -105,7 +105,7 @@ public final class RagnarAdminCommands {
     }
 
     private static int resetSkills(CommandSourceStack source, ServerPlayer target) {
-        CommandUtil.getSkills(target).ifPresent(skills -> skills.resetAll(ChangeReason.ADMIN_COMMAND));
+        com.etema.ragnarmmo.system.stats.service.CharacterResetService.resetLearnedSkills(target);
         source.sendSuccess(
                 () -> Component.literal("Skills reset for " + target.getName().getString()).withStyle(ChatFormatting.GREEN),
                 true);
@@ -120,13 +120,12 @@ public final class RagnarAdminCommands {
     }
 
     private static int resetAll(CommandSourceStack source, ServerPlayer target) {
-        CommandUtil.getStats(target).ifPresent(stats -> stats.resetAll(ChangeReason.ADMIN_COMMAND));
-        CommandUtil.getSkills(target).ifPresent(skills -> skills.resetAll(ChangeReason.ADMIN_COMMAND));
+        com.etema.ragnarmmo.system.stats.service.CharacterResetService.wipeCharacter(target);
         source.sendSuccess(
-                () -> Component.literal("Full reset done for " + target.getName().getString())
+                () -> Component.literal("Full character wipe done for " + target.getName().getString())
                         .withStyle(ChatFormatting.GREEN),
                 true);
-        target.sendSystemMessage(Component.literal("Your character has been fully reset by an admin."));
+        target.sendSystemMessage(Component.literal("Your character has been fully wiped by an admin."));
         return 1;
     }
 

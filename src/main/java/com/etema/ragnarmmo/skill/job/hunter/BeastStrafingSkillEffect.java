@@ -58,7 +58,10 @@ public class BeastStrafingSkillEffect implements ISkillEffect {
                     look.y + player.getRandom().nextGaussian() * spread,
                     look.z + player.getRandom().nextGaussian() * spread);
             RagnarArrowSpawnHelper.spawn(player, direction, 2.5F, 0.0F, 1.0F,
-                    arrow -> arrow.setBaseDamage(bonusDmg), null);
+                    arrow -> {
+                        arrow.setBaseDamage(bonusDmg);
+                        arrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+                    }, null);
         }
 
         // Crit particles at target to indicate the bonus shots

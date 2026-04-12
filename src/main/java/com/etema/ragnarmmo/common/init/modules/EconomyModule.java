@@ -16,5 +16,8 @@ public final class EconomyModule {
 
         // Register event handler
         MinecraftForge.EVENT_BUS.register(new ZenyDropEventHandler());
+        
+        // Register Network Packets
+        com.etema.ragnarmmo.common.net.Network.registerEconomyPackets();
     }
 }

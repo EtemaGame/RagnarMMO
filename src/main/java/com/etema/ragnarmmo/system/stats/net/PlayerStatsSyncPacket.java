@@ -10,6 +10,7 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 
 public class PlayerStatsSyncPacket {
+    public final int entityId;
     public final int syncMask;
     public final double mana, manaMax;
     public final double sp, spMax;
@@ -19,12 +20,13 @@ public class PlayerStatsSyncPacket {
     public final boolean baseStatPointsGranted;
     public final int str, agi, vit, intelligence, dex, luk;
 
-    public PlayerStatsSyncPacket(int syncMask,
+    public PlayerStatsSyncPacket(int entityId, int syncMask,
             double mana, double manaMax, double sp, double spMax,
             int level, int exp, int statPoints,
             int jobLevel, int jobExp, int skillPoints, String jobId,
             boolean baseStatPointsGranted,
             int str, int agi, int vit, int intelligence, int dex, int luk) {
+        this.entityId = entityId;
         this.syncMask = syncMask;
         this.mana = mana;
         this.manaMax = manaMax;
@@ -46,12 +48,12 @@ public class PlayerStatsSyncPacket {
         this.luk = luk;
     }
 
-    public PlayerStatsSyncPacket(com.etema.ragnarmmo.common.api.stats.IPlayerStats stats) {
-        this(stats, RoPlayerSyncDomain.allMask());
+    public PlayerStatsSyncPacket(int entityId, com.etema.ragnarmmo.common.api.stats.IPlayerStats stats) {
+        this(entityId, stats, RoPlayerSyncDomain.allMask());
     }
 
-    public PlayerStatsSyncPacket(com.etema.ragnarmmo.common.api.stats.IPlayerStats stats, int syncMask) {
-        this(syncMask,
+    public PlayerStatsSyncPacket(int entityId, com.etema.ragnarmmo.common.api.stats.IPlayerStats stats, int syncMask) {
+        this(entityId, syncMask,
                 stats.getMana(), stats.getManaMax(),
                 stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps ? ps.getSP() : 0,
                 stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps2 ? ps2.getSPMax() : 100,
@@ -62,6 +64,7 @@ public class PlayerStatsSyncPacket {
     }
 
     public static void encode(PlayerStatsSyncPacket m, FriendlyByteBuf buf) {
+        buf.writeInt(m.entityId);
         buf.writeVarInt(m.syncMask);
         buf.writeDouble(m.mana);
         buf.writeDouble(m.manaMax);
@@ -85,6 +88,7 @@ public class PlayerStatsSyncPacket {
 
     public static PlayerStatsSyncPacket decode(FriendlyByteBuf buf) {
         return new PlayerStatsSyncPacket(
+                buf.readInt(),
                 buf.readVarInt(),
                 buf.readDouble(), buf.readDouble(),
                 buf.readDouble(), buf.readDouble(),

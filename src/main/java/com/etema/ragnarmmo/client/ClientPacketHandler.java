@@ -206,6 +206,28 @@ public final class ClientPacketHandler {
 
         MobClientCoexistenceCache.put(entityId, view);
     }
+    // ═══════════════════════════════════════════════
+    // Combat Feedback
+    // ═══════════════════════════════════════════════
+    public static void handleCombatFeedback(int targetId, com.etema.ragnarmmo.combat.api.CombatHitResultType resultType, double amount, boolean critical) {
+        if (resultType == com.etema.ragnarmmo.combat.api.CombatHitResultType.MISS) {
+            com.etema.ragnarmmo.client.render.RagnarPopoffHandler.addPopoff(targetId, "MISS", 0xFFDDDDDD);
+        } else if (resultType == com.etema.ragnarmmo.combat.api.CombatHitResultType.DODGE) {
+            com.etema.ragnarmmo.client.render.RagnarPopoffHandler.addPopoff(targetId, "DODGE", 0xFFDDDDDD);
+        }
+    }
+
+    // ═══════════════════════════════════════════════
+    // Wallet Sync Packet
+    // ═══════════════════════════════════════════════
+    public static void handleWalletSync(com.etema.ragnarmmo.system.economy.net.WalletSyncPacket msg) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            com.etema.ragnarmmo.system.economy.capability.PlayerWalletProvider.get(mc.player).ifPresent(wallet -> {
+                wallet.setZeny(msg.zeny);
+            });
+        }
+    }
 
     // ═══════════════════════════════════════════════
     // LifeSkillSyncPacket

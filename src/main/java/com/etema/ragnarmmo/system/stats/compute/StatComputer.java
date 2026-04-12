@@ -178,16 +178,18 @@ public final class StatComputer {
         derived.maxHealth = maxHealth;
         derived.healthRegenPerSecond = Math.max(0.0D, CombatMath.computeHPRegen(vit, maxHealth));
 
-        double maxMana = CombatMath.computeMaxMana(intel, level, stats.getJobId());
+        double maxSp = CombatMath.computeMaxSP(intel, level, stats.getJobId());
         if (ctx.manaControl > 0) {
-            maxMana *= 1.0D + (ctx.manaControl * 0.03D);
+            maxSp *= 1.0D + (ctx.manaControl * 0.03D);
         }
-        derived.maxMana = maxMana;
-        derived.manaRegenPerSecond = CombatMath.computeManaRegen(intel, maxMana) + (ctx.arcaneRegen * 0.1D);
-
-        double maxSp = CombatMath.computeMaxSP(vit, str, level, stats.getJobId());
         derived.maxSP = maxSp;
-        derived.spRegenPerSecond = CombatMath.computeSPRegen(str, maxSp);
+        
+        double spRegen = CombatMath.computeSPRegen(intel, maxSp) + (ctx.arcaneRegen * 0.1D);
+        derived.spRegenPerSecond = spRegen;
+        
+        // Mirror to Mana for backwards compatibility
+        derived.maxMana = maxSp;
+        derived.manaRegenPerSecond = spRegen;
     }
 
     private static void applyMiscStats(Player player, DerivedStats derived, int agi, int dex,

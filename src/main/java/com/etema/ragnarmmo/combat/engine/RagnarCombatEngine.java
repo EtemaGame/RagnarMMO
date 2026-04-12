@@ -272,11 +272,194 @@ public class RagnarCombatEngine {
             
             // Mark as processed to avoid CommonEvents double-calc
             DamageProcessingGuard.markProcessedPlayer(livingTarget);
+
+        // SIZE & ELEMENTAL
+        var attackElement = com.etema.ragnarmmo.combat.element.CombatPropertyResolver.getOffensiveElement(attacker);
+        dmg = damageCalculator.applyModifiers(dmg, weapon, target, attackElement, false);
+
+        // DEFENSE
+        dmg = damageCalculator.applyPhysicalDefense(dmg, def.vit(), def.agi(), lvl, def.armorEff());
+
+        return CombatResolution.hit(
+                attacker.getId(),
+                target.getId(),
+                dmg,
+                dmg,
+                hitResult == CombatHitResultType.CRIT);
+    }
+
+    private record DefenderStats(double flee, double critShield, double perfectDodge, 
+                                 int vit, int agi, int luk, int lvl, double armorEff, com.etema.ragnarmmo.combat.element.ElementType element) {
+    }
+
+    private DefenderStats fetchDefenderStats(LivingEntity target) {
+        if (target instanceof ServerPlayer tp) {
+            var statsOpt = RagnarCoreAPI.get(tp);
+            if (statsOpt.isPresent()) {
+                var s = statsOpt.get();
+                DerivedStats d = StatResolutionService.computeAuthoritative(tp, s);
+                
+                int vit = (int) StatAttributes.getTotal(tp, StatKeys.VIT);
+                int agi = (int) StatAttributes.getTotal(tp, StatKeys.AGI);
+                int luk = (int) StatAttributes.getTotal(tp, StatKeys.LUK);
+                int lvl = s.getLevel();
+                
+                double flee = d.flee;
+                double pd = d.perfectDodge;
+                double criticalShield = Math.floor(lvl / 15.0) + Math.floor(luk / 5.0);
+                double armorEff = d.hardDefense;
+                
+                return new DefenderStats(flee, criticalShield, pd, vit, agi, luk, lvl, armorEff, com.etema.ragnarmmo.combat.element.ElementType.NEUTRAL);
+            }
+        } else if (target instanceof net.minecraft.world.entity.Mob mob) {
+            CombatMath.TargetStats targetStats = CombatMath.getTargetStats(mob);
+            int lvl = CombatMath.tryGetTargetLevel(mob).orElse(0);
+
+            if (lvl > 0) {
+                double flee = CombatMath.tryGetResolvedMobFlee(mob)
+                        .orElseGet(() -> (int) CombatMath.computeFLEE(targetStats.agi, targetStats.luk, lvl, 0));
+                double pd = CombatMath.computePerfectDodge(targetStats.luk);
+                double criticalShield = Math.floor(lvl / 15.0) + Math.floor(targetStats.luk / 5.0);
+                double armorEff = com.etema.ragnarmmo.system.stats.event.CommonEvents.getArmorEff(mob);
+                com.etema.ragnarmmo.combat.element.ElementType element =
+                        com.etema.ragnarmmo.combat.element.CombatPropertyResolver.getDefensiveElement(mob);
+
+                return new DefenderStats(
+                        flee,
+                        criticalShield,
+                        pd,
+                        targetStats.vit,
+                        targetStats.agi,
+                        targetStats.luk,
+                        lvl,
+                        armorEff,
+                        element);
+            }
+        }
+        
+        // Fallback for vanilla mobs without stats
+        int lvl = target.getAttributes().hasAttribute(Attributes.MAX_HEALTH) ? (int) (target.getMaxHealth() / 10) : 10;
+        return new DefenderStats(lvl + CombatMath.FLEE_BASE, lvl / 5.0, 0, lvl, lvl, lvl, lvl, 0, com.etema.ragnarmmo.combat.element.ElementType.NEUTRAL);
+    }
+
+    public List<CombatResolution> handleSkillUseRequest(CombatRequestContext ctx) {
+        CombatDebugLog.logSkillRequest(ctx);
+        long nowTick = ctx.actor().serverLevel().getGameTime();
+        CombatActorState actorState = state(ctx.actor());
+
+        CombatRejectReason reject = validationService.validateSkillRequest(ctx, actorState, nowTick, cooldownService);
+        if (reject != null) {
+            CombatDebugLog.logValidationReject(ctx, "REJECTED_" + reject.name());
+            return Collections.emptyList();
+        }
+
+        actorState.setLastAcceptedSequenceId(ctx.sequenceId());
+        
+        List<CombatResolution> resolutions = skillResolver.resolveSkill(ctx, actorState, nowTick);
+        
+        for (CombatResolution res : resolutions) {
+            applyResolution(ctx.actor(), res);
+        }
+
+        // Mark cooldown based on skill data (to be expanded)
+        cooldownService.markSkillUsed(actorState.getCooldowns(), ctx.skillId(), nowTick, 20);
+        
+        return resolutions;
+    }
+
+    private void applyResolution(ServerPlayer attacker, CombatResolution resolution) {
+        net.minecraft.world.entity.Entity target = attacker.serverLevel().getEntity(resolution.targetId());
+        if (!(target instanceof LivingEntity livingTarget)) {
+            return;
+        }
+
+        if (resolution.resultType() == CombatHitResultType.HIT || resolution.resultType() == CombatHitResultType.CRIT) {
+            float damage = (float) resolution.finalAmount();
+            
+            // Mark as processed to avoid CommonEvents double-calc
+            DamageProcessingGuard.markProcessedPlayer(livingTarget);
             
             // Use MobAttack source to represent authoritative damage
             SkillDamageHelper.dealSkillDamage(livingTarget, attacker.damageSources().mobAttack(attacker), damage);
         }
 
         feedbackService.sendBasicAttackFeedback(attacker, livingTarget, resolution);
+    }
+
+    @net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "ragnarmmo")
+    public static class CombatEventHandler {
+        @net.minecraftforge.eventbus.api.SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.LOW)
+        public static void onMobAttackPlayer(net.minecraftforge.event.entity.living.LivingHurtEvent e) {
+            if (!(e.getEntity() instanceof ServerPlayer p))
+                return;
+            if (p.level().isClientSide())
+                return;
+
+            if (DamageProcessingGuard.isProcessedPlayer(p))
+                return;
+
+            // Mob-to-player damage handling with Authority
+            RagnarCoreAPI.get(p).ifPresent(stats -> {
+                var dmgCalc = RagnarCombatEngine.get().damageCalculator;
+                var hitCalc = RagnarCombatEngine.get().hitCalculator;
+                
+                double rawDamage = e.getAmount();
+                boolean isMagic = com.etema.ragnarmmo.system.stats.event.CommonEvents.isMagicDamage(e.getSource());
+                LivingEntity attacker = e.getSource().getEntity() instanceof LivingEntity living ? living : null;
+                
+                DefenderStats def = RagnarCombatEngine.get().fetchDefenderStats(p);
+
+                // 1. Perfect Dodge
+                if (!isMagic && hitCalc.rollPerfectDodge(def.perfectDodge(), p.getRandom())) {
+                    e.setAmount(0);
+                    e.setCanceled(true);
+                    RagnarCombatEngine.get().feedbackService.sendBasicAttackFeedback(
+                         null, p, CombatResolution.miss(attacker != null ? attacker.getId() : -1, p.getId())
+                    );
+                    return;
+                }
+                
+                // 2. Flee vs Hit (Evasion)
+                if (!isMagic && attacker != null) {
+                    // Approximate attacker accuracy
+                    double accuracy = 0;
+                    if (attacker instanceof net.minecraft.world.entity.Mob mob) {
+                        var targetStats = CombatMath.getTargetStats(mob);
+                        int mobLvl = CombatMath.tryGetTargetLevel(mob).orElse(mob.getAttributes().hasAttribute(Attributes.MAX_HEALTH) ? (int)(mob.getMaxHealth() / 10) : 10);
+                        accuracy = CombatMath.tryGetResolvedMobHit(mob).orElseGet(() -> (int)CombatMath.computeHIT(targetStats.dex, mobLvl, 0));
+                    } else if (attacker instanceof ServerPlayer ap) {
+                        accuracy = StatResolutionService.computeAuthoritative(ap, RagnarCoreAPI.get(ap).orElse(null)).hit;
+                    }
+                    
+                    CombatHitResultType hitResult = hitCalc.rollHitWithCrit(accuracy, def.flee(), 0, def.critShield(), p.getRandom());
+                    if (hitResult == CombatHitResultType.MISS) {
+                        e.setAmount(0);
+                        e.setCanceled(true);
+                        RagnarCombatEngine.get().feedbackService.sendBasicAttackFeedback(
+                             null, p, CombatResolution.miss(attacker.getId(), p.getId())
+                        );
+                        return;
+                    }
+                }
+                
+                // 3. Damage Calculation
+                double finalDmg = rawDamage;
+                if (isMagic) {
+                    int intel = (int) StatAttributes.getTotal(p, StatKeys.INT);
+                    int dex = (int) StatAttributes.getTotal(p, StatKeys.DEX);
+                    double armorMdef = com.etema.ragnarmmo.system.stats.event.CommonEvents.getArmorMagicDefense(p);
+                    finalDmg = dmgCalc.applyMagicDefense(rawDamage, intel, def.vit(), dex, def.lvl(), armorMdef);
+                } else {
+                    finalDmg = dmgCalc.applyPhysicalDefense(rawDamage, def.vit(), def.agi(), def.lvl(), def.armorEff());
+                }
+
+                // Elemental
+                com.etema.ragnarmmo.combat.element.ElementType attackElement = com.etema.ragnarmmo.system.stats.event.CommonEvents.resolveIncomingAttackElement(attacker, e.getSource().getDirectEntity(), isMagic);
+                finalDmg *= com.etema.ragnarmmo.combat.element.CombatPropertyResolver.getElementalModifier(attackElement, def.element());
+
+                e.setAmount((float) Math.max(1.0, finalDmg));
+                DamageProcessingGuard.markProcessedPlayer(p);
+            });
+        }
     }
 }

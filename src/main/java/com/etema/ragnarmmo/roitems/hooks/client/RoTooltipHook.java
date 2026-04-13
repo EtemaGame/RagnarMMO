@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.roitems.hooks.client;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.roitems.config.RoItemsConfig;
+import com.etema.ragnarmmo.common.config.access.RoItemsConfigAccess;
 import com.etema.ragnarmmo.roitems.data.RoItemRule;
 import com.etema.ragnarmmo.roitems.runtime.RoItemNbtHelper;
 import com.etema.ragnarmmo.roitems.runtime.RoItemRuleResolver;
@@ -29,7 +29,7 @@ public final class RoTooltipHook {
 
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
-        if (!RoItemsConfig.isEnabled() || !RoItemsConfig.shouldShowTooltips()) {
+        if (!RoItemsConfigAccess.isEnabled() || !RoItemsConfigAccess.showTooltips()) {
             return;
         }
 

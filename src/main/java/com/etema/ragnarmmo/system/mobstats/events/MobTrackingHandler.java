@@ -22,8 +22,16 @@ public final class MobTrackingHandler {
         if (event.getTarget() instanceof LivingEntity target
                 && !(target instanceof Player)
                 && event.getEntity() instanceof ServerPlayer player) {
-            SyncMobStatsPacket.fromEntity(target)
-                    .ifPresent(packet -> Network.sendTrackingEntityAndSelf(target, packet));
+            
+            com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority authority = com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthorityResolver.classify(target);
+
+            if (authority != com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority.STRICT_NEW_AUTHORITY) {
+                SyncMobStatsPacket.fromEntity(target)
+                        .ifPresent(packet -> Network.sendTrackingEntityAndSelf(target, packet));
+            } else {
+                com.etema.ragnarmmo.common.debug.RagnarDebugLog.migration("Sync: Skipping legacy stats packet for STRICT mob. entity={}",
+                        com.etema.ragnarmmo.common.debug.RagnarDebugLog.entityLabel(target));
+            }
 
             SyncMobCoexistenceViewPacket.fromEntity(target)
                     .ifPresent(packet -> Network.sendToPlayer(player, packet));

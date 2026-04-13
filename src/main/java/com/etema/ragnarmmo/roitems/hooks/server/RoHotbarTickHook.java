@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.roitems.hooks.server;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.roitems.config.RoItemsConfig;
+import com.etema.ragnarmmo.common.config.access.RoItemsConfigAccess;
 import com.etema.ragnarmmo.roitems.data.RoItemRule;
 import com.etema.ragnarmmo.roitems.runtime.RoAttributeApplier;
 import com.etema.ragnarmmo.roitems.runtime.RoItemRuleResolver;
@@ -87,14 +87,14 @@ public final class RoHotbarTickHook {
             return;
 
         // Check if system is enabled
-        if (!RoItemsConfig.isEnabled())
+        if (!RoItemsConfigAccess.isEnabled())
             return;
 
         UUID playerId = player.getUUID();
 
         // Tick throttling
         int tickCounter = TICK_COUNTERS.getOrDefault(playerId, 0) + 1;
-        int checkInterval = RoItemsConfig.getTickCheckInterval();
+        int checkInterval = RoItemsConfigAccess.getTickCheckInterval();
 
         if (tickCounter < checkInterval) {
             TICK_COUNTERS.put(playerId, tickCounter);

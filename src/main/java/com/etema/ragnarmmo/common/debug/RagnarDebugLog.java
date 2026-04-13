@@ -52,6 +52,7 @@ public final class RagnarDebugLog {
         OVERRIDES.put(RagnarDebugChannel.PLAYER_DATA, Boolean.TRUE);
         OVERRIDES.put(RagnarDebugChannel.MOB_SPAWNS, Boolean.TRUE);
         OVERRIDES.put(RagnarDebugChannel.BOSS_WORLD, Boolean.TRUE);
+        OVERRIDES.put(RagnarDebugChannel.MIGRATION, Boolean.TRUE);
     }
 
     public static synchronized void disableAll() {
@@ -60,6 +61,7 @@ public final class RagnarDebugLog {
         OVERRIDES.put(RagnarDebugChannel.PLAYER_DATA, Boolean.FALSE);
         OVERRIDES.put(RagnarDebugChannel.MOB_SPAWNS, Boolean.FALSE);
         OVERRIDES.put(RagnarDebugChannel.BOSS_WORLD, Boolean.FALSE);
+        OVERRIDES.put(RagnarDebugChannel.MIGRATION, Boolean.FALSE);
     }
 
     public static synchronized void resetAll() {
@@ -82,6 +84,10 @@ public final class RagnarDebugLog {
         return masterEnabled() && resolve(RagnarDebugChannel.BOSS_WORLD, RagnarConfigs.SERVER.logging.debugBossWorld.get());
     }
 
+    public static boolean migrationEnabled() {
+        return masterEnabled() && resolve(RagnarDebugChannel.MIGRATION, RagnarConfigs.SERVER.logging.debugMigration.get());
+    }
+
     public static void combat(String message, Object... args) {
         log(combatEnabled(), "COMBAT", message, args);
     }
@@ -96,6 +102,10 @@ public final class RagnarDebugLog {
 
     public static void bossWorld(String message, Object... args) {
         log(bossWorldEnabled(), "BOSS", message, args);
+    }
+
+    public static void migration(String message, Object... args) {
+        log(migrationEnabled(), "MIGRATION", message, args);
     }
 
     public static String entityLabel(Entity entity) {
@@ -143,7 +153,10 @@ public final class RagnarDebugLog {
                         getOverride(RagnarDebugChannel.MOB_SPAWNS))
                 + ", "
                 + describeChannel(RagnarDebugChannel.BOSS_WORLD, bossWorldEnabled(),
-                        getOverride(RagnarDebugChannel.BOSS_WORLD));
+                        getOverride(RagnarDebugChannel.BOSS_WORLD))
+                + ", "
+                + describeChannel(RagnarDebugChannel.MIGRATION, migrationEnabled(),
+                        getOverride(RagnarDebugChannel.MIGRATION));
     }
 
     private static void log(boolean enabled, String category, String message, Object... args) {

@@ -31,6 +31,15 @@ public final class ManualMobProfileResolver {
     private ManualMobProfileResolver() {
     }
 
+    public static boolean hasManualDefinition(ResourceLocation entityTypeId) {
+        return MobDefinitionRegistry.getInstance().getDefinition(entityTypeId).isPresent();
+    }
+
+    public static boolean hasStrictResolvableManualProfile(ResourceLocation entityTypeId) {
+        ManualMobProfileResolutionResult result = resolve(entityTypeId);
+        return result.isSuccess() && result.profile() != null;
+    }
+
     public static ManualMobProfileResolutionResult resolve(ResourceLocation entityTypeId) {
         return resolve(entityTypeId, MobDefinitionRegistry.getInstance());
     }

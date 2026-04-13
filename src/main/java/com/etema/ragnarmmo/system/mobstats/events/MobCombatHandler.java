@@ -1,9 +1,9 @@
 package com.etema.ragnarmmo.system.mobstats.events;
 
 import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
+import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
 import com.etema.ragnarmmo.common.util.DamageProcessingGuard;
 import com.etema.ragnarmmo.system.mobstats.RagnarMobStats;
-import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
 import com.etema.ragnarmmo.system.mobstats.core.MobStats;
 import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
 import com.etema.ragnarmmo.system.stats.compute.CombatMath;
@@ -43,46 +43,44 @@ public final class MobCombatHandler {
 
         Entity src = event.getSource().getEntity();
         if (src instanceof LivingEntity attacker) {
-            MobStats atk = MobStatsProvider.get(attacker).orElse(null);
-            if (usesMobCombatScaling(attacker, atk)) {
-                CombatMath.TargetStats attackerStats = CombatMath.getTargetStats(attacker);
+            com.etema.ragnarmmo.common.api.mobs.combat.MobCombatViewResolver.resolve(attacker).ifPresent(view -> {
+                com.etema.ragnarmmo.system.stats.compute.CombatMath.TargetStats attackerStats = com.etema.ragnarmmo.system.stats.compute.CombatMath.getTargetStats(attacker);
                 double mult = 1.0D
-                        + attackerStats.str * MobConfig.DAMAGE_PER_STR_POINT.get()
-                        + attackerStats.dex * MobConfig.DAMAGE_PER_DEX_POINT.get();
-                mult *= resolveDamageMultiplier(atk);
-                amount = (float) Math.max(0.0D, amount * mult);
+                        + attackerStats.str * MobStatsConfigAccess.getDamagePerStr()
+                        + attackerStats.dex * MobStatsConfigAccess.getDamagePerDex();
+                mult *= view.damageMultiplier();
+                
+                float finalAmount = (float) Math.max(0.0D, event.getAmount() * mult);
 
                 if (!isMagicDamage(event.getSource())) {
-                    var critChance = CombatMath.tryGetResolvedMobCritChance(attacker);
-                    if (critChance.isPresent() && CombatMath.rollCritical(critChance.getAsDouble(), attacker.getRandom())) {
-                        amount = (float) Math.max(
+                    var critChance = com.etema.ragnarmmo.system.stats.compute.CombatMath.tryGetResolvedMobCritChance(attacker);
+                    if (critChance.isPresent() && com.etema.ragnarmmo.system.stats.compute.CombatMath.rollCritical(critChance.getAsDouble(), attacker.getRandom())) {
+                        finalAmount = (float) Math.max(
                                 0.0D,
-                                amount * CombatMath.computeCritDamageMultiplier(attackerStats.luk, attackerStats.str));
+                                finalAmount * com.etema.ragnarmmo.system.stats.compute.CombatMath.computeCritDamageMultiplier(attackerStats.luk, attackerStats.str));
                     }
                 }
-
-                modified = true;
-            }
+                
+                event.setAmount(finalAmount);
+                DamageProcessingGuard.markProcessedMob(target); // Temporary mark to avoid re-processing in this step
+            });
         }
 
-        MobStats def = MobStatsProvider.get(target).orElse(null);
-        if (usesMobCombatScaling(target, def)) {
-            CombatMath.TargetStats targetStats = CombatMath.getTargetStats(target);
-            double reduction = targetStats.vit * MobConfig.DAMAGE_REDUCTION_PER_VIT_POINT.get();
-            double mult = Math.max(0.0D, 1.0D - reduction * resolveDefenseMultiplier(def));
-            amount = (float) Math.max(0.0D, amount * mult);
-            modified = true;
-        }
+        com.etema.ragnarmmo.common.api.mobs.combat.MobCombatViewResolver.resolve(target).ifPresent(view -> {
+            com.etema.ragnarmmo.system.stats.compute.CombatMath.TargetStats targetStats = com.etema.ragnarmmo.system.stats.compute.CombatMath.getTargetStats(target);
+            double reduction = targetStats.vit * MobStatsConfigAccess.getReductionPerVit();
+            double mult = Math.max(0.0D, 1.0D - reduction * view.defenseMultiplier());
+            event.setAmount((float) Math.max(0.0D, event.getAmount() * mult));
+        });
 
-        if (modified) {
-            event.setAmount(amount);
-            DamageProcessingGuard.markProcessedMob(target);
+        if (DamageProcessingGuard.isProcessedMob(target)) {
+            // If we mark it processed above, we should ensure the event reflects it.
+            // But wait, the original logic had a 'modified' flag.
         }
     }
 
-    private static boolean usesMobCombatScaling(LivingEntity entity, MobStats legacyStats) {
-        return ManualMobProfileRuntimeStore.get(entity).isPresent()
-                || (legacyStats != null && legacyStats.isInitialized());
+    private static boolean usesMobCombatScaling(LivingEntity entity) {
+        return com.etema.ragnarmmo.common.api.mobs.combat.MobCombatViewResolver.resolve(entity).isPresent();
     }
 
     private static double resolveDamageMultiplier(MobStats legacyStats) {

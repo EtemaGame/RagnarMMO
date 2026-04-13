@@ -2,6 +2,8 @@ package com.etema.ragnarmmo.system.bar;
 
 import com.etema.ragnarmmo.client.MobClientCoexistenceReader;
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
+import com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority;
+import com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthorityResolver;
 import com.etema.ragnarmmo.common.api.mobs.query.MobClientCoexistenceView;
 import com.etema.ragnarmmo.system.mobstats.integration.MobInfoIntegration;
 
@@ -47,6 +49,11 @@ public class MobStatsIntegration implements EntityStatResolver {
             return String.valueOf(syncedView.get().level());
         }
 
+        MobRuntimeAuthority authority = MobRuntimeAuthorityResolver.classify(e);
+        if (authority == MobRuntimeAuthority.STRICT_NEW_AUTHORITY) {
+            return ""; // Strict mobs should only use synced data
+        }
+
         var compatibilityInfo = getCompatibilityInfo(e);
         if (compatibilityInfo.isPresent()) {
             int lvl = compatibilityInfo.get().level();
@@ -68,6 +75,11 @@ public class MobStatsIntegration implements EntityStatResolver {
         var syncedView = getSyncedView(e);
         if (syncedView.isPresent()) {
             return syncedView.get().rank().name();
+        }
+
+        MobRuntimeAuthority authority = MobRuntimeAuthorityResolver.classify(e);
+        if (authority == MobRuntimeAuthority.STRICT_NEW_AUTHORITY) {
+            return "";
         }
 
         return getCompatibilityInfo(e)
@@ -134,6 +146,12 @@ public class MobStatsIntegration implements EntityStatResolver {
         if (syncedView.isPresent()) {
             return Optional.of(syncedView.get().rank());
         }
+
+        MobRuntimeAuthority authority = MobRuntimeAuthorityResolver.classify(entity);
+        if (authority == MobRuntimeAuthority.STRICT_NEW_AUTHORITY) {
+            return Optional.empty();
+        }
+
         return getCompatibilityInfo(entity)
                 .map(MobInfoIntegration.CompatibilityMobInfo::rank);
     }

@@ -12,12 +12,6 @@ public final class MobStatsModule {
     }
 
     public static void init(IEventBus modBus) {
-        // Register configuration
-        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
-                net.minecraftforge.fml.config.ModConfig.Type.COMMON,
-                com.etema.ragnarmmo.system.mobstats.config.MobConfig.SPEC,
-                "ragnarmmo-mobstats.toml");
-
         modBus.addListener(MobStatsModule::onCommonSetup);
         MinecraftForge.EVENT_BUS.register(new MobSpawnHandler());
 

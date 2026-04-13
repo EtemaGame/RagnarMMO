@@ -1,16 +1,12 @@
 package com.etema.ragnarmmo.roitems;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.roitems.config.RoItemsConfig;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
 
 /**
  * Module initialization for the RO Items system.
- * Registers configuration and sets up the system.
- *
- * All event handlers are auto-registered via @EventBusSubscriber annotations.
+ * Registers items and sets up basic services.
+ * Unified config is now handled via RagnarConfigs.
  */
 public final class RoItemsModule {
 
@@ -30,21 +26,6 @@ public final class RoItemsModule {
         UtilityItems.register(modBus);
         RagnarWeaponItems.register(modBus);
         com.etema.ragnarmmo.system.loot.cards.RagnarCardItems.register(modBus);
-
-        // Register configuration
-        ModLoadingContext.get().registerConfig(
-                ModConfig.Type.COMMON,
-                RoItemsConfig.SPEC,
-                "ragnarmmo-roitems.toml"
-        );
-
-        // Note: All event handlers use @EventBusSubscriber and are auto-registered
-        // - RoItemRuleLoader.Events (AddReloadListenerEvent)
-        // - RoItemAttributeHook (PlayerTickEvent)
-        // - RoLoginSyncHook (EntityJoinLevelEvent, PlayerRespawnEvent, etc.)
-        // - RoEquipRestrictionHook (PlayerInteractEvent.RightClickItem)
-        // - RoCombatRestrictionHook (LivingHurtEvent)
-        // - RoTooltipHook (ItemTooltipEvent, client only)
 
         RagnarMMO.LOGGER.info("RO Items module initialized");
     }

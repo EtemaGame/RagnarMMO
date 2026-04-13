@@ -53,6 +53,19 @@ public final class MobStatsProvider implements ICapabilityProvider, INBTSerializ
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event) {
         Entity entity = event.getObject();
         if (entity instanceof LivingEntity living && !(entity instanceof Player)) {
+            com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority authority = com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthorityResolver.classify(living);
+            
+            if (authority == com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority.STRICT_NEW_AUTHORITY) {
+                com.etema.ragnarmmo.common.debug.RagnarDebugLog.migration("Sync: Retirement - Skipping MobStats capability for STRICT mob. entity={}",
+                        com.etema.ragnarmmo.common.debug.RagnarDebugLog.entityLabel(living));
+                return;
+            }
+
+            if (authority == com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority.TEMP_COMPAT) {
+                com.etema.ragnarmmo.common.debug.RagnarDebugLog.migration("DEBT: Attaching MobStats capability to TEMP_COMPAT mob. entity={}",
+                        com.etema.ragnarmmo.common.debug.RagnarDebugLog.entityLabel(living));
+            }
+
             event.addCapability(new ResourceLocation(RagnarMobStats.MOD_ID, "mob_stats"), new MobStatsProvider(living));
         }
     }

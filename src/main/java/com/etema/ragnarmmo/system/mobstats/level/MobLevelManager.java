@@ -5,7 +5,8 @@ import com.etema.ragnarmmo.common.api.mobs.MobScalingMode;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
-import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
+import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
 import com.etema.ragnarmmo.system.mobstats.util.ConfigUtils;
 import com.etema.ragnarmmo.system.mobstats.util.StructureUtils;
 import com.etema.ragnarmmo.system.mobstats.world.MobSpawnOverrides;
@@ -29,10 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Hostile-mob level resolver for the four effective difficulty methods.
- *
- * <p>The automatic selector still configures only the three non-manual methods. The datapack
- * {@code MANUAL} path bypasses legacy level computation and is surfaced here only as an effective
- * method boundary.</p>
+ * Centralized via MobStatsConfigAccess for high-performance snapshot-based scaling.
  */
 public class MobLevelManager {
 
@@ -77,10 +75,11 @@ public class MobLevelManager {
             case BIOME_DISTANCE -> computeBiomeDistanceLevel(mob, tier);
             case DISTANCE -> computeDistanceBasedLevel(mob, tier);
             case MANUAL -> throw new IllegalStateException("MANUAL must bypass legacy level computation");
+            default -> computeDimensionFloorLevel((ServerLevel) mob.level(), tier);
         };
 
         level = Math.max(minByRules, level);
-        int maxCap = MobConfig.MAX_LEVEL.get();
+        int maxCap = MobStatsConfigAccess.getMaxLevel();
         if (maxCap > 0) {
             level = Math.min(level, maxCap);
         }
@@ -100,11 +99,11 @@ public class MobLevelManager {
     public static boolean isDatapackManualActive(LivingEntity mob) {
         ResourceLocation mobId = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
         return ManualMobProfileRuntimeStore.get(mob).isPresent()
-                || (mobId != null && ManualMobProfileResolver.resolve(mobId).profile() != null);
+                || (mobId != null && ManualMobProfileResolver.hasStrictResolvableManualProfile(mobId));
     }
 
     private static DifficultyMethodResolution resolveConfiguredAutomaticMethod() {
-        return switch (MobConfig.LEVEL_SCALING_MODE.get()) {
+        return switch (MobStatsConfigAccess.getLevelScalingMode()) {
             case PLAYER_LEVEL -> new DifficultyMethodResolution(
                     MobScalingMode.PLAYER_LEVEL,
                     DifficultyMethodSource.LEGACY_CONFIG_AUTO);
@@ -128,15 +127,15 @@ public class MobLevelManager {
             return computeDimensionFloorLevel(serverLevel, tier);
         }
 
-        MobConfig.DimensionConfig dimConfig = getDimConfig(serverLevel.dimension().location());
-        int variance = Math.max(0, MobConfig.PLAYER_LEVEL_VARIANCE.get());
-        int minLevel = Math.max(dimConfig.MIN_FLOOR.get(), anchorLevel - variance);
+        MobStatsConfigAccess.ParsedDimensionRules dimRules = MobStatsConfigAccess.getDimensionRules(serverLevel.dimension());
+        int variance = Math.max(0, MobStatsConfigAccess.getPlayerLevelVariance());
+        int minLevel = Math.max(dimRules.minFloor, anchorLevel - variance);
         int maxLevel = Math.max(minLevel, anchorLevel + variance);
-        return pickLevelFromRange(dimConfig, minLevel, maxLevel, tier);
+        return pickLevelFromRange(dimRules, minLevel, maxLevel, tier);
     }
 
     private Integer resolveNearbyPlayerLevel(ServerLevel serverLevel, LivingEntity mob) {
-        int radius = MobConfig.PLAYER_LEVEL_RADIUS.get();
+        int radius = MobStatsConfigAccess.getPlayerLevelRadius();
         double radiusSqr = radius * (double) radius;
         List<Integer> nearbyLevels = new ArrayList<>();
         Integer closestLevel = null;
@@ -176,19 +175,21 @@ public class MobLevelManager {
             return 1;
         }
 
-        MobConfig.DimensionConfig dimConfig = getDimConfig(serverLevel.dimension().location());
+        MobStatsConfigAccess.ParsedDimensionRules dimRules = MobStatsConfigAccess.getDimensionRules(serverLevel.dimension());
         double distance = getDistanceFromSpawn(serverLevel, mob.blockPosition());
-        List<LevelBand> bands = parseDistanceBands(dimConfig.DISTANCE_BANDS.get());
-
-        Optional<LevelBand> exactBand = findMatchingBand(bands, distance);
+        
+        Optional<MobStatsConfigAccess.DistanceBand> exactBand = dimRules.distanceBands.stream()
+                .filter(b -> distance >= b.minDistance && distance <= b.maxDistance)
+                .findFirst();
+        
         if (exactBand.isPresent()) {
-            return pickLevelFromRange(dimConfig, exactBand.get().minLevel(), exactBand.get().maxLevel(), tier);
+            return pickLevelFromRange(dimRules, exactBand.get().levelRange.min(), exactBand.get().levelRange.max(), tier);
         }
 
-        Optional<LevelBand> nearestBand = findClosestBand(bands, distance);
+        Optional<MobStatsConfigAccess.DistanceBand> nearestBand = findClosestBand(dimRules.distanceBands, distance);
         if (nearestBand.isPresent()) {
             warnDistanceNearestBandFallbackOnce();
-            return pickLevelFromRange(dimConfig, nearestBand.get().minLevel(), nearestBand.get().maxLevel(), tier);
+            return pickLevelFromRange(dimRules, nearestBand.get().levelRange.min(), nearestBand.get().levelRange.max(), tier);
         }
 
         warnDistanceFloorFallbackOnce();
@@ -200,31 +201,36 @@ public class MobLevelManager {
             return 1;
         }
 
-        MobConfig.DimensionConfig dimConfig = getDimConfig(serverLevel.dimension().location());
+        MobStatsConfigAccess.ParsedDimensionRules dimRules = MobStatsConfigAccess.getDimensionRules(serverLevel.dimension());
         double distance = getDistanceFromSpawn(serverLevel, mob.blockPosition());
-        String biomeId = serverLevel.getBiome(mob.blockPosition())
+        ResourceLocation biomeId = serverLevel.getBiome(mob.blockPosition())
                 .unwrapKey()
-                .map(key -> key.location().toString())
-                .orElse("minecraft:plains");
+                .map(key -> key.location())
+                .orElse(new ResourceLocation("minecraft:plains"));
 
-        Optional<LevelBand> biomeBand = findBiomeDistanceBand(dimConfig.BIOME_DISTANCE_BANDS.get(), biomeId, distance);
+        Optional<MobStatsConfigAccess.BiomeDistanceBand> biomeBand = dimRules.biomeDistanceBands.stream()
+                .filter(b -> b.biome.equals(biomeId) && distance >= b.minDistance && distance <= b.maxDistance)
+                .findFirst();
+
         if (biomeBand.isPresent()) {
-            return pickLevelFromRange(dimConfig, biomeBand.get().minLevel(), biomeBand.get().maxLevel(), tier);
+            return pickLevelFromRange(dimRules, biomeBand.get().levelRange.min(), biomeBand.get().levelRange.max(), tier);
         }
 
-        List<LevelBand> genericBands = parseDistanceBands(dimConfig.DISTANCE_BANDS.get());
-        Optional<LevelBand> distanceBand = findMatchingBand(genericBands, distance);
+        Optional<MobStatsConfigAccess.DistanceBand> distanceBand = dimRules.distanceBands.stream()
+                .filter(b -> distance >= b.minDistance && distance <= b.maxDistance)
+                .findFirst();
+
         if (distanceBand.isPresent()) {
             warnBiomeDistanceGenericBandFallbackOnce();
-            return pickLevelFromRange(dimConfig, distanceBand.get().minLevel(), distanceBand.get().maxLevel(), tier);
+            return pickLevelFromRange(dimRules, distanceBand.get().levelRange.min(), distanceBand.get().levelRange.max(), tier);
         }
 
-        Optional<LevelBand> nearestGenericBand = findClosestBand(genericBands, distance);
+        Optional<MobStatsConfigAccess.DistanceBand> nearestGenericBand = findClosestBand(dimRules.distanceBands, distance);
         if (nearestGenericBand.isPresent()) {
             warnBiomeDistanceNearestGenericBandFallbackOnce();
-            return pickLevelFromRange(dimConfig,
-                    nearestGenericBand.get().minLevel(),
-                    nearestGenericBand.get().maxLevel(),
+            return pickLevelFromRange(dimRules,
+                    nearestGenericBand.get().levelRange.min(),
+                    nearestGenericBand.get().levelRange.max(),
                     tier);
         }
 
@@ -233,9 +239,9 @@ public class MobLevelManager {
     }
 
     private int computeDimensionFloorLevel(ServerLevel serverLevel, MobTier tier) {
-        MobConfig.DimensionConfig dimConfig = getDimConfig(serverLevel.dimension().location());
-        int floor = dimConfig.MIN_FLOOR.get();
-        return pickLevelFromRange(dimConfig, floor, floor, tier);
+        MobStatsConfigAccess.ParsedDimensionRules dimRules = MobStatsConfigAccess.getDimensionRules(serverLevel.dimension());
+        int floor = dimRules.minFloor;
+        return pickLevelFromRange(dimRules, floor, floor, tier);
     }
 
     private double getDistanceFromSpawn(ServerLevel level, BlockPos pos) {
@@ -245,9 +251,9 @@ public class MobLevelManager {
         return Math.sqrt(dx * dx + dz * dz);
     }
 
-    private int pickLevelFromRange(MobConfig.DimensionConfig dimConfig, int minLevel, int maxLevel, MobTier tier) {
-        int floor = dimConfig.MIN_FLOOR.get();
-        int cap = dimConfig.MAX_CAP.get();
+    private int pickLevelFromRange(MobStatsConfigAccess.ParsedDimensionRules dimRules, int minLevel, int maxLevel, MobTier tier) {
+        int floor = dimRules.minFloor;
+        int cap = dimRules.maxCap;
 
         minLevel = Math.max(floor, minLevel);
         maxLevel = Math.max(minLevel, maxLevel);
@@ -266,29 +272,12 @@ public class MobLevelManager {
         return Math.max(1, adjusted);
     }
 
-    private List<LevelBand> parseDistanceBands(List<? extends String> entries) {
-        List<LevelBand> bands = new ArrayList<>();
-        for (String entry : entries) {
-            parseDistanceBand(entry).ifPresent(bands::add);
-        }
-        return bands;
-    }
-
-    private Optional<LevelBand> findMatchingBand(List<LevelBand> bands, double distance) {
-        for (LevelBand band : bands) {
-            if (band.matches(distance)) {
-                return Optional.of(band);
-            }
-        }
-        return Optional.empty();
-    }
-
-    private Optional<LevelBand> findClosestBand(List<LevelBand> bands, double distance) {
-        LevelBand closest = null;
+    private Optional<MobStatsConfigAccess.DistanceBand> findClosestBand(List<MobStatsConfigAccess.DistanceBand> bands, double distance) {
+        MobStatsConfigAccess.DistanceBand closest = null;
         double closestGap = Double.MAX_VALUE;
 
-        for (LevelBand band : bands) {
-            double gap = band.distanceGap(distance);
+        for (MobStatsConfigAccess.DistanceBand band : bands) {
+            double gap = computeGap(band, distance);
             if (gap < closestGap) {
                 closestGap = gap;
                 closest = band;
@@ -298,115 +287,10 @@ public class MobLevelManager {
         return Optional.ofNullable(closest);
     }
 
-    private Optional<LevelBand> findBiomeDistanceBand(List<? extends String> entries, String biomeId, double distance) {
-        for (String entry : entries) {
-            Optional<BiomeDistanceBand> band = parseBiomeDistanceBand(entry);
-            if (band.isPresent() && band.get().matches(biomeId, distance)) {
-                return Optional.of(band.get().levelBand());
-            }
-        }
-        return Optional.empty();
-    }
-
-    private Optional<LevelBand> parseDistanceBand(String entry) {
-        if (entry == null) {
-            return Optional.empty();
-        }
-
-        int eq = entry.indexOf('=');
-        if (eq <= 0 || eq >= entry.length() - 1) {
-            return Optional.empty();
-        }
-
-        Optional<long[]> distanceRange = parseLongRange(entry.substring(0, eq).trim());
-        Optional<int[]> levelRange = parseIntRange(entry.substring(eq + 1).trim());
-        if (distanceRange.isEmpty() || levelRange.isEmpty()) {
-            return Optional.empty();
-        }
-
-        long[] distanceValues = distanceRange.get();
-        int[] levelValues = levelRange.get();
-        return Optional.of(new LevelBand(distanceValues[0], distanceValues[1], levelValues[0], levelValues[1]));
-    }
-
-    private Optional<BiomeDistanceBand> parseBiomeDistanceBand(String entry) {
-        if (entry == null) {
-            return Optional.empty();
-        }
-
-        int pipe = entry.indexOf('|');
-        if (pipe <= 0 || pipe >= entry.length() - 1) {
-            return Optional.empty();
-        }
-
-        String biomeId = entry.substring(0, pipe).trim();
-        Optional<LevelBand> band = parseDistanceBand(entry.substring(pipe + 1).trim());
-        return band.map(levelBand -> new BiomeDistanceBand(biomeId, levelBand));
-    }
-
-    private Optional<long[]> parseLongRange(String text) {
-        if (text == null || text.isBlank()) {
-            return Optional.empty();
-        }
-
-        String trimmed = text.trim();
-        try {
-            if (trimmed.endsWith("+")) {
-                long min = Long.parseLong(trimmed.substring(0, trimmed.length() - 1).trim());
-                return Optional.of(new long[] { Math.max(0L, min), Long.MAX_VALUE });
-            }
-
-            int dash = trimmed.indexOf('-');
-            if (dash < 0) {
-                long value = Long.parseLong(trimmed);
-                return Optional.of(new long[] { Math.max(0L, value), Math.max(0L, value) });
-            }
-
-            long min = Long.parseLong(trimmed.substring(0, dash).trim());
-            String maxText = trimmed.substring(dash + 1).trim();
-            long max = "*".equals(maxText) ? Long.MAX_VALUE : Long.parseLong(maxText);
-            if (max < min) {
-                max = min;
-            }
-            return Optional.of(new long[] { Math.max(0L, min), max });
-        } catch (NumberFormatException ex) {
-            return Optional.empty();
-        }
-    }
-
-    private Optional<int[]> parseIntRange(String text) {
-        if (text == null || text.isBlank()) {
-            return Optional.empty();
-        }
-
-        String trimmed = text.trim();
-        try {
-            int dash = trimmed.indexOf('-');
-            if (dash < 0) {
-                int value = Integer.parseInt(trimmed);
-                return Optional.of(new int[] { Math.max(1, value), Math.max(1, value) });
-            }
-
-            int min = Integer.parseInt(trimmed.substring(0, dash).trim());
-            int max = Integer.parseInt(trimmed.substring(dash + 1).trim());
-            if (max < min) {
-                max = min;
-            }
-            return Optional.of(new int[] { Math.max(1, min), Math.max(1, max) });
-        } catch (NumberFormatException ex) {
-            return Optional.empty();
-        }
-    }
-
-    private MobConfig.DimensionConfig getDimConfig(ResourceLocation dimId) {
-        String idStr = dimId.toString();
-        if (idStr.equals("minecraft:the_nether")) {
-            return MobConfig.NETHER;
-        }
-        if (idStr.equals("minecraft:the_end")) {
-            return MobConfig.END;
-        }
-        return MobConfig.OVERWORLD;
+    private double computeGap(MobStatsConfigAccess.DistanceBand band, double distance) {
+        if (distance >= band.minDistance && distance <= band.maxDistance) return 0;
+        if (distance < band.minDistance) return band.minDistance - distance;
+        return distance - band.maxDistance;
     }
 
     private int computeTierOffset(MobTier tier) {
@@ -419,17 +303,16 @@ public class MobLevelManager {
     private int computeMinByRules(LivingEntity mob) {
         int min = 1;
 
-        String dimId = mob.level().dimension().location().toString();
-        min = Math.max(min, ConfigUtils.getMinLevelFor(MobConfig.DIMENSION_MIN_LEVELS.get(), dimId).orElse(1));
+        ResourceLocation dimId = mob.level().dimension().location();
+        min = Math.max(min, MobStatsConfigAccess.getDimensionMinLevel(dimId));
 
         Optional<ResourceLocation> structId = StructureUtils.getStructureAt(mob);
         if (structId.isPresent()) {
-            min = Math.max(min,
-                    ConfigUtils.getMinLevelFor(MobConfig.STRUCTURE_MIN_LEVELS.get(), structId.get().toString()).orElse(1));
+            min = Math.max(min, MobStatsConfigAccess.getStructureMinLevel(structId.get()));
         }
 
-        String entId = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString();
-        min = Math.max(min, ConfigUtils.getMinLevelFor(MobConfig.BOSS_MIN_LEVELS.get(), entId).orElse(1));
+        ResourceLocation entId = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
+        min = Math.max(min, MobStatsConfigAccess.getBossMinLevel(entId));
         min = Math.max(min, MobSpawnOverrides.getMinimumLevel(mob).orElse(1));
 
         return min;
@@ -437,112 +320,53 @@ public class MobLevelManager {
 
     public DifficultyReport getDifficultyReport(ServerLevel level) {
         List<String> lines = new ArrayList<>();
-        MobConfig.LevelScalingMode mode = MobConfig.LEVEL_SCALING_MODE.get();
-        MobConfig.DimensionConfig dimConfig = getDimConfig(level.dimension().location());
-        DifficultyMethodResolution configuredResolution = resolveConfiguredAutomaticMethod();
+        RagnarConfigs.LevelScalingMode mode = MobStatsConfigAccess.getLevelScalingMode();
+        MobStatsConfigAccess.ParsedDimensionRules dimRules = MobStatsConfigAccess.getDimensionRules(level.dimension());
 
-        lines.add("Active scaling mode: " + describeScalingMode(mode));
+        lines.add("Active scaling mode: " + mode.name());
         lines.add("Conceptual methods in the current build: DISTANCE, BIOME_DISTANCE, PLAYER_LEVEL, MANUAL.");
-        lines.add("Configured automatic selector values: PLAYER_LEVEL, DISTANCE, BIOME_DISTANCE.");
-        lines.add("MANUAL is the datapack/manual runtime path and bypasses the automatic selector when a manual profile exists.");
-
-        switch (mode) {
-            case PLAYER_LEVEL -> lines.add(
-                    "Hostile mobs anchor to nearby player level, with small random variance. If no valid player is available, PLAYER_LEVEL now resolves to the dimension floor instead of falling through to DISTANCE.");
-            case DISTANCE -> lines.add(
-                    "Hostile mobs use explicit distance bands from world spawn. If no exact band matches, DISTANCE uses the nearest configured distance band; if none exist, it resolves to the dimension floor.");
-            case BIOME_DISTANCE -> lines.add(
-                    "Biome-specific distance bands are used first, then generic distance bands, then the nearest generic distance band; if none exist, BIOME_DISTANCE resolves to the dimension floor.");
-        }
-        lines.add("Configured automatic method today: " + configuredResolution.method() + " via " + configuredResolution.source() + ".");
-        lines.add("The removed legacy species TOML path and legacy zone scaling are no longer part of the active difficulty model.");
-
-        lines.add(String.format(
-                Locale.ROOT,
-                "Dimension floors -> Overworld %d | Nether %d | End %d",
-                MobConfig.OVERWORLD.MIN_FLOOR.get(),
-                MobConfig.NETHER.MIN_FLOOR.get(),
-                MobConfig.END.MIN_FLOOR.get()));
-        lines.add(String.format(
-                Locale.ROOT,
-                "Current dimension floor/cap -> %d / %d",
-                dimConfig.MIN_FLOOR.get(),
-                dimConfig.MAX_CAP.get()));
-        lines.add(String.format(
-                Locale.ROOT,
-                "Natural elite/boss chance scale -> %.0f%%",
-                MobConfig.NATURAL_TIER_CHANCE_SCALE.get() * 100.0D));
+        
+        lines.add(String.format(Locale.ROOT, "Current dimension floor/cap -> %d / %d", dimRules.minFloor, dimRules.maxCap));
+        lines.add(String.format(Locale.ROOT, "Natural tier chance scale -> %.0f%%", MobStatsConfigAccess.getNaturalTierChanceScale() * 100.0D));
         return new DifficultyReport(lines);
     }
 
     public record DifficultyReport(List<String> lines) {
     }
 
-    private static String describeScalingMode(MobConfig.LevelScalingMode mode) {
-        return mode.name();
-    }
-
     private static void warnPlayerLevelFloorFallbackOnce() {
         if (PLAYER_LEVEL_FLOOR_FALLBACK_WARNING_LOGGED.compareAndSet(false, true)) {
-            LOGGER.warn(
-                    "LEVEL_SCALING_MODE=PLAYER_LEVEL resolved to the dimension floor because no valid player level anchor was available.");
+            LOGGER.warn("PLAYER_LEVEL scaling resolved to floor because no player anchor was found.");
         }
     }
 
     private static void warnDistanceNearestBandFallbackOnce() {
         if (DISTANCE_NEAREST_BAND_FALLBACK_WARNING_LOGGED.compareAndSet(false, true)) {
-            LOGGER.warn(
-                    "LEVEL_SCALING_MODE=DISTANCE did not find an exact distance band match and is using the nearest configured distance band.");
+            LOGGER.warn("DISTANCE scaling using nearest configured band.");
         }
     }
 
     private static void warnDistanceFloorFallbackOnce() {
         if (DISTANCE_FLOOR_FALLBACK_WARNING_LOGGED.compareAndSet(false, true)) {
-            LOGGER.warn(
-                    "LEVEL_SCALING_MODE=DISTANCE has no valid DISTANCE_BANDS configured and resolved to the dimension floor.");
+            LOGGER.warn("DISTANCE scaling resolved to floor (no bands found).");
         }
     }
 
     private static void warnBiomeDistanceGenericBandFallbackOnce() {
         if (BIOME_DISTANCE_GENERIC_BAND_FALLBACK_WARNING_LOGGED.compareAndSet(false, true)) {
-            LOGGER.warn(
-                    "LEVEL_SCALING_MODE=BIOME_DISTANCE fell back to generic DISTANCE_BANDS because no biome_distance band matched.");
+            LOGGER.warn("BIOME_DISTANCE fell back to generic bands.");
         }
     }
 
     private static void warnBiomeDistanceNearestGenericBandFallbackOnce() {
         if (BIOME_DISTANCE_NEAREST_GENERIC_BAND_FALLBACK_WARNING_LOGGED.compareAndSet(false, true)) {
-            LOGGER.warn(
-                    "LEVEL_SCALING_MODE=BIOME_DISTANCE did not find an exact generic distance band match and is using the nearest generic DISTANCE_BAND.");
+            LOGGER.warn("BIOME_DISTANCE fell back to nearest generic band.");
         }
     }
 
     private static void warnBiomeDistanceFloorFallbackOnce() {
         if (BIOME_DISTANCE_FLOOR_FALLBACK_WARNING_LOGGED.compareAndSet(false, true)) {
-            LOGGER.warn(
-                    "LEVEL_SCALING_MODE=BIOME_DISTANCE has no valid generic DISTANCE_BANDS configured and resolved to the dimension floor.");
-        }
-    }
-
-    private record LevelBand(long minDistance, long maxDistance, int minLevel, int maxLevel) {
-        private boolean matches(double distance) {
-            return distance >= minDistance && distance <= maxDistance;
-        }
-
-        private double distanceGap(double distance) {
-            if (matches(distance)) {
-                return 0.0D;
-            }
-            if (distance < minDistance) {
-                return minDistance - distance;
-            }
-            return distance - maxDistance;
-        }
-    }
-
-    private record BiomeDistanceBand(String biomeId, LevelBand levelBand) {
-        private boolean matches(String currentBiomeId, double distance) {
-            return ("*".equals(biomeId) || biomeId.equals(currentBiomeId)) && levelBand.matches(distance);
+            LOGGER.warn("BIOME_DISTANCE resolved to floor.");
         }
     }
 }

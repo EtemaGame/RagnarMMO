@@ -27,15 +27,13 @@ public class RagnarCommand {
                                 .then(MobStatsCommand.createNode())
                                 .then(RagnarAdminCommands.createNode()));
 
-                if (RagnarConfigs.SERVER.commands.enableLegacyAliases.get()) {
-                        registerAlias(dispatcher, "stats", ragnarNode.getChild("stats"));
-                        registerAlias(dispatcher, "cart", ragnarNode.getChild("cart"));
-                        registerAlias(dispatcher, "party", ragnarNode.getChild("party"));
-                        // Party chat shortcut: /pc <message> -> /ragnar party chat <message>
-                        CommandNode<CommandSourceStack> partyNode = ragnarNode.getChild("party");
-                        if (partyNode != null) {
-                                registerAlias(dispatcher, "pc", partyNode.getChild("chat"));
-                        }
+                registerAlias(dispatcher, "stats", ragnarNode.getChild("stats"));
+                registerAlias(dispatcher, "cart", ragnarNode.getChild("cart"));
+                registerAlias(dispatcher, "party", ragnarNode.getChild("party"));
+                // Party chat shortcut: /pc <message> -> /ragnar party chat <message>
+                CommandNode<CommandSourceStack> partyNode = ragnarNode.getChild("party");
+                if (partyNode != null) {
+                        registerAlias(dispatcher, "pc", partyNode.getChild("chat"));
                 }
 
                 registerAlias(dispatcher, "memo", ragnarNode.getChild("memo"));

@@ -5,7 +5,7 @@ import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
 import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerInspectionStatsView;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.common.net.Network;
-import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
+import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
 import com.etema.ragnarmmo.system.mobstats.core.MobStatDistributor;
 import com.etema.ragnarmmo.system.mobstats.core.MobStats;
 import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
@@ -292,13 +292,13 @@ public final class MobStatsCommand {
             return;
         }
 
-        double previousHealth = Math.max(0.0001D, MobConfig.healthMultiplier(previousTier));
-        double previousDamage = Math.max(0.0001D, MobConfig.damageMultiplier(previousTier));
-        double previousDefense = Math.max(0.0001D, MobConfig.defenseMultiplier(previousTier));
+        double previousHealth = Math.max(0.0001D, MobStatsConfigAccess.getHealthMultiplier(previousTier));
+        double previousDamage = Math.max(0.0001D, MobStatsConfigAccess.getDamageMultiplier(previousTier));
+        double previousDefense = Math.max(0.0001D, MobStatsConfigAccess.getDefenseMultiplier(previousTier));
 
-        stats.setHealthMultiplier(stats.getHealthMultiplier() * (MobConfig.healthMultiplier(MobTier.ELITE) / previousHealth));
-        stats.setDamageMultiplier(stats.getDamageMultiplier() * (MobConfig.damageMultiplier(MobTier.ELITE) / previousDamage));
-        stats.setDefenseMultiplier(stats.getDefenseMultiplier() * (MobConfig.defenseMultiplier(MobTier.ELITE) / previousDefense));
+        stats.setHealthMultiplier(stats.getHealthMultiplier() * (MobStatsConfigAccess.getHealthMultiplier(MobTier.ELITE) / previousHealth));
+        stats.setDamageMultiplier(stats.getDamageMultiplier() * (MobStatsConfigAccess.getDamageMultiplier(MobTier.ELITE) / previousDamage));
+        stats.setDefenseMultiplier(stats.getDefenseMultiplier() * (MobStatsConfigAccess.getDefenseMultiplier(MobTier.ELITE) / previousDefense));
         stats.setTier(MobTier.ELITE);
     }
 
@@ -308,7 +308,7 @@ public final class MobStatsCommand {
         }
 
         int currentTotal = stats.getTotalPoints();
-        int requiredTotal = Math.max(currentTotal, MobConfig.basePoints(stats.getTier()) + minLevel * MobConfig.pointsPerLevel(stats.getTier()));
+        int requiredTotal = Math.max(currentTotal, MobStatsConfigAccess.getBasePoints(stats.getTier()) + minLevel * MobStatsConfigAccess.getPointsPerLevel(stats.getTier()));
         int extraPoints = Math.max(0, requiredTotal - currentTotal);
 
         stats.setLevel(minLevel);

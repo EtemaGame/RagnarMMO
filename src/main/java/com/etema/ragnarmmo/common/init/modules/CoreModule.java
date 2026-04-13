@@ -24,10 +24,10 @@ public final class CoreModule {
         Network.registerAchievementPackets();
         Network.registerSkillEffectPackets();
 
-        // Register unified configs (only 2 files)
+        // Register unified configs
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, RagnarConfigs.CLIENT_SPEC,
                 "ragnarmmo-client.toml");
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, RagnarConfigs.SERVER_SPEC,
-                "ragnarmmo-common.toml");
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, RagnarConfigs.SERVER_SPEC,
+                "ragnarmmo-server.toml");
     }
 }

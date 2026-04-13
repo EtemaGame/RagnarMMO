@@ -5,7 +5,7 @@ import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntime
 import com.etema.ragnarmmo.common.api.mobs.MobScalingMode;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.system.mobstats.mobs.MobClass;
-import com.etema.ragnarmmo.system.mobstats.config.MobConfig;
+import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
 import com.etema.ragnarmmo.system.mobstats.core.MobStatDistributor;
 import com.etema.ragnarmmo.system.mobstats.core.MobStats;
 import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
@@ -76,83 +76,83 @@ public class MobSpawnHandler {
     public void onMobJoinLevel(EntityJoinLevelEvent event) {
         if (event.getLevel().isClientSide())
             return;
-        if (!(event.getEntity() instanceof LivingEntity mob) || mob instanceof Player)
+        if (!(event.getEntity() instanceof LivingEntity living) || living instanceof Player)
             return;
 
-        ResourceLocation mobId = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
-        var effectiveMethod = MobLevelManager.resolveEffectiveMethod(mob);
+        // 1. Primary path: Try to initialize under the new strict/manual architecture
+        boolean initializedNew = com.etema.ragnarmmo.system.mobstats.service.MobRuntimeInitializationService.tryInitialize(living);
+        if (initializedNew) {
+            com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore.get(living).ifPresent(profile -> {
+                // Handle world-level persistence for bosses
+                com.etema.ragnarmmo.system.mobstats.service.BossWorldRegistrationBridge.handleRegistration(living, profile.rank());
+                
+                // Add AI augmentation if it's a mob
+                if (living instanceof Mob mob) {
+                    com.etema.ragnarmmo.system.mobstats.service.MobAiAugmentationService.addMobClassAI(mob, assignInternalClass(mob));
+                }
+            });
+            return; // COMPLETELY BYPASS LEGACY PIPELINE
+        }
+
+        // 2. Legacy fallback: Check if the legacy pipeline should still be bypassed anyway (STRICT mode guard)
+        var effectiveMethod = MobLevelManager.resolveEffectiveMethod(living);
         if (effectiveMethod.method() == MobScalingMode.MANUAL
                 && effectiveMethod.source() == MobLevelManager.DifficultyMethodSource.DATAPACK) {
-            boolean hasAttachedManualProfile = ManualMobProfileRuntimeStore.get(mob).isPresent();
-            boolean hasResolvedManualProfile = !hasAttachedManualProfile
-                    && mobId != null
-                    && ManualMobProfileResolver.resolve(mobId).profile() != null;
             RagnarDebugLog.mobSpawns(
-                    "Skipping legacy spawn-time difficulty/stat pipeline for {} because method={} source={} is active [attached={}, resolvedByType={}]",
-                    RagnarDebugLog.entityLabel(mob),
-                    effectiveMethod.method(),
-                    effectiveMethod.source(),
-                    hasAttachedManualProfile,
-                    hasResolvedManualProfile);
+                    "Skipping legacy spawn pipeline for {} because it is marked as MANUAL/DATAPACK but resolution failed (Authority Guard).",
+                    RagnarDebugLog.entityLabel(living));
             return;
         }
 
-        MobStatsProvider.get(mob).ifPresent(stats -> {
+        // 3. Fallback path: Legacy capability-based stats
+        MobStatsProvider.get(living).ifPresent(stats -> {
             if (stats.isInitialized()) {
-                normalizeExistingNaturalCreeperBoss(mob, stats);
+                normalizeExistingNaturalCreeperBoss(living, stats);
                 return;
             }
 
-            MobCategory cat = mob.getType().getCategory();
-            // Removed exclusion for CREATURE, AMBIENT, WATER_CREATURE to handle them as Lv
-            // 1
+            ResourceLocation mobId = BuiltInRegistries.ENTITY_TYPE.getKey(living.getType());
+            MobCategory cat = living.getType().getCategory();
 
-            if (mobId != null && MobConfig.MOB_EXCLUDE_LIST.get().contains(mobId.toString()))
+            if (mobId != null && MobStatsConfigAccess.isEnabled() && MobStatsConfigAccess.getMobExcludeList().contains(mobId.toString()))
                 return;
 
-            // Passive check also includes WATER_AMBIENT (e.g. Salmons, Cod)
             boolean isPassive = cat == MobCategory.CREATURE || cat == MobCategory.AMBIENT
                     || cat == MobCategory.WATER_CREATURE || cat == MobCategory.WATER_AMBIENT;
-            generateStats(mob, stats, isPassive);
+            generateStats(living, stats, isPassive);
             stats.setInitialized(true);
 
-            applyAttributes(mob, stats);
+            applyAttributes(living, stats);
 
             if (stats.getTier().shouldPersistWorldState()) {
-                if (BossSpawnMetadata.getSpawnKey(mob).isEmpty()) {
-                    BossSpawnMetadata.markNatural(mob);
+                if (BossSpawnMetadata.getSpawnKey(living).isEmpty()) {
+                    BossSpawnMetadata.markNatural(living);
                 }
-                if (mob instanceof Mob persistentMob) {
+                if (living instanceof Mob persistentMob) {
                     persistentMob.setPersistenceRequired();
                 }
             }
 
-            if (mob.level() instanceof net.minecraft.server.level.ServerLevel serverLevel
+            if (living.level() instanceof net.minecraft.server.level.ServerLevel serverLevel
                     && stats.getTier().shouldPersistWorldState()
                     && serverLevel.getServer() != null) {
-                ActiveBossesSavedData.get(serverLevel.getServer()).registerBoss(serverLevel, mob, stats.getTier());
+                ActiveBossesSavedData.get(serverLevel.getServer()).registerBoss(serverLevel, living, stats.getTier());
             }
 
             RagnarDebugLog.mobSpawns(
-                    "SPAWN mob={} pos={} passive={} tier={} level={} class={} stats={} mult[h={},d={},def={},spd={}]",
-                    RagnarDebugLog.entityLabel(mob),
-                    RagnarDebugLog.blockPos(mob.blockPosition()),
-                    isPassive,
+                    "LEGACY SPAWN mob={} pos={} tier={} level={}",
+                    RagnarDebugLog.entityLabel(living),
+                    RagnarDebugLog.blockPos(living.blockPosition()),
                     stats.getTier(),
-                    stats.getLevel(),
-                    stats.getMobClass(),
-                    stats.describeStats(),
-                    RagnarDebugLog.formatDouble(stats.getHealthMultiplier()),
-                    RagnarDebugLog.formatDouble(stats.getDamageMultiplier()),
-                    RagnarDebugLog.formatDouble(stats.getDefenseMultiplier()),
-                    RagnarDebugLog.formatDouble(stats.getSpeedMultiplier()));
+                    stats.getLevel());
 
-            // Sincroniza con clientes que ven a este mob (y el propio invocador)
-            SyncMobStatsPacket.fromEntity(mob)
-                    .ifPresent(packet -> Network.sendTrackingEntityAndSelf(mob, packet));
+            // Sincroniza con clientes (Legacy sync packet)
+            SyncMobStatsPacket.fromEntity(living)
+                    .ifPresent(packet -> Network.sendTrackingEntityAndSelf(living, packet));
             
-            // Add AI goals based on assigned class
-            addMobClassAI(mob, stats.getMobClass());
+            if (living instanceof Mob mob) {
+                com.etema.ragnarmmo.system.mobstats.service.MobAiAugmentationService.addMobClassAI(mob, stats.getMobClass());
+            }
         });
     }
 
@@ -206,29 +206,29 @@ public class MobSpawnHandler {
         MobClass internalClass = assignInternalClass(mob);
         stats.setMobClass(internalClass);
 
-        int base = MobConfig.basePoints(tier);
+        int base = MobStatsConfigAccess.getBasePoints(tier);
         Map<StatKeys, Integer> weights = new java.util.EnumMap<>(internalClass.getWeights());
-        int ppl = MobConfig.pointsPerLevel(tier);
+        int ppl = MobStatsConfigAccess.getPointsPerLevel(tier);
         int total = Math.max(0, base + level * ppl);
 
         distributeWithCalculatedWeights(stats, total, weights);
 
-        double hm = MobConfig.healthMultiplier(tier) * internalClass.getHpMult();
-        double dm = MobConfig.damageMultiplier(tier) * internalClass.getDmgMult();
-        double df = MobConfig.defenseMultiplier(tier) * internalClass.getDefMult();
+        double hm = MobStatsConfigAccess.getHealthMultiplier(tier) * internalClass.getHpMult();
+        double dm = MobStatsConfigAccess.getDamageMultiplier(tier) * internalClass.getDmgMult();
+        double df = MobStatsConfigAccess.getDefenseMultiplier(tier) * internalClass.getDefMult();
         double sp = internalClass.getSpdMult();
 
         // PARTY SCALING
         if (tier != MobTier.NORMAL) {
-            double radius = MobConfig.PARTY_SCALING_RADIUS.get();
+            double radius = MobStatsConfigAccess.getPartyScalingRadius();
             long playerCount = mob.level().players().stream()
                     .filter(p -> p.distanceToSqr(mob) < radius * radius)
                     .count();
 
             if (playerCount > 1) {
                 double extraPlayers = playerCount - 1;
-                hm *= (1.0 + extraPlayers * MobConfig.PARTY_HP_MULTIPLIER.get());
-                dm *= (1.0 + extraPlayers * MobConfig.PARTY_ATK_MULTIPLIER.get());
+                hm *= (1.0 + extraPlayers * MobStatsConfigAccess.getPartyHpMultiplier());
+                dm *= (1.0 + extraPlayers * MobStatsConfigAccess.getPartyAtkMultiplier());
             }
         }
 
@@ -270,11 +270,11 @@ public class MobSpawnHandler {
     private MobTier determineTier(LivingEntity mob) {
         // Cascading probability roll: MVP > BOSS > MINI_BOSS > ELITE > NORMAL
         double roll = rng.nextDouble();
-        double chanceScale = MobConfig.NATURAL_TIER_CHANCE_SCALE.get();
-        double mvpChance = MobConfig.MVP_CHANCE.get() * chanceScale;
-        double bossChance = MobConfig.BOSS_CHANCE.get() * chanceScale;
-        double miniBossChance = MobConfig.MINI_BOSS_CHANCE.get() * chanceScale;
-        double eliteChance = MobConfig.ELITE_CHANCE.get() * chanceScale;
+        double chanceScale = MobStatsConfigAccess.getNaturalTierChanceScale();
+        double mvpChance = MobStatsConfigAccess.getMvpChance() * chanceScale;
+        double bossChance = MobStatsConfigAccess.getBossChance() * chanceScale;
+        double miniBossChance = MobStatsConfigAccess.getMiniBossChance() * chanceScale;
+        double eliteChance = MobStatsConfigAccess.getEliteChance() * chanceScale;
 
         if (roll < mvpChance)
             return MobTier.MVP;

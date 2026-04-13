@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.roitems.hooks.server;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.roitems.config.RoItemsConfig;
+import com.etema.ragnarmmo.common.config.access.RoItemsConfigAccess;
 import com.etema.ragnarmmo.roitems.data.RoItemRule;
 import com.etema.ragnarmmo.roitems.runtime.RoItemRuleResolver;
 import com.etema.ragnarmmo.roitems.runtime.RoRequirementChecker;
@@ -44,7 +44,7 @@ public final class RoCombatRestrictionHook {
             return;
 
         // Check if system is enabled
-        if (!RoItemsConfig.isEnabled() || !RoItemsConfig.shouldReduceDamage())
+        if (!RoItemsConfigAccess.isEnabled() || !RoItemsConfigAccess.reduceDamageOnRestriction())
             return;
 
         ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
@@ -64,7 +64,7 @@ public final class RoCombatRestrictionHook {
                 && result != RoRequirementChecker.CheckResult.NO_STATS_DATA) {
 
             // Reduce damage to configured penalty (default: 0)
-            event.setAmount((float) RoItemsConfig.getPenaltyDamage());
+            event.setAmount((float) RoItemsConfigAccess.getPenaltyDamage());
 
             // Send rate-limited warning with specific reason
             sendCombatWarning(player, result, rule);
@@ -81,7 +81,7 @@ public final class RoCombatRestrictionHook {
         long now = System.currentTimeMillis();
         Long lastTime = COMBAT_MSG_COOLDOWNS.get(player.getUUID());
 
-        long cooldownMs = RoItemsConfig.getMessageCooldownMs();
+        long cooldownMs = RoItemsConfigAccess.getMessageCooldownMs();
         if (lastTime != null && (now - lastTime) < cooldownMs) {
             return; // Still on cooldown
         }
@@ -106,7 +106,7 @@ public final class RoCombatRestrictionHook {
      */
     public static void cleanupCooldowns() {
         long now = System.currentTimeMillis();
-        long cooldownMs = RoItemsConfig.getMessageCooldownMs();
+        long cooldownMs = RoItemsConfigAccess.getMessageCooldownMs();
         COMBAT_MSG_COOLDOWNS.entrySet().removeIf(entry -> (now - entry.getValue()) > cooldownMs * 10);
     }
 }

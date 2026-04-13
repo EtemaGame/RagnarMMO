@@ -51,6 +51,8 @@ public final class MobConsumerReadViewResolver {
             @Nullable MobStats legacyStats) {
         Objects.requireNonNull(entity, "entity");
 
+        com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority authority = com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthorityResolver.classify(entity);
+
         ComputedMobProfile effectiveProfile = computedProfile != null
                 ? computedProfile
                 : ManualMobProfileRuntimeStore.get(entity).orElse(null);
@@ -58,7 +60,19 @@ public final class MobConsumerReadViewResolver {
         if (effectiveProfile != null) {
             return Optional.of(fromComputedProfile(entity, effectiveProfile));
         }
+
+        // Audit Logging & Strict Enforcement
+        if (authority == com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority.STRICT_NEW_AUTHORITY) {
+            com.etema.ragnarmmo.common.debug.RagnarDebugLog.migration("CRITICAL: Mob classified as STRICT but has no profile attached! entity={}",
+                    com.etema.ragnarmmo.common.debug.RagnarDebugLog.entityLabel(entity));
+            return Optional.empty();
+        }
+
         if (legacyStats != null) {
+            if (authority == com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority.TEMP_COMPAT) {
+                com.etema.ragnarmmo.common.debug.RagnarDebugLog.migration("DEBT: Fallback to LEGACY for mob in TEMP_COMPAT category. entity={}",
+                        com.etema.ragnarmmo.common.debug.RagnarDebugLog.entityLabel(entity));
+            }
             return fromLegacyCompatibility(entity, legacyStats);
         }
         return Optional.empty();

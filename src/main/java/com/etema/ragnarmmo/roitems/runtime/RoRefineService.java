@@ -17,7 +17,7 @@ public final class RoRefineService {
     }
 
     public static RefineQuote quote(ServerPlayer player, ItemStack stack) {
-        if (!RagnarConfigs.SERVER.refine.enabled.get()) {
+        if (!RagnarConfigs.SERVER.items.refineEnabled.get()) {
             return new RefineQuote(RefineOutcome.DISABLED, 0, 0, ItemStack.EMPTY, 0, 0, 0.0, false, 0, 0);
         }
         if (stack.isEmpty()) {
@@ -37,7 +37,7 @@ public final class RoRefineService {
         int materialCount = 1;
         int targetLevel = currentLevel + 1;
         int zenyCost = getZenyCost(stack, targetLevel);
-        boolean safe = targetLevel <= RagnarConfigs.SERVER.refine.safeRefineLevel.get();
+        boolean safe = targetLevel <= RagnarConfigs.SERVER.items.safeRefineLevel.get();
         double successChance = computeSuccessChance(player, stack, targetLevel);
         int availableMaterial = UtilityItems.countItem(player, material);
         int availableZeny = ZenyWalletHelper.getTotalZeny(player);
@@ -92,13 +92,13 @@ public final class RoRefineService {
     private static int getZenyCost(ItemStack stack, int targetLevel) {
         CardEquipType type = RoEquipmentTypeResolver.resolve(stack);
         int baseCost = type == CardEquipType.WEAPON
-                ? RagnarConfigs.SERVER.refine.weaponBaseCost.get()
-                : RagnarConfigs.SERVER.refine.armorBaseCost.get();
-        return baseCost + Math.max(0, targetLevel - 1) * RagnarConfigs.SERVER.refine.costPerLevel.get();
+                ? RagnarConfigs.SERVER.items.weaponBaseCost.get()
+                : RagnarConfigs.SERVER.items.armorBaseCost.get();
+        return baseCost + Math.max(0, targetLevel - 1) * RagnarConfigs.SERVER.items.costPerLevel.get();
     }
 
     private static double computeSuccessChance(ServerPlayer player, ItemStack stack, int targetLevel) {
-        int safeLevel = RagnarConfigs.SERVER.refine.safeRefineLevel.get();
+        int safeLevel = RagnarConfigs.SERVER.items.safeRefineLevel.get();
         if (targetLevel <= safeLevel) {
             return 1.0;
         }
@@ -106,11 +106,11 @@ public final class RoRefineService {
         CardEquipType type = RoEquipmentTypeResolver.resolve(stack);
         boolean weapon = type == CardEquipType.WEAPON;
         double startChance = weapon
-                ? RagnarConfigs.SERVER.refine.weaponSuccessAfterSafe.get()
-                : RagnarConfigs.SERVER.refine.armorSuccessAfterSafe.get();
+                ? RagnarConfigs.SERVER.items.weaponSuccessAfterSafe.get()
+                : RagnarConfigs.SERVER.items.armorSuccessAfterSafe.get();
         double penalty = weapon
-                ? RagnarConfigs.SERVER.refine.weaponSuccessPenaltyPerLevel.get()
-                : RagnarConfigs.SERVER.refine.armorSuccessPenaltyPerLevel.get();
+                ? RagnarConfigs.SERVER.items.weaponSuccessPenaltyPerLevel.get()
+                : RagnarConfigs.SERVER.items.armorSuccessPenaltyPerLevel.get();
         int unsafeSteps = targetLevel - safeLevel;
         double chance = startChance - Math.max(0, unsafeSteps - 1) * penalty;
 
@@ -118,10 +118,10 @@ public final class RoRefineService {
             int researchLevel = PlayerSkillsProvider.get(player)
                     .map(skills -> skills.getSkillLevel(RESEARCH_ORIDECON))
                     .orElse(0);
-            chance += researchLevel * RagnarConfigs.SERVER.refine.researchOrideconBonusPerLevel.get();
+            chance += researchLevel * RagnarConfigs.SERVER.items.researchOrideconBonusPerLevel.get();
         }
 
-        double min = RagnarConfigs.SERVER.refine.minSuccessChance.get();
+        double min = RagnarConfigs.SERVER.items.minSuccessChance.get();
         return Math.max(min, Math.min(1.0, chance));
     }
 

@@ -2,12 +2,12 @@ package com.etema.ragnarmmo.system.mobstats.service;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority;
 import com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthorityResolver;
-import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
+import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobBackendResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
+import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
 import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
 import com.etema.ragnarmmo.system.mobstats.util.MobAttributeHelper;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.Objects;
@@ -27,16 +27,17 @@ public final class MobRuntimeInitializationService {
      */
     public static boolean tryInitialize(LivingEntity entity) {
         Objects.requireNonNull(entity, "entity");
+        if (MobStatsConfigAccess.getLevelScalingMode() != RagnarConfigs.LevelScalingMode.MANUAL) {
+            return false;
+        }
 
         MobRuntimeAuthority authority = MobRuntimeAuthorityResolver.classify(entity);
         if (authority == MobRuntimeAuthority.LEGACY_ONLY) {
             return false;
         }
 
-        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-        var resolution = ManualMobProfileResolver.resolve(id);
-        
-        if (resolution.isSuccess()) {
+        var resolution = ManualMobBackendResolver.resolve(entity);
+        if (resolution.profile() != null) {
             var profile = resolution.profile();
             ManualMobProfileRuntimeStore.attach(entity, profile);
             
@@ -47,8 +48,8 @@ public final class MobRuntimeInitializationService {
                     RagnarDebugLog.entityLabel(entity), authority);
             return true;
         } else {
-            RagnarDebugLog.migration("Service: Failed to initialize STRICT/COMPAT mob {} due to: {}", 
-                    RagnarDebugLog.entityLabel(entity), resolution.issues());
+            RagnarDebugLog.migration("Service: Failed to initialize MANUAL mob {} due to: {}",
+                    RagnarDebugLog.entityLabel(entity), resolution.notes());
             return false;
         }
     }

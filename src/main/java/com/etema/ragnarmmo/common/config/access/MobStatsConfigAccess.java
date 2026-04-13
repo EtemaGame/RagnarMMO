@@ -114,6 +114,11 @@ public final class MobStatsConfigAccess {
 
     // --- World Scaling ---
     public static RagnarConfigs.LevelScalingMode getLevelScalingMode() { return RagnarConfigs.SERVER.mobstats.levelScalingMode.get(); }
+    public static RagnarConfigs.ManualMobBackend getManualMobBackend() { return RagnarConfigs.SERVER.mobstats.manualMobBackend.get(); }
+    public static RagnarConfigs.ManualUncoveredBehavior getManualUncoveredBehavior() { return RagnarConfigs.SERVER.mobstats.manualUncoveredBehavior.get(); }
+    public static RagnarConfigs.AutomaticFallbackMode getManualFallbackAutomaticMode() { return RagnarConfigs.SERVER.mobstats.manualFallbackAutomaticMode.get(); }
+    public static boolean isManualMobEditorEnabled() { return RagnarConfigs.SERVER.mobstats.enableManualMobEditor.get(); }
+    public static boolean isManualMobDiscoveryEnabled() { return RagnarConfigs.SERVER.mobstats.enableManualMobDiscovery.get(); }
     public static int getPlayerLevelRadius() { return RagnarConfigs.SERVER.mobstats.playerLevelRadius.get(); }
     public static int getPlayerLevelVariance() { return RagnarConfigs.SERVER.mobstats.playerLevelVariance.get(); }
     public static boolean renderNumericHealth() { return RagnarConfigs.SERVER.mobstats.renderNumericHealth.get(); }

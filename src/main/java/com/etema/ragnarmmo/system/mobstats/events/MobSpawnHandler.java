@@ -1,11 +1,10 @@
 package com.etema.ragnarmmo.system.mobstats.events;
 
-import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
-import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
 import com.etema.ragnarmmo.common.api.mobs.MobScalingMode;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.system.mobstats.mobs.MobClass;
 import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.system.mobstats.core.MobStatDistributor;
 import com.etema.ragnarmmo.system.mobstats.core.MobStats;
 import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
@@ -29,7 +28,6 @@ import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import com.etema.ragnarmmo.system.stats.util.AntiFarmManager;
-import com.etema.ragnarmmo.common.config.RagnarConfigs;
 
 import java.util.Map;
 import java.util.Random;
@@ -97,9 +95,17 @@ public class MobSpawnHandler {
         // 2. Legacy fallback: Check if the legacy pipeline should still be bypassed anyway (STRICT mode guard)
         var effectiveMethod = MobLevelManager.resolveEffectiveMethod(living);
         if (effectiveMethod.method() == MobScalingMode.MANUAL
-                && effectiveMethod.source() == MobLevelManager.DifficultyMethodSource.DATAPACK) {
+                && effectiveMethod.source() == MobLevelManager.DifficultyMethodSource.MANUAL_BACKEND) {
             RagnarDebugLog.mobSpawns(
-                    "Skipping legacy spawn pipeline for {} because it is marked as MANUAL/DATAPACK but resolution failed (Authority Guard).",
+                    "Skipping legacy spawn pipeline for {} because it is marked as MANUAL with backend coverage but runtime initialization failed (Authority Guard).",
+                    RagnarDebugLog.entityLabel(living));
+            return;
+        }
+        if (effectiveMethod.method() == MobScalingMode.MANUAL
+                && effectiveMethod.source() == MobLevelManager.DifficultyMethodSource.MANUAL_UNCOVERED
+                && MobStatsConfigAccess.getManualUncoveredBehavior() == RagnarConfigs.ManualUncoveredBehavior.VANILLA) {
+            RagnarDebugLog.mobSpawns(
+                    "Skipping legacy spawn pipeline for {} because MANUAL is active and uncovered behavior is VANILLA.",
                     RagnarDebugLog.entityLabel(living));
             return;
         }

@@ -3,6 +3,8 @@ package com.etema.ragnarmmo.system.mobstats.level;
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.api.mobs.MobScalingMode;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
+import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualCoverageResult;
+import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobBackendResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
@@ -50,7 +52,8 @@ public class MobLevelManager {
 
     public enum DifficultyMethodSource {
         LEGACY_CONFIG_AUTO,
-        DATAPACK
+        MANUAL_BACKEND,
+        MANUAL_UNCOVERED
     }
 
     public record DifficultyMethodResolution(
@@ -88,22 +91,41 @@ public class MobLevelManager {
     }
 
     public static DifficultyMethodResolution resolveEffectiveMethod(LivingEntity mob) {
-        if (isDatapackManualActive(mob)) {
-            return new DifficultyMethodResolution(
-                    MobScalingMode.MANUAL,
-                    DifficultyMethodSource.DATAPACK);
+        RagnarConfigs.LevelScalingMode configured = MobStatsConfigAccess.getLevelScalingMode();
+        if (configured != RagnarConfigs.LevelScalingMode.MANUAL) {
+            return resolveConfiguredAutomaticMethod(configured);
         }
-        return resolveConfiguredAutomaticMethod();
+
+        ManualCoverageResult coverage = resolveManualCoverage(mob);
+        if (coverage.covered()) {
+            return new DifficultyMethodResolution(MobScalingMode.MANUAL, DifficultyMethodSource.MANUAL_BACKEND);
+        }
+        if (MobStatsConfigAccess.getManualUncoveredBehavior() == RagnarConfigs.ManualUncoveredBehavior.FALLBACK_TO_AUTO) {
+            return resolveConfiguredAutomaticMethod(switch (MobStatsConfigAccess.getManualFallbackAutomaticMode()) {
+                case PLAYER_LEVEL -> RagnarConfigs.LevelScalingMode.PLAYER_LEVEL;
+                case DISTANCE -> RagnarConfigs.LevelScalingMode.DISTANCE;
+                case BIOME_DISTANCE -> RagnarConfigs.LevelScalingMode.BIOME_DISTANCE;
+            });
+        }
+        return new DifficultyMethodResolution(MobScalingMode.MANUAL, DifficultyMethodSource.MANUAL_UNCOVERED);
     }
 
-    public static boolean isDatapackManualActive(LivingEntity mob) {
+    public static boolean hasDatapackManualCoverage(LivingEntity mob) {
         ResourceLocation mobId = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
         return ManualMobProfileRuntimeStore.get(mob).isPresent()
                 || (mobId != null && ManualMobProfileResolver.hasStrictResolvableManualProfile(mobId));
     }
 
+    public static ManualCoverageResult resolveManualCoverage(LivingEntity mob) {
+        return ManualMobBackendResolver.resolve(mob).coverage();
+    }
+
     private static DifficultyMethodResolution resolveConfiguredAutomaticMethod() {
-        return switch (MobStatsConfigAccess.getLevelScalingMode()) {
+        return resolveConfiguredAutomaticMethod(MobStatsConfigAccess.getLevelScalingMode());
+    }
+
+    private static DifficultyMethodResolution resolveConfiguredAutomaticMethod(RagnarConfigs.LevelScalingMode mode) {
+        return switch (mode) {
             case PLAYER_LEVEL -> new DifficultyMethodResolution(
                     MobScalingMode.PLAYER_LEVEL,
                     DifficultyMethodSource.LEGACY_CONFIG_AUTO);
@@ -113,6 +135,17 @@ public class MobLevelManager {
             case BIOME_DISTANCE -> new DifficultyMethodResolution(
                     MobScalingMode.BIOME_DISTANCE,
                     DifficultyMethodSource.LEGACY_CONFIG_AUTO);
+            case MANUAL -> switch (MobStatsConfigAccess.getManualFallbackAutomaticMode()) {
+                case PLAYER_LEVEL -> new DifficultyMethodResolution(
+                        MobScalingMode.PLAYER_LEVEL,
+                        DifficultyMethodSource.LEGACY_CONFIG_AUTO);
+                case DISTANCE -> new DifficultyMethodResolution(
+                        MobScalingMode.DISTANCE,
+                        DifficultyMethodSource.LEGACY_CONFIG_AUTO);
+                case BIOME_DISTANCE -> new DifficultyMethodResolution(
+                        MobScalingMode.BIOME_DISTANCE,
+                        DifficultyMethodSource.LEGACY_CONFIG_AUTO);
+            };
         };
     }
 

@@ -5,6 +5,7 @@ import com.etema.ragnarmmo.common.command.RagnarAdminCommands;
 import com.etema.ragnarmmo.skill.job.merchant.CartCommands;
 import com.etema.ragnarmmo.skill.job.acolyte.MemoCommands;
 import com.etema.ragnarmmo.system.mobstats.commands.MobStatsCommand;
+import com.etema.ragnarmmo.system.mobstats.commands.MobManualCommand;
 import com.etema.ragnarmmo.system.stats.commands.ExpCommands;
 import com.etema.ragnarmmo.system.stats.commands.StatsCommands;
 import com.etema.ragnarmmo.system.stats.party.PartyCommands;
@@ -25,6 +26,7 @@ public class RagnarCommand {
                                 .then(ExpCommands.createSetNode())
                                 .then(PartyCommands.createNode())
                                 .then(MobStatsCommand.createNode())
+                                .then(MobManualCommand.createNode())
                                 .then(RagnarAdminCommands.createNode()));
 
                 registerAlias(dispatcher, "stats", ragnarNode.getChild("stats"));

@@ -1,11 +1,10 @@
 package com.etema.ragnarmmo.common.api.mobs.runtime.integration;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolutionResult;
-import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
+import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
+import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobBackendResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -35,12 +34,14 @@ public final class ManualMobProfileRuntimeIntegrator {
         }
 
         ManualMobProfileRuntimeStore.clear(entity);
+        if (MobStatsConfigAccess.getLevelScalingMode() != RagnarConfigs.LevelScalingMode.MANUAL) {
+            return;
+        }
 
-        ResourceLocation entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-        ManualMobProfileResolutionResult result = ManualMobProfileResolver.resolve(entityTypeId);
-        if (result.profile() != null) {
-            ManualMobProfileRuntimeStore.attach(entity, result.profile());
-            ComputedMobProfileAttributeApplier.apply(entity, result.profile());
+        var resolution = ManualMobBackendResolver.resolve(entity);
+        if (resolution.profile() != null) {
+            ManualMobProfileRuntimeStore.attach(entity, resolution.profile());
+            ComputedMobProfileAttributeApplier.apply(entity, resolution.profile());
         }
     }
 }

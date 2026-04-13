@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.common.api.mobs;
 
 import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
+import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobBackendResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -32,6 +33,9 @@ public final class MobRuntimeAuthorityResolver {
         // If the entity already has a manual profile attached, it is treated as STRICT_NEW_AUTHORITY
         // provided it remains healthy.
         if (ManualMobProfileRuntimeStore.get(entity).isPresent()) {
+            return MobRuntimeAuthority.STRICT_NEW_AUTHORITY;
+        }
+        if (ManualMobBackendResolver.resolve(entity).coverage().covered()) {
             return MobRuntimeAuthority.STRICT_NEW_AUTHORITY;
         }
 

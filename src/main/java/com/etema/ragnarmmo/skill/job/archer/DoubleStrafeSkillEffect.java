@@ -46,7 +46,9 @@ public class DoubleStrafeSkillEffect implements ISkillEffect {
                 double spreadY = (index == 1) ? 0.005D : 0.0D;
                 RagnarArrowSpawnHelper.spawn(player, definition, level,
                         new Vec3(look.x, look.y + spreadY, look.z),
-                        3.0F, 0.25F, 1.0F, snapshot -> {
+                        3.0F, 0.25F, 1.0F, arrow -> {
+                            arrow.pickup = net.minecraft.world.entity.projectile.AbstractArrow.Pickup.CREATIVE_ONLY;
+                        }, snapshot -> {
                             snapshot.putBoolean("bypass_iframes", true);
                             snapshot.putString("damage_mode", RangedWeaponStatsHelper.DAMAGE_MODE_ATK_OVERRIDE);
                             snapshot.putDouble("atk_override", scaledDamage);

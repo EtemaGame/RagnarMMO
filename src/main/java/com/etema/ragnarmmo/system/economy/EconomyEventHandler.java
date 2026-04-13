@@ -16,7 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = RagnarMMO.MODID)
 public class EconomyEventHandler {
 
-    public static final ResourceLocation WALLET_CAP_ID = ResourceLocation.fromNamespaceAndPath(RagnarMMO.MODID, "player_wallet");
+    public static final ResourceLocation WALLET_CAP_ID = new ResourceLocation(RagnarMMO.MODID, "player_wallet");
 
     @SubscribeEvent
     public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event) {
@@ -59,8 +59,8 @@ public class EconomyEventHandler {
     private static void syncWallet(Player player) {
         if (player instanceof ServerPlayer serverPlayer && !player.level().isClientSide) {
             PlayerWalletProvider.get(player).ifPresent(wallet -> {
-                com.etema.ragnarmmo.common.network.NetworkHandler.sendToPlayer(
-                        new WalletSyncPacket(wallet.getZeny()), serverPlayer);
+                com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
+                        new WalletSyncPacket(wallet.getZeny()));
             });
         }
     }

@@ -16,26 +16,30 @@ import net.minecraft.world.entity.LivingEntity;
 public class RagnarCombatFeedbackService {
 
     public void sendBasicAttackFeedback(ServerPlayer attacker, LivingEntity target, CombatResolution resolution) {
-        if (attacker == null || resolution == null) {
+        if (resolution == null) {
             return;
         }
 
-        Network.sendToPlayer(attacker, new ClientboundRagnarCombatResultPacket(
-                resolution.attackerId(),
-                resolution.targetId(),
-                resolution.resultType(),
-                resolution.finalAmount(),
-                resolution.critical()));
+        if (attacker != null) {
+            Network.sendToPlayer(attacker, new ClientboundRagnarCombatResultPacket(
+                    resolution.attackerId(),
+                    resolution.targetId(),
+                    resolution.resultType(),
+                    resolution.finalAmount(),
+                    resolution.critical()));
+        }
 
-        Entity entity = target != null ? target : attacker;
-        Network.sendTrackingEntityAndSelf(entity, new ClientboundRagnarCombatResultPacket(
-                resolution.attackerId(),
-                resolution.targetId(),
-                resolution.resultType(),
-                resolution.finalAmount(),
-                resolution.critical()));
+        Entity trackingBasis = target != null ? target : attacker;
+        if (trackingBasis != null) {
+            Network.sendTrackingEntityAndSelf(trackingBasis, new ClientboundRagnarCombatResultPacket(
+                    resolution.attackerId(),
+                    resolution.targetId(),
+                    resolution.resultType(),
+                    resolution.finalAmount(),
+                    resolution.critical()));
+        }
 
-        if (resolution.resultType() == CombatHitResultType.MISS || resolution.resultType() == CombatHitResultType.DODGE) {
+        if (attacker != null && (resolution.resultType() == CombatHitResultType.MISS || resolution.resultType() == CombatHitResultType.DODGE)) {
             attacker.sendSystemMessage(Component.literal("§7Miss"));
         }
     }

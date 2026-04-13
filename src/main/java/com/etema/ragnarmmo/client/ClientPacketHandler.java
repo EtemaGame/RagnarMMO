@@ -20,6 +20,7 @@ import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket;
 import com.etema.ragnarmmo.system.stats.party.PartyClientData;
 import com.etema.ragnarmmo.system.stats.party.net.PartyMemberData;
+import com.etema.ragnarmmo.client.render.RagnarPopoffHandler;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
@@ -78,10 +79,17 @@ public final class ClientPacketHandler {
     // PlayerStatsSyncPacket
     // ═══════════════════════════════════════════════
     public static void handlePlayerStatsSync(PlayerStatsSyncPacket msg) {
-        var mc = Minecraft.getInstance();
-        var p = mc.player;
-        if (p == null)
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.level == null) return;
+        
+        net.minecraft.world.entity.Entity entity = mc.level.getEntity(msg.entityId);
+        if (entity == null && mc.player != null && mc.player.getId() == msg.entityId) {
+            entity = mc.player; // Fallback during very early join
+        }
+
+        if (!(entity instanceof net.minecraft.world.entity.player.Player p)) {
             return;
+        }
 
         RagnarCoreAPI.get(p).ifPresent(s -> {
             if (s instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps) {
@@ -206,19 +214,10 @@ public final class ClientPacketHandler {
 
         MobClientCoexistenceCache.put(entityId, view);
     }
-    // ═══════════════════════════════════════════════
-    // Combat Feedback
-    // ═══════════════════════════════════════════════
-    public static void handleCombatFeedback(int targetId, com.etema.ragnarmmo.combat.api.CombatHitResultType resultType, double amount, boolean critical) {
-        if (resultType == com.etema.ragnarmmo.combat.api.CombatHitResultType.MISS) {
-            com.etema.ragnarmmo.client.render.RagnarPopoffHandler.addPopoff(targetId, "MISS", 0xFFDDDDDD);
-        } else if (resultType == com.etema.ragnarmmo.combat.api.CombatHitResultType.DODGE) {
-            com.etema.ragnarmmo.client.render.RagnarPopoffHandler.addPopoff(targetId, "DODGE", 0xFFDDDDDD);
-        }
-    }
 
     // ═══════════════════════════════════════════════
     // Wallet Sync Packet
+
     // ═══════════════════════════════════════════════
     public static void handleWalletSync(com.etema.ragnarmmo.system.economy.net.WalletSyncPacket msg) {
         Minecraft mc = Minecraft.getInstance();
@@ -351,5 +350,36 @@ public final class ClientPacketHandler {
         }
 
         SkillEffectSpawner.spawnWorldPhaseEffects(position, skillId, phase, context.build());
+    }
+    // ═══════════════════════════════════════════════
+    // ClientboundRagnarCombatResultPacket
+    // ═══════════════════════════════════════════════
+    public static void handleCombatFeedback(int targetId, com.etema.ragnarmmo.combat.api.CombatHitResultType result, double amount, boolean critical) {
+        String text;
+        int color;
+
+        switch (result) {
+            case HIT -> {
+                text = String.valueOf((int) amount);
+                color = 0xFFFF00; // Yellow (standard for damage)
+            }
+            case CRIT -> {
+                text = String.valueOf((int) amount);
+                color = 0xFF0000; // Red
+            }
+            case MISS -> {
+                text = "Miss";
+                color = 0xAAAAAA; // Gray
+            }
+            case DODGE -> {
+                text = "Dodge";
+                color = 0xAAAAAA; // Gray
+            }
+            default -> {
+                return;
+            }
+        }
+
+        RagnarPopoffHandler.addPopoff(targetId, text, color);
     }
 }

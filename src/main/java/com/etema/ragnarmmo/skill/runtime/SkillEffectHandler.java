@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.skill.runtime;
 
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.common.api.player.RoPlayerDataAccess;
+import com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
@@ -11,6 +12,7 @@ import com.etema.ragnarmmo.skill.data.SkillDefinition;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.registry.SkillTriggerRegistry;
 import com.etema.ragnarmmo.system.stats.compute.CombatMath;
+import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -29,11 +31,8 @@ import java.util.function.BiConsumer;
 
 /**
  * Central handler for skill effects.
- * Migrated from hardcoded List<ISkillEffect> to SkillRegistry-based
- * lookups.
- *
- * All effects are now registered via SkillDataLoader and stored in
- * SkillRegistry.
+ * Migrated from hardcoded List<ISkillEffect> to SkillRegistry-based lookups.
+ * All effects are now registered via SkillDataLoader and stored in SkillRegistry.
  * This class only orchestrates event routing and skill execution logic.
  */
 @Mod.EventBusSubscriber(modid = RagnarMMO.MODID)
@@ -111,86 +110,82 @@ public class SkillEffectHandler {
     /**
      * Attempts to trigger an active skill use.
      * Delegates to RagnarCombatEngine for authoritative resolution.
-     * 
-     * @param player  The player attempting to use the skill.
-     * @param skillId The string ID of the skill.
-     * @param level   The requested skill level.
      */
     public static void tryUseSkill(ServerPlayer player, String skillId, int level) {
-    Optional<SkillDefinition> defOpt = SkillRegistry.get(skillId);
-    if (defOpt.isPresent()) {
-        SkillDefinition def = defOpt.get();
-        ResourceLocation id = def.getId();
+        Optional<SkillDefinition> defOpt = SkillRegistry.get(skillId);
+        if (defOpt.isPresent()) {
+            SkillDefinition def = defOpt.get();
+            ResourceLocation id = def.getId();
 
-        RoPlayerDataAccess.get(player).ifPresent(data -> {
-            IPlayerStats stats = data.getStats();
-            SkillManager skills = (SkillManager) data.getSkills();
-            if (skills.getSkillLevel(id) < level) {
-                return;
-            }
-
-            // Check job requirement
-            if (!def.getAllowedJobs().isEmpty()) {
-                String currentJobId = stats.getJobId();
-                com.etema.ragnarmmo.common.api.jobs.JobType jobType =
-                        com.etema.ragnarmmo.common.api.jobs.JobType.fromId(currentJobId);
-
-                java.util.Set<String> allowedJobs = def.getAllowedJobs();
-                boolean jobAllowed = allowedJobs.stream()
-                        .anyMatch(jobType::matchesSkillRule)
-                        || def.getTier() == com.etema.ragnarmmo.skill.api.SkillTier.LIFE;
-
-                if (!jobAllowed) {
-                    player.sendSystemMessage(
-                            net.minecraft.network.chat.Component.translatable(
-                                    "message.ragnarmmo.skill_wrong_job"));
+            RoPlayerDataAccess.get(player).ifPresent(data -> {
+                IPlayerStats stats = data.getStats();
+                SkillManager skills = (SkillManager) data.getSkills();
+                if (skills.getSkillLevel(id) < level) {
                     return;
                 }
-            }
 
-            if (skills.isCasting() || skills.isOnGlobalCooldown()) {
-                return;
-            }
+                // Check job requirement
+                if (!def.getAllowedJobs().isEmpty()) {
+                    String currentJobId = stats.getJobId();
+                    com.etema.ragnarmmo.common.api.jobs.JobType jobType =
+                            com.etema.ragnarmmo.common.api.jobs.JobType.fromId(currentJobId);
 
-            if (skills.isOnCooldown(id)) {
-                return;
-            }
+                    java.util.Set<String> allowedJobs = def.getAllowedJobs();
+                    boolean jobAllowed = allowedJobs.stream()
+                            .anyMatch(jobType::matchesSkillRule)
+                            || def.getTier() == com.etema.ragnarmmo.skill.api.SkillTier.LIFE;
 
-            Optional<ISkillEffect> effectOpt = SkillRegistry.getEffect(id);
-            int cost = resolveResourceCost(def, effectOpt, level);
-            int baseCastTime = resolveBaseCastTime(def, effectOpt, level);
-            int castTime = adjustCastTime(player, baseCastTime);
-            com.etema.ragnarmmo.skill.api.ResourceType resType = resolveEffectiveResourceType(stats, def);
-            boolean hasEnough = resType == com.etema.ragnarmmo.skill.api.ResourceType.COOLDOWN_ONLY
-                    || stats.getCurrentResource() >= cost;
-
-            if (hasEnough) {
-                if (castTime > 0) {
-                    skills.startCast(id, level, castTime);
-                    consumeCastTimeModifiers(player, baseCastTime);
-                    player.sendSystemMessage(
-                            Component.translatable("message.ragnarmmo.cast_start",
-                                    def.getDisplayName()));
-                } else {
-                    if (tryConsumeAndExecute(player, stats, def, level, cost)) {
-                        skills.setCooldown(id, def.getCooldownTicks(level));
-                        int castDelay = resolveCastDelay(def, effectOpt, level, player);
-                        if (castDelay > 0) {
-                            skills.setGlobalCooldown(castDelay);
-                        }
-
-                        syncPlayer(player, stats, skills);
+                    if (!jobAllowed) {
+                        player.sendSystemMessage(
+                                net.minecraft.network.chat.Component.translatable(
+                                        "message.ragnarmmo.skill_wrong_job"));
+                        return;
                     }
                 }
-            } else {
-                String msg = getInsufficientResourceMessage(resType);
-                player.sendSystemMessage(
-                        Component.translatable(msg)
-                                .withStyle(ChatFormatting.RED));
-            }
-        });
+
+                if (skills.isCasting() || skills.isOnGlobalCooldown()) {
+                    return;
+                }
+
+                if (skills.isOnCooldown(id)) {
+                    return;
+                }
+
+                Optional<ISkillEffect> effectOpt = SkillRegistry.getEffect(id);
+                int cost = resolveResourceCost(def, effectOpt, level);
+                int baseCastTime = resolveBaseCastTime(def, effectOpt, level);
+                int castTime = adjustCastTime(player, baseCastTime);
+                com.etema.ragnarmmo.skill.api.ResourceType resType = resolveEffectiveResourceType(stats, def);
+                boolean hasEnough = resType == com.etema.ragnarmmo.skill.api.ResourceType.COOLDOWN_ONLY
+                        || stats.getCurrentResource() >= cost;
+
+                if (hasEnough) {
+                    if (castTime > 0) {
+                        skills.startCast(id, level, castTime);
+                        consumeCastTimeModifiers(player, baseCastTime);
+                        player.sendSystemMessage(
+                                Component.translatable("message.ragnarmmo.cast_start",
+                                        def.getDisplayName()));
+                    } else {
+                        if (tryConsumeAndExecute(player, stats, def, level, cost)) {
+                            skills.setCooldown(id, def.getCooldownTicks(level));
+                            int castDelay = resolveCastDelay(def, effectOpt, level, player);
+                            if (castDelay > 0) {
+                                skills.setGlobalCooldown(castDelay);
+                            }
+
+                            syncPlayer(player, stats, skills);
+                        }
+                    }
+                } else {
+                    String msg = getInsufficientResourceMessage(resType);
+                    player.sendSystemMessage(
+                            Component.translatable(msg)
+                                    .withStyle(ChatFormatting.RED));
+                }
+            });
+        }
     }
-}
 
     public static void tryUseSkill(ServerPlayer player, String skillId) {
         Optional<SkillDefinition> defOpt = SkillRegistry.get(skillId);
@@ -235,8 +230,7 @@ public class SkillEffectHandler {
     }
 
     private static void syncPlayer(ServerPlayer player, IPlayerStats stats, SkillManager skills) {
-        com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
-                new com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket(stats));
+        PlayerStatsSyncService.sync(player, stats, RoPlayerSyncDomain.allMask());
         com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
                 new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(skills.serializeNBT()));
     }
@@ -324,8 +318,8 @@ public class SkillEffectHandler {
                 castDelay = scalingDelay;
             }
         }
-        
-        // Enforce a 10-tick baseline for ACTIVE skills lacking a configured delay to prevent unnatural spam
+
+        // Enforce a 10-tick baseline for ACTIVE skills lacking a configured delay
         if (castDelay == 0 && def.getUsageType() == com.etema.ragnarmmo.skill.api.SkillUsageType.ACTIVE) {
             castDelay = 10;
         }
@@ -362,16 +356,12 @@ public class SkillEffectHandler {
         if (declared == com.etema.ragnarmmo.skill.api.ResourceType.COOLDOWN_ONLY) {
             return declared;
         }
-
-        return com.etema.ragnarmmo.common.api.jobs.JobType.fromId(stats.getJobId()).isMagical()
-                ? com.etema.ragnarmmo.skill.api.ResourceType.MANA
-                : com.etema.ragnarmmo.skill.api.ResourceType.SP;
+        // SP is the unified resource — isMagical() distinction removed in Fase 2
+        return com.etema.ragnarmmo.skill.api.ResourceType.SP;
     }
 
     private static String getInsufficientResourceMessage(com.etema.ragnarmmo.skill.api.ResourceType resourceType) {
-        return resourceType == com.etema.ragnarmmo.skill.api.ResourceType.MANA
-                ? "message.ragnarmmo.insufficient_mana"
-                : "message.ragnarmmo.insufficient_sp";
+        return "message.ragnarmmo.insufficient_sp";
     }
 
     private static boolean shouldInterruptCast(ServerPlayer player, ResourceLocation skillId) {

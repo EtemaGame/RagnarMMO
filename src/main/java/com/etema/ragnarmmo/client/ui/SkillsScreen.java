@@ -857,7 +857,7 @@ public class SkillsScreen extends Screen {
                     tooltipLines.add(Component.translatable("screen.ragnarmmo.skills.tooltip.advanced").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
                     
                     int displayLevel = Math.max(1, totalLevel);
-                    tooltipLines.add(Component.literal(" SP Cost: " + wrapper.getDefinition().getSpCost(displayLevel)).withStyle(ChatFormatting.DARK_GRAY));
+                    tooltipLines.add(Component.literal(" SP Cost: " + wrapper.getDefinition().getResourceCost(displayLevel)).withStyle(ChatFormatting.DARK_GRAY));
                     tooltipLines.add(Component.literal(" Cast Time: " + (wrapper.getDefinition().getCastTimeTicks(displayLevel) / 20.0f) + "s").withStyle(ChatFormatting.DARK_GRAY));
                 } else {
                     tooltipLines.add(Component.literal(""));

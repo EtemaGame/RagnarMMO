@@ -36,6 +36,8 @@ public final class RagnarCreativeTabs {
                         if (copper != null) output.accept(copper);
                         if (silver != null) output.accept(silver);
                         if (gold != null) output.accept(gold);
+                        var moneyBag = ZenyItems.MONEY_BAG.get();
+                        if (moneyBag != null) output.accept(moneyBag);
                         if (blueGemstone != null) output.accept(blueGemstone);
                         if (oridecon != null) output.accept(oridecon);
                         if (elunium != null) output.accept(elunium);

@@ -558,7 +558,7 @@ public class JobSelectionScreen extends Screen {
     }
 
     private static Component getResourceType(JobType job) {
-        return Component.translatable("screen.ragnarmmo.job_selection.resource." + (job.isMagical() ? "mana" : "sp"));
+        return Component.translatable("screen.ragnarmmo.job_selection.resource.sp");
     }
 
     private static Component getClassDescription(JobType job) {

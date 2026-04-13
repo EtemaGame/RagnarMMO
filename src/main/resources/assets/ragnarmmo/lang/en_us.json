@@ -1120,5 +1120,20 @@
     "tooltip.ragnarmmo.weight.each":  "ea.",
     "tooltip.ragnarmmo.weight.label":  "Weight",
     "tooltip.ragnarmmo.weight.shift_hint":  "[SHIFT] Weight info",
-    "tooltip.ragnarmmo.weight.total":  "(Total: %s)"
+    "tooltip.ragnarmmo.weight.total":  "(Total: %s)",
+    "item.ragnarmmo.zeny.money_bag": "Money Bag",
+    "item.ragnarmmo.zeny.money_bag.desc": "Your personal wallet interface.",
+    "item.ragnarmmo.zeny.money_bag.instruction": "Right-click to open. Shift+Right-click to deposit coins held.",
+    "screen.ragnarmmo.money_bag.title": "Money Bag",
+    "screen.ragnarmmo.money_bag.balance": "Zeny Balance: %s",
+    "screen.ragnarmmo.money_bag.deposit_all": "Deposit Inventory Coins",
+    "screen.ragnarmmo.money_bag.withdraw": "Withdraw",
+    "screen.ragnarmmo.money_bag.gold": "Gold",
+    "screen.ragnarmmo.money_bag.silver": "Silver",
+    "screen.ragnarmmo.money_bag.copper": "Copper",
+    "screen.ragnarmmo.money_bag.equivalent_title": "Inventory Value: %s Zeny",
+    "tooltip.ragnarmmo.zeny.conversion_silver": "9 Copper = 1 Silver",
+    "tooltip.ragnarmmo.zeny.conversion_gold": "9 Silver = 1 Gold"
+
+
 }

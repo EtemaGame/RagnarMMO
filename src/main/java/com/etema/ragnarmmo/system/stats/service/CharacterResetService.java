@@ -24,7 +24,7 @@ public final class CharacterResetService {
         RagnarCoreAPI.get(player).ifPresent(stats -> {
             int totalRefunded = 0;
             for (StatKeys key : StatKeys.values()) {
-                if (key == StatKeys.LEVEL || key == StatKeys.JOB_LEVEL) continue;
+                if (key == StatKeys.LEVEL) continue;
 
                 int currentVal = stats.get(key);
                 for (int v = 1; v < currentVal; v++) {

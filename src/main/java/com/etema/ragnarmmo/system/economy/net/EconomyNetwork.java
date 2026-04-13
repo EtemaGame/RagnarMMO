@@ -11,5 +11,11 @@ public class EconomyNetwork {
                 .decoder(WalletSyncPacket::decode)
                 .consumerNetworkThread(WalletSyncPacket::handle)
                 .add();
+
+        channel.messageBuilder(ZenyBagActionPacket.class, idGen.getAndIncrement())
+                .encoder(ZenyBagActionPacket::encode)
+                .decoder(ZenyBagActionPacket::decode)
+                .consumerNetworkThread(ZenyBagActionPacket::handle)
+                .add();
     }
 }

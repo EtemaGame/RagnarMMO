@@ -79,9 +79,8 @@ public class CommonEvents {
                 }
                 JobBonusService.recomputeStats(sp, s);
                 var derived = StatComputer.compute(sp, s, EquipmentStatSnapshot.capture(sp));
-                s.setManaMaxClient(derived.maxMana);
                 if (s instanceof PlayerStats internal) {
-                    internal.setSPMaxClient(derived.maxSP); // Fix: use SP-specific formula, not Mana
+                    internal.setSPMaxClient(derived.maxSP);
                 }
                 
                 // Immediate HP sync on join (e.g. 20/20 -> 40/40)
@@ -97,6 +96,12 @@ public class CommonEvents {
                 }
 
                 PlayerStatsSyncService.sync(sp, s);
+
+                // Give Money Bag if missing
+                if (!sp.getInventory().contains(new net.minecraft.world.item.ItemStack(com.etema.ragnarmmo.roitems.ZenyItems.MONEY_BAG.get()))) {
+                    sp.getInventory().add(new net.minecraft.world.item.ItemStack(com.etema.ragnarmmo.roitems.ZenyItems.MONEY_BAG.get()));
+                }
+
                 RagnarDebugLog.playerData(
                         "JOIN player={} baseLv={} jobLv={} job={} hp={} mana={}/{} sp={}/{}",
                         sp.getGameProfile().getName(),
@@ -148,9 +153,8 @@ public class CommonEvents {
             double previousManaMax = stats.getManaMax();
             double previousSPMax = (stats instanceof PlayerStats internal) ? internal.getSPMax() : previousManaMax;
 
-            if (Math.abs(previousSPMax - totalSpMax) > 1e-4 || Math.abs(previousManaMax - totalManaMax) > 1e-4) {
+            if (Math.abs(previousSPMax - totalSpMax) > 1e-4) {
                 stats.setSPMaxClient(totalSpMax);
-                stats.setManaMaxClient(totalSpMax); // Mirror
             }
 
             // --- Weight System ---
@@ -179,7 +183,6 @@ public class CommonEvents {
             // Natural Regen is disabled if over 50% weight (RO Mechanic)
             if (!over50) {
                 stats.addSP(d.spRegenPerSecond / 20.0);
-                stats.addMana(d.spRegenPerSecond / 20.0); // Mirror
             }
 
             int dirtyMask = stats instanceof PlayerStats internal ? internal.consumeDirtyMask() : (stats.consumeDirty() ? com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.allMask() : 0);

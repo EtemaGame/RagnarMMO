@@ -201,10 +201,10 @@ public enum JobType {
     }
 
     /**
-     * Returns the display label for the resource bar ("Mana" or "SP").
+     * Returns the display label for the resource bar (always "SP" after Phase 2 unification).
      */
     public String getResourceLabel() {
-        return isMagical() ? "Mana" : "SP";
+        return "SP";
     }
 
     public static JobType fromId(String id) {

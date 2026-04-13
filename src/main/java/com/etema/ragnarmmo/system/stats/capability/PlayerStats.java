@@ -535,18 +535,18 @@ public class PlayerStats implements IPlayerStats {
 
     @Override
     public double getCurrentResource() {
-        return com.etema.ragnarmmo.common.api.jobs.JobType.fromId(jobId).isMagical() ? mana : sp;
+        return sp;
     }
     @Override
     public double getMaxResource() {
-        return com.etema.ragnarmmo.common.api.jobs.JobType.fromId(jobId).isMagical() ? manaMax : spMax;
+        return spMax;
     }
     @Override
     public boolean consumeResource(double amount) {
-        return com.etema.ragnarmmo.common.api.jobs.JobType.fromId(jobId).isMagical() ? consumeMana(amount) : consumeSP(amount);
+        return consumeSP(amount);
     }
     @Override
     public void addResource(double amount) {
-        if (com.etema.ragnarmmo.common.api.jobs.JobType.fromId(jobId).isMagical()) addMana(amount); else addSP(amount);
+        addSP(amount);
     }
 }

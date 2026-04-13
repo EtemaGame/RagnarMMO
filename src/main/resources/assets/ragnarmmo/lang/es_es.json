@@ -1120,5 +1120,20 @@
     "tooltip.ragnarmmo.weight.each":  "c/u",
     "tooltip.ragnarmmo.weight.label":  "Peso",
     "tooltip.ragnarmmo.weight.shift_hint":  "[SHIFT] Info de peso",
-    "tooltip.ragnarmmo.weight.total":  "(Total: %s)"
+    "tooltip.ragnarmmo.weight.total":  "(Total: %s)",
+    "item.ragnarmmo.zeny.money_bag": "Bolsa de Dinero",
+    "item.ragnarmmo.zeny.money_bag.desc": "Tu interfaz personal de monedero.",
+    "item.ragnarmmo.zeny.money_bag.instruction": "Click derecho para abrir. Shift+Click derecho para depositar monedas.",
+    "screen.ragnarmmo.money_bag.title": "Bolsa de Dinero",
+    "screen.ragnarmmo.money_bag.balance": "Saldo de Zeny: %s",
+    "screen.ragnarmmo.money_bag.deposit_all": "Depositar Monedas del Inventario",
+    "screen.ragnarmmo.money_bag.withdraw": "Retirar",
+    "screen.ragnarmmo.money_bag.gold": "Oro",
+    "screen.ragnarmmo.money_bag.silver": "Plata",
+    "screen.ragnarmmo.money_bag.copper": "Cobre",
+    "screen.ragnarmmo.money_bag.equivalent_title": "Valor en Inventario: %s Zeny",
+    "tooltip.ragnarmmo.zeny.conversion_silver": "9 Cobres = 1 Plata",
+    "tooltip.ragnarmmo.zeny.conversion_gold": "9 Platas = 1 Oro"
+
+
 }

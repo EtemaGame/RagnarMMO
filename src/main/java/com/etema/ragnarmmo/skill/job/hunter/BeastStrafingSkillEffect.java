@@ -28,6 +28,8 @@ public class BeastStrafingSkillEffect implements ISkillEffect {
 
     private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "beast_strafing");
 
+    private static final java.util.Map<java.util.UUID, Long> STRAFING_STANCE = new java.util.concurrent.ConcurrentHashMap<>();
+
     @Override
     public ResourceLocation getSkillId() { return ID; }
 
@@ -43,32 +45,56 @@ public class BeastStrafingSkillEffect implements ISkillEffect {
 
         LivingEntity target = event.getEntity();
         MobCategory cat = target.getType().getCategory();
-        boolean isBeast = cat == MobCategory.CREATURE || cat == MobCategory.WATER_CREATURE
-                || target.getMobType() == net.minecraft.world.entity.MobType.ARTHROPOD;
-        if (!isBeast) return;
+        
+        // Block friendly animals
+        if (cat == MobCategory.CREATURE || cat == MobCategory.WATER_CREATURE) return;
 
-        float bonusDmg = event.getAmount() * (0.2f + level * 0.05f);
-        int extraArrows = Math.min(level / 3 + 1, 3); // 1 to 3 extra arrows
+        boolean isBruteOrArthropod = target.getMobType() == net.minecraft.world.entity.MobType.ARTHROPOD ||
+                (target instanceof net.minecraft.world.entity.monster.Monster && target.getMobType() != net.minecraft.world.entity.MobType.UNDEAD);
+        
+        if (!isBruteOrArthropod) return;
+
+        // Grant the stance for 3 seconds (60 ticks)
+        STRAFING_STANCE.put(player.getUUID(), player.level().getGameTime() + 60);
+        
+        // Visual indicator that the skill is ready
+        if (player.level() instanceof ServerLevel sl && player.tickCount % 5 == 0) {
+            sl.sendParticles(ParticleTypes.CRIT,
+                    player.getX(), player.getY() + 2, player.getZ(),
+                    3, 0.3, 0.3, 0.3, 0.05);
+        }
+    }
+
+    @Override
+    public void execute(ServerPlayer player, int level) {
+        Long expiry = STRAFING_STANCE.get(player.getUUID());
+        if (expiry == null || player.level().getGameTime() > expiry) {
+            player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.ragnarmmo.skill_requires_beast_stance")
+                    .withStyle(net.minecraft.ChatFormatting.RED));
+            return;
+        }
+
+        // Consume the stance
+        STRAFING_STANCE.remove(player.getUUID());
+
+        double baseAtk = com.etema.ragnarmmo.common.api.stats.StatAttributes.getTotal(player, com.etema.ragnarmmo.common.api.stats.StatKeys.DEX);
+        float bonusDmg = (float) (baseAtk * (1.2f + level * 0.1f));
+        int extraArrows = Math.min(level / 3 + 1, 3);
 
         for (int i = 0; i < extraArrows; i++) {
-            double spread = 0.08 * (i + 1);
+            double spread = 0.05 * (i + 1);
             Vec3 look = player.getLookAngle();
             Vec3 direction = new Vec3(
                     look.x + player.getRandom().nextGaussian() * spread,
                     look.y + player.getRandom().nextGaussian() * spread,
                     look.z + player.getRandom().nextGaussian() * spread);
-            RagnarArrowSpawnHelper.spawn(player, direction, 2.5F, 0.0F, 1.0F,
+            RagnarArrowSpawnHelper.spawn(player, direction, 3.5F, 0.0F, 1.0F,
                     arrow -> {
                         arrow.setBaseDamage(bonusDmg);
                         arrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
-                    }, null);
-        }
-
-        // Crit particles at target to indicate the bonus shots
-        if (player.level() instanceof ServerLevel sl) {
-            sl.sendParticles(ParticleTypes.CRIT,
-                    target.getX(), target.getY() + 1, target.getZ(),
-                    6 * extraArrows, 0.3, 0.3, 0.3, 0.08);
+                    }, snapshot -> {
+                        snapshot.putBoolean("bypass_iframes", true);
+                    });
         }
     }
 }

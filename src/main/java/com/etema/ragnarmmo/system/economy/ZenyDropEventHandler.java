@@ -45,4 +45,32 @@ public class ZenyDropEventHandler {
                entity instanceof net.minecraft.world.entity.monster.Phantom ||
                entity instanceof net.minecraft.world.entity.monster.Ghast;
     }
+
+    @SubscribeEvent
+    public void onPickupItem(net.minecraftforge.event.entity.player.EntityItemPickupEvent event) {
+        if (event.getEntity().level().isClientSide) return;
+
+        ItemStack stack = event.getItem().getItem();
+        if (com.etema.ragnarmmo.roitems.runtime.ZenyWalletHelper.isZeny(stack)) {
+            int value = com.etema.ragnarmmo.roitems.runtime.ZenyWalletHelper.getValue(stack);
+            int totalZeny = stack.getCount() * value;
+            Player player = event.getEntity();
+
+            // SNEAK BYPASS: If shifting, pick up as items
+            if (player.isCrouching()) {
+                return;
+            }
+
+            com.etema.ragnarmmo.system.economy.capability.PlayerWalletProvider.get(player).ifPresent(wallet -> {
+                wallet.addZeny(totalZeny);
+                com.etema.ragnarmmo.common.net.Network.sendToPlayer((net.minecraft.server.level.ServerPlayer) player,
+                        new com.etema.ragnarmmo.system.economy.net.WalletSyncPacket(wallet.getZeny()));
+                
+                // Visual feedback of pick up without inventory clutter
+                player.take(event.getItem(), stack.getCount());
+                event.getItem().discard();
+                event.setCanceled(true);
+            });
+        }
+    }
 }

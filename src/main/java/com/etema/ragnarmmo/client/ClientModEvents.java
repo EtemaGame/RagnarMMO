@@ -1,6 +1,5 @@
 package com.etema.ragnarmmo.client;
 
-import com.etema.ragnarmmo.client.command.ClientHudCommands;
 import com.etema.ragnarmmo.client.ui.RagnarStatusOverlay;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.system.stats.RagnarStats;
@@ -85,7 +84,7 @@ public class ClientModEvents {
     public static class ForgeBusEvents {
         @SubscribeEvent
         public static void registerClientCommands(RegisterClientCommandsEvent event) {
-            ClientHudCommands.register(event.getDispatcher());
+            ClientCommands.register(event.getDispatcher());
         }
 
         @SubscribeEvent

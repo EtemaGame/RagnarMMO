@@ -11,44 +11,49 @@ import com.etema.ragnarmmo.system.stats.commands.StatsCommands;
 import com.etema.ragnarmmo.system.stats.party.PartyCommands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 
 public class RagnarCommand {
 
-        public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-                // Main Command: /ragnar
-                CommandNode<CommandSourceStack> ragnarNode = dispatcher.register(Commands.literal("ragnar")
-                                .then(StatsCommands.createNode())
-                                .then(CartCommands.createNode())
-                                .then(MemoCommands.createNode())
-                                .then(ExpCommands.createExpNode())
-                                .then(ExpCommands.createSetNode())
-                                .then(PartyCommands.createNode())
-                                .then(MobStatsCommand.createNode())
-                                .then(MobManualCommand.createNode())
-                                .then(RagnarAdminCommands.createNode()));
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        // Main Command: /ragnar
+        LiteralCommandNode<CommandSourceStack> ragnarNode = dispatcher.register(Commands.literal("ragnar")
+                .then(StatsCommands.createNode())
+                .then(CartCommands.createNode())
+                .then(MemoCommands.createNode())
+                .then(ExpCommands.createExpNode())
+                .then(ExpCommands.createSetNode())
+                .then(PartyCommands.createNode())
+                .then(MobStatsCommand.createNode())
+                .then(MobManualCommand.createNode())
+                .then(RagnarAdminCommands.createNode()));
 
-                registerAlias(dispatcher, "stats", ragnarNode.getChild("stats"));
-                registerAlias(dispatcher, "cart", ragnarNode.getChild("cart"));
-                registerAlias(dispatcher, "party", ragnarNode.getChild("party"));
-                registerAlias(dispatcher, "mobmanual", ragnarNode.getChild("mobmanual"));
-                // Party chat shortcut: /pc <message> -> /ragnar party chat <message>
-                CommandNode<CommandSourceStack> partyNode = ragnarNode.getChild("party");
-                if (partyNode != null) {
-                        registerAlias(dispatcher, "pc", partyNode.getChild("chat"));
-                }
+        // Register root-level abbreviations (aliases)
+        registerAlias(dispatcher, "stats", ragnarNode.getChild("stats"));
+        registerAlias(dispatcher, "cart", ragnarNode.getChild("cart"));
+        registerAlias(dispatcher, "party", ragnarNode.getChild("party"));
+        registerAlias(dispatcher, "mobmanual", ragnarNode.getChild("mobmanual"));
+        registerAlias(dispatcher, "memo", ragnarNode.getChild("memo"));
 
-                registerAlias(dispatcher, "memo", ragnarNode.getChild("memo"));
+        // Party chat shortcut: /pc <message> -> /ragnar party chat <message>
+        CommandNode<CommandSourceStack> partyNode = ragnarNode.getChild("party");
+        if (partyNode != null) {
+            CommandNode<CommandSourceStack> chatNode = partyNode.getChild("chat");
+            if (chatNode != null) {
+                registerAlias(dispatcher, "pc", chatNode);
+            }
         }
+    }
 
-        private static void registerAlias(
-                        CommandDispatcher<CommandSourceStack> dispatcher,
-                        String alias,
-                        CommandNode<CommandSourceStack> target) {
-                if (target == null) {
-                        return;
-                }
-                dispatcher.register(Commands.literal(alias).redirect(target));
+    private static void registerAlias(
+            CommandDispatcher<CommandSourceStack> dispatcher,
+            String alias,
+            CommandNode<CommandSourceStack> target) {
+        if (target == null) {
+            return;
         }
+        dispatcher.register(Commands.literal(alias).redirect(target));
+    }
 }

@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.system.mobstats.util;
 
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
+import com.etema.ragnarmmo.common.api.mobs.runtime.integration.ComputedMobProfileAttributeApplier;
 import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
 import com.etema.ragnarmmo.system.mobstats.core.MobStats;
 import net.minecraft.world.entity.LivingEntity;
@@ -84,31 +85,7 @@ public final class MobAttributeHelper {
     }
 
     public static void applyAttributes(LivingEntity mob, com.etema.ragnarmmo.common.api.mobs.runtime.ComputedMobProfile profile) {
-        // Max Health
-        AttributeInstance maxHealth = getInstance(mob, Attributes.MAX_HEALTH);
-        if (maxHealth != null) {
-            double hp = (double) profile.maxHp();
-            maxHealth.setBaseValue(hp);
-            mob.setHealth((float) hp);
-        }
-
-        // Damage
-        AttributeInstance attackDamage = getInstance(mob, Attributes.ATTACK_DAMAGE);
-        if (attackDamage != null) {
-            attackDamage.setBaseValue((double) profile.atkMax());
-        }
-
-        // Armor
-        AttributeInstance armor = getInstance(mob, Attributes.ARMOR);
-        if (armor != null) {
-            armor.setBaseValue((double) profile.def());
-        }
-
-        // Speed
-        AttributeInstance movementSpeed = getInstance(mob, Attributes.MOVEMENT_SPEED);
-        if (movementSpeed != null) {
-            movementSpeed.setBaseValue(profile.moveSpeed());
-        }
+        ComputedMobProfileAttributeApplier.apply(mob, profile);
     }
 
     private static AttributeInstance getInstance(LivingEntity mob, Attribute attr) {

@@ -13,6 +13,7 @@ public class ManualMobInspectorScreen extends Screen {
 
     private final Screen parent;
     private final ResourceLocation entityTypeId;
+    private Button openEditorButton;
 
     public ManualMobInspectorScreen(Screen parent, ResourceLocation entityTypeId) {
         super(Component.literal("Manual Mob Inspector"));
@@ -27,8 +28,13 @@ public class ManualMobInspectorScreen extends Screen {
         int y = 40;
         addRenderableWidget(Button.builder(Component.literal("Refresh detail"), b -> requestDetail())
                 .bounds(left, y, 220, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Open editor"), b -> minecraft.setScreen(new ManualMobEditorScreen(this, entityTypeId)))
+        openEditorButton = addRenderableWidget(Button.builder(Component.literal("Open editor"), b -> {
+                    if (MobStatsConfigAccess.isManualMobEditorEnabled()) {
+                        minecraft.setScreen(new ManualMobEditorScreen(this, entityTypeId));
+                    }
+                })
                 .bounds(left, y + 24, 220, 20).build());
+        openEditorButton.active = MobStatsConfigAccess.isManualMobEditorEnabled();
         addRenderableWidget(Button.builder(Component.literal("Back"), b -> onClose())
                 .bounds(left, this.height - 28, 80, 20).build());
         requestDetail();
@@ -49,6 +55,9 @@ public class ManualMobInspectorScreen extends Screen {
         if (entry != null && entry.entityTypeId().equals(entityTypeId)) {
             graphics.drawString(this.font, "enabled=" + entry.enabled() + " level=" + entry.level() + " rank=" + entry.rank().name().toLowerCase(), this.width / 2 - 110, 80, 0xAAAAAA, false);
             graphics.drawString(this.font, "atk=" + entry.atkMin() + "-" + entry.atkMax() + " def=" + entry.def() + " mdef=" + entry.mdef(), this.width / 2 - 110, 94, 0xAAAAAA, false);
+        }
+        if (!MobStatsConfigAccess.isManualMobEditorEnabled()) {
+            graphics.drawString(this.font, "Editor disabled by config.", this.width / 2 - 110, 118, 0xFFAA66, false);
         }
         super.render(graphics, mouseX, mouseY, partialTick);
     }

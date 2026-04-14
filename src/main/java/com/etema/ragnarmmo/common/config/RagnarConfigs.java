@@ -280,6 +280,11 @@ public final class RagnarConfigs {
             public final ForgeConfigSpec.BooleanValue autoClassifyBiomes;
             public final ForgeConfigSpec.BooleanValue renderNumericHealth;
             public final ForgeConfigSpec.EnumValue<LevelScalingMode> levelScalingMode;
+            public final ForgeConfigSpec.EnumValue<ManualMobBackend> manualMobBackend;
+            public final ForgeConfigSpec.EnumValue<ManualUncoveredBehavior> manualUncoveredBehavior;
+            public final ForgeConfigSpec.EnumValue<AutomaticFallbackMode> manualFallbackAutomaticMode;
+            public final ForgeConfigSpec.BooleanValue enableManualMobEditor;
+            public final ForgeConfigSpec.BooleanValue enableManualMobDiscovery;
             public final ForgeConfigSpec.IntValue playerLevelRadius;
             public final ForgeConfigSpec.IntValue playerLevelVariance;
 
@@ -363,6 +368,11 @@ public final class RagnarConfigs {
                 autoClassifyBiomes = builder.define("auto_classify_biomes", true);
                 renderNumericHealth = builder.define("render_numeric_health", true);
                 levelScalingMode = builder.defineEnum("level_scaling_mode", LevelScalingMode.BIOME_DISTANCE);
+                manualMobBackend = builder.defineEnum("manual_mob_backend", ManualMobBackend.DATAPACK);
+                manualUncoveredBehavior = builder.defineEnum("manual_uncovered_behavior", ManualUncoveredBehavior.VANILLA);
+                manualFallbackAutomaticMode = builder.defineEnum("manual_fallback_automatic_mode", AutomaticFallbackMode.BIOME_DISTANCE);
+                enableManualMobEditor = builder.define("enable_manual_mob_editor", false);
+                enableManualMobDiscovery = builder.define("enable_manual_mob_discovery", true);
                 playerLevelRadius = builder.defineInRange("player_level_radius", 64, 8, 256);
                 playerLevelVariance = builder.defineInRange("player_level_variance", 2, 0, 100);
 
@@ -517,6 +527,18 @@ public final class RagnarConfigs {
     }
 
     public enum LevelScalingMode {
+        PLAYER_LEVEL, DISTANCE, BIOME_DISTANCE, MANUAL
+    }
+
+    public enum ManualMobBackend {
+        INTERNAL, DATAPACK, HYBRID
+    }
+
+    public enum ManualUncoveredBehavior {
+        VANILLA, FALLBACK_TO_AUTO
+    }
+
+    public enum AutomaticFallbackMode {
         PLAYER_LEVEL, DISTANCE, BIOME_DISTANCE
     }
 

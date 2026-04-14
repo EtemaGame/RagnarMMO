@@ -12,6 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 public final class ManualMobCatalogService {
 
@@ -33,9 +34,9 @@ public final class ManualMobCatalogService {
                 .filter(ManualMobCatalogService::isEditableLivingType)
                 .map(type -> toCatalogEntry(type, server))
                 .filter(entry -> namespaceFilter == null || entry.namespace().equals(namespaceFilter))
-                .filter(entry -> filters.covered() == null || (entry.internalCoverage() || entry.datapackCoverage()) == filters.covered())
+                .filter(entry -> filters.covered() == null || (entry.internalPresent() || entry.datapackCoverage()) == filters.covered())
                 .filter(entry -> backendFilter == null || entry.effectiveBackend().equals(backendFilter))
-                .filter(entry -> filters.enabled() == null || entry.enabled() == filters.enabled())
+                .filter(entry -> filters.enabled() == null || entry.internalEnabled() == filters.enabled())
                 .sorted(Comparator.comparing(ManualMobCatalogEntry::entityTypeId))
                 .toList();
     }
@@ -50,26 +51,36 @@ public final class ManualMobCatalogService {
     private static ManualMobCatalogEntry toCatalogEntry(EntityType<?> type, MinecraftServer server) {
         ResourceLocation entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(type);
         String idText = entityTypeId == null ? "unknown:unknown" : entityTypeId.toString();
-        boolean internalCoverage = entityTypeId != null
-                && ManualMobRegistryService.find(server, entityTypeId).map(InternalManualMobEntry::enabled).orElse(false);
+        
+        var internalEntryOpt = entityTypeId != null 
+                ? ManualMobRegistryService.find(server, entityTypeId) 
+                : Optional.<InternalManualMobEntry>empty();
+        
+        boolean internalPresent = internalEntryOpt.isPresent();
+        boolean internalEnabled = internalEntryOpt.map(InternalManualMobEntry::enabled).orElse(false);
+        
         boolean datapackCoverage = entityTypeId != null
                 && ManualMobProfileResolver.resolve(entityTypeId).profile() != null;
+                
         String effectiveBackend = "none";
+        boolean manualEffective = false;
         if (entityTypeId != null) {
             var resolved = ManualMobBackendResolver.resolve(entityTypeId, server, MobStatsConfigAccess.getManualMobBackend());
-            effectiveBackend = resolved.coverage().covered()
-                    ? resolved.coverage().backend().name().toLowerCase(Locale.ROOT)
-                    : "none";
+            if (resolved.coverage().covered()) {
+                effectiveBackend = resolved.coverage().backend().name().toLowerCase(Locale.ROOT);
+                manualEffective = resolved.coverage().backend() == com.etema.ragnarmmo.common.config.RagnarConfigs.ManualMobBackend.INTERNAL;
+            }
         }
 
         return new ManualMobCatalogEntry(
                 idText,
                 entityTypeId == null ? "unknown" : entityTypeId.getNamespace(),
                 type.getDescription().getString(),
-                internalCoverage,
+                internalPresent,
+                internalEnabled,
                 datapackCoverage,
                 effectiveBackend,
-                internalCoverage);
+                manualEffective);
     }
 
     private static String normalize(String value) {

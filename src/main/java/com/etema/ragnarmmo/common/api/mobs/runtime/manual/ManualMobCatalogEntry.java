@@ -4,8 +4,9 @@ public record ManualMobCatalogEntry(
         String entityTypeId,
         String namespace,
         String displayName,
-        boolean internalCoverage,
+        boolean internalPresent,
+        boolean internalEnabled,
         boolean datapackCoverage,
         String effectiveBackend,
-        boolean enabled) {
+        boolean manualEffective) {
 }

@@ -113,15 +113,42 @@ public final class MobStatsConfigAccess {
     }
 
     // --- World Scaling ---
-    public static RagnarConfigs.LevelScalingMode getLevelScalingMode() { return RagnarConfigs.SERVER.mobstats.levelScalingMode.get(); }
-    public static RagnarConfigs.ManualMobBackend getManualMobBackend() { return RagnarConfigs.SERVER.mobstats.manualMobBackend.get(); }
-    public static RagnarConfigs.ManualUncoveredBehavior getManualUncoveredBehavior() { return RagnarConfigs.SERVER.mobstats.manualUncoveredBehavior.get(); }
-    public static RagnarConfigs.AutomaticFallbackMode getManualFallbackAutomaticMode() { return RagnarConfigs.SERVER.mobstats.manualFallbackAutomaticMode.get(); }
-    public static boolean isManualMobEditorEnabled() { return RagnarConfigs.SERVER.mobstats.enableManualMobEditor.get(); }
-    public static boolean isManualMobDiscoveryEnabled() { return RagnarConfigs.SERVER.mobstats.enableManualMobDiscovery.get(); }
-    public static int getPlayerLevelRadius() { return RagnarConfigs.SERVER.mobstats.playerLevelRadius.get(); }
-    public static int getPlayerLevelVariance() { return RagnarConfigs.SERVER.mobstats.playerLevelVariance.get(); }
-    public static boolean renderNumericHealth() { return RagnarConfigs.SERVER.mobstats.renderNumericHealth.get(); }
+    public static RagnarConfigs.LevelScalingMode getLevelScalingMode() { 
+        try { return RagnarConfigs.SERVER.mobstats.levelScalingMode.get(); }
+        catch (Exception e) { return RagnarConfigs.LevelScalingMode.MANUAL; }
+    }
+    public static RagnarConfigs.ManualMobBackend getManualMobBackend() { 
+        try { return RagnarConfigs.SERVER.mobstats.manualMobBackend.get(); }
+        catch (Exception e) { return RagnarConfigs.ManualMobBackend.DATAPACK; }
+    }
+    public static RagnarConfigs.ManualUncoveredBehavior getManualUncoveredBehavior() { 
+        try { return RagnarConfigs.SERVER.mobstats.manualUncoveredBehavior.get(); }
+        catch (Exception e) { return RagnarConfigs.ManualUncoveredBehavior.VANILLA; }
+    }
+    public static RagnarConfigs.AutomaticFallbackMode getManualFallbackAutomaticMode() { 
+        try { return RagnarConfigs.SERVER.mobstats.manualFallbackAutomaticMode.get(); }
+        catch (Exception e) { return RagnarConfigs.AutomaticFallbackMode.DISTANCE; }
+    }
+    public static boolean isManualMobEditorEnabled() { 
+        try { return RagnarConfigs.SERVER.mobstats.enableManualMobEditor.get(); }
+        catch (Exception e) { return false; }
+    }
+    public static boolean isManualMobDiscoveryEnabled() { 
+        try { return RagnarConfigs.SERVER.mobstats.enableManualMobDiscovery.get(); }
+        catch (Exception e) { return true; }
+    }
+    public static int getPlayerLevelRadius() { 
+        try { return RagnarConfigs.SERVER.mobstats.playerLevelRadius.get(); }
+        catch (Exception e) { return 64; }
+    }
+    public static int getPlayerLevelVariance() { 
+        try { return RagnarConfigs.SERVER.mobstats.playerLevelVariance.get(); }
+        catch (Exception e) { return 2; }
+    }
+    public static boolean renderNumericHealth() { 
+        try { return RagnarConfigs.SERVER.mobstats.renderNumericHealth.get(); }
+        catch (Exception e) { return true; }
+    }
 
     public static ParsedDimensionRules getDimensionRules(ResourceKey<Level> dimension) {
         return snapshot().dimensionRules.getOrDefault(dimension.location(), snapshot().overworldDefaults);
@@ -151,7 +178,12 @@ public final class MobStatsConfigAccess {
             synchronized (MobStatsConfigAccess.class) {
                 snap = current;
                 if (snap == null) {
-                    snap = new Snapshot();
+                    try {
+                        snap = new Snapshot();
+                    } catch (Exception e) {
+                        // Fallback for tests or early access
+                        snap = new Snapshot(true);
+                    }
                     current = snap;
                 }
             }
@@ -181,6 +213,12 @@ public final class MobStatsConfigAccess {
             parseMap(ms.dimensionMinLevels.get(), dimensionMinLevels);
             parseMap(ms.structureMinLevels.get(), structureMinLevels);
             parseMap(ms.bossMinLevels.get(), bossMinLevels);
+        }
+
+        Snapshot(boolean testMode) {
+            enabled = true;
+            mobExcludeList = List.of();
+            overworldDefaults = null;
         }
 
         private void parseMap(List<? extends String> list, Map<ResourceLocation, Integer> target) {

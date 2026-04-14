@@ -23,11 +23,11 @@ public class ManualMobDetailRequestPacket {
     public static void handle(ManualMobDetailRequestPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
-            if (player == null || !MobStatsConfigAccess.isManualMobDiscoveryEnabled()) {
+            if (player == null || player.getServer() == null) {
                 return;
             }
-            InternalManualMobEntry detail = ManualMobRegistryService.find(player.getServer(), msg.entityTypeId)
-                    .orElseGet(() -> InternalManualMobEntry.createDefault(msg.entityTypeId, player.getScoreboardName()));
+            // Rule 3: No faked defaults. buildDetail handles null internalEntry correctly.
+            var detail = ManualMobRegistryService.buildDetail(player.getServer(), msg.entityTypeId, player);
             Network.sendToPlayer(player, new ManualMobDetailResponsePacket(detail));
         });
         ctx.get().setPacketHandled(true);

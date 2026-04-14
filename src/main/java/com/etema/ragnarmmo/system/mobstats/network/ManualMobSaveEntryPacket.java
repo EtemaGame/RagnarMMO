@@ -22,11 +22,52 @@ public class ManualMobSaveEntryPacket {
     public static void handle(ManualMobSaveEntryPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
-            if (player == null || !MobStatsConfigAccess.isManualMobEditorEnabled() || !player.hasPermissions(2)) {
+            if (player == null || player.getServer() == null) {
                 return;
             }
-            ManualMobRegistryService.upsert(player.getServer(), msg.entry);
-            Network.sendToPlayer(player, new ManualMobDetailResponsePacket(msg.entry));
+
+            // Rule 1 & 2: Server checks flags and permissions authoritatively
+            if (!MobStatsConfigAccess.isManualMobEditorEnabled() || !player.hasPermissions(2)) {
+                return;
+            }
+
+            try {
+                // Rule 4 & Save Contract: Validate and Sanitize
+                com.etema.ragnarmmo.common.api.mobs.runtime.manual.InternalManualMobEntryValidator.validateOrThrow(msg.entry);
+
+                InternalManualMobEntry sanitized = new InternalManualMobEntry(
+                        msg.entry.entityTypeId(),
+                        msg.entry.enabled(),
+                        msg.entry.level(),
+                        msg.entry.rank(),
+                        msg.entry.race(),
+                        msg.entry.element(),
+                        msg.entry.size(),
+                        msg.entry.maxHp(),
+                        msg.entry.atkMin(),
+                        msg.entry.atkMax(),
+                        msg.entry.def(),
+                        msg.entry.mdef(),
+                        msg.entry.hit(),
+                        msg.entry.flee(),
+                        msg.entry.crit(),
+                        msg.entry.aspd(),
+                        msg.entry.moveSpeed(),
+                        msg.entry.notes(),
+                        player.getScoreboardName(), // Authoritative identity
+                        System.currentTimeMillis()   // Authoritative time
+                );
+
+                ManualMobRegistryService.upsert(player.getServer(), sanitized);
+
+                // Rule 5: Send back CANONICAL state
+                var detail = ManualMobRegistryService.buildDetail(player.getServer(), sanitized.entityTypeId(), player);
+                Network.sendToPlayer(player, new ManualMobDetailResponsePacket(detail));
+
+            } catch (Exception e) {
+                // In a production environment, we should send an error packet back to the client
+                e.printStackTrace();
+            }
         });
         ctx.get().setPacketHandled(true);
     }

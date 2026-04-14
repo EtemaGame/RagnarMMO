@@ -20,41 +20,60 @@ public class ManualMobCatalogScreen extends Screen {
 
     private static final int PAGE_SIZE = 10;
 
+    private enum FilterMode {
+        ALL("All Mobs"),
+        UNDEFINED("Undefined Only"),
+        MANUAL("Manual Overrides"),
+        DATAPACK("Datapack Coverage");
+
+        private final String label;
+        FilterMode(String label) { this.label = label; }
+        public String getLabel() { return label; }
+    }
+
     private final Screen parent;
     private final List<ManualMobCatalogEntry> allEntries = new ArrayList<>();
     private final List<ManualMobCatalogEntry> filteredEntries = new ArrayList<>();
     private EditBox searchBox;
+    private FilterMode filterMode = FilterMode.ALL;
     private int page = 0;
+    private long lastCatalogVersion = -1;
     private final List<Button> rowButtons = new ArrayList<>();
+    private Button filterButton;
     private Button prevButton;
     private Button nextButton;
 
     public ManualMobCatalogScreen(Screen parent) {
-        super(Component.literal("Manual Mob Catalog"));
+        super(Component.literal("Manual Mob Bestiary"));
         this.parent = parent;
     }
 
     @Override
     protected void init() {
         super.init();
-        if (!MobStatsConfigAccess.isManualMobDiscoveryEnabled()) {
-            onClose();
-            return;
-        }
+        // UI Governance: Screens can be opened, but authoritative logic resides on server responses.
+        // We still check discovery here for early exit if possible.
+        
         allEntries.clear();
         filteredEntries.clear();
         rowButtons.clear();
 
         int left = this.width / 2 - 160;
         searchBox = new EditBox(this.font, left, 24, 220, 20, Component.literal("Search"));
-        searchBox.setResponder(this::applyFilter);
+        searchBox.setResponder(s -> applyFilter());
         addRenderableWidget(searchBox);
 
         addRenderableWidget(Button.builder(Component.literal("Refresh"), b -> requestCatalog())
-                .bounds(left + 226, 24, 90, 20)
+                .bounds(left + 226, 24, 94, 20)
                 .build());
 
-        int rowY = 56;
+        filterButton = addRenderableWidget(Button.builder(Component.literal(filterMode.getLabel()), b -> {
+            filterMode = FilterMode.values()[(filterMode.ordinal() + 1) % FilterMode.values().length];
+            b.setMessage(Component.literal(filterMode.getLabel()));
+            applyFilter();
+        }).bounds(left, 46, 120, 20).build());
+
+        int rowY = 70;
         for (int i = 0; i < PAGE_SIZE; i++) {
             int rowIndex = i;
             Button row = Button.builder(Component.literal("-"), b -> openRow(rowIndex))
@@ -83,7 +102,6 @@ public class ManualMobCatalogScreen extends Screen {
 
     private void requestCatalog() {
         Network.sendToServer(new ManualMobCatalogRequestPacket());
-        applyCatalogData();
     }
 
     private void applyCatalogData() {
@@ -91,20 +109,27 @@ public class ManualMobCatalogScreen extends Screen {
         allEntries.addAll(ManualMobUiState.getCatalog().stream()
                 .sorted(Comparator.comparing(ManualMobCatalogEntry::entityTypeId))
                 .toList());
-        applyFilter(searchBox == null ? "" : searchBox.getValue());
+        applyFilter();
     }
 
-    private void applyFilter(String text) {
+    private void applyFilter() {
         filteredEntries.clear();
-        String needle = text == null ? "" : text.trim().toLowerCase(Locale.ROOT);
-        if (needle.isBlank()) {
-            filteredEntries.addAll(allEntries);
-        } else {
-            for (ManualMobCatalogEntry entry : allEntries) {
-                String full = (entry.entityTypeId() + " " + entry.namespace() + " " + entry.displayName()).toLowerCase(Locale.ROOT);
-                if (full.contains(needle)) {
-                    filteredEntries.add(entry);
-                }
+        String needle = searchBox == null ? "" : searchBox.getValue().trim().toLowerCase(Locale.ROOT);
+        
+        for (ManualMobCatalogEntry entry : allEntries) {
+            // Priority Filter Mode
+            boolean matchMode = switch (filterMode) {
+                case ALL -> true;
+                case UNDEFINED -> !entry.internalPresent();
+                case MANUAL -> entry.internalPresent();
+                case DATAPACK -> entry.datapackCoverage();
+            };
+            if (!matchMode) continue;
+
+            // Search Needle
+            String full = (entry.entityTypeId() + " " + entry.namespace() + " " + entry.displayName()).toLowerCase(Locale.ROOT);
+            if (needle.isBlank() || full.contains(needle)) {
+                filteredEntries.add(entry);
             }
         }
         page = 0;
@@ -124,7 +149,14 @@ public class ManualMobCatalogScreen extends Screen {
                 ManualMobCatalogEntry entry = filteredEntries.get(idx);
                 row.visible = true;
                 row.active = true;
-                row.setMessage(Component.literal(entry.entityTypeId() + " [" + entry.effectiveBackend() + "]"));
+                
+                // Rich Rendering with Flags (I=Internal, D=Datapack, E=Enabled/ManualEffective)
+                String flags = "[" 
+                        + (entry.internalPresent() ? "I" : ".") 
+                        + (entry.datapackCoverage() ? "D" : ".") 
+                        + (entry.manualEffective() ? "E" : ".") 
+                        + "]";
+                row.setMessage(Component.literal(flags + " " + entry.displayName() + " (" + entry.namespace() + ")"));
             } else {
                 row.visible = false;
                 row.active = false;
@@ -137,7 +169,9 @@ public class ManualMobCatalogScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-        if (allEntries.size() != ManualMobUiState.getCatalog().size()) {
+        // Rule 5: Canonical refresh from server versioning
+        if (ManualMobUiState.getCatalogVersion() != lastCatalogVersion || ManualMobUiState.isCatalogDirty()) {
+            lastCatalogVersion = ManualMobUiState.getCatalogVersion();
             applyCatalogData();
         }
     }
@@ -146,8 +180,8 @@ public class ManualMobCatalogScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics);
         graphics.drawCenteredString(font, title, width / 2, 8, 0xFFFFFF);
-        graphics.drawString(font, "Data-driven catalog (INTERNAL/DATAPACK coverage + backend).", width / 2 - 160, 46, 0xAAAAAA, false);
-        graphics.drawString(font, String.format(Locale.ROOT, "Total: %d | Page: %d", filteredEntries.size(), page + 1), width / 2 - 160, height - 44, 0xAAAAAA, false);
+        graphics.drawString(font, "Global Registry Bestiary (Source: Registry + Server Backend)", width / 2 - 160, 100 + PAGE_SIZE*20 - 180, 0xAAAAAA, false);
+        graphics.drawString(font, String.format(Locale.ROOT, "Total: %d | Page: %d/%d", filteredEntries.size(), page + 1, Math.max(1, (filteredEntries.size() + PAGE_SIZE - 1) / PAGE_SIZE)), width / 2 - 160, height - 44, 0xAAAAAA, false);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 

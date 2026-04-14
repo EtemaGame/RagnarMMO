@@ -391,8 +391,8 @@ public final class ClientPacketHandler {
         ManualMobUiState.setCatalog(entries);
     }
 
-    public static void handleManualMobDetail(InternalManualMobEntry entry) {
-        ManualMobUiState.setDetail(entry);
+    public static void handleManualMobDetail(com.etema.ragnarmmo.common.api.mobs.runtime.manual.ManualMobDetail detail) {
+        ManualMobUiState.setDetail(detail);
     }
 
 }

@@ -23,14 +23,15 @@ This repository is no longer documented as a "wishlist". This README reflects th
   - `BIOME_DISTANCE`
   - `PLAYER_LEVEL`
   - `MANUAL`
-- New manual mob datapack path with runtime application of real combat stats
+- In-game Manual Mob Catalog (Bestiary) for discovery
+- In-game Manual Mob Editor with server-authoritative networking
+- Data-driven manual mob definitions with runtime stat application
 
 ### Implemented but still not "finished content"
 
 - Second jobs are present in code and playable, but they should still be treated as an expanding content/balance area, not as "fully content-complete MMO parity"
 - Merchant-side vending/shop gameplay is still partial
-- The manual mob path is production-ready when authored with `direct_stats`, but full broad derivation from `ro_stats` to every final combat stat is still not complete
-- Legacy compatibility layers still exist around some older mob/storage systems, even though the old `MANUAL_SPECIES` difficulty path was removed from the active system
+- Broad derivation from `ro_stats` to every final combat stat for manual mobs is still being refined (use `direct_stats` for production)
 
 ### Not implemented yet
 
@@ -121,30 +122,29 @@ Key code areas:
 - `MobLevelManager.java`
 - `MobSpawnHandler.java`
 
-### 5. Manual mobs by datapack
+### 5. Manual mobs: Catalog and Editor
 
-The manual path is the new authoritative authored mob path.
+The manual path is the authoritative way to author custom content. The mod now provides built-in tools to manage these at runtime.
 
-Runtime flow:
+**Key Tools:**
 
-1. Datapack resources are loaded from `mob_templates` and `mob_definitions`
-2. Definitions are resolved into a `ComputedMobProfile`
-3. Runtime integration attaches that profile to the entity
-4. Runtime attributes and combat reads consume that resolved profile
-5. Manual mobs bypass automatic difficulty selection
+- **Manual Mob Catalog**: An in-game bestiary showing all registered manual mobs.
+- **Manual Mob Editor**: A dedicated UI to modify mob stats, ranks, and metadata.
+- **Server Authority**: All edits are validated and persisted on the server, ensuring synchronization across all players.
 
-Current authoring rule:
+**Runtime Flow:**
 
-- if you want a manual mob to be production-ready today, author `direct_stats`
-- `ro_stats` are useful and partially consumed, but broad full derivation is still not complete for every final field
+1. Datapack resources or internal JSONs are loaded into the `ManualMobRegistryService`.
+2. The UI requests details via a `ManualMobDetailRequestPacket`.
+3. Edits are sent back via `ManualMobSaveEntryPacket` and applied instantly.
+4. Entities resolve their `ComputedMobProfile` from the updated registry.
 
 Key code areas:
 
-- `MobDefinitionDataLoader.java`
+- `ManualMobCatalogScreen.java` / `ManualMobEditorScreen.java`
+- `ManualMobRegistryService.java`
+- `ManualMobPacketsCodec.java`
 - `ManualMobProfileResolver.java`
-- `ManualMobProfileRuntimeIntegrator.java`
-- `ComputedMobProfileAttributeApplier.java`
-- `MeleeAttackGoalMixin.java`
 
 ### 6. Life Skills
 
@@ -197,13 +197,13 @@ Relevant content roots:
 
 ### For server owners
 
-1. Configure automatic mob difficulty in `ragnarmmo-mobstats.toml`
-2. Pick one automatic mode:
-   - `DISTANCE`
-   - `BIOME_DISTANCE`
-   - `PLAYER_LEVEL`
-3. Use datapacks for manual authored mobs
-4. Do not rely on old species TOML manual behavior anymore
+1. Configure automatic mob difficulty in `ragnarmmo-mobstats.toml`.
+2. Enable discovery and editing tools if desired:
+   - `manual_mob_discovery_enabled`
+   - `manual_mob_editor_enabled`
+3. Use `/ragnar mobmanualui` to open the management interface.
+4. Use `/mobmanual` (alias for `/ragnar mobmanual`) for CLI-based management (list, inspect, edit).
+5. Deploy datapacks for fixed templates or use the internal backend for quick adjustments.
 
 ## How to extend the project later
 

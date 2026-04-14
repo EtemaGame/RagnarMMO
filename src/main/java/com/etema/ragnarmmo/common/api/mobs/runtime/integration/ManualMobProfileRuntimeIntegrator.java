@@ -1,10 +1,8 @@
 package com.etema.ragnarmmo.common.api.mobs.runtime.integration;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.common.config.RagnarConfigs;
-import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
-import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobBackendResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
+import com.etema.ragnarmmo.system.mobstats.service.MobRuntimeInitializationService;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -13,10 +11,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * Narrow runtime seam that associates the new manual mob profile with covered entities.
- *
- * <p>This hook only attaches an already-resolved {@code ComputedMobProfile} for the strict manual path.
- * It does not replace the legacy runtime pipeline, apply attributes, or perform sync.</p>
+ * Runtime seam for the strict manual path.
  */
 @Mod.EventBusSubscriber(modid = RagnarMMO.MODID)
 public final class ManualMobProfileRuntimeIntegrator {
@@ -34,14 +29,6 @@ public final class ManualMobProfileRuntimeIntegrator {
         }
 
         ManualMobProfileRuntimeStore.clear(entity);
-        if (MobStatsConfigAccess.getLevelScalingMode() != RagnarConfigs.LevelScalingMode.MANUAL) {
-            return;
-        }
-
-        var resolution = ManualMobBackendResolver.resolve(entity);
-        if (resolution.profile() != null) {
-            ManualMobProfileRuntimeStore.attach(entity, resolution.profile());
-            ComputedMobProfileAttributeApplier.apply(entity, resolution.profile());
-        }
+        MobRuntimeInitializationService.tryInitialize(entity);
     }
 }

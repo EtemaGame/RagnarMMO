@@ -14,6 +14,7 @@ import com.etema.ragnarmmo.system.mobstats.world.MobSpawnOverrides;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
 import com.etema.ragnarmmo.system.mobstats.level.MobLevelManager;
+import com.etema.ragnarmmo.system.mobstats.service.LegacyMobClassFallbackResolver;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.system.mobstats.network.SyncMobStatsPacket;
 import com.etema.ragnarmmo.system.mobstats.world.BossSpawnSource;
@@ -33,13 +34,6 @@ import java.util.Map;
 import java.util.Random;
 import com.etema.ragnarmmo.system.mobstats.ai.MobUseSkillGoal;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.monster.Skeleton;
-import net.minecraft.world.entity.monster.Spider;
-import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.Blaze;
-import net.minecraft.world.entity.monster.Witch;
-import net.minecraft.world.entity.monster.EnderMan;
 
 /**
  * Legacy spawn-time stats and {@link MobTier} assignment handler.
@@ -86,7 +80,7 @@ public class MobSpawnHandler {
                 
                 // Add AI augmentation if it's a mob
                 if (living instanceof Mob mob) {
-                    com.etema.ragnarmmo.system.mobstats.service.MobAiAugmentationService.addMobClassAI(mob, assignInternalClass(mob));
+                    com.etema.ragnarmmo.system.mobstats.service.MobAiAugmentationService.addMobClassAI(mob, LegacyMobClassFallbackResolver.resolve(mob));
                 }
             });
             return; // COMPLETELY BYPASS LEGACY PIPELINE
@@ -209,7 +203,7 @@ public class MobSpawnHandler {
         int level = levelResolution.level();
         stats.setLevel(level);
 
-        MobClass internalClass = assignInternalClass(mob);
+        MobClass internalClass = LegacyMobClassFallbackResolver.resolve(mob);
         stats.setMobClass(internalClass);
 
         int base = MobStatsConfigAccess.getBasePoints(tier);
@@ -242,24 +236,6 @@ public class MobSpawnHandler {
         stats.setDamageMultiplier(dm);
         stats.setDefenseMultiplier(df);
         stats.setSpeedMultiplier(sp);
-    }
-
-    private MobClass assignInternalClass(LivingEntity mob) {
-        if (mob instanceof Zombie) return MobClass.SWORDMAN;
-        if (mob instanceof Skeleton) return MobClass.ARCHER;
-        if (mob instanceof Spider) return MobClass.THIEF;
-        if (mob instanceof Creeper) return MobClass.THIEF;
-        if (mob instanceof Blaze || mob instanceof Witch) return MobClass.MAGE;
-        if (mob instanceof EnderMan) return MobClass.THIEF;
-        
-        // Default based on attributes
-        AttributeInstance atk = mob.getAttribute(Attributes.ATTACK_DAMAGE);
-        AttributeInstance spd = mob.getAttribute(Attributes.MOVEMENT_SPEED);
-        
-        if (atk != null && atk.getBaseValue() > 3) return MobClass.SWORDMAN;
-        if (spd != null && spd.getBaseValue() > 0.3) return MobClass.THIEF;
-        
-        return MobClass.NOVICE;
     }
 
     private void distributeWithCalculatedWeights(MobStats stats, int totalPoints, Map<StatKeys, Integer> weights) {

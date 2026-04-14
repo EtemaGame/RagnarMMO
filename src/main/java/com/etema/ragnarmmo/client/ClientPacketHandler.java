@@ -21,6 +21,9 @@ import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket;
 import com.etema.ragnarmmo.system.stats.party.PartyClientData;
 import com.etema.ragnarmmo.system.stats.party.net.PartyMemberData;
 import com.etema.ragnarmmo.client.render.RagnarPopoffHandler;
+import com.etema.ragnarmmo.client.ui.ManualMobUiState;
+import com.etema.ragnarmmo.common.api.mobs.runtime.manual.InternalManualMobEntry;
+import com.etema.ragnarmmo.common.api.mobs.runtime.manual.ManualMobCatalogEntry;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
@@ -382,4 +385,14 @@ public final class ClientPacketHandler {
 
         RagnarPopoffHandler.addPopoff(targetId, text, color);
     }
+
+
+    public static void handleManualMobCatalog(java.util.List<ManualMobCatalogEntry> entries) {
+        ManualMobUiState.setCatalog(entries);
+    }
+
+    public static void handleManualMobDetail(InternalManualMobEntry entry) {
+        ManualMobUiState.setDetail(entry);
+    }
+
 }

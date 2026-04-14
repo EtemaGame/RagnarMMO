@@ -3,6 +3,7 @@ package com.etema.ragnarmmo.client;
 import com.etema.ragnarmmo.client.ui.HudOverlayConfigScreen;
 import com.etema.ragnarmmo.client.ui.ManualMobCatalogScreen;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
+import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.client.Minecraft;
@@ -38,6 +39,10 @@ public class ClientCommands {
     }
 
     private static int openManualMobUi() {
+        if (!MobStatsConfigAccess.isManualMobDiscoveryEnabled()) {
+            Minecraft.getInstance().player.sendSystemMessage(Component.literal("Manual mob discovery is disabled by config."));
+            return 0;
+        }
         Minecraft.getInstance().tell(() -> Minecraft.getInstance().setScreen(new ManualMobCatalogScreen(null)));
         return 1;
     }

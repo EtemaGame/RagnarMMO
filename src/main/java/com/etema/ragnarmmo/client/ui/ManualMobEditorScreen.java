@@ -1,5 +1,13 @@
 package com.etema.ragnarmmo.client.ui;
 
+import com.etema.ragnarmmo.common.api.mobs.MobRank;
+import com.etema.ragnarmmo.common.api.mobs.runtime.manual.InternalManualMobEntry;
+import com.etema.ragnarmmo.common.api.mobs.runtime.manual.InternalManualMobEntryValidator;
+import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
+import com.etema.ragnarmmo.common.net.Network;
+import com.etema.ragnarmmo.system.mobstats.network.ManualMobDeleteEntryPacket;
+import com.etema.ragnarmmo.system.mobstats.network.ManualMobDetailRequestPacket;
+import com.etema.ragnarmmo.system.mobstats.network.ManualMobSaveEntryPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -9,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class ManualMobEditorScreen extends Screen {
 
@@ -31,6 +40,7 @@ public class ManualMobEditorScreen extends Screen {
     private EditBox aspd;
     private EditBox moveSpeed;
     private EditBox notes;
+    private String validationError = "";
 
     public ManualMobEditorScreen(Screen parent, ResourceLocation entityTypeId) {
         super(Component.literal("Manual Mob Editor"));
@@ -64,10 +74,46 @@ public class ManualMobEditorScreen extends Screen {
         moveSpeed = addField(left, y + 154, w, h, "move_speed", "0.23");
         notes = addField(left + 180, y + 154, w, h, "notes", "");
 
-        addRenderableWidget(Button.builder(Component.literal("Save (send commands)"), b -> saveAll())
-                .bounds(left, this.height - 30, 170, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Save"), b -> saveAll())
+                .bounds(left, this.height - 30, 110, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Delete"), b -> deleteEntry())
+                .bounds(left + 116, this.height - 30, 80, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Back"), b -> onClose())
-                .bounds(left + 180, this.height - 30, 80, 20).build());
+                .bounds(left + 202, this.height - 30, 80, 20).build());
+
+        Network.sendToServer(new ManualMobDetailRequestPacket(entityTypeId));
+        loadFromDetail();
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        loadFromDetail();
+    }
+
+    private void loadFromDetail() {
+        InternalManualMobEntry detail = ManualMobUiState.getDetail();
+        if (detail == null || !detail.entityTypeId().equals(entityTypeId)) {
+            return;
+        }
+        if (!level.getValue().equals(Integer.toString(detail.level()))) {
+            level.setValue(Integer.toString(detail.level()));
+            rank.setValue(detail.rank().name().toLowerCase(Locale.ROOT));
+            race.setValue(detail.race());
+            element.setValue(detail.element());
+            size.setValue(detail.size());
+            maxHp.setValue(Integer.toString(detail.maxHp()));
+            atkMin.setValue(Integer.toString(detail.atkMin()));
+            atkMax.setValue(Integer.toString(detail.atkMax()));
+            def.setValue(Integer.toString(detail.def()));
+            mdef.setValue(Integer.toString(detail.mdef()));
+            hit.setValue(Integer.toString(detail.hit()));
+            flee.setValue(Integer.toString(detail.flee()));
+            crit.setValue(Integer.toString(detail.crit()));
+            aspd.setValue(Integer.toString(detail.aspd()));
+            moveSpeed.setValue(Double.toString(detail.moveSpeed()));
+            notes.setValue(detail.notes());
+        }
     }
 
     private EditBox addField(int x, int y, int width, int height, String hint, String defaultValue) {
@@ -79,29 +125,46 @@ public class ManualMobEditorScreen extends Screen {
     }
 
     private void saveAll() {
-        ManualMobClientCommandBridge.sendCommand("mobmanual create " + entityTypeId);
-        sendEdit("level", level.getValue());
-        sendEdit("rank", rank.getValue());
-        sendEdit("race", race.getValue());
-        sendEdit("element", element.getValue());
-        sendEdit("size", size.getValue());
-        sendEdit("max_hp", maxHp.getValue());
-        sendEdit("atk_min", atkMin.getValue());
-        sendEdit("atk_max", atkMax.getValue());
-        sendEdit("def", def.getValue());
-        sendEdit("mdef", mdef.getValue());
-        sendEdit("hit", hit.getValue());
-        sendEdit("flee", flee.getValue());
-        sendEdit("crit", crit.getValue());
-        sendEdit("aspd", aspd.getValue());
-        sendEdit("move_speed", moveSpeed.getValue());
-        sendEdit("notes", notes.getValue());
-        ManualMobClientCommandBridge.sendCommand("mobmanual enable " + entityTypeId);
+        if (!MobStatsConfigAccess.isManualMobEditorEnabled()) {
+            validationError = "Manual editor disabled by config.";
+            return;
+        }
+        try {
+            InternalManualMobEntry entry = new InternalManualMobEntry(
+                    entityTypeId,
+                    true,
+                    Integer.parseInt(level.getValue()),
+                    MobRank.valueOf(rank.getValue().trim().toUpperCase(Locale.ROOT)),
+                    race.getValue(),
+                    element.getValue(),
+                    size.getValue(),
+                    Integer.parseInt(maxHp.getValue()),
+                    Integer.parseInt(atkMin.getValue()),
+                    Integer.parseInt(atkMax.getValue()),
+                    Integer.parseInt(def.getValue()),
+                    Integer.parseInt(mdef.getValue()),
+                    Integer.parseInt(hit.getValue()),
+                    Integer.parseInt(flee.getValue()),
+                    Integer.parseInt(crit.getValue()),
+                    Integer.parseInt(aspd.getValue()),
+                    Double.parseDouble(moveSpeed.getValue()),
+                    notes.getValue(),
+                    "ui",
+                    System.currentTimeMillis());
+            InternalManualMobEntryValidator.validateOrThrow(entry);
+            validationError = "";
+            Network.sendToServer(new ManualMobSaveEntryPacket(entry));
+        } catch (Exception ex) {
+            validationError = ex.getMessage() == null ? "Invalid input" : ex.getMessage();
+        }
     }
 
-    private void sendEdit(String field, String value) {
-        String sanitized = value == null ? "" : value.replace("\"", "");
-        ManualMobClientCommandBridge.sendCommand("mobmanual edit " + entityTypeId + " " + field + " " + sanitized);
+    private void deleteEntry() {
+        if (!MobStatsConfigAccess.isManualMobEditorEnabled()) {
+            validationError = "Manual editor disabled by config.";
+            return;
+        }
+        Network.sendToServer(new ManualMobDeleteEntryPacket(entityTypeId));
     }
 
     @Override
@@ -109,7 +172,9 @@ public class ManualMobEditorScreen extends Screen {
         this.renderBackground(graphics);
         graphics.drawCenteredString(this.font, this.title, this.width / 2, 8, 0xFFFFFF);
         graphics.drawString(this.font, "Entity: " + entityTypeId, this.width / 2 - 170, 14, 0xD0D0D0, false);
-        graphics.drawString(this.font, "Tip: this GUI sends /mobmanual commands to the server.", this.width / 2 - 170, this.height - 44, 0xAAAAAA, false);
+        if (!validationError.isBlank()) {
+            graphics.drawString(this.font, validationError, this.width / 2 - 170, this.height - 44, 0xFF6666, false);
+        }
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 

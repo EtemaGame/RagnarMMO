@@ -4,6 +4,7 @@ import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import com.etema.ragnarmmo.common.api.mobs.runtime.manual.InternalManualMobEntry;
 import com.etema.ragnarmmo.common.api.mobs.runtime.manual.ManualMobRegistryService;
 import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobBackendResolver;
+import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -23,7 +24,7 @@ public final class MobManualCommand {
 
     public static LiteralArgumentBuilder<CommandSourceStack> createNode() {
         return Commands.literal("mobmanual")
-                .requires(stack -> stack.hasPermission(2))
+                .requires(stack -> stack.hasPermission(2) && (MobStatsConfigAccess.isManualMobEditorEnabled() || MobStatsConfigAccess.isManualMobDiscoveryEnabled()))
                 .then(Commands.literal("list")
                         .executes(ctx -> listEntries(ctx.getSource())))
                 .then(Commands.literal("create")
@@ -78,7 +79,26 @@ public final class MobManualCommand {
                                         StringArgumentType.getString(ctx, "entity_type")))));
     }
 
+    private static boolean ensureDiscoveryEnabled(CommandSourceStack source) {
+        if (!MobStatsConfigAccess.isManualMobDiscoveryEnabled()) {
+            source.sendFailure(Component.literal("Manual mob discovery is disabled by config."));
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean ensureEditorEnabled(CommandSourceStack source) {
+        if (!MobStatsConfigAccess.isManualMobEditorEnabled()) {
+            source.sendFailure(Component.literal("Manual mob editor is disabled by config."));
+            return false;
+        }
+        return true;
+    }
+
     private static int listEntries(CommandSourceStack source) {
+        if (!ensureDiscoveryEnabled(source)) {
+            return 0;
+        }
         MinecraftServer server = source.getServer();
         var entries = ManualMobRegistryService.list(server).stream()
                 .sorted(Comparator.comparing(e -> e.entityTypeId().toString()))
@@ -97,6 +117,9 @@ public final class MobManualCommand {
     }
 
     private static int createStub(CommandSourceStack source, String idText) {
+        if (!ensureEditorEnabled(source)) {
+            return 0;
+        }
         ResourceLocation id = parseId(idText, source);
         if (id == null) {
             return 0;
@@ -110,6 +133,9 @@ public final class MobManualCommand {
     }
 
     private static int remove(CommandSourceStack source, String idText) {
+        if (!ensureEditorEnabled(source)) {
+            return 0;
+        }
         ResourceLocation id = parseId(idText, source);
         if (id == null) {
             return 0;
@@ -120,6 +146,9 @@ public final class MobManualCommand {
     }
 
     private static int setLevel(CommandSourceStack source, String idText, int level) {
+        if (!ensureEditorEnabled(source)) {
+            return 0;
+        }
         ResourceLocation id = parseId(idText, source);
         if (id == null) {
             return 0;
@@ -132,6 +161,9 @@ public final class MobManualCommand {
     }
 
     private static int setRank(CommandSourceStack source, String idText, String rankText) {
+        if (!ensureEditorEnabled(source)) {
+            return 0;
+        }
         ResourceLocation id = parseId(idText, source);
         if (id == null) {
             return 0;
@@ -152,6 +184,9 @@ public final class MobManualCommand {
     }
 
     private static int setEnabled(CommandSourceStack source, String idText, boolean enabled) {
+        if (!ensureEditorEnabled(source)) {
+            return 0;
+        }
         ResourceLocation id = parseId(idText, source);
         if (id == null) {
             return 0;
@@ -164,6 +199,9 @@ public final class MobManualCommand {
     }
 
     private static int editField(CommandSourceStack source, String idText, String field, String value) {
+        if (!ensureEditorEnabled(source)) {
+            return 0;
+        }
         ResourceLocation id = parseId(idText, source);
         if (id == null) {
             return 0;
@@ -182,6 +220,9 @@ public final class MobManualCommand {
     }
 
     private static int inspect(CommandSourceStack source, String idText) {
+        if (!ensureDiscoveryEnabled(source)) {
+            return 0;
+        }
         ResourceLocation id = parseId(idText, source);
         if (id == null) {
             return 0;

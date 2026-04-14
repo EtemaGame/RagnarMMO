@@ -277,7 +277,6 @@ public final class RagnarConfigs {
             public final ForgeConfigSpec.DoubleValue defenseMultBoss;
             public final ForgeConfigSpec.DoubleValue defenseMultMvp;
 
-            public final ForgeConfigSpec.BooleanValue autoClassifyBiomes;
             public final ForgeConfigSpec.BooleanValue renderNumericHealth;
             public final ForgeConfigSpec.EnumValue<LevelScalingMode> levelScalingMode;
             public final ForgeConfigSpec.EnumValue<ManualMobBackend> manualMobBackend;
@@ -365,31 +364,24 @@ public final class RagnarConfigs {
                 builder.pop();
 
                 builder.push("world_scaling");
-                autoClassifyBiomes = builder.define("auto_classify_biomes", true);
                 renderNumericHealth = builder.define("render_numeric_health", true);
-                levelScalingMode = builder.defineEnum("level_scaling_mode", LevelScalingMode.BIOME_DISTANCE);
+                levelScalingMode = builder.defineEnum("level_scaling_mode", LevelScalingMode.DISTANCE);
                 manualMobBackend = builder.defineEnum("manual_mob_backend", ManualMobBackend.DATAPACK);
                 manualUncoveredBehavior = builder.defineEnum("manual_uncovered_behavior", ManualUncoveredBehavior.VANILLA);
-                manualFallbackAutomaticMode = builder.defineEnum("manual_fallback_automatic_mode", AutomaticFallbackMode.BIOME_DISTANCE);
+                manualFallbackAutomaticMode = builder.defineEnum("manual_fallback_automatic_mode", AutomaticFallbackMode.DISTANCE);
                 enableManualMobEditor = builder.define("enable_manual_mob_editor", false);
                 enableManualMobDiscovery = builder.define("enable_manual_mob_discovery", true);
                 playerLevelRadius = builder.defineInRange("player_level_radius", 64, 8, 256);
                 playerLevelVariance = builder.defineInRange("player_level_variance", 2, 0, 100);
 
-                overworld = new DimensionConfig(builder, "overworld", 1000, 1.35, 1, 160,
-                        () -> List.of("minecraft:plains=easy", "minecraft:forest=easy", "minecraft:deep_dark=very_hard"),
-                        () -> List.of("0-999=1-5", "1000-2499=5-10", "2500+=10-15"),
-                        () -> List.of("minecraft:plains|0-999=1-5", "minecraft:deep_dark|0+=30-45"));
+                overworld = new DimensionConfig(builder, "overworld", 1, 160,
+                        () -> List.of("0-999=1-5", "1000-2499=5-10", "2500+=10-15"));
 
-                nether = new DimensionConfig(builder, "nether", 500, 1.25, 30, 320,
-                        () -> List.of("minecraft:nether_wastes=medium", "minecraft:basalt_deltas=very_hard"),
-                        () -> List.of("0-999=30-38", "1000+=38-48"),
-                        () -> List.of("minecraft:nether_wastes|0-999=30-36"));
+                nether = new DimensionConfig(builder, "nether", 30, 320,
+                        () -> List.of("0-999=30-38", "1000+=38-48"));
 
-                end = new DimensionConfig(builder, "end", 1000, 1.22, 60, 420,
-                        () -> List.of("minecraft:the_end=medium", "minecraft:end_highlands=hard"),
-                        () -> List.of("0-999=60-70", "1000+=70-82"),
-                        () -> List.of("minecraft:the_end|0-999=60-68"));
+                end = new DimensionConfig(builder, "end", 60, 420,
+                        () -> List.of("0-999=60-70", "1000+=70-82"));
 
                 builder.push("minimums");
                 dimensionMinLevels = builder.defineList("dimension_min_levels", List.of(), o -> o instanceof String);
@@ -527,7 +519,7 @@ public final class RagnarConfigs {
     }
 
     public enum LevelScalingMode {
-        PLAYER_LEVEL, DISTANCE, BIOME_DISTANCE, MANUAL
+        PLAYER_LEVEL, DISTANCE, MANUAL
     }
 
     public enum ManualMobBackend {
@@ -539,39 +531,20 @@ public final class RagnarConfigs {
     }
 
     public enum AutomaticFallbackMode {
-        PLAYER_LEVEL, DISTANCE, BIOME_DISTANCE
+        PLAYER_LEVEL, DISTANCE
     }
 
     public static class DimensionConfig {
-        public final ForgeConfigSpec.IntValue ringSize;
-        public final ForgeConfigSpec.DoubleValue distanceMultiplier;
-        public final ForgeConfigSpec.IntValue ringsCap;
         public final ForgeConfigSpec.IntValue minFloor;
         public final ForgeConfigSpec.IntValue maxCap;
-        public final ForgeConfigSpec.ConfigValue<List<? extends String>> tiers;
-        public final ForgeConfigSpec.ConfigValue<List<? extends String>> biomeToTier;
         public final ForgeConfigSpec.ConfigValue<List<? extends String>> distanceBands;
-        public final ForgeConfigSpec.ConfigValue<List<? extends String>> biomeDistanceBands;
-        public final ForgeConfigSpec.ConfigValue<List<? extends String>> depthRules;
-        public final ForgeConfigSpec.ConfigValue<List<? extends String>> structureProximity;
 
-        public DimensionConfig(ForgeConfigSpec.Builder b, String dimName, int ringSize, double distMult,
-                               int minFloor, int maxCap,
-                               java.util.function.Supplier<List<String>> defaultBiomes,
-                               java.util.function.Supplier<List<String>> defaultDistanceBands,
-                               java.util.function.Supplier<List<String>> defaultBiomeDistanceBands) {
+        public DimensionConfig(ForgeConfigSpec.Builder b, String dimName, int minFloor, int maxCap,
+                               java.util.function.Supplier<List<String>> defaultDistanceBands) {
             b.push(dimName);
-            this.ringSize = b.defineInRange("ring_size", ringSize, 100, 100000);
-            this.distanceMultiplier = b.defineInRange("distance_multiplier", distMult, 1.0, 10.0);
-            this.ringsCap = b.defineInRange("rings_cap", 50, 1, 1000);
             this.minFloor = b.defineInRange("min_floor", minFloor, 1, 100000);
             this.maxCap = b.defineInRange("max_cap", maxCap, 1, 100000);
-            this.tiers = b.defineList("tiers", List.of("very_easy=1-4", "easy=1-5", "medium=3-8", "hard=6-12", "very_hard=10-18"), o -> o instanceof String);
-            this.biomeToTier = b.defineList("biome_to_tier", defaultBiomes.get(), o -> o instanceof String);
             this.distanceBands = b.defineList("distance_bands", defaultDistanceBands.get(), o -> o instanceof String);
-            this.biomeDistanceBands = b.defineList("biome_distance_bands", defaultBiomeDistanceBands.get(), o -> o instanceof String);
-            this.depthRules = b.defineList("depth_rules", List.of("sky_visible=1.0", "no_sky_visible=1.15", "y<0=1.25", "y<-32=1.35"), o -> o instanceof String);
-            this.structureProximity = b.defineList("structure_proximity", List.of(), o -> o instanceof String);
             b.pop();
         }
     }

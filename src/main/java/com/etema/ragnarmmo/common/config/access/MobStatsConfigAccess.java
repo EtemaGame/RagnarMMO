@@ -196,42 +196,20 @@ public final class MobStatsConfigAccess {
     }
 
     public static class ParsedDimensionRules {
-        public final int ringSize;
-        public final double distanceMultiplier;
-        public final int ringsCap;
         public final int minFloor;
         public final int maxCap;
-        public final Map<String, IntRange> tiers = new HashMap<>();
-        public final Map<ResourceLocation, String> biomeToTier = new HashMap<>();
         public final List<DistanceBand> distanceBands = new ArrayList<>();
-        public final List<BiomeDistanceBand> biomeDistanceBands = new ArrayList<>();
 
         public ParsedDimensionRules(RagnarConfigs.DimensionConfig config) {
-            this.ringSize = config.ringSize.get();
-            this.distanceMultiplier = config.distanceMultiplier.get();
-            this.ringsCap = config.ringsCap.get();
             this.minFloor = config.minFloor.get();
             this.maxCap = config.maxCap.get();
 
-            for (String s : config.tiers.get()) {
-                String[] p = s.split("=");
-                if (p.length == 2) tiers.put(p[0].trim(), IntRange.parse(p[1].trim()));
-            }
-            for (String s : config.biomeToTier.get()) {
-                String[] p = s.split("=");
-                if (p.length == 2) biomeToTier.put(new ResourceLocation(p[0].trim()), p[1].trim());
-            }
             for (String s : config.distanceBands.get()) {
                 DistanceBand b = DistanceBand.parse(s);
                 if (b != null) distanceBands.add(b);
             }
-            for (String s : config.biomeDistanceBands.get()) {
-                BiomeDistanceBand b = BiomeDistanceBand.parse(s);
-                if (b != null) biomeDistanceBands.add(b);
-            }
             
             distanceBands.sort(Comparator.comparingInt(b -> b.minDistance));
-            biomeDistanceBands.sort(Comparator.comparingInt(b -> b.minDistance));
         }
     }
 
@@ -270,22 +248,4 @@ public final class MobStatsConfigAccess {
         }
     }
 
-    public static class BiomeDistanceBand extends DistanceBand {
-        public final ResourceLocation biome;
-        public BiomeDistanceBand(ResourceLocation biome, int min, int max, IntRange levels) {
-            super(min, max, levels);
-            this.biome = biome;
-        }
-
-        public static BiomeDistanceBand parse(String s) {
-            try {
-                String[] p = s.split("\\|");
-                if (p.length != 2) return null;
-                ResourceLocation biome = new ResourceLocation(p[0].trim());
-                DistanceBand base = DistanceBand.parse(p[1]);
-                if (base == null) return null;
-                return new BiomeDistanceBand(biome, base.minDistance, base.maxDistance, base.levelRange);
-            } catch (Exception e) { return null; }
-        }
-    }
 }

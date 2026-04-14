@@ -7,7 +7,6 @@ package com.etema.ragnarmmo.common.api.mobs;
  */
 public enum MobScalingMode {
     DISTANCE,
-    BIOME_DISTANCE,
     PLAYER_LEVEL,
     MANUAL
 }

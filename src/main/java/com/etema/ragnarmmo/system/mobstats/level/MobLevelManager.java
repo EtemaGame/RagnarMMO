@@ -5,11 +5,8 @@ import com.etema.ragnarmmo.common.api.mobs.MobScalingMode;
 import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualCoverageResult;
 import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobBackendResolver;
-import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
-import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
-import com.etema.ragnarmmo.system.mobstats.util.ConfigUtils;
 import com.etema.ragnarmmo.system.mobstats.util.StructureUtils;
 import com.etema.ragnarmmo.system.mobstats.world.MobSpawnOverrides;
 
@@ -31,7 +28,7 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Hostile-mob level resolver for the four effective difficulty methods.
+ * Hostile-mob level resolver for the three effective difficulty methods.
  * Centralized via MobStatsConfigAccess for high-performance snapshot-based scaling.
  */
 public class MobLevelManager {
@@ -40,9 +37,6 @@ public class MobLevelManager {
     private static final AtomicBoolean PLAYER_LEVEL_FLOOR_FALLBACK_WARNING_LOGGED = new AtomicBoolean(false);
     private static final AtomicBoolean DISTANCE_NEAREST_BAND_FALLBACK_WARNING_LOGGED = new AtomicBoolean(false);
     private static final AtomicBoolean DISTANCE_FLOOR_FALLBACK_WARNING_LOGGED = new AtomicBoolean(false);
-    private static final AtomicBoolean BIOME_DISTANCE_GENERIC_BAND_FALLBACK_WARNING_LOGGED = new AtomicBoolean(false);
-    private static final AtomicBoolean BIOME_DISTANCE_NEAREST_GENERIC_BAND_FALLBACK_WARNING_LOGGED = new AtomicBoolean(false);
-    private static final AtomicBoolean BIOME_DISTANCE_FLOOR_FALLBACK_WARNING_LOGGED = new AtomicBoolean(false);
 
     private final Random rng;
 
@@ -75,7 +69,6 @@ public class MobLevelManager {
         DifficultyMethodResolution methodResolution = resolveConfiguredAutomaticMethod();
         int level = switch (methodResolution.method()) {
             case PLAYER_LEVEL -> computePlayerAnchoredLevel(mob, tier);
-            case BIOME_DISTANCE -> computeBiomeDistanceLevel(mob, tier);
             case DISTANCE -> computeDistanceBasedLevel(mob, tier);
             case MANUAL -> throw new IllegalStateException("MANUAL must bypass legacy level computation");
             default -> computeDimensionFloorLevel((ServerLevel) mob.level(), tier);
@@ -104,16 +97,9 @@ public class MobLevelManager {
             return resolveConfiguredAutomaticMethod(switch (MobStatsConfigAccess.getManualFallbackAutomaticMode()) {
                 case PLAYER_LEVEL -> RagnarConfigs.LevelScalingMode.PLAYER_LEVEL;
                 case DISTANCE -> RagnarConfigs.LevelScalingMode.DISTANCE;
-                case BIOME_DISTANCE -> RagnarConfigs.LevelScalingMode.BIOME_DISTANCE;
             });
         }
         return new DifficultyMethodResolution(MobScalingMode.MANUAL, DifficultyMethodSource.MANUAL_UNCOVERED);
-    }
-
-    public static boolean hasDatapackManualCoverage(LivingEntity mob) {
-        ResourceLocation mobId = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
-        return ManualMobProfileRuntimeStore.get(mob).isPresent()
-                || (mobId != null && ManualMobProfileResolver.hasStrictResolvableManualProfile(mobId));
     }
 
     public static ManualCoverageResult resolveManualCoverage(LivingEntity mob) {
@@ -132,18 +118,12 @@ public class MobLevelManager {
             case DISTANCE -> new DifficultyMethodResolution(
                     MobScalingMode.DISTANCE,
                     DifficultyMethodSource.LEGACY_CONFIG_AUTO);
-            case BIOME_DISTANCE -> new DifficultyMethodResolution(
-                    MobScalingMode.BIOME_DISTANCE,
-                    DifficultyMethodSource.LEGACY_CONFIG_AUTO);
             case MANUAL -> switch (MobStatsConfigAccess.getManualFallbackAutomaticMode()) {
                 case PLAYER_LEVEL -> new DifficultyMethodResolution(
                         MobScalingMode.PLAYER_LEVEL,
                         DifficultyMethodSource.LEGACY_CONFIG_AUTO);
                 case DISTANCE -> new DifficultyMethodResolution(
                         MobScalingMode.DISTANCE,
-                        DifficultyMethodSource.LEGACY_CONFIG_AUTO);
-                case BIOME_DISTANCE -> new DifficultyMethodResolution(
-                        MobScalingMode.BIOME_DISTANCE,
                         DifficultyMethodSource.LEGACY_CONFIG_AUTO);
             };
         };
@@ -226,48 +206,6 @@ public class MobLevelManager {
         }
 
         warnDistanceFloorFallbackOnce();
-        return computeDimensionFloorLevel(serverLevel, tier);
-    }
-
-    private int computeBiomeDistanceLevel(LivingEntity mob, MobTier tier) {
-        if (!(mob.level() instanceof ServerLevel serverLevel)) {
-            return 1;
-        }
-
-        MobStatsConfigAccess.ParsedDimensionRules dimRules = MobStatsConfigAccess.getDimensionRules(serverLevel.dimension());
-        double distance = getDistanceFromSpawn(serverLevel, mob.blockPosition());
-        ResourceLocation biomeId = serverLevel.getBiome(mob.blockPosition())
-                .unwrapKey()
-                .map(key -> key.location())
-                .orElse(new ResourceLocation("minecraft:plains"));
-
-        Optional<MobStatsConfigAccess.BiomeDistanceBand> biomeBand = dimRules.biomeDistanceBands.stream()
-                .filter(b -> b.biome.equals(biomeId) && distance >= b.minDistance && distance <= b.maxDistance)
-                .findFirst();
-
-        if (biomeBand.isPresent()) {
-            return pickLevelFromRange(dimRules, biomeBand.get().levelRange.min(), biomeBand.get().levelRange.max(), tier);
-        }
-
-        Optional<MobStatsConfigAccess.DistanceBand> distanceBand = dimRules.distanceBands.stream()
-                .filter(b -> distance >= b.minDistance && distance <= b.maxDistance)
-                .findFirst();
-
-        if (distanceBand.isPresent()) {
-            warnBiomeDistanceGenericBandFallbackOnce();
-            return pickLevelFromRange(dimRules, distanceBand.get().levelRange.min(), distanceBand.get().levelRange.max(), tier);
-        }
-
-        Optional<MobStatsConfigAccess.DistanceBand> nearestGenericBand = findClosestBand(dimRules.distanceBands, distance);
-        if (nearestGenericBand.isPresent()) {
-            warnBiomeDistanceNearestGenericBandFallbackOnce();
-            return pickLevelFromRange(dimRules,
-                    nearestGenericBand.get().levelRange.min(),
-                    nearestGenericBand.get().levelRange.max(),
-                    tier);
-        }
-
-        warnBiomeDistanceFloorFallbackOnce();
         return computeDimensionFloorLevel(serverLevel, tier);
     }
 
@@ -357,7 +295,7 @@ public class MobLevelManager {
         MobStatsConfigAccess.ParsedDimensionRules dimRules = MobStatsConfigAccess.getDimensionRules(level.dimension());
 
         lines.add("Active scaling mode: " + mode.name());
-        lines.add("Conceptual methods in the current build: DISTANCE, BIOME_DISTANCE, PLAYER_LEVEL, MANUAL.");
+        lines.add("Conceptual methods in the current build: DISTANCE, PLAYER_LEVEL, MANUAL.");
         
         lines.add(String.format(Locale.ROOT, "Current dimension floor/cap -> %d / %d", dimRules.minFloor, dimRules.maxCap));
         lines.add(String.format(Locale.ROOT, "Natural tier chance scale -> %.0f%%", MobStatsConfigAccess.getNaturalTierChanceScale() * 100.0D));
@@ -385,21 +323,4 @@ public class MobLevelManager {
         }
     }
 
-    private static void warnBiomeDistanceGenericBandFallbackOnce() {
-        if (BIOME_DISTANCE_GENERIC_BAND_FALLBACK_WARNING_LOGGED.compareAndSet(false, true)) {
-            LOGGER.warn("BIOME_DISTANCE fell back to generic bands.");
-        }
-    }
-
-    private static void warnBiomeDistanceNearestGenericBandFallbackOnce() {
-        if (BIOME_DISTANCE_NEAREST_GENERIC_BAND_FALLBACK_WARNING_LOGGED.compareAndSet(false, true)) {
-            LOGGER.warn("BIOME_DISTANCE fell back to nearest generic band.");
-        }
-    }
-
-    private static void warnBiomeDistanceFloorFallbackOnce() {
-        if (BIOME_DISTANCE_FLOOR_FALLBACK_WARNING_LOGGED.compareAndSet(false, true)) {
-            LOGGER.warn("BIOME_DISTANCE resolved to floor.");
-        }
-    }
 }

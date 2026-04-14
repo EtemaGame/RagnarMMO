@@ -3,6 +3,8 @@ package com.etema.ragnarmmo.common.api.mobs;
 import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobBackendResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
+import com.etema.ragnarmmo.common.config.RagnarConfigs;
+import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
@@ -29,6 +31,9 @@ public final class MobRuntimeAuthorityResolver {
         if (entity instanceof Player) {
             return MobRuntimeAuthority.LEGACY_ONLY;
         }
+        if (MobStatsConfigAccess.getLevelScalingMode() != RagnarConfigs.LevelScalingMode.MANUAL) {
+            return MobRuntimeAuthority.LEGACY_ONLY;
+        }
 
         // If the entity already has a manual profile attached, it is treated as STRICT_NEW_AUTHORITY
         // provided it remains healthy.
@@ -47,6 +52,9 @@ public final class MobRuntimeAuthorityResolver {
      * Authority classification based solely on the entity type registry.
      */
     public static MobRuntimeAuthority classify(ResourceLocation entityTypeId) {
+        if (MobStatsConfigAccess.getLevelScalingMode() != RagnarConfigs.LevelScalingMode.MANUAL) {
+            return MobRuntimeAuthority.LEGACY_ONLY;
+        }
         if (entityTypeId == null) {
             return MobRuntimeAuthority.LEGACY_ONLY;
         }

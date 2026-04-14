@@ -16,6 +16,8 @@ import java.util.Optional;
 public class ManualMobRegistrySavedData extends SavedData {
 
     private static final String DATA_NAME = "ragnarmmo_manual_mob_registry";
+    private static final int CURRENT_SCHEMA_VERSION = 1;
+
     private final Map<String, InternalManualMobEntry> entries = new LinkedHashMap<>();
 
     public static ManualMobRegistrySavedData get(MinecraftServer server) {
@@ -35,6 +37,7 @@ public class ManualMobRegistrySavedData extends SavedData {
     }
 
     public void upsert(InternalManualMobEntry entry) {
+        InternalManualMobEntryValidator.validateOrThrow(entry);
         entries.put(entry.entityTypeId().toString(), entry);
         setDirty();
     }
@@ -49,6 +52,7 @@ public class ManualMobRegistrySavedData extends SavedData {
 
     @Override
     public CompoundTag save(CompoundTag tag) {
+        tag.putInt("schemaVersion", CURRENT_SCHEMA_VERSION);
         ListTag list = new ListTag();
         for (InternalManualMobEntry entry : entries.values()) {
             list.add(entry.save());
@@ -59,13 +63,21 @@ public class ManualMobRegistrySavedData extends SavedData {
 
     public static ManualMobRegistrySavedData load(CompoundTag tag) {
         ManualMobRegistrySavedData data = new ManualMobRegistrySavedData();
+        int schemaVersion = tag.contains("schemaVersion", Tag.TAG_INT) ? tag.getInt("schemaVersion") : 0;
+        if (schemaVersion > CURRENT_SCHEMA_VERSION) {
+            RagnarMMO.LOGGER.warn("Manual mob registry schema {} is newer than runtime schema {}. Loading best-effort.",
+                    schemaVersion,
+                    CURRENT_SCHEMA_VERSION);
+        }
+
         ListTag list = tag.getList("entries", Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             try {
                 InternalManualMobEntry entry = InternalManualMobEntry.load(list.getCompound(i));
+                InternalManualMobEntryValidator.validateOrThrow(entry);
                 data.entries.put(entry.entityTypeId().toString(), entry);
             } catch (Exception ex) {
-                RagnarMMO.LOGGER.warn("Failed loading internal manual mob entry {}: {}", i, ex.getMessage());
+                RagnarMMO.LOGGER.warn("Skipping corrupt internal manual mob entry {}: {}", i, ex.getMessage());
             }
         }
         return data;

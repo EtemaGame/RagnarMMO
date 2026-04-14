@@ -33,6 +33,7 @@ public record InternalManualMobEntry(
     public InternalManualMobEntry {
         Objects.requireNonNull(entityTypeId, "entityTypeId");
         Objects.requireNonNull(rank, "rank");
+        InternalManualMobEntryValidator.validateOrThrow(entityTypeId, level, rank, atkMin, atkMax, def, mdef, hit, flee, crit, aspd, moveSpeed);
         race = sanitizeText(race, "demi_human");
         element = sanitizeText(element, "neutral");
         size = sanitizeText(size, "medium");

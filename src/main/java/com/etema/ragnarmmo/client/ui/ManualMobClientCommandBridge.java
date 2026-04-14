@@ -12,6 +12,7 @@ public final class ManualMobClientCommandBridge {
         if (mc.player == null || mc.player.connection == null) {
             return false;
         }
-        return mc.player.connection.sendCommand(commandWithoutSlash);
+        mc.player.connection.sendCommand(commandWithoutSlash);
+        return true;
     }
 }

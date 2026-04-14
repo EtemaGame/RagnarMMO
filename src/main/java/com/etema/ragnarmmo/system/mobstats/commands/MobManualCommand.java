@@ -26,18 +26,22 @@ public final class MobManualCommand {
         return Commands.literal("mobmanual")
                 .requires(stack -> stack.hasPermission(2) && (MobStatsConfigAccess.isManualMobEditorEnabled() || MobStatsConfigAccess.isManualMobDiscoveryEnabled()))
                 .then(Commands.literal("list")
+                        .requires(stack -> MobStatsConfigAccess.isManualMobDiscoveryEnabled())
                         .executes(ctx -> listEntries(ctx.getSource())))
                 .then(Commands.literal("create")
+                        .requires(stack -> MobStatsConfigAccess.isManualMobEditorEnabled())
                         .then(Commands.argument("entity_type", StringArgumentType.word())
                                 .executes(ctx -> createStub(
                                         ctx.getSource(),
                                         StringArgumentType.getString(ctx, "entity_type")))))
                 .then(Commands.literal("remove")
+                        .requires(stack -> MobStatsConfigAccess.isManualMobEditorEnabled())
                         .then(Commands.argument("entity_type", StringArgumentType.word())
                                 .executes(ctx -> remove(
                                         ctx.getSource(),
                                         StringArgumentType.getString(ctx, "entity_type")))))
                 .then(Commands.literal("setlevel")
+                        .requires(stack -> MobStatsConfigAccess.isManualMobEditorEnabled())
                         .then(Commands.argument("entity_type", StringArgumentType.word())
                                 .then(Commands.argument("level", IntegerArgumentType.integer(1))
                                         .executes(ctx -> setLevel(
@@ -45,6 +49,7 @@ public final class MobManualCommand {
                                                 StringArgumentType.getString(ctx, "entity_type"),
                                                 IntegerArgumentType.getInteger(ctx, "level"))))))
                 .then(Commands.literal("setrank")
+                        .requires(stack -> MobStatsConfigAccess.isManualMobEditorEnabled())
                         .then(Commands.argument("entity_type", StringArgumentType.word())
                                 .then(Commands.argument("rank", StringArgumentType.word())
                                         .executes(ctx -> setRank(
@@ -52,18 +57,21 @@ public final class MobManualCommand {
                                                 StringArgumentType.getString(ctx, "entity_type"),
                                                 StringArgumentType.getString(ctx, "rank"))))))
                 .then(Commands.literal("enable")
+                        .requires(stack -> MobStatsConfigAccess.isManualMobEditorEnabled())
                         .then(Commands.argument("entity_type", StringArgumentType.word())
                                 .executes(ctx -> setEnabled(
                                         ctx.getSource(),
                                         StringArgumentType.getString(ctx, "entity_type"),
                                         true))))
                 .then(Commands.literal("disable")
+                        .requires(stack -> MobStatsConfigAccess.isManualMobEditorEnabled())
                         .then(Commands.argument("entity_type", StringArgumentType.word())
                                 .executes(ctx -> setEnabled(
                                         ctx.getSource(),
                                         StringArgumentType.getString(ctx, "entity_type"),
                                         false))))
                 .then(Commands.literal("edit")
+                        .requires(stack -> MobStatsConfigAccess.isManualMobEditorEnabled())
                         .then(Commands.argument("entity_type", StringArgumentType.word())
                                 .then(Commands.argument("field", StringArgumentType.word())
                                         .then(Commands.argument("value", StringArgumentType.greedyString())
@@ -73,6 +81,7 @@ public final class MobManualCommand {
                                                         StringArgumentType.getString(ctx, "field"),
                                                         StringArgumentType.getString(ctx, "value")))))))
                 .then(Commands.literal("inspect")
+                        .requires(stack -> MobStatsConfigAccess.isManualMobDiscoveryEnabled())
                         .then(Commands.argument("entity_type", StringArgumentType.word())
                                 .executes(ctx -> inspect(
                                         ctx.getSource(),

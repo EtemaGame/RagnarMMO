@@ -51,6 +51,11 @@ public class ManualMobEditorScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        if (!MobStatsConfigAccess.isManualMobEditorEnabled()) {
+            validationError = "Manual editor disabled by config.";
+            onClose();
+            return;
+        }
         int left = this.width / 2 - 170;
         int y = 26;
         int w = 160;

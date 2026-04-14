@@ -2,12 +2,12 @@ package com.etema.ragnarmmo.system.mobstats.service;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority;
 import com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthorityResolver;
+import com.etema.ragnarmmo.common.api.mobs.runtime.integration.ComputedMobProfileAttributeApplier;
 import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobBackendResolver;
 import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
 import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
-import com.etema.ragnarmmo.system.mobstats.util.MobAttributeHelper;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.Objects;
@@ -40,9 +40,9 @@ public final class MobRuntimeInitializationService {
         if (resolution.profile() != null) {
             var profile = resolution.profile();
             ManualMobProfileRuntimeStore.attach(entity, profile);
-            
-            // Apply attributes directly from the profile
-            MobAttributeHelper.applyAttributes(entity, profile);
+
+            // Apply the full manual runtime surface from a single authority.
+            ComputedMobProfileAttributeApplier.apply(entity, profile);
             
             RagnarDebugLog.mobSpawns("Service: Initialized manual profile for {} [authority={}]", 
                     RagnarDebugLog.entityLabel(entity), authority);

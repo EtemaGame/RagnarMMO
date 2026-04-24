@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.common.api.mobs.query;
 
 /**
- * Optional final-combat-stats read block for server-side inspection during coexistence.
+ * Optional final-combat-stats read block for server-side inspection.
  *
  * <p>This is read-only integration data only. It is not a runtime authority and should be absent
  * rather than fabricated when a source path cannot normalize these values safely.</p>

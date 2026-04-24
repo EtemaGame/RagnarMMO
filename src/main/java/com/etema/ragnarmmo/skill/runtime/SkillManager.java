@@ -5,11 +5,9 @@ import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
 import com.etema.ragnarmmo.skill.api.ISkillDefinition;
 import com.etema.ragnarmmo.skill.api.SkillCategory;
-import com.etema.ragnarmmo.skill.api.SkillType;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.data.progression.SkillState;
 import com.etema.ragnarmmo.skill.api.XPGainReason;
-import com.etema.ragnarmmo.skill.data.progression.SkillProgress;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -30,14 +28,13 @@ import net.minecraftforge.items.ItemStackHandler;
  * Updated SkillManager that uses ResourceLocation-based skill storage.
  * Manages all skills for a player with proper separation by category.
  *
- * Migrated from EnumMap&lt;SkillType, SkillProgress&gt; to
+ * Uses a ResourceLocation-keyed skill map:
  * Map&lt;ResourceLocation, SkillState&gt;
  * for data-driven skill support.
  */
 public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SkillManager.class);
-    private static final String DEFAULT_NAMESPACE = "ragnarmmo";
     private static final int MAX_WARP_MEMOS = 3;
 
     public static final class WarpMemo {
@@ -218,8 +215,8 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
 
         if (player instanceof ServerPlayer serverPlayer) {
             com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
-                    new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(serializeNBT()));
-                        SkillEffectHandler.refreshPassiveEffects(serverPlayer);
+                    new com.etema.ragnarmmo.player.stats.network.ClientboundSkillSyncPacket(serializeNBT()));
+            SkillEffectHandler.refreshPassiveEffects(serverPlayer);
             com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(serverPlayer).ifPresent(stats -> {
                 if (stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats internal) {
                     internal.markDirty(com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS);
@@ -285,91 +282,30 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
                 double baseMult = RagnarConfigs.SERVER.progression.skillToBaseExpMultiplier.get();
                 double jobMult = RagnarConfigs.SERVER.progression.skillToJobExpMultiplier.get();
                 
-                int baseExpToGrant = com.etema.ragnarmmo.system.stats.progression.ExpTable
-                        .applyBaseExpRate((int) Math.round(amount * baseMult));
-                int jobExpToGrant = com.etema.ragnarmmo.system.stats.progression.ExpTable
-                        .applyJobExpRate((int) Math.round(amount * jobMult));
+                com.etema.ragnarmmo.player.progression.PlayerProgressionService progressionService =
+                        com.etema.ragnarmmo.player.progression.PlayerProgressionService
+                                .forJobId(net.minecraft.resources.ResourceLocation.tryParse(stats.getJobId()));
+                int baseExpToGrant = progressionService.applyBaseExpRate((int) Math.round(amount * baseMult));
+                int jobExpToGrant = progressionService.applyJobExpRate((int) Math.round(amount * jobMult));
 
                 if (baseExpToGrant > 0) {
                     stats.addExpAndProcessLevelUps(baseExpToGrant, 
                         RagnarConfigs.SERVER.progression.pointsPerLevel.get(), 
-                        com.etema.ragnarmmo.system.stats.progression.ExpTable::expToNext);
+                        progressionService::baseExpToNext);
                 }
                 if (jobExpToGrant > 0) {
                     stats.addJobExpAndProcessLevelUps(jobExpToGrant, 
-                        com.etema.ragnarmmo.system.stats.progression.ExpTable::jobExpToNext);
+                        progressionService::jobExpToNext);
                 }
                 
                 // Sync is handled by the caller or by dirty check in tick.
             });
 
             com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
-                    new com.etema.ragnarmmo.system.stats.net.ClientboundSkillXpPacket(skillId, (int) amount));
+                    new com.etema.ragnarmmo.player.stats.network.ClientboundSkillXpPacket(skillId, (int) amount));
         }
 
         return levelsGained;
-    }
-
-    // ========================================================================
-    // Legacy SkillType-based methods (delegate to ResourceLocation methods)
-    // ========================================================================
-
-    /**
-     * Gets progress for a specific skill.
-     *
-     * @deprecated Use {@link #getSkillState(ResourceLocation)} instead
-     */
-    @Deprecated
-    @SuppressWarnings("removal")
-    public SkillProgress getSkill(SkillType type) {
-        if (type == null)
-            return null;
-        ResourceLocation id = type.toResourceLocation();
-        SkillState state = skills.get(id);
-        return state != null ? new SkillProgress(id, state) : new SkillProgress(id);
-    }
-
-    /**
-     * Gets the level of a specific skill.
-     */
-    @SuppressWarnings("removal")
-    public int getSkillLevel(SkillType type) {
-        if (type == null)
-            return 0;
-        return getSkillLevel(type.toResourceLocation());
-    }
-
-    @SuppressWarnings("removal")
-    public double getSkillXp(SkillType type) {
-        if (type == null)
-            return 0;
-        return getSkillXp(type.toResourceLocation());
-    }
-
-    /**
-     * Adds XP to a skill.
-     *
-     * @return number of levels gained
-     */
-    @SuppressWarnings("removal")
-    public int addXP(SkillType type, double amount, XPGainReason reason) {
-        if (type == null)
-            return 0;
-        return addXP(type.toResourceLocation(), amount, reason);
-    }
-
-    @SuppressWarnings("removal")
-    public int addSkillXP(SkillType type, double amount, ChangeReason reason) {
-        if (type == null)
-            return 0;
-        return addSkillXP(type.toResourceLocation(), amount, reason);
-    }
-
-    @SuppressWarnings("removal")
-    public int setSkillLevel(SkillType type, int level, ChangeReason reason) {
-        if (type == null)
-            return 0;
-        return setSkillLevel(type.toResourceLocation(), level, reason);
     }
 
     /**
@@ -378,7 +314,7 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
     protected void onLevelUp(ResourceLocation skillId, int newLevel, int levelsGained) {
         if (player instanceof ServerPlayer serverPlayer) {
             com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
-                    new com.etema.ragnarmmo.system.stats.net.ClientboundLevelUpPacket(skillId, newLevel));
+                    new com.etema.ragnarmmo.player.stats.network.ClientboundLevelUpPacket(skillId, newLevel));
         }
     }
 
@@ -400,30 +336,6 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
                 .mapToInt(SkillState::getLevel)
                 .average()
                 .orElse(1.0);
-    }
-
-    /**
-     * Gets all skills in a specific category.
-     *
-     * @deprecated Use ResourceLocation-based API with SkillRegistry.getByCategory()
-     */
-    @Deprecated
-    @SuppressWarnings("removal")
-    public Map<SkillType, SkillProgress> getSkillsByCategory(SkillCategory category) {
-        Map<SkillType, SkillProgress> result = new HashMap<>();
-        for (Map.Entry<ResourceLocation, SkillState> entry : skills.entrySet()) {
-            SkillType type = SkillType.fromResourceLocation(entry.getKey());
-            if (type != null) {
-                // Check category via SkillRegistry instead of removed SkillType.getCategory()
-                SkillCategory skillCat = SkillRegistry.get(entry.getKey())
-                        .map(ISkillDefinition::getCategory)
-                        .orElse(null);
-                if (skillCat == category) {
-                    result.put(type, new SkillProgress(entry.getKey(), entry.getValue()));
-                }
-            }
-        }
-        return result;
     }
 
     /**
@@ -530,29 +442,16 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
             // Sync stats (skill points) and skills to client
             if (player instanceof ServerPlayer sp) {
                 SkillEffectHandler.refreshPassiveEffects(sp);
-                com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService.sync(sp, stats,
+                com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncService.sync(sp, stats,
                         com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.PROGRESSION.bit());
                 com.etema.ragnarmmo.common.net.Network.sendToPlayer(sp,
-                        new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(this.serializeNBT()));
+                        new com.etema.ragnarmmo.player.stats.network.ClientboundSkillSyncPacket(this.serializeNBT()));
             }
             return true;
         }
 
         RagnarDebugLog.playerData("SKILL_UPGRADE skill={} result=reject reason=upgrade_failed", skillId);
         return false;
-    }
-
-    /**
-     * Attempts to upgrade a skill using a skill point (legacy).
-     *
-     * @deprecated Use {@link #tryUpgradeSkill(ResourceLocation)} instead
-     */
-    @Deprecated
-    @SuppressWarnings("removal")
-    public boolean tryUpgradeSkill(SkillType type) {
-        if (type == null)
-            return false;
-        return tryUpgradeSkill(type.toResourceLocation());
     }
 
     // === Hotbar Management ===
@@ -576,15 +475,6 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
                     new com.etema.ragnarmmo.skill.net.ClientboundCastUpdatePacket(skillIdStr, duration,
                             duration));
         }
-    }
-
-    /**
-     * @deprecated Use {@link #startCast(ResourceLocation, int)} instead
-     */
-    @Deprecated
-    @SuppressWarnings("removal")
-    public void startCast(SkillType skill, int duration) {
-        startCast(skill != null ? skill.toResourceLocation() : null, 1, duration);
     }
 
     public void interruptCast() {
@@ -611,14 +501,6 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
 
     public int getActiveCastLevel() {
         return activeCastLevel;
-    }
-
-    /**
-     * @deprecated Use {@link #getActiveCastSkillId()} instead
-     */
-    @Deprecated
-    public SkillType getActiveCastSkill() {
-        return activeCastSkillId != null ? SkillType.fromResourceLocation(activeCastSkillId) : null;
     }
 
     public int getCastTicksRemaining() {
@@ -679,7 +561,7 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
 
         if (player instanceof ServerPlayer serverPlayer) {
             com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
-                    new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(serializeNBT()));
+                    new com.etema.ragnarmmo.player.stats.network.ClientboundSkillSyncPacket(serializeNBT()));
         }
     }
 
@@ -744,8 +626,7 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
     }
 
     /**
-     * Deserializes all skills from NBT.
-     * Supports both legacy format ("bash") and new format ("ragnarmmo:bash").
+     * Deserializes all skills from NBT using canonical skill ids only.
      */
     public void deserializeNBT(CompoundTag tag) {
         // First, reset all skills to ensure clean state
@@ -777,16 +658,7 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
                 continue;
             }
 
-            // Parse skill ID with legacy fallback
-            ResourceLocation skillId;
-            if (key.contains(":")) {
-                // New format: "ragnarmmo:bash"
-                skillId = ResourceLocation.tryParse(key);
-            } else {
-                // Legacy format: "bash" -> "ragnarmmo:bash"
-                skillId = new ResourceLocation(DEFAULT_NAMESPACE, key.toLowerCase());
-            }
-
+            ResourceLocation skillId = ResourceLocation.tryParse(key);
             if (skillId == null) {
                 LOGGER.warn("Failed to parse skill ID from NBT key: {}", key);
                 continue;
@@ -829,17 +701,10 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
             }
         }
 
-        // Load cooldowns with legacy support
         if (tag.contains("cooldowns")) {
             CompoundTag cooldownTag = tag.getCompound("cooldowns");
             for (String key : cooldownTag.getAllKeys()) {
-                ResourceLocation skillId;
-                if (key.contains(":")) {
-                    skillId = ResourceLocation.tryParse(key);
-                } else {
-                    skillId = new ResourceLocation(DEFAULT_NAMESPACE, key.toLowerCase());
-                }
-
+                ResourceLocation skillId = ResourceLocation.tryParse(key);
                 if (skillId != null) {
                     long remaining = cooldownTag.getLong(key);
                     if (remaining > 0) {
@@ -912,8 +777,8 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
 
         if (player instanceof ServerPlayer serverPlayer) {
             com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
-                    new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(serializeNBT()));
-                        SkillEffectHandler.refreshPassiveEffects(serverPlayer);
+                    new com.etema.ragnarmmo.player.stats.network.ClientboundSkillSyncPacket(serializeNBT()));
+            SkillEffectHandler.refreshPassiveEffects(serverPlayer);
             com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(serverPlayer).ifPresent(stats -> {
                 if (stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats internal) {
                     internal.markDirty(com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS);
@@ -947,30 +812,10 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
         return player != null && player.level().getGameTime() < cooldowns.getOrDefault(skillId, 0L);
     }
 
-    /**
-     * @deprecated Use {@link #isOnCooldown(ResourceLocation)} instead
-     */
-    @Deprecated
-    @SuppressWarnings("removal")
-    public boolean isOnCooldown(SkillType type) {
-        return type != null && isOnCooldown(type.toResourceLocation());
-    }
-
     public void setCooldown(ResourceLocation skillId, int ticks) {
         if (player != null && skillId != null) {
             cooldowns.put(skillId, player.level().getGameTime() + ticks);
             cooldownDurations.put(skillId, ticks);
-        }
-    }
-
-    /**
-     * @deprecated Use {@link #setCooldown(ResourceLocation, int)} instead
-     */
-    @Deprecated
-    @SuppressWarnings("removal")
-    public void setCooldown(SkillType type, int ticks) {
-        if (type != null) {
-            setCooldown(type.toResourceLocation(), ticks);
         }
     }
 
@@ -1020,14 +865,6 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
         return Math.max(0, Math.min(1.0f, Math.max(localProgress, globalProgress)));
     }
 
-    /**
-     * @deprecated Use {@link #getCooldownProgress(ResourceLocation, float)} instead
-     */
-    @Deprecated
-    public float getCooldownProgress(SkillType type, float partialTick) {
-        return type != null ? getCooldownProgress(type.toResourceLocation(), partialTick) : 0f;
-    }
-
     private void applyPendingCooldowns() {
         if (player != null && !pendingCooldowns.isEmpty()) {
             long now = player.level().getGameTime();
@@ -1052,8 +889,6 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
 
     /**
      * Applies a server snapshot to the client-side skill manager.
-     * Supports both the current flat capability payload and the legacy nested
-     * "Skills" compound used by older sync packets.
      *
      * @param nbt The authoritative server snapshot.
      */
@@ -1061,7 +896,7 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
         if (nbt == null || nbt.isEmpty())
             return;
 
-        CompoundTag skillsTag = nbt.contains("Skills") ? nbt.getCompound("Skills") : nbt;
+        CompoundTag skillsTag = nbt;
 
         // Reset learned state first so server-side removals/unlocks are mirrored exactly.
         for (SkillState state : skills.values()) {
@@ -1081,19 +916,8 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
             CompoundTag stateTag = skillsTag.getCompound(key);
 
             SkillState state = skills.computeIfAbsent(id, SkillState::new);
-            int levelVal = stateTag.contains("Level") ? stateTag.getInt("Level") : stateTag.getInt("level");
-            state.setLevel(levelVal);
-
-            // Support both legacy and current field casing.
-            double xpVal = 0.0D;
-            if (stateTag.contains("XP")) {
-                xpVal = stateTag.getDouble("XP");
-            } else if (stateTag.contains("Xp")) {
-                xpVal = stateTag.getDouble("Xp");
-            } else if (stateTag.contains("xp")) {
-                xpVal = stateTag.getDouble("xp");
-            }
-            state.setXp(xpVal);
+            state.setLevel(stateTag.getInt("level"));
+            state.setXp(stateTag.getDouble("xp"));
             if (stateTag.contains("lastProcKv")) {
                 state.setLastProcTime(stateTag.getLong("lastProcKv"));
             }
@@ -1183,11 +1007,6 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
         if (key == null || key.isEmpty()) {
             return null;
         }
-
-        if (key.contains(":")) {
-            return ResourceLocation.tryParse(key);
-        }
-
-        return ResourceLocation.tryParse(DEFAULT_NAMESPACE + ":" + key.toLowerCase());
+        return ResourceLocation.tryParse(key);
     }
 }

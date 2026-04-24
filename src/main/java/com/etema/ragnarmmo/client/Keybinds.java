@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.client;
 
-import com.etema.ragnarmmo.system.stats.RagnarStats;
+import com.etema.ragnarmmo.player.stats.PlayerStatsModule;
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
@@ -8,7 +8,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
-@Mod.EventBusSubscriber(modid = RagnarStats.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = PlayerStatsModule.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Keybinds {
     private static final String CATEGORY = "key.categories.ragnarmmo";
 

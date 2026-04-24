@@ -96,7 +96,7 @@ public final class RagnarAdminCommands {
     }
 
     private static int resetStats(CommandSourceStack source, ServerPlayer target) {
-        com.etema.ragnarmmo.system.stats.service.CharacterResetService.resetAllocatedStats(target);
+        com.etema.ragnarmmo.player.stats.service.CharacterResetService.resetAllocatedStats(target);
         source.sendSuccess(
                 () -> Component.literal("Stats reset for " + target.getName().getString()).withStyle(ChatFormatting.GREEN),
                 true);
@@ -105,7 +105,7 @@ public final class RagnarAdminCommands {
     }
 
     private static int resetSkills(CommandSourceStack source, ServerPlayer target) {
-        com.etema.ragnarmmo.system.stats.service.CharacterResetService.resetLearnedSkills(target);
+        com.etema.ragnarmmo.player.stats.service.CharacterResetService.resetLearnedSkills(target);
         source.sendSuccess(
                 () -> Component.literal("Skills reset for " + target.getName().getString()).withStyle(ChatFormatting.GREEN),
                 true);
@@ -120,7 +120,7 @@ public final class RagnarAdminCommands {
     }
 
     private static int resetAll(CommandSourceStack source, ServerPlayer target) {
-        com.etema.ragnarmmo.system.stats.service.CharacterResetService.wipeCharacter(target);
+        com.etema.ragnarmmo.player.stats.service.CharacterResetService.wipeCharacter(target);
         source.sendSuccess(
                 () -> Component.literal("Full character wipe done for " + target.getName().getString())
                         .withStyle(ChatFormatting.GREEN),

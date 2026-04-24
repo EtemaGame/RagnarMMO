@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.common.config;
 
+import com.etema.ragnarmmo.mobs.difficulty.DifficultyMode;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -124,45 +125,31 @@ public final class RagnarConfigs {
     // ========================================================================
     public static final class Server {
         public final ForgeConfigSpec.IntValue configVersion;
-        public final Commands commands;
-        public final Compat compat;
         public final Progression progression;
+        public final Difficulty difficulty;
+        public final Combat combat;
+        public final Skills skills;
+        public final LifeSkills lifeskills;
         public final Caps caps;
-        public final MobStats mobstats;
+        public final Mobs mobs;
         public final Logging logging;
         public final Zeny zeny;
+        public final Economy economy;
         public final Items items;
 
         Server(ForgeConfigSpec.Builder builder) {
             configVersion = builder.comment("Configuration version").defineInRange("config_version", 1, 1, 1000);
-            this.commands = new Commands(builder);
-            this.compat = new Compat(builder);
             this.progression = new Progression(builder);
+            this.difficulty = new Difficulty(builder);
+            this.combat = new Combat(builder);
+            this.skills = new Skills(builder);
+            this.lifeskills = new LifeSkills(builder);
             this.caps = new Caps(builder);
-            this.mobstats = new MobStats(builder);
+            this.mobs = new Mobs(builder);
             this.logging = new Logging(builder);
             this.zeny = new Zeny(builder);
+            this.economy = new Economy(builder);
             this.items = new Items(builder);
-        }
-
-        public static final class Commands {
-            public final ForgeConfigSpec.BooleanValue enableLegacyAliases;
-            Commands(ForgeConfigSpec.Builder builder) {
-                builder.comment("Command options").push("commands");
-                enableLegacyAliases = builder.define("enable_legacy_aliases", false);
-                builder.pop();
-            }
-        }
-
-        public static final class Compat {
-            public final ForgeConfigSpec.BooleanValue useVanillaAttributes;
-            public final ForgeConfigSpec.BooleanValue useRagnarCompute;
-            Compat(ForgeConfigSpec.Builder builder) {
-                builder.comment("Compatibility options").push("compat");
-                useVanillaAttributes = builder.define("use_vanilla_attributes", true);
-                useRagnarCompute = builder.define("use_ragnar_compute", true);
-                builder.pop();
-            }
         }
 
         public static final class Progression {
@@ -222,7 +209,49 @@ public final class RagnarConfigs {
             }
         }
 
-        public static final class MobStats {
+        public static final class Difficulty {
+            public final ForgeConfigSpec.BooleanValue enabled;
+            public final ForgeConfigSpec.EnumValue<DifficultyMode> mode;
+
+            Difficulty(ForgeConfigSpec.Builder builder) {
+                builder.comment("V2 mob difficulty configuration").push("difficulty");
+                enabled = builder.define("enabled", true);
+                mode = builder.defineEnum("mode", DifficultyMode.DISTANCE);
+                builder.pop();
+            }
+        }
+
+        public static final class Combat {
+            public final ForgeConfigSpec.BooleanValue enabled;
+
+            Combat(ForgeConfigSpec.Builder builder) {
+                builder.comment("V2 combat configuration").push("combat");
+                enabled = builder.define("enabled", true);
+                builder.pop();
+            }
+        }
+
+        public static final class Skills {
+            public final ForgeConfigSpec.BooleanValue requireAuthoredDefinitions;
+
+            Skills(ForgeConfigSpec.Builder builder) {
+                builder.comment("V2 skills configuration").push("skills");
+                requireAuthoredDefinitions = builder.define("require_authored_definitions", true);
+                builder.pop();
+            }
+        }
+
+        public static final class LifeSkills {
+            public final ForgeConfigSpec.BooleanValue enabled;
+
+            LifeSkills(ForgeConfigSpec.Builder builder) {
+                builder.comment("V2 life skills configuration").push("lifeskills");
+                enabled = builder.define("enabled", true);
+                builder.pop();
+            }
+        }
+
+        public static final class Mobs {
             public final ForgeConfigSpec.BooleanValue enabled;
             public final ForgeConfigSpec.IntValue maxLevel;
             public final ForgeConfigSpec.DoubleValue eliteChance;
@@ -279,11 +308,6 @@ public final class RagnarConfigs {
 
             public final ForgeConfigSpec.BooleanValue renderNumericHealth;
             public final ForgeConfigSpec.EnumValue<LevelScalingMode> levelScalingMode;
-            public final ForgeConfigSpec.EnumValue<ManualMobBackend> manualMobBackend;
-            public final ForgeConfigSpec.EnumValue<ManualUncoveredBehavior> manualUncoveredBehavior;
-            public final ForgeConfigSpec.EnumValue<AutomaticFallbackMode> manualFallbackAutomaticMode;
-            public final ForgeConfigSpec.BooleanValue enableManualMobEditor;
-            public final ForgeConfigSpec.BooleanValue enableManualMobDiscovery;
             public final ForgeConfigSpec.IntValue playerLevelRadius;
             public final ForgeConfigSpec.IntValue playerLevelVariance;
 
@@ -299,8 +323,8 @@ public final class RagnarConfigs {
             public final ForgeConfigSpec.DoubleValue partyHpMultiplier;
             public final ForgeConfigSpec.DoubleValue partyAtkMultiplier;
 
-            MobStats(ForgeConfigSpec.Builder builder) {
-                builder.comment("Mob scaling and tier system").push("mobstats");
+            Mobs(ForgeConfigSpec.Builder builder) {
+                builder.comment("Mob scaling and tier system").push("mobs");
                 enabled = builder.define("enabled", true);
                 maxLevel = builder.defineInRange("max_level", 0, 0, 100000);
                 eliteChance = builder.defineInRange("elite_chance", 0.08, 0.0, 1.0);
@@ -366,11 +390,6 @@ public final class RagnarConfigs {
                 builder.push("world_scaling");
                 renderNumericHealth = builder.define("render_numeric_health", true);
                 levelScalingMode = builder.defineEnum("level_scaling_mode", LevelScalingMode.DISTANCE);
-                manualMobBackend = builder.defineEnum("manual_mob_backend", ManualMobBackend.DATAPACK);
-                manualUncoveredBehavior = builder.defineEnum("manual_uncovered_behavior", ManualUncoveredBehavior.VANILLA);
-                manualFallbackAutomaticMode = builder.defineEnum("manual_fallback_automatic_mode", AutomaticFallbackMode.DISTANCE);
-                enableManualMobEditor = builder.define("enable_manual_mob_editor", false);
-                enableManualMobDiscovery = builder.define("enable_manual_mob_discovery", true);
                 playerLevelRadius = builder.defineInRange("player_level_radius", 64, 8, 256);
                 playerLevelVariance = builder.defineInRange("player_level_variance", 2, 0, 100);
 
@@ -405,7 +424,7 @@ public final class RagnarConfigs {
             public final ForgeConfigSpec.BooleanValue debugPlayerData;
             public final ForgeConfigSpec.BooleanValue debugMobSpawns;
             public final ForgeConfigSpec.BooleanValue debugBossWorld;
-            public final ForgeConfigSpec.BooleanValue debugMigration;
+            public final ForgeConfigSpec.BooleanValue debugRuntime;
             public final ForgeConfigSpec.IntValue warnRateLimitSeconds;
 
             Logging(ForgeConfigSpec.Builder builder) {
@@ -415,7 +434,7 @@ public final class RagnarConfigs {
                 debugPlayerData = builder.define("debug_player_data", false);
                 debugMobSpawns = builder.define("debug_mob_spawns", false);
                 debugBossWorld = builder.define("debug_boss_world", false);
-                debugMigration = builder.define("debug_migration", false);
+                debugRuntime = builder.define("debug_runtime", false);
                 warnRateLimitSeconds = builder.defineInRange("warn_rate_limit_seconds", 60, 1, 3600);
                 builder.pop();
             }
@@ -463,6 +482,16 @@ public final class RagnarConfigs {
                 dimensionMultipliers = builder.defineList("dimension_multipliers", List.of("minecraft:the_nether=1.5", "minecraft:the_end=2.0"), o -> o instanceof String);
                 dimensionMultCap = builder.defineInRange("dimension_multiplier_cap", 5.0, 1.0, 100.0);
                 builder.pop();
+                builder.pop();
+            }
+        }
+
+        public static final class Economy {
+            public final ForgeConfigSpec.BooleanValue enabled;
+
+            Economy(ForgeConfigSpec.Builder builder) {
+                builder.comment("V2 economy configuration").push("economy_v2");
+                enabled = builder.define("enabled", true);
                 builder.pop();
             }
         }
@@ -519,18 +548,6 @@ public final class RagnarConfigs {
     }
 
     public enum LevelScalingMode {
-        PLAYER_LEVEL, DISTANCE, MANUAL
-    }
-
-    public enum ManualMobBackend {
-        INTERNAL, DATAPACK, HYBRID
-    }
-
-    public enum ManualUncoveredBehavior {
-        VANILLA, FALLBACK_TO_AUTO
-    }
-
-    public enum AutomaticFallbackMode {
         PLAYER_LEVEL, DISTANCE
     }
 

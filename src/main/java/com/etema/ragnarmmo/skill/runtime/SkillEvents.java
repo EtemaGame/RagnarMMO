@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.skill.runtime;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.system.lifeskills.PlacedBlockTracker;
+import com.etema.ragnarmmo.lifeskills.PlacedBlockTracker;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

@@ -3,7 +3,7 @@ package com.etema.ragnarmmo.skill.job.acolyte;
 import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
-import com.etema.ragnarmmo.system.mobstats.util.MobUtils;
+import com.etema.ragnarmmo.mobs.util.MobUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

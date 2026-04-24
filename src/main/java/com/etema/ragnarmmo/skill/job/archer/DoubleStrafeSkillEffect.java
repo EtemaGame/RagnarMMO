@@ -6,7 +6,7 @@ import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skill.execution.projectile.ProjectileSkillHelper;
 import com.etema.ragnarmmo.skill.execution.projectile.RagnarArrowSpawnHelper;
 import com.etema.ragnarmmo.skill.runtime.SkillSequencer;
-import com.etema.ragnarmmo.roitems.runtime.RangedWeaponStatsHelper;
+import com.etema.ragnarmmo.items.runtime.RangedWeaponStatsHelper;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;

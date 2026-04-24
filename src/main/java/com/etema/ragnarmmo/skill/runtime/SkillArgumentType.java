@@ -38,13 +38,7 @@ public class SkillArgumentType implements ArgumentType<net.minecraft.resources.R
     @Override
     public net.minecraft.resources.ResourceLocation parse(StringReader reader) throws CommandSyntaxException {
         String input = reader.readUnquotedString();
-        // Support legacy short names by resolving to default namespace
-        net.minecraft.resources.ResourceLocation id;
-        if (input.contains(":")) {
-            id = net.minecraft.resources.ResourceLocation.tryParse(input);
-        } else {
-            id = new net.minecraft.resources.ResourceLocation("ragnarmmo", input);
-        }
+        net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.tryParse(input);
 
         if (id == null) {
             throw UNKNOWN_SKILL.create(input);
@@ -68,6 +62,6 @@ public class SkillArgumentType implements ArgumentType<net.minecraft.resources.R
 
     @Override
     public Collection<String> getExamples() {
-        return Arrays.asList("ragnarmmo:bash", "bash", "mining");
+        return Arrays.asList("ragnarmmo:bash", "ragnarmmo:mining");
     }
 }

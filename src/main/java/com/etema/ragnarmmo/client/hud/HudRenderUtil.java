@@ -104,7 +104,7 @@ public final class HudRenderUtil {
     }
 
     /**
-     * Legacy bar method for backwards compatibility with old SCATTERED layout.
+     * Alternate compact bar renderer for the scattered layout.
      */
     public static void drawBarVanilla(GuiGraphics gg, int x, int y, int w, int h,
             float progress, int fillColor) {

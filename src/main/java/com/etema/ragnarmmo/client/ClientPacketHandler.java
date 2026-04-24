@@ -6,24 +6,20 @@ import com.etema.ragnarmmo.client.effects.EffectVec3;
 import com.etema.ragnarmmo.client.effects.runtime.EffectContext;
 import com.etema.ragnarmmo.client.effects.runtime.SkillEffectSpawner;
 import com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain;
-import com.etema.ragnarmmo.common.api.mobs.query.MobClientCoexistenceView;
+import com.etema.ragnarmmo.mobs.capability.MobProfileProvider;
+import com.etema.ragnarmmo.mobs.profile.MobProfile;
 import net.minecraft.resources.ResourceLocation;
 import com.etema.ragnarmmo.common.api.lifeskills.LifeSkillType;
-import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.system.achievements.capability.PlayerAchievementsProvider;
-import com.etema.ragnarmmo.system.lifeskills.LifeSkillCapability;
-import com.etema.ragnarmmo.system.lifeskills.LifeSkillClientHandler;
-import com.etema.ragnarmmo.system.lifeskills.LifeSkillProgress;
-import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
+import com.etema.ragnarmmo.lifeskills.LifeSkillCapability;
+import com.etema.ragnarmmo.lifeskills.LifeSkillClientHandler;
+import com.etema.ragnarmmo.lifeskills.LifeSkillProgress;
 
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
-import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket;
-import com.etema.ragnarmmo.system.stats.party.PartyClientData;
-import com.etema.ragnarmmo.system.stats.party.net.PartyMemberData;
+import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncPacket;
+import com.etema.ragnarmmo.player.party.PartyClientData;
+import com.etema.ragnarmmo.player.party.net.PartyMemberData;
 import com.etema.ragnarmmo.client.render.RagnarPopoffHandler;
-import com.etema.ragnarmmo.client.ui.ManualMobUiState;
-import com.etema.ragnarmmo.common.api.mobs.runtime.manual.InternalManualMobEntry;
-import com.etema.ragnarmmo.common.api.mobs.runtime.manual.ManualMobCatalogEntry;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
@@ -182,40 +178,18 @@ public final class ClientPacketHandler {
     }
 
     // ═══════════════════════════════════════════════
-    // SyncMobStatsPacket
+    // Mob profile sync
     // ═══════════════════════════════════════════════
-    public static void handleMobStatsSync(int entityId, int level, MobTier tier,
-            double hpMult, double dmgMult,
-            double defMult, double spdMult) {
+    public static void handleMobProfileSync(int entityId, MobProfile profile) {
         var mc = Minecraft.getInstance();
-        if (mc.level == null)
-            return;
-
-        if (MobClientCoexistenceReader.hasEntityId(entityId)) {
+        if (mc.level == null) {
             return;
         }
-
         Entity e = mc.level.getEntity(entityId);
-        if (!(e instanceof LivingEntity living))
-            return;
-
-        MobStatsProvider.get(living).ifPresent(stats -> {
-            stats.setLevel(level);
-            stats.setTier(tier);
-            stats.setHealthMultiplier(hpMult);
-            stats.setDamageMultiplier(dmgMult);
-            stats.setDefenseMultiplier(defMult);
-            stats.setSpeedMultiplier(spdMult);
-            stats.setInitialized(true);
-        });
-    }
-
-    public static void handleMobCoexistenceViewSync(int entityId, MobClientCoexistenceView view) {
-        if (view == null) {
+        if (!(e instanceof LivingEntity living)) {
             return;
         }
-
-        MobClientCoexistenceCache.put(entityId, view);
+        MobProfileProvider.get(living).ifPresent(state -> state.setProfile(profile));
     }
 
     // ═══════════════════════════════════════════════
@@ -310,7 +284,7 @@ public final class ClientPacketHandler {
     // ═══════════════════════════════════════════════
     // DerivedStatsSyncPacket
     // ═══════════════════════════════════════════════
-    public static void handleDerivedStatsSync(com.etema.ragnarmmo.system.stats.net.DerivedStatsSyncPacket msg) {
+    public static void handleDerivedStatsSync(com.etema.ragnarmmo.player.stats.network.DerivedStatsSyncPacket msg) {
         DerivedStatsClientCache.update(msg.toDerivedStats());
     }
 
@@ -332,11 +306,11 @@ public final class ClientPacketHandler {
     // SyncRoItemRulesPacket
     // ═══════════════════════════════════════════════
     public static void handleRoItemRulesSync(
-            java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.roitems.data.RoItemRule> itemRules,
-            java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.roitems.data.RoItemRule> tagRules,
-            java.util.Map<String, java.util.Map<com.etema.ragnarmmo.system.loot.cards.CardEquipType, com.etema.ragnarmmo.roitems.data.RoItemRule>> modTypeRules,
-            java.util.Map<com.etema.ragnarmmo.system.loot.cards.CardEquipType, com.etema.ragnarmmo.roitems.data.RoItemRule> fallbackRules) {
-        com.etema.ragnarmmo.roitems.data.RoItemRuleLoader.applyClientSync(itemRules, tagRules, modTypeRules, fallbackRules);
+            java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.items.data.RoItemRule> itemRules,
+            java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.items.data.RoItemRule> tagRules,
+            java.util.Map<String, java.util.Map<com.etema.ragnarmmo.system.loot.cards.CardEquipType, com.etema.ragnarmmo.items.data.RoItemRule>> modTypeRules,
+            java.util.Map<com.etema.ragnarmmo.system.loot.cards.CardEquipType, com.etema.ragnarmmo.items.data.RoItemRule> fallbackRules) {
+        com.etema.ragnarmmo.items.data.RoItemRuleLoader.applyClientSync(itemRules, tagRules, modTypeRules, fallbackRules);
     }
 
     // ═══════════════════════════════════════════════
@@ -385,14 +359,4 @@ public final class ClientPacketHandler {
 
         RagnarPopoffHandler.addPopoff(targetId, text, color);
     }
-
-
-    public static void handleManualMobCatalog(java.util.List<ManualMobCatalogEntry> entries) {
-        ManualMobUiState.setCatalog(entries);
-    }
-
-    public static void handleManualMobDetail(com.etema.ragnarmmo.common.api.mobs.runtime.manual.ManualMobDetail detail) {
-        ManualMobUiState.setDetail(detail);
-    }
-
 }

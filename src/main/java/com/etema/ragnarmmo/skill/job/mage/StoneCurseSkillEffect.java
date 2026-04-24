@@ -47,7 +47,7 @@ public class StoneCurseSkillEffect implements ISkillEffect {
         if (target == null) return;
 
         if (target.getMobType() == net.minecraft.world.entity.MobType.UNDEAD ||
-            com.etema.ragnarmmo.system.mobstats.util.MobUtils.isMVPBoss(target)) {
+            com.etema.ragnarmmo.mobs.util.MobUtils.isMVPBoss(target)) {
             player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.ragnarmmo.skill_blocked_type")
                     .withStyle(net.minecraft.ChatFormatting.GRAY));
             return;

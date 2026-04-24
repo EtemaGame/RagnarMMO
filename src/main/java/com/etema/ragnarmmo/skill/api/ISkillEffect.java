@@ -1,6 +1,4 @@
 package com.etema.ragnarmmo.skill.api;
-
-import com.etema.ragnarmmo.skill.api.SkillType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;
@@ -29,27 +27,8 @@ public interface ISkillEffect {
         return Collections.emptySet();
     }
 
-    /**
-     * Returns the ResourceLocation ID for this skill effect.
-     * This is the canonical method for identifying skills.
-     *
-     * @return The skill ID (e.g., "ragnarmmo:bash")
-     */
-    @SuppressWarnings("removal")
     default ResourceLocation getSkillId() {
-        SkillType type = getSkillType();
-        return type != null ? type.toResourceLocation() : null;
-    }
-
-    /**
-     * @return The type of skill this effect belongs to.
-     * @deprecated Use {@link #getSkillId()} instead
-     */
-    @Deprecated(forRemoval = true)
-    @SuppressWarnings("removal")
-    default SkillType getSkillType() {
-        ResourceLocation id = getSkillId();
-        return id != null ? SkillType.fromResourceLocation(id) : null;
+        return null;
     }
 
     /**

@@ -5,7 +5,7 @@ import com.etema.ragnarmmo.skill.api.ISkillDefinition;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
-import com.etema.ragnarmmo.system.stats.net.PacketChangeJob;
+import com.etema.ragnarmmo.player.stats.network.PacketChangeJob;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -264,7 +264,7 @@ public class JobSelectionScreen extends Screen {
             // === Stat Growth (Max Job Bonus) ===
             g.drawString(this.font, Component.translatable("screen.ragnarmmo.job_selection.bonus"),
                     contentX, contentY, 0xFF888888, false);
-            com.etema.ragnarmmo.common.api.stats.Stats6 maxBonus = com.etema.ragnarmmo.system.stats.progression.JobBonusData
+            com.etema.ragnarmmo.common.api.stats.Stats6 maxBonus = com.etema.ragnarmmo.player.stats.progression.JobBonusData
                     .getBonus(selectedJob, 50);
 
             StringBuilder bonusStr = new StringBuilder();

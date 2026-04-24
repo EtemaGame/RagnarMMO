@@ -109,8 +109,8 @@ public class BashSkillEffect extends InstantTargetSkillEffect {
                         .map(def -> (float) def.getLevelDouble("stun_chance_percent", level, 5.0 * (level - 5)))
                         .orElse(5.0f * (level - 5)) / 100.0f;
                 
-                float finalStunChance = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStunChance(baseStunChance, target);
-                int finalStunDuration = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStunDuration(60, target);
+                float finalStunChance = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeStunChance(baseStunChance, target);
+                int finalStunDuration = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeStunDuration(60, target);
 
                 if (finalStunDuration > 0 && user.getRandom().nextFloat() < finalStunChance) {
                     long until = serverLevel.getGameTime() + finalStunDuration;

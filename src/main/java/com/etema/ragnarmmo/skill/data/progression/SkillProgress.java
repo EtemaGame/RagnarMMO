@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * Tracks XP and level progress for a single skill.
  * Now uses ResourceLocation for skill identity instead of the deprecated
- * SkillType enum.
+ * canonical ResourceLocation-based skill state.
  */
 public class SkillProgress {
     private final ResourceLocation skillId;

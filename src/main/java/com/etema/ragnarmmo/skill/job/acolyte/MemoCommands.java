@@ -121,7 +121,7 @@ public final class MemoCommands {
 
     private static void syncSkills(ServerPlayer player, SkillManager skills) {
         com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
-                new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(skills.serializeNBT()));
+                new com.etema.ragnarmmo.player.stats.network.ClientboundSkillSyncPacket(skills.serializeNBT()));
     }
 
     private static MutableComponent withSelectionPrefix(boolean selected) {

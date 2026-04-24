@@ -1,8 +1,8 @@
 package com.etema.ragnarmmo.client.ui;
 
 import com.etema.ragnarmmo.common.net.Network;
-import com.etema.ragnarmmo.roitems.ZenyItems;
-import com.etema.ragnarmmo.roitems.runtime.ZenyWalletHelper;
+import com.etema.ragnarmmo.items.ZenyItems;
+import com.etema.ragnarmmo.items.runtime.ZenyWalletHelper;
 import com.etema.ragnarmmo.system.economy.capability.PlayerWalletProvider;
 import com.etema.ragnarmmo.system.economy.net.ZenyBagActionPacket;
 import net.minecraft.client.Minecraft;

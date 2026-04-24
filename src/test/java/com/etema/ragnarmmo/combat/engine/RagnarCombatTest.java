@@ -70,7 +70,7 @@ public class RagnarCombatTest {
         int dex = 50;
         int luk = 50;
         
-        double statusAtk = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStatusATK(str, dex, luk, level, false);
+        double statusAtk = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeStatusATK(str, dex, luk, level, false);
         
         // STR 50: 50 + 5^2 = 75
         // DEX contribution: floor(50 / 5) = 10
@@ -81,7 +81,7 @@ public class RagnarCombatTest {
 
     @Test
     public void testBowStatusAtkUsesDexPrimary() {
-        double statusAtk = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStatusATK(20, 60, 25, 99, true);
+        double statusAtk = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeStatusATK(20, 60, 25, 99, true);
 
         // DEX 60: 60 + 6^2 = 96
         // STR contribution: floor(20 / 5) = 4
@@ -91,19 +91,19 @@ public class RagnarCombatTest {
 
     @Test
     public void testMagicAttackRangeUsesIntOnly() {
-        assertEquals(170.0, com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStatusMATKMin(70), 0.01);
-        assertEquals(266.0, com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStatusMATKMax(70), 0.01);
+        assertEquals(170.0, com.etema.ragnarmmo.player.stats.compute.CombatMath.computeStatusMATKMin(70), 0.01);
+        assertEquals(266.0, com.etema.ragnarmmo.player.stats.compute.CombatMath.computeStatusMATKMax(70), 0.01);
     }
 
     @Test
     public void testCastTimeUsesDexOnly() {
-        double castTime = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeCastTime(2.0, 75, 1, false);
+        double castTime = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeCastTime(2.0, 75, 1, false);
         assertEquals(1.0, castTime, 0.01);
     }
 
     @Test
     public void testMagicDefenseAppliesHardThenSoft() {
-        double finalDmg = com.etema.ragnarmmo.system.stats.compute.CombatMath.applyMagicDefense(100.0, 30.0, 20.0);
+        double finalDmg = com.etema.ragnarmmo.player.stats.compute.CombatMath.applyMagicDefense(100.0, 30.0, 20.0);
         assertEquals(50.0, finalDmg, 0.01);
     }
 

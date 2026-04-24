@@ -101,7 +101,7 @@ public class PlayerSkillsProvider implements ICapabilityProvider, INBTSerializab
     private static void syncToClient(ServerPlayer player) {
         get(player).ifPresent(skills -> {
             com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
-                    new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(skills.serializeNBT()));
+                    new com.etema.ragnarmmo.player.stats.network.ClientboundSkillSyncPacket(skills.serializeNBT()));
         });
     }
 

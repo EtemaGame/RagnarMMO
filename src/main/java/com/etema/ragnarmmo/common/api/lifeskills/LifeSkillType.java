@@ -6,7 +6,7 @@ import java.util.Locale;
  * Life Skill types - completely separate from class/combat skills.
  * Uses point-based progression from activities (mining, fishing, etc.)
  *
- * IMPORTANT: IDs must match legacy SkillType IDs for NBT compatibility:
+ * IDs are stable serialized identifiers for life-skill persistence:
  * - mining, woodcutting, excavation, farming, fishing, exploration
  */
 public enum LifeSkillType {
@@ -47,7 +47,7 @@ public enum LifeSkillType {
 
     /**
      * Get the serialization ID.
-     * IMPORTANT: Must match legacy SkillType.getId() for NBT compatibility.
+     * Stable serialized id for persistence and networking.
      * e.g., MINING → "mining"
      */
     public String getId() {

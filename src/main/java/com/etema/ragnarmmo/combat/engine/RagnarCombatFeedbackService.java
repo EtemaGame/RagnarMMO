@@ -11,7 +11,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
- * Centralized feedback dispatch for the first combat-engine migration slice.
+ * Centralized feedback dispatch for combat-engine results.
  */
 public class RagnarCombatFeedbackService {
 

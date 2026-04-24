@@ -8,12 +8,12 @@ import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.api.attributes.RagnarAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
-import com.etema.ragnarmmo.roitems.runtime.RangedWeaponStatsHelper;
-import com.etema.ragnarmmo.roitems.runtime.RoRefineMath;
-import com.etema.ragnarmmo.roitems.runtime.WeaponStatHelper;
+import com.etema.ragnarmmo.items.runtime.RangedWeaponStatsHelper;
+import com.etema.ragnarmmo.items.runtime.RoRefineMath;
+import com.etema.ragnarmmo.items.runtime.WeaponStatHelper;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
-import com.etema.ragnarmmo.system.stats.compute.CombatMath;
+import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 import com.google.common.collect.Multimap;
 
 import net.minecraft.resources.ResourceLocation;

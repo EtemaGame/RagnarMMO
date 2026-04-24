@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.skill.job.swordman;
 
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
-import com.etema.ragnarmmo.system.stats.compute.CombatMath;
+import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 

@@ -10,8 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
- * Registry to decouple Skill IDs from their implementation classes.
- * Instead of specifying FQN in JSON, we specify an ID that this factory resolves.
+ * Registry to decouple skill IDs from their implementation classes.
  */
 public final class SkillEffectFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(SkillEffectFactory.class);
@@ -27,34 +26,19 @@ public final class SkillEffectFactory {
     }
 
     /**
-     * Creates an effect instance based on an effect ID or class FQN (fallback).
+     * Creates an effect instance from a registered effect ID.
      */
     public static Optional<ISkillEffect> create(String effectIdentifier, ResourceLocation skillId) {
-        // 1. Try resolving via registered short name/ID
-        if (REGISTRY.containsKey(effectIdentifier)) {
-            return Optional.of(REGISTRY.get(effectIdentifier).apply(skillId));
+        Function<ResourceLocation, ISkillEffect> factory = REGISTRY.get(effectIdentifier);
+        if (factory == null) {
+            LOGGER.warn("Unknown effect id '{}' for skill {}", effectIdentifier, skillId);
+            return Optional.empty();
         }
-
-        // 2. Fallback: try legacy reflection based on FQN
         try {
-            Class<?> clazz = Class.forName(effectIdentifier);
-            if (ISkillEffect.class.isAssignableFrom(clazz)) {
-                try {
-                    // New pattern: ResourceLocation constructor
-                    return Optional.of((ISkillEffect) clazz
-                            .getDeclaredConstructor(ResourceLocation.class).newInstance(skillId));
-                } catch (NoSuchMethodException e) {
-                    // Legacy pattern: no-arg constructor
-                    return Optional.of((ISkillEffect) clazz
-                            .getDeclaredConstructor().newInstance());
-                }
-            }
-        } catch (ClassNotFoundException ignored) {
-            // Identifier is likely a short name not yet registered
+            return Optional.of(factory.apply(skillId));
         } catch (Exception e) {
             LOGGER.error("Failed to instantiate effect for {}: {}", skillId, e.getMessage());
+            return Optional.empty();
         }
-
-        return Optional.empty();
     }
 }

@@ -1,9 +1,7 @@
 package com.etema.ragnarmmo.common.api.jobs;
 
-import com.etema.ragnarmmo.skill.api.SkillType;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -33,13 +31,13 @@ public enum JobType {
     BLACKSMITH("Blacksmith"); // Merchant -> Blacksmith progression
 
     private final String displayName;
-    private final java.util.Map<SkillType, Double> xpMultipliers;
-    private final java.util.Set<SkillType> classTreeSkills;
+    private final Map<ResourceLocation, Double> xpMultipliers;
+    private final Set<ResourceLocation> classTreeSkills;
 
     JobType(String displayName) {
         this.displayName = displayName;
-        this.xpMultipliers = new EnumMap<>(SkillType.class);
-        this.classTreeSkills = java.util.EnumSet.noneOf(SkillType.class);
+        this.xpMultipliers = new java.util.LinkedHashMap<>();
+        this.classTreeSkills = new LinkedHashSet<>();
     }
 
     static {
@@ -51,61 +49,61 @@ public enum JobType {
     private void registerBonuses() {
         switch (this) {
             case NOVICE -> {
-                classTreeSkills.add(SkillType.FIRST_AID);
-                classTreeSkills.add(SkillType.BASIC_SKILL);
-                classTreeSkills.add(SkillType.PLAY_DEAD);
+                classTreeSkills.add(skillId("first_aid"));
+                classTreeSkills.add(skillId("basic_skill"));
+                classTreeSkills.add(skillId("play_dead"));
             }
             case SWORDSMAN -> {
-                classTreeSkills.add(SkillType.SWORD_MASTERY);
-                classTreeSkills.add(SkillType.BASH);
-                classTreeSkills.add(SkillType.PROVOKE);
-                classTreeSkills.add(SkillType.ONE_HAND_MASTERY);
-                classTreeSkills.add(SkillType.TWO_HAND_MASTERY);
-                classTreeSkills.add(SkillType.ENDURANCE);
+                classTreeSkills.add(skillId("sword_mastery"));
+                classTreeSkills.add(skillId("bash"));
+                classTreeSkills.add(skillId("provoke"));
+                classTreeSkills.add(skillId("one_hand_mastery"));
+                classTreeSkills.add(skillId("two_hand_mastery"));
+                classTreeSkills.add(skillId("endurance"));
 
                 // XP Bonuses (Examples, to be refined if needed)
-                xpMultipliers.put(SkillType.SWORD_MASTERY, 1.3);
+                xpMultipliers.put(skillId("sword_mastery"), 1.3);
             }
             case MAGE -> {
-                classTreeSkills.add(SkillType.STAFF_MASTERY);
-                classTreeSkills.add(SkillType.SPELL_KNOWLEDGE);
-                classTreeSkills.add(SkillType.MANA_CONTROL);
-                classTreeSkills.add(SkillType.MAGIC_AMPLIFICATION);
-                classTreeSkills.add(SkillType.ELEMENTAL_AFFINITY);
-                classTreeSkills.add(SkillType.MAGIC_GUARD);
-                classTreeSkills.add(SkillType.ARCANE_REGENERATION);
-                classTreeSkills.add(SkillType.OVERCAST);
+                classTreeSkills.add(skillId("staff_mastery"));
+                classTreeSkills.add(skillId("spell_knowledge"));
+                classTreeSkills.add(skillId("mana_control"));
+                classTreeSkills.add(skillId("magic_amplification"));
+                classTreeSkills.add(skillId("elemental_affinity"));
+                classTreeSkills.add(skillId("magic_guard"));
+                classTreeSkills.add(skillId("arcane_regeneration"));
+                classTreeSkills.add(skillId("overcast"));
             }
             case ARCHER -> {
-                classTreeSkills.add(SkillType.BOW_MASTERY);
-                classTreeSkills.add(SkillType.ACCURACY_TRAINING);
-                classTreeSkills.add(SkillType.CRITICAL_SHOT);
-                classTreeSkills.add(SkillType.EVASION_BOOST);
-                classTreeSkills.add(SkillType.WIND_WALKER);
-                classTreeSkills.add(SkillType.KITING_INSTINCT);
+                classTreeSkills.add(skillId("bow_mastery"));
+                classTreeSkills.add(skillId("accuracy_training"));
+                classTreeSkills.add(skillId("critical_shot"));
+                classTreeSkills.add(skillId("evasion_boost"));
+                classTreeSkills.add(skillId("wind_walker"));
+                classTreeSkills.add(skillId("kiting_instinct"));
             }
             case THIEF -> {
-                classTreeSkills.add(SkillType.DAGGER_MASTERY);
-                classTreeSkills.add(SkillType.BACKSTAB_TRAINING);
-                classTreeSkills.add(SkillType.STEALTH_INSTINCT);
-                classTreeSkills.add(SkillType.FLEE_TRAINING);
-                classTreeSkills.add(SkillType.POISON_EXPERTISE);
-                classTreeSkills.add(SkillType.FATAL_INSTINCT);
+                classTreeSkills.add(skillId("dagger_mastery"));
+                classTreeSkills.add(skillId("backstab_training"));
+                classTreeSkills.add(skillId("stealth_instinct"));
+                classTreeSkills.add(skillId("flee_training"));
+                classTreeSkills.add(skillId("poison_expertise"));
+                classTreeSkills.add(skillId("fatal_instinct"));
             }
             case ACOLYTE -> {
-                classTreeSkills.add(SkillType.MACE_MASTERY);
-                classTreeSkills.add(SkillType.FAITH);
-                classTreeSkills.add(SkillType.DIVINE_PROTECTION);
-                classTreeSkills.add(SkillType.HEAL_POWER);
-                classTreeSkills.add(SkillType.HOLY_RESISTANCE);
-                classTreeSkills.add(SkillType.BLESSING_AURA);
+                classTreeSkills.add(skillId("mace_mastery"));
+                classTreeSkills.add(skillId("faith"));
+                classTreeSkills.add(skillId("divine_protection"));
+                classTreeSkills.add(skillId("heal_power"));
+                classTreeSkills.add(skillId("holy_resistance"));
+                classTreeSkills.add(skillId("blessing_aura"));
             }
             case MERCHANT -> {
-                classTreeSkills.add(SkillType.TRADING_KNOWLEDGE);
-                classTreeSkills.add(SkillType.WEAPON_MAINTENANCE);
-                classTreeSkills.add(SkillType.ARMOR_MAINTENANCE);
-                classTreeSkills.add(SkillType.OVERCHARGE);
-                classTreeSkills.add(SkillType.BUSINESS_MIND);
+                classTreeSkills.add(skillId("trading_knowledge"));
+                classTreeSkills.add(skillId("weapon_maintenance"));
+                classTreeSkills.add(skillId("armor_maintenance"));
+                classTreeSkills.add(skillId("overcharge"));
+                classTreeSkills.add(skillId("business_mind"));
             }
             case WIZARD -> {
                 // Second Class - uses dynamic skill tree system from wizard_2.json
@@ -137,16 +135,11 @@ public enum JobType {
         return name().toLowerCase(Locale.ROOT);
     }
 
-    public double getXpMultiplier(SkillType skill) {
-        return xpMultipliers.getOrDefault(skill, 1.0);
-    }
-
-    /**
-     * @deprecated Use {@link #getAllowedSkillIds()} instead
-     */
-    @Deprecated
-    public java.util.Set<SkillType> getAllowedSkills() {
-        return classTreeSkills;
+    public double getXpMultiplier(ResourceLocation skillId) {
+        if (skillId == null) {
+            return 1.0;
+        }
+        return xpMultipliers.getOrDefault(skillId, 1.0);
     }
 
     /**
@@ -155,26 +148,29 @@ public enum JobType {
      * @return Set of allowed skill ResourceLocations
      */
     public Set<ResourceLocation> getAllowedSkillIds() {
+        if (!classTreeSkills.isEmpty()) {
+            return Set.copyOf(classTreeSkills);
+        }
         return switch (this) {
-            case NOVICE -> skillIds("first_aid", "basic_skill", "play_dead");
-            case SWORDSMAN, KNIGHT -> skillIds(
+            case KNIGHT -> skillIds(
                     "sword_mastery", "increase_hp_recovery", "bash", "provoke",
                     "two_hand_mastery", "magnum_break", "endure");
-            case MAGE, WIZARD -> skillIds(
+            case WIZARD -> skillIds(
                     "increase_sp_recovery", "sight", "napalm_beat", "soul_strike", "safety_wall",
                     "cold_bolt", "frost_diver", "stone_curse", "fire_bolt", "fire_ball",
                     "fire_wall", "lightning_bolt", "thunder_storm");
-            case ARCHER, HUNTER -> skillIds(
+            case HUNTER -> skillIds(
                     "owls_eye", "vultures_eye", "improve_concentration", "double_strafe", "arrow_shower");
-            case THIEF, ASSASSIN -> skillIds(
+            case ASSASSIN -> skillIds(
                     "double_attack", "improve_dodge", "steal", "hiding", "envenom", "detoxify");
-            case MERCHANT, BLACKSMITH -> skillIds(
+            case BLACKSMITH -> skillIds(
                     "enlarge_weight_limit", "discount", "overcharge", "pushcart",
                     "vending", "buying_store", "identify", "mammonite");
-            case ACOLYTE, PRIEST -> skillIds(
+            case PRIEST -> skillIds(
                     "divine_protection", "demon_bane", "angelus", "blessing", "heal",
                     "increase_agi", "decrease_agi", "cure", "ruwach", "teleportation",
                     "warp_portal", "pneuma", "aqua_benedicta", "holy_light", "signum_crucis");
+            default -> Set.copyOf(classTreeSkills);
         };
     }
 
@@ -184,6 +180,10 @@ public enum JobType {
             ids.add(ResourceLocation.fromNamespaceAndPath("ragnarmmo", path));
         }
         return Set.copyOf(ids);
+    }
+
+    private static ResourceLocation skillId(String path) {
+        return ResourceLocation.fromNamespaceAndPath("ragnarmmo", path);
     }
 
     /**

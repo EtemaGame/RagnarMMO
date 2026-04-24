@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.skill.job.acolyte;
 
-import com.etema.ragnarmmo.system.stats.party.Party;
-import com.etema.ragnarmmo.system.stats.party.PartyService;
+import com.etema.ragnarmmo.player.party.Party;
+import com.etema.ragnarmmo.player.party.PartyService;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;

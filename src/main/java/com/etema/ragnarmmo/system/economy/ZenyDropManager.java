@@ -3,7 +3,7 @@ package com.etema.ragnarmmo.system.economy;
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadView;
 import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
-import com.etema.ragnarmmo.roitems.ZenyItems;
+import com.etema.ragnarmmo.items.ZenyItems;
 import com.etema.ragnarmmo.common.config.access.EconomyConfigAccess;
 import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
 import net.minecraft.util.RandomSource;
@@ -63,7 +63,9 @@ public class ZenyDropManager {
 
         return switch (rank) {
             case ELITE -> new ZenyDropProfile(EconomyConfigAccess.getEliteChanceMult(), 5, 0, 0);
+            case MINI_BOSS -> new ZenyDropProfile(EconomyConfigAccess.getBossChanceMult(), 8, 1, 0);
             case BOSS -> new ZenyDropProfile(EconomyConfigAccess.getBossChanceMult(), 12, 1, 0);
+            case MVP -> new ZenyDropProfile(EconomyConfigAccess.getBossChanceMult() * 1.5D, 16, 2, 1);
             case NORMAL -> new ZenyDropProfile(1.0D, 2, 0, 0);
         };
     }

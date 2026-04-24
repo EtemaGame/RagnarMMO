@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.mixin;
 
-import com.etema.ragnarmmo.roitems.ZenyItems;
+import com.etema.ragnarmmo.items.ZenyItems;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;

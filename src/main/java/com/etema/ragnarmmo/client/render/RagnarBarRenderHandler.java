@@ -1,9 +1,9 @@
 package com.etema.ragnarmmo.client.render;
 
-import com.etema.ragnarmmo.system.bar.EntityStatResolver;
-import com.etema.ragnarmmo.system.bar.RagnarIntegrationHandler;
+import com.etema.ragnarmmo.client.hud.EntityStatResolver;
+import com.etema.ragnarmmo.client.hud.RagnarIntegrationHandler;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
-import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
+import com.etema.ragnarmmo.common.config.access.MobConfigAccess;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
@@ -164,7 +164,7 @@ public class RagnarBarRenderHandler {
                 float pct = Math.max(0f, Math.min(1f, hp / max));
                 drawCompactBar(ps, barY, pct, barFrameColor, barAccentColor);
 
-                if (MobStatsConfigAccess.renderNumericHealth()) {
+                if (MobConfigAccess.renderNumericHealth()) {
                     String hpText = String.format(java.util.Locale.ROOT, "%.0f / %.0f", hp, max);
                     ps.pushPose();
                     float textScale = 0.45f;

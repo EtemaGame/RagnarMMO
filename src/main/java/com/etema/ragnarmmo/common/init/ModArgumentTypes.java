@@ -24,9 +24,9 @@ public class ModArgumentTypes {
                     com.etema.ragnarmmo.common.command.JobArgumentType.class,
                     SingletonArgumentInfo.contextFree(com.etema.ragnarmmo.common.command.JobArgumentType::job));
             ArgumentTypeInfos.registerByClass(
-                    com.etema.ragnarmmo.system.stats.commands.StatKeyArgumentType.class,
+                    com.etema.ragnarmmo.player.command.StatKeyArgumentType.class,
                     SingletonArgumentInfo
-                            .contextFree(com.etema.ragnarmmo.system.stats.commands.StatKeyArgumentType::stat));
+                            .contextFree(com.etema.ragnarmmo.player.command.StatKeyArgumentType::stat));
         }
     }
 }

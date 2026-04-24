@@ -3,7 +3,7 @@ package com.etema.ragnarmmo.combat.timing;
 import com.etema.ragnarmmo.combat.hand.AttackHandResolver;
 import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
-import com.etema.ragnarmmo.system.stats.compute.CombatMath;
+import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 
 import net.minecraft.world.entity.player.Player;
 

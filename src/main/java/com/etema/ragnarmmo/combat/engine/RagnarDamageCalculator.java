@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.combat.engine;
 
 import com.etema.ragnarmmo.combat.element.ElementType;
 import com.etema.ragnarmmo.combat.element.CombatPropertyResolver;
-import com.etema.ragnarmmo.system.stats.compute.CombatMath;
+import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import java.util.Random;

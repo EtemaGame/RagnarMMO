@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.skill.execution.projectile;
 
 import java.util.function.Consumer;
 
-import com.etema.ragnarmmo.roitems.runtime.RangedWeaponStatsHelper;
+import com.etema.ragnarmmo.items.runtime.RangedWeaponStatsHelper;
 import com.etema.ragnarmmo.skill.data.SkillDefinition;
 
 import net.minecraft.nbt.CompoundTag;

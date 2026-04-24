@@ -9,7 +9,7 @@ import com.etema.ragnarmmo.combat.api.CombatHitResultType;
 import com.etema.ragnarmmo.combat.api.CombatResolution;
 import com.etema.ragnarmmo.combat.state.CombatActorState;
 import com.etema.ragnarmmo.combat.util.CombatDebugLog;
-import com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot;
+import com.etema.ragnarmmo.player.stats.compute.EquipmentStatSnapshot;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -18,11 +18,10 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 /**
- * First practical server-authoritative basic attack slice.
- * <p>
- * This intentionally avoids vanilla melee authority and uses RagnarMMO stats to
- * decide hit/crit/damage. It is conservative and meant as the first migration
- * step, not the final complete RO combat model.
+ * Server-authoritative basic attack service.
+ *
+ * <p>This intentionally avoids vanilla melee authority and uses RagnarMMO stats to
+ * decide hit/crit/damage.</p>
  */
 public class RagnarBasicAttackService {
     private final RagnarCombatCooldownService cooldownService = new RagnarCombatCooldownService();
@@ -83,7 +82,7 @@ public class RagnarBasicAttackService {
             }
         }
 
-        boolean hit = attacker.getRandom().nextDouble() < com.etema.ragnarmmo.system.stats.compute.CombatMath.computeHitRate(attackerDerived.accuracy, targetFlee);
+        boolean hit = attacker.getRandom().nextDouble() < com.etema.ragnarmmo.player.stats.compute.CombatMath.computeHitRate(attackerDerived.accuracy, targetFlee);
         actorState.setLastAcceptedSequenceId(ctx.sequenceId());
         int intervalTicks = Math.max(1, (int) Math.round(Math.max(0.05D, attackerDerived.globalCooldown) * 20.0D));
         cooldownService.markBasicAttackUsed(actorState.getCooldowns(), nowTick, intervalTicks);

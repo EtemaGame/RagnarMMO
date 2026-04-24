@@ -6,7 +6,7 @@ import net.minecraft.world.entity.LivingEntity;
 /**
  * Utility class for preventing double damage processing in RagnarMMO systems.
  *
- * Ensures that when multiple systems (MobStats, PlayerStats) modify the same
+ * Ensures that when multiple combat systems modify the same
  * LivingHurtEvent, they don't stack unintentionally.
  *
  * @author RagnarMMO Team

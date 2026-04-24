@@ -1,6 +1,5 @@
 package com.etema.ragnarmmo.client;
 
-import com.etema.ragnarmmo.skill.api.SkillType;
 import net.minecraft.resources.ResourceLocation;
 
 public class ClientCastManager {
@@ -20,15 +19,6 @@ public class ClientCastManager {
         this.totalTicks = total;
     }
 
-    /**
-     * @deprecated Use {@link #updateCast(ResourceLocation, int, int)}
-     */
-    @Deprecated
-    @SuppressWarnings("removal")
-    public void updateCast(SkillType skill, int current, int total) {
-        updateCast(skill != null ? skill.toResourceLocation() : null, current, total);
-    }
-
     public void tick() {
         if (currentTicks > 0) {
             currentTicks--;
@@ -44,15 +34,6 @@ public class ClientCastManager {
 
     public ResourceLocation getCastingSkillId() {
         return castingSkillId;
-    }
-
-    /**
-     * @deprecated Use {@link #getCastingSkillId()} instead
-     */
-    @Deprecated
-    @SuppressWarnings("removal")
-    public SkillType getCastingSkill() {
-        return castingSkillId != null ? SkillType.fromResourceLocation(castingSkillId) : null;
     }
 
     public float getProgress() {

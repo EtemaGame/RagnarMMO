@@ -3,7 +3,7 @@ package com.etema.ragnarmmo.common.api;
 import com.etema.ragnarmmo.common.api.compute.DerivedStats;
 import com.etema.ragnarmmo.common.api.events.StatComputeEvent;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
-import com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot;
+import com.etema.ragnarmmo.player.stats.compute.EquipmentStatSnapshot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.MinecraftForge;
 

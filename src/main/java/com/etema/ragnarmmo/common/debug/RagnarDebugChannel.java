@@ -6,7 +6,7 @@ public enum RagnarDebugChannel {
     PLAYER_DATA("player"),
     MOB_SPAWNS("mobs"),
     BOSS_WORLD("bosses"),
-    MIGRATION("migration");
+    RUNTIME("runtime");
 
     private final String commandName;
 

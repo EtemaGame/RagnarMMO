@@ -213,9 +213,9 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
                 if (!isMagic) {
                     double hit = getEntityHit(attacker);
                     double flee = getEntityFlee(victim);
-                    double hitRate = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeHitRate(hit, flee);
+                    double hitRate = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeHitRate(hit, flee);
                     
-                    if (!com.etema.ragnarmmo.system.stats.compute.CombatMath.rollHit(hitRate, this.random)) {
+                    if (!com.etema.ragnarmmo.player.stats.compute.CombatMath.rollHit(hitRate, this.random)) {
                         this.level().playSound(null, this.getX(), this.getY(), this.getZ(), 
                             net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_NODAMAGE, net.minecraft.sounds.SoundSource.NEUTRAL, 1.0f, 1.5f);
                         if (this.level() instanceof net.minecraft.server.level.ServerLevel sl) {
@@ -248,7 +248,7 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
     }
 
     private double getEntityHit(LivingEntity entity) {
-        var resolvedHit = com.etema.ragnarmmo.system.stats.compute.CombatMath.tryGetResolvedMobHit(entity);
+        var resolvedHit = com.etema.ragnarmmo.player.stats.compute.CombatMath.tryGetResolvedMobHit(entity);
         if (resolvedHit.isPresent()) {
             return resolvedHit.getAsInt();
         }
@@ -260,11 +260,11 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
         if (entity instanceof Player p) {
             p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).ifPresent(stats -> levelArr[0] = stats.getLevel());
         }
-        return com.etema.ragnarmmo.system.stats.compute.CombatMath.computeHIT(dex, luk, levelArr[0], 0);
+        return com.etema.ragnarmmo.player.stats.compute.CombatMath.computeHIT(dex, luk, levelArr[0], 0);
     }
 
     private double getEntityFlee(LivingEntity entity) {
-        var resolvedFlee = com.etema.ragnarmmo.system.stats.compute.CombatMath.tryGetResolvedMobFlee(entity);
+        var resolvedFlee = com.etema.ragnarmmo.player.stats.compute.CombatMath.tryGetResolvedMobFlee(entity);
         if (resolvedFlee.isPresent()) {
             return resolvedFlee.getAsInt();
         }
@@ -276,7 +276,7 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
         if (entity instanceof Player p) {
             p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).ifPresent(stats -> levelArr[0] = stats.getLevel());
         }
-        return com.etema.ragnarmmo.system.stats.compute.CombatMath.computeFLEE(agi, luk, levelArr[0], 0);
+        return com.etema.ragnarmmo.player.stats.compute.CombatMath.computeFLEE(agi, luk, levelArr[0], 0);
     }
 
     private double getSafeAttributeValue(LivingEntity entity, com.etema.ragnarmmo.common.api.stats.StatKeys key) {

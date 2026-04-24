@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.skill.job.merchant;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
-import com.etema.ragnarmmo.roitems.runtime.RoItemNbtHelper;
+import com.etema.ragnarmmo.items.runtime.RoItemNbtHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;

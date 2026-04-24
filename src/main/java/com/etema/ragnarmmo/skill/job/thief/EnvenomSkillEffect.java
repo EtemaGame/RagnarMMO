@@ -61,9 +61,9 @@ public class EnvenomSkillEffect implements ISkillEffect {
 
                 float basePoisonChance = (float) definition.getLevelDouble("status_chance", level,
                         0.10D + (level * 0.04D));
-                float finalPoisonChance = com.etema.ragnarmmo.system.stats.compute.CombatMath.computePoisonChance(basePoisonChance, target);
+                float finalPoisonChance = com.etema.ragnarmmo.player.stats.compute.CombatMath.computePoisonChance(basePoisonChance, target);
                 int poisonDuration = definition.getLevelInt("duration_ticks", level, 200 + (level * 20));
-                int finalPoisonDuration = com.etema.ragnarmmo.system.stats.compute.CombatMath.computePoisonDuration(poisonDuration, target);
+                int finalPoisonDuration = com.etema.ragnarmmo.player.stats.compute.CombatMath.computePoisonDuration(poisonDuration, target);
 
                 if (finalPoisonDuration > 0 && player.getRandom().nextFloat() < finalPoisonChance) {
                     target.addEffect(new MobEffectInstance(MobEffects.POISON, finalPoisonDuration, 0, false, true, true));

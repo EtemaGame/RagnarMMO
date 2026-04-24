@@ -11,8 +11,8 @@ import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import com.etema.ragnarmmo.skill.data.SkillDefinition;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.registry.SkillTriggerRegistry;
-import com.etema.ragnarmmo.system.stats.compute.CombatMath;
-import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService;
+import com.etema.ragnarmmo.player.stats.compute.CombatMath;
+import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncService;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -206,7 +206,7 @@ public class SkillEffectHandler {
         if (player.level().isClientSide())
             return;
 
-        Optional<SkillDefinition> defOpt = SkillRegistry.get(skillId.toString());
+        Optional<SkillDefinition> defOpt = SkillRegistry.get(skillId);
         var playerDataOpt = RoPlayerDataAccess.get(player);
 
         if (defOpt.isPresent() && playerDataOpt.isPresent()) {
@@ -232,7 +232,7 @@ public class SkillEffectHandler {
     private static void syncPlayer(ServerPlayer player, IPlayerStats stats, SkillManager skills) {
         PlayerStatsSyncService.sync(player, stats, RoPlayerSyncDomain.allMask());
         com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
-                new com.etema.ragnarmmo.system.stats.net.ClientboundSkillSyncPacket(skills.serializeNBT()));
+                new com.etema.ragnarmmo.player.stats.network.ClientboundSkillSyncPacket(skills.serializeNBT()));
     }
 
     private static boolean executeSkillEffect(ServerPlayer player, ResourceLocation skillId, int level) {

@@ -7,10 +7,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 /**
- * Shared normalized read view for mob consumers during coexistence.
+ * Shared normalized read view for mob consumers.
  *
- * <p>This is a read-only integration model only. It is not a runtime authority, does not expose
- * raw legacy tier values, and does not fold world-state policy into rank.</p>
+ * <p>This is a read-only integration model only. It is not a runtime authority and does not fold
+ * world-state policy into rank.</p>
  */
 public record MobConsumerReadView(
         ResourceLocation entityTypeId,

@@ -12,24 +12,24 @@ import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
 import com.etema.ragnarmmo.common.util.DamageProcessingGuard;
-import com.etema.ragnarmmo.roitems.runtime.EquipmentCombatModifierResolver;
-import com.etema.ragnarmmo.roitems.runtime.RoRefineMath;
-import com.etema.ragnarmmo.roitems.runtime.RangedWeaponStatsHelper;
-import com.etema.ragnarmmo.roitems.runtime.WeaponStatHelper;
-import com.etema.ragnarmmo.system.stats.RagnarStats;
+import com.etema.ragnarmmo.items.runtime.EquipmentCombatModifierResolver;
+import com.etema.ragnarmmo.items.runtime.RoRefineMath;
+import com.etema.ragnarmmo.items.runtime.RangedWeaponStatsHelper;
+import com.etema.ragnarmmo.items.runtime.WeaponStatHelper;
+import com.etema.ragnarmmo.player.stats.PlayerStatsModule;
 import com.etema.ragnarmmo.system.stats.capability.PlayerStats;
-import com.etema.ragnarmmo.system.stats.compute.CombatMath;
-import com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot;
-import com.etema.ragnarmmo.system.stats.compute.StatComputer;
+import com.etema.ragnarmmo.player.stats.compute.CombatMath;
+import com.etema.ragnarmmo.player.stats.compute.EquipmentStatSnapshot;
+import com.etema.ragnarmmo.player.stats.compute.StatComputer;
 import com.etema.ragnarmmo.common.net.Network;
-import com.etema.ragnarmmo.system.stats.net.DerivedStatsSyncPacket;
-import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket;
-import com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService;
-import com.etema.ragnarmmo.system.stats.progression.ExpTable;
-import com.etema.ragnarmmo.system.stats.progression.JobBonusService;
-import com.etema.ragnarmmo.system.stats.party.PartyXpService;
-import com.etema.ragnarmmo.system.mobstats.util.MobUtils;
-import com.etema.ragnarmmo.system.stats.util.AntiFarmManager;
+import com.etema.ragnarmmo.player.stats.network.DerivedStatsSyncPacket;
+import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncPacket;
+import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncService;
+import com.etema.ragnarmmo.player.progression.PlayerProgressionService;
+import com.etema.ragnarmmo.player.stats.progression.JobBonusService;
+import com.etema.ragnarmmo.player.party.PartyXpService;
+import com.etema.ragnarmmo.mobs.util.MobUtils;
+import com.etema.ragnarmmo.player.stats.util.AntiFarmManager;
 import com.google.common.collect.Multimap;
 
 import net.minecraft.network.chat.Component;
@@ -58,7 +58,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-@Mod.EventBusSubscriber(modid = RagnarStats.MOD_ID)
+@Mod.EventBusSubscriber(modid = PlayerStatsModule.MOD_ID)
 public class CommonEvents {
     // Use ThreadLocalRandom for thread safety in event handlers
 
@@ -98,8 +98,8 @@ public class CommonEvents {
                 PlayerStatsSyncService.sync(sp, s);
 
                 // Give Money Bag if missing
-                if (!sp.getInventory().contains(new net.minecraft.world.item.ItemStack(com.etema.ragnarmmo.roitems.ZenyItems.MONEY_BAG.get()))) {
-                    sp.getInventory().add(new net.minecraft.world.item.ItemStack(com.etema.ragnarmmo.roitems.ZenyItems.MONEY_BAG.get()));
+                if (!sp.getInventory().contains(new net.minecraft.world.item.ItemStack(com.etema.ragnarmmo.items.ZenyItems.MONEY_BAG.get()))) {
+                    sp.getInventory().add(new net.minecraft.world.item.ItemStack(com.etema.ragnarmmo.items.ZenyItems.MONEY_BAG.get()));
                 }
 
                 RagnarDebugLog.playerData(
@@ -369,16 +369,18 @@ public class CommonEvents {
                 int baseLost = 0;
                 int currentExp = stats.getExp();
                 if (currentExp > 0) {
-                    baseLost = ExpTable.computeDeathPenaltyLoss(currentExp,
-                            RagnarConfigs.SERVER.progression.baseExpDeathPenaltyRate.get());
+                    baseLost = PlayerProgressionService
+                            .forJobId(net.minecraft.resources.ResourceLocation.tryParse(stats.getJobId()))
+                            .computeBaseDeathPenaltyLoss(currentExp);
                     stats.setExp(Math.max(0, currentExp - baseLost));
                 }
 
                 int jobLost = 0;
                 int currentJobExp = stats.getJobExp();
                 if (currentJobExp > 0) {
-                    jobLost = ExpTable.computeDeathPenaltyLoss(currentJobExp,
-                            RagnarConfigs.SERVER.progression.jobExpDeathPenaltyRate.get());
+                    jobLost = PlayerProgressionService
+                            .forJobId(net.minecraft.resources.ResourceLocation.tryParse(stats.getJobId()))
+                            .computeJobDeathPenaltyLoss(currentJobExp);
                     stats.setJobExp(Math.max(0, currentJobExp - jobLost));
                 }
 
@@ -469,12 +471,14 @@ public class CommonEvents {
             if (s instanceof PlayerStats internal) {
                 internal.ensureBaseStatBaseline(RagnarConfigs.SERVER.progression.baseStatPoints.get());
             }
-            int baseAward = ExpTable.applyBaseExpRate(finalExp);
-            int jobAward = ExpTable.applyJobExpRate(finalExp);
+            PlayerProgressionService progressionService = PlayerProgressionService
+                    .forJobId(net.minecraft.resources.ResourceLocation.tryParse(s.getJobId()));
+            int baseAward = progressionService.applyBaseExpRate(finalExp);
+            int jobAward = progressionService.applyJobExpRate(finalExp);
 
             int gained = s.addExpAndProcessLevelUps(baseAward, RagnarConfigs.SERVER.progression.pointsPerLevel.get(),
-                    ExpTable::expToNext);
-            int jobGained = s.addJobExpAndProcessLevelUps(jobAward, ExpTable::jobExpToNext);
+                    progressionService::baseExpToNext);
+            int jobGained = s.addJobExpAndProcessLevelUps(jobAward, progressionService::jobExpToNext);
             RagnarDebugLog.playerData(
                     "KILL_XP killer={} target={} baseRaw={} baseFinal={} baseAward={} jobAward={} baseLv={} jobLv={} levelUps={} jobLevelUps={}",
                     finalSp.getGameProfile().getName(),
@@ -690,7 +694,7 @@ public class CommonEvents {
             ItemStack stack = ent.getItemBySlot(slot);
             if (!stack.isEmpty()) {
                 // High refinements grant a small MDEF bonus
-                int refine = com.etema.ragnarmmo.roitems.runtime.RoItemNbtHelper.getRefineLevel(stack);
+                int refine = com.etema.ragnarmmo.items.runtime.RoItemNbtHelper.getRefineLevel(stack);
                 if (refine >= 5) {
                     equipMdef += (refine - 4); 
                 }
@@ -703,7 +707,7 @@ public class CommonEvents {
     /**
      * Determines if a damage source should be treated as magical in RO terms.
      * Uses DamageType tags for semantic correctness. Falls back to msgId only
-     * for vanilla legacy sources. "thorns" is physical retaliation in RO, not magic.
+     * for vanilla damage sources. "thorns" is physical retaliation in RO, not magic.
      */
     public static boolean isMagicDamage(net.minecraft.world.damagesource.DamageSource source) {
         if (source.is(net.minecraft.tags.DamageTypeTags.WITCH_RESISTANT_TO)) {

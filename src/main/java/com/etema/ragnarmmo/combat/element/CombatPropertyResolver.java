@@ -1,8 +1,8 @@
 package com.etema.ragnarmmo.combat.element;
 
-import com.etema.ragnarmmo.common.api.mobs.runtime.projection.ComputedMobProfileReadView;
-import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
-import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
+import com.etema.ragnarmmo.mobs.capability.MobProfileProvider;
+import com.etema.ragnarmmo.mobs.capability.MobProfileState;
+import com.etema.ragnarmmo.mobs.profile.MobProfile;
 import com.etema.ragnarmmo.common.tags.RagnarTags;
 import com.etema.ragnarmmo.entity.aoe.FireWallAoe;
 import com.etema.ragnarmmo.entity.aoe.HeavensDriveAoe;
@@ -14,7 +14,7 @@ import com.etema.ragnarmmo.entity.projectile.FireBoltProjectile;
 import com.etema.ragnarmmo.entity.projectile.IceBoltProjectile;
 import com.etema.ragnarmmo.entity.projectile.LightningBoltProjectile;
 import com.etema.ragnarmmo.entity.projectile.SoulStrikeProjectile;
-import com.etema.ragnarmmo.system.stats.compute.CombatMath;
+import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
@@ -93,19 +93,12 @@ public final class CombatPropertyResolver {
             return temporary;
         }
 
-        ComputedMobProfileReadView computedReadView = getComputedMobReadView(entity);
-        if (computedReadView != null) {
-            ElementType normalizedElement = parseElementId(computedReadView.element());
+        MobProfile canonicalProfile = getCanonicalProfile(entity);
+        if (canonicalProfile != null) {
+            ElementType normalizedElement = parseElementId(canonicalProfile.element());
             if (normalizedElement != null) {
                 return normalizedElement;
             }
-        }
-
-        var legacyStats = entity instanceof net.minecraft.world.entity.Mob mob
-                ? MobStatsProvider.get(mob).orElse(null)
-                : null;
-        if (legacyStats != null) {
-            return legacyStats.getElement();
         }
 
         var type = entity.getType();
@@ -123,9 +116,9 @@ public final class CombatPropertyResolver {
     }
 
     public static String getRaceId(LivingEntity entity) {
-        ComputedMobProfileReadView computedReadView = getComputedMobReadView(entity);
-        if (computedReadView != null) {
-            return computedReadView.race();
+        MobProfile canonicalProfile = getCanonicalProfile(entity);
+        if (canonicalProfile != null) {
+            return canonicalProfile.race();
         }
 
         var type = entity.getType();
@@ -143,9 +136,9 @@ public final class CombatPropertyResolver {
     }
 
     public static CombatMath.MobSize getEntitySize(LivingEntity entity) {
-        ComputedMobProfileReadView computedReadView = getComputedMobReadView(entity);
-        if (computedReadView != null) {
-            CombatMath.MobSize normalizedSize = parseMobSizeId(computedReadView.size());
+        MobProfile canonicalProfile = getCanonicalProfile(entity);
+        if (canonicalProfile != null) {
+            CombatMath.MobSize normalizedSize = parseMobSizeId(canonicalProfile.size());
             if (normalizedSize != null) {
                 return normalizedSize;
             }
@@ -337,9 +330,11 @@ public final class CombatPropertyResolver {
         return raw;
     }
 
-    private static ComputedMobProfileReadView getComputedMobReadView(LivingEntity entity) {
-        return ManualMobProfileRuntimeStore.get(entity)
-                .map(ComputedMobProfileReadView::from)
+    private static MobProfile getCanonicalProfile(LivingEntity entity) {
+        return MobProfileProvider.get(entity)
+                .resolve()
+                .filter(MobProfileState::isInitialized)
+                .map(MobProfileState::profile)
                 .orElse(null);
     }
 

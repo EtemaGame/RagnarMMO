@@ -5,7 +5,7 @@ import com.etema.ragnarmmo.common.init.RagnarMobEffects;
 import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
-import com.etema.ragnarmmo.system.stats.compute.CombatMath;
+import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

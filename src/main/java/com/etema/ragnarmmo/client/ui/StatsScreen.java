@@ -9,14 +9,14 @@ import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.skill.job.merchant.MerchantSkillEvents;
 import com.etema.ragnarmmo.client.DerivedStatsClientCache;
-import com.etema.ragnarmmo.system.stats.compute.StatComputer;
-import com.etema.ragnarmmo.system.stats.net.AllocateStatPacket;
-import com.etema.ragnarmmo.system.stats.net.DeallocateStatPacket;
-import com.etema.ragnarmmo.system.stats.net.PacketResetCharacter;
-import com.etema.ragnarmmo.system.stats.progression.ExpTable;
-import com.etema.ragnarmmo.system.stats.progression.JobBonusService;
-import com.etema.ragnarmmo.roitems.runtime.RoAttributeApplier;
-import com.etema.ragnarmmo.system.stats.progression.StatCost;
+import com.etema.ragnarmmo.player.stats.compute.StatComputer;
+import com.etema.ragnarmmo.player.stats.network.AllocateStatPacket;
+import com.etema.ragnarmmo.player.stats.network.DeallocateStatPacket;
+import com.etema.ragnarmmo.player.stats.network.PacketResetCharacter;
+import com.etema.ragnarmmo.player.progression.PlayerProgressionService;
+import com.etema.ragnarmmo.player.stats.progression.JobBonusService;
+import com.etema.ragnarmmo.items.runtime.RoAttributeApplier;
+import com.etema.ragnarmmo.player.stats.progression.StatCost;
 import com.google.common.collect.Multimap;
 
 import net.minecraft.ChatFormatting;
@@ -213,7 +213,10 @@ public class StatsScreen extends Screen {
 
                                 // Header info line
                                 Component levelText = Component.translatable("screen.ragnarmmo.stats.level_format",
-                                                stats.getLevel(), stats.getExp(), ExpTable.expToNext(stats.getLevel()));
+                                                stats.getLevel(), stats.getExp(),
+                                                PlayerProgressionService
+                                                        .forJobId(net.minecraft.resources.ResourceLocation.tryParse(stats.getJobId()))
+                                                        .baseExpToNext(stats.getLevel()));
                                 g.drawString(mc.font, levelText, 19, 28, 0xFFFFFFFF, false);
 
                                 // =========================
@@ -499,7 +502,9 @@ public class StatsScreen extends Screen {
 
                                 Component jobText = Component.translatable("screen.ragnarmmo.stats.job_format",
                                                 jobName, stats.getJobLevel(), stats.getJobExp(),
-                                                ExpTable.jobExpToNext(stats.getJobLevel()));
+                                                PlayerProgressionService
+                                                        .forJobId(net.minecraft.resources.ResourceLocation.tryParse(stats.getJobId()))
+                                                        .jobExpToNext(stats.getJobLevel()));
 
                                 g.drawString(mc.font, jobText, 16, footerY, 0xFF99CCFF, false);
 

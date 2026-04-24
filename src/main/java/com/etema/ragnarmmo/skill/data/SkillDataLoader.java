@@ -3,7 +3,6 @@ package com.etema.ragnarmmo.skill.data;
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.skill.api.SkillCategory;
 import com.etema.ragnarmmo.skill.api.SkillTier;
-import com.etema.ragnarmmo.skill.api.SkillType;
 import com.etema.ragnarmmo.skill.api.SkillUsageType;
 import com.etema.ragnarmmo.skill.api.SkillEffectFactory;
 import com.etema.ragnarmmo.skill.net.SyncSkillDefinitionsPacket;
@@ -31,8 +30,7 @@ import java.util.*;
  * Loads skill definitions from JSON files in data/{namespace}/skills/.
  * Implements ResourceManagerReloadListener for /reload support.
  *
- * Falls back to SkillType enum only for non-canonical legacy skills.
- * Canonical first-job skills must be supplied by JSON.
+ * Skill definitions are JSON-authored only.
  */
 public class SkillDataLoader extends SimpleJsonResourceReloadListener {
 
@@ -146,31 +144,7 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
             validateCanonicalSkillsPresent();
         }
 
-        // Phase 2: Load remaining non-canonical skills from legacy enum (fallback)
-        int legacyCount = 0;
-        for (SkillType type : SkillType.values()) {
-            ResourceLocation legacyId = new ResourceLocation(SkillRegistry.getDefaultNamespace(), type.getId());
-            if (!SkillRegistry.contains(legacyId)) {
-                if (enforceCanonicalSkills && isCanonicalFirstJobSkill(legacyId)) {
-                    LOGGER.error("Canonical first-job skill {} cannot be loaded from SkillType fallback", legacyId);
-                    throw new IllegalStateException(
-                            "Canonical first-job skill cannot be loaded from SkillType fallback: " + legacyId);
-                }
-
-                SkillDefinition def = convertFromLegacyEnum(type);
-                SkillRegistry.register(def);
-                legacyCount++;
-                LOGGER.warn("Injected legacy skill {} from SkillType fallback; add JSON before balancing it", legacyId);
-            } else {
-                logLegacyJsonMismatch(type, SkillRegistry.require(legacyId));
-            }
-        }
-
-        if (legacyCount > 0) {
-            LOGGER.info("Loaded {} skills from legacy enum (not in JSON)", legacyCount);
-        }
-
-        // Phase 3: Auto-register effects from effect_class
+        // Phase 2: Auto-register effects from effect_class
         int effectCount = 0;
         int effectErrors = 0;
         for (SkillDefinition def : SkillRegistry.getAll()) {
@@ -219,38 +193,6 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         if (!missing.isEmpty()) {
             LOGGER.error("Missing canonical first-job skill JSON definitions: {}", missing);
             throw new IllegalStateException("Missing canonical first-job skill JSON definitions: " + missing);
-        }
-    }
-
-    private void logLegacyJsonMismatch(SkillType type, SkillDefinition jsonDefinition) {
-        SkillDefinition legacyDefinition = convertFromLegacyEnum(type);
-        List<String> mismatchedFields = new ArrayList<>();
-
-        if (!Objects.equals(jsonDefinition.getDisplayName(), legacyDefinition.getDisplayName())) {
-            mismatchedFields.add("display_name");
-        }
-        if (jsonDefinition.getCategory() != legacyDefinition.getCategory()) {
-            mismatchedFields.add("category");
-        }
-        if (jsonDefinition.getTier() != legacyDefinition.getTier()) {
-            mismatchedFields.add("tier");
-        }
-        if (jsonDefinition.getUsageType() != legacyDefinition.getUsageType()) {
-            mismatchedFields.add("usage");
-        }
-        if (jsonDefinition.getMaxLevel() != legacyDefinition.getMaxLevel()) {
-            mismatchedFields.add("max_level");
-        }
-        if (!Objects.equals(jsonDefinition.getEffectClass(), legacyDefinition.getEffectClass())) {
-            mismatchedFields.add("effect_class");
-        }
-        if (!Objects.equals(jsonDefinition.getAllowedJobs(), legacyDefinition.getAllowedJobs())) {
-            mismatchedFields.add("jobs");
-        }
-
-        if (!mismatchedFields.isEmpty()) {
-            LOGGER.warn("JSON skill {} differs from legacy SkillType {} on {}; JSON remains authoritative",
-                    jsonDefinition.getId(), type.name(), String.join(", ", mismatchedFields));
         }
     }
 
@@ -550,77 +492,6 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
         }
     }
 
-    // === Legacy enum conversion ===
-
-    private SkillDefinition convertFromLegacyEnum(SkillType type) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath("ragnarmmo", type.getId());
-        String name = type.name();
-
-        // Derive category from name pattern
-        SkillCategory category = isLifeSkillName(name) ? SkillCategory.LIFE : SkillCategory.CLASS_PASSIVE;
-        SkillTier tier = deriveTier(name);
-        boolean canGainXp = category == SkillCategory.LIFE;
-        boolean canUpgradeWithPoints = category == SkillCategory.CLASS_PASSIVE;
-        int maxLevel = canGainXp ? 50 : 10;
-
-        // Derive display name from enum name
-        String displayName = deriveDisplayName(name);
-        Set<String> allowedJobs = determineAllowedJobs(type);
-
-        return SkillDefinition.builder(id)
-                .displayName(displayName)
-                .category(category)
-                .tier(tier)
-                .usageType(SkillUsageType.PASSIVE)
-                .scalingStat("STR")
-                .xpMultiplier(1.0)
-                .baseCost(0)
-                .costPerLevel(2)
-                .cooldownTicks(20)
-                .castDelayTicks(0)
-                .castTimeTicks(0)
-                .interruptible(true)
-                .maxLevel(maxLevel)
-                .upgradeCost(1)
-                .canGainXp(canGainXp)
-                .canUpgradeWithPoints(canUpgradeWithPoints)
-                .requirements(new HashMap<>())
-                .allowedJobs(allowedJobs)
-                .textureName(id.getPath())
-                .gridX(0)
-                .gridY(0)
-                .effectClass(getEffectClass(type))
-                .build();
-    }
-
-    private boolean isLifeSkillName(String name) {
-        return name.equals("MINING") || name.equals("WOODCUTTING") || name.equals("EXCAVATION")
-                || name.equals("FARMING") || name.equals("FISHING") || name.equals("EXPLORATION");
-    }
-
-    private SkillTier deriveTier(String name) {
-        if (isLifeSkillName(name))
-            return SkillTier.LIFE;
-        if (name.equals("FIRST_AID") || name.equals("BASIC_SKILL") || name.equals("PLAY_DEAD")) {
-            return SkillTier.NOVICE;
-        }
-        return SkillTier.FIRST;
-    }
-
-    private String deriveDisplayName(String enumName) {
-        // Convert ENUM_NAME -> Title Case
-        String[] words = enumName.toLowerCase(Locale.ROOT).split("_");
-        StringBuilder sb = new StringBuilder();
-        for (String w : words) {
-            if (!w.isEmpty()) {
-                if (sb.length() > 0)
-                    sb.append(' ');
-                sb.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1));
-            }
-        }
-        return sb.toString();
-    }
-
     // === Parsing helpers ===
 
     private SkillCategory parseCategory(String value) {
@@ -673,73 +544,6 @@ public class SkillDataLoader extends SimpleJsonResourceReloadListener {
             return json.get(key).getAsBoolean();
         }
         return defaultValue;
-    }
-
-    @SuppressWarnings("deprecation")
-    private Set<String> determineAllowedJobs(SkillType type) {
-        Set<String> jobs = new HashSet<>();
-
-        String name = type.name();
-        if (name.startsWith("SWORD_") || name.startsWith("TWO_HAND_") ||
-                name.startsWith("ONE_HAND_") || name.equals("BASH") ||
-                name.equals("MAGNUM_BREAK") || name.equals("PROVOKE") || name.equals("ENDURANCE")) {
-            jobs.add("SWORDSMAN");
-        } else if (name.startsWith("STAFF_") || name.startsWith("SPELL_") ||
-                name.startsWith("MANA_") || name.startsWith("MAGIC_") ||
-                name.startsWith("ELEMENTAL_") || name.startsWith("ARCANE_") ||
-                name.equals("OVERCAST") || name.startsWith("FIRE_") || name.startsWith("COLD_")) {
-            jobs.add("MAGE");
-        } else if (name.startsWith("BOW_") || name.startsWith("ACCURACY_") ||
-                name.startsWith("CRITICAL_") || name.startsWith("EVASION_") ||
-                name.startsWith("WIND_") || name.startsWith("KITING_")) {
-            jobs.add("ARCHER");
-        } else if (name.startsWith("DAGGER_") || name.startsWith("BACKSTAB_") ||
-                name.startsWith("STEALTH_") || name.startsWith("FLEE_") ||
-                name.startsWith("POISON_") || name.startsWith("FATAL_")) {
-            jobs.add("THIEF");
-        } else if (name.startsWith("MACE_") || name.equals("FAITH") ||
-                name.startsWith("DIVINE_") || name.startsWith("HEAL_") ||
-                name.startsWith("HOLY_") || name.startsWith("BLESSING_")) {
-            jobs.add("ACOLYTE");
-        } else if (name.startsWith("TRADING_") || name.startsWith("CART_") ||
-                name.startsWith("WEAPON_MAINTENANCE") || name.startsWith("ARMOR_MAINTENANCE") ||
-                name.equals("OVERCHARGE") || name.startsWith("BUSINESS_")) {
-            jobs.add("MERCHANT");
-        }
-        return jobs;
-    }
-
-    @SuppressWarnings("deprecation")
-    private String getEffectClass(SkillType type) {
-        String basePkg = "com.etema.ragnarmmo.skill.job.";
-
-        return switch (type) {
-            case FIRST_AID -> basePkg + "novice.FirstAidSkillEffect";
-            case BASIC_SKILL -> basePkg + "novice.BasicSkillEffect";
-            case PLAY_DEAD -> basePkg + "novice.PlayDeadSkillEffect";
-            case SWORD_MASTERY -> basePkg + "swordman.SwordMasterySkillEffect";
-            case TWO_HAND_MASTERY -> basePkg + "swordman.TwoHandMasterySkillEffect";
-            case BASH -> basePkg + "swordman.BashSkillEffect";
-            case MAGNUM_BREAK -> basePkg + "swordman.MagnumBreakSkillEffect";
-            case PROVOKE -> basePkg + "swordman.ProvokeSkillEffect";
-            case ONE_HAND_MASTERY -> basePkg + "swordman.OneHandMasterySkillEffect";
-            case ENDURANCE -> basePkg + "swordman.EnduranceSkillEffect";
-            case STAFF_MASTERY -> basePkg + "mage.StaffMasterySkillEffect";
-            case SPELL_KNOWLEDGE -> basePkg + "mage.SpellKnowledgeSkillEffect";
-            case MANA_CONTROL -> basePkg + "mage.ManaControlSkillEffect";
-            case MAGIC_AMPLIFICATION -> basePkg + "mage.MagicAmplificationSkillEffect";
-            case ELEMENTAL_AFFINITY -> basePkg + "mage.ElementalAffinitySkillEffect";
-            case MAGIC_GUARD -> basePkg + "mage.MagicGuardSkillEffect";
-            case ARCANE_REGENERATION -> basePkg + "mage.ArcaneRegenerationSkillEffect";
-            case OVERCAST -> basePkg + "mage.OvercastSkillEffect";
-
-            case MINING -> basePkg + "life.MiningSkillEffect";
-            case WOODCUTTING -> basePkg + "life.WoodcuttingSkillEffect";
-            case EXCAVATION -> basePkg + "life.ExcavationSkillEffect";
-            case FARMING -> basePkg + "life.FarmingSkillEffect";
-            case EXPLORATION -> basePkg + "life.ExplorationSkillEffect";
-            default -> null;
-        };
     }
 
     /**

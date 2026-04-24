@@ -1,9 +1,9 @@
 package com.etema.ragnarmmo.client.ui;
 
 import com.etema.ragnarmmo.common.net.Network;
-import com.etema.ragnarmmo.roitems.runtime.RoItemRuleResolver;
-import com.etema.ragnarmmo.roitems.network.CardCompoundPacket;
-import com.etema.ragnarmmo.roitems.runtime.RoItemNbtHelper;
+import com.etema.ragnarmmo.items.runtime.RoItemRuleResolver;
+import com.etema.ragnarmmo.items.network.CardCompoundPacket;
+import com.etema.ragnarmmo.items.runtime.RoItemNbtHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;

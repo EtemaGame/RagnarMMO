@@ -44,7 +44,7 @@ public class RagnarSkillResolver {
 
         ResourceLocation skillId = skillIdStr.contains(":") ? new ResourceLocation(skillIdStr) : new ResourceLocation(com.etema.ragnarmmo.RagnarMMO.MODID, skillIdStr);
         
-        Optional<SkillDefinition> defOpt = SkillRegistry.get(skillId.toString());
+        Optional<SkillDefinition> defOpt = SkillRegistry.get(skillId);
         if (defOpt.isEmpty()) {
             return Collections.emptyList();
         }
@@ -81,12 +81,12 @@ public class RagnarSkillResolver {
                 
                 // Fetch Defender Stats (Ideally reuse the logic from RagnarCombatEngine)
                 // For simplicity in this step, I will assume a base hit until fully refactored
-                double attackerHit = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeHIT(stats.getDEX(), stats.getLUK(), stats.getLevel(), 0);
+                double attackerHit = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeHIT(stats.getDEX(), stats.getLUK(), stats.getLevel(), 0);
                 
                 // Temporary simplified resolution - to be expanded with full defender stats
                 double weaponBaseAtk = com.etema.ragnarmmo.system.stats.event.CommonEvents.getWeaponDamage(player);
-                boolean isRanged = com.etema.ragnarmmo.system.stats.compute.CombatMath.isRangedWeapon(player.getMainHandItem());
-                double baseDamage = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeTotalATK(stats.getSTR(), stats.getDEX(), stats.getLUK(), stats.getLevel(), weaponBaseAtk, 0, isRanged);
+                boolean isRanged = com.etema.ragnarmmo.player.stats.compute.CombatMath.isRangedWeapon(player.getMainHandItem());
+                double baseDamage = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeTotalATK(stats.getSTR(), stats.getDEX(), stats.getLUK(), stats.getLevel(), weaponBaseAtk, 0, isRanged);
                 double skillDmg = damageCalculator.computePhysicalDamage(baseDamage, dex, luk, new java.util.Random(player.getRandom().nextLong()));
                 skillDmg *= damageMultiplier;
 
@@ -121,15 +121,15 @@ public class RagnarSkillResolver {
                 if (!(targetEntity instanceof net.minecraft.world.entity.LivingEntity target)) continue;
 
                 // For multihit, we roll for each sub-hit
-                double attackerHit = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeHIT(stats.getDEX(), stats.getLUK(), stats.getLevel(), 0);
+                double attackerHit = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeHIT(stats.getDEX(), stats.getLUK(), stats.getLevel(), 0);
                 int landedHits = hitCalculator.rollMultiHit(hitCount, attackerHit, 50.0, player.getRandom()); 
                 
                 if (landedHits <= 0) {
                     results.add(CombatResolution.miss(player.getId(), target.getId()));
                 } else {
                     double weaponBaseAtk = com.etema.ragnarmmo.system.stats.event.CommonEvents.getWeaponDamage(player);
-                    boolean isRanged = com.etema.ragnarmmo.system.stats.compute.CombatMath.isRangedWeapon(player.getMainHandItem());
-                    double baseAtk = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeTotalATK(stats.getSTR(), stats.getDEX(), stats.getLUK(), stats.getLevel(), weaponBaseAtk, 0, isRanged);
+                    boolean isRanged = com.etema.ragnarmmo.player.stats.compute.CombatMath.isRangedWeapon(player.getMainHandItem());
+                    double baseAtk = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeTotalATK(stats.getSTR(), stats.getDEX(), stats.getLUK(), stats.getLevel(), weaponBaseAtk, 0, isRanged);
                     double totalDamage = 0;
                     for (int i = 0; i < landedHits; i++) {
                         totalDamage += damageCalculator.computePhysicalDamage(baseAtk, stats.getDEX(), stats.getLUK(), new java.util.Random(player.getRandom().nextLong()));

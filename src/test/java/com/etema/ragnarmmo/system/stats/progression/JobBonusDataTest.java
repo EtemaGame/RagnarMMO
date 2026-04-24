@@ -1,4 +1,4 @@
-package com.etema.ragnarmmo.system.stats.progression;
+package com.etema.ragnarmmo.player.stats.progression;
 
 import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.api.stats.Stats6;

@@ -1,7 +1,5 @@
 package com.etema.ragnarmmo.skill.runtime;
 
-import com.etema.ragnarmmo.skill.api.SkillType;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -82,14 +80,6 @@ public class SourceConfig extends SimpleJsonResourceReloadListener {
         return 0;
     }
 
-    @SuppressWarnings("removal")
-    public int getXp(ResourceLocation targetId, SkillType skillType) {
-        if (skillType == null) {
-            return 0;
-        }
-        return getXp(targetId, skillType.toResourceLocation());
-    }
-
     // Check ID first, then Tags implies logic needs access to BlockState/Entity to
     // check tags.
     // Since we only have ResourceLocation here in the simple signature, we might
@@ -126,14 +116,6 @@ public class SourceConfig extends SimpleJsonResourceReloadListener {
         return 0;
     }
 
-    @SuppressWarnings("removal")
-    public int getXp(net.minecraft.world.level.block.state.BlockState state, SkillType skillType) {
-        if (skillType == null) {
-            return 0;
-        }
-        return getXp(state, skillType.toResourceLocation());
-    }
-
     public int getXp(net.minecraft.world.entity.LivingEntity entity, ResourceLocation skillId) {
         ResourceLocation id = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
         // 1. Check ID override
@@ -159,14 +141,6 @@ public class SourceConfig extends SimpleJsonResourceReloadListener {
         }
 
         return 0;
-    }
-
-    @SuppressWarnings("removal")
-    public int getXp(net.minecraft.world.entity.LivingEntity entity, SkillType skillType) {
-        if (skillType == null) {
-            return 0;
-        }
-        return getXp(entity, skillType.toResourceLocation());
     }
 
     @Mod.EventBusSubscriber(modid = "ragnarmmo")

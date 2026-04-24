@@ -5,7 +5,7 @@ import com.etema.ragnarmmo.combat.aggro.AggroManager;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
-import com.etema.ragnarmmo.system.mobstats.util.MobUtils;
+import com.etema.ragnarmmo.mobs.util.MobUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;

@@ -1,10 +1,11 @@
 package com.etema.ragnarmmo.skill.job.life;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.skill.api.SkillType;
+import com.etema.ragnarmmo.common.api.lifeskills.LifeSkillType;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.skill.runtime.SourceConfig;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.HoeItem;
@@ -34,19 +35,20 @@ public class LifeSkillBreakSpeedHandler {
 
         ItemStack held = player.getMainHandItem();
         Item item = held.getItem();
-        SkillType skill = getSkillForTool(item);
+        LifeSkillType skill = getSkillForTool(item);
         if (skill == null) {
             return;
         }
 
         BlockState state = event.getState();
-        int xp = SourceConfig.getInstance().getXp(state, skill);
+        ResourceLocation skillId = ResourceLocation.fromNamespaceAndPath(RagnarMMO.MODID, skill.getId());
+        int xp = SourceConfig.getInstance().getXp(state, skillId);
         if (xp <= 0) {
             return;
         }
 
         PlayerSkillsProvider.get(player).ifPresent(skills -> {
-            int level = skills.getSkillLevel(skill);
+            int level = skills.getSkillLevel(skillId);
             if (level <= 0) {
                 return;
             }
@@ -57,18 +59,18 @@ public class LifeSkillBreakSpeedHandler {
         });
     }
 
-    private static SkillType getSkillForTool(Item item) {
+    private static LifeSkillType getSkillForTool(Item item) {
         if (item instanceof PickaxeItem) {
-            return SkillType.MINING;
+            return LifeSkillType.MINING;
         }
         if (item instanceof AxeItem) {
-            return SkillType.WOODCUTTING;
+            return LifeSkillType.WOODCUTTING;
         }
         if (item instanceof ShovelItem) {
-            return SkillType.EXCAVATION;
+            return LifeSkillType.EXCAVATION;
         }
         if (item instanceof HoeItem) {
-            return SkillType.FARMING;
+            return LifeSkillType.FARMING;
         }
         return null;
     }

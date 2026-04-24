@@ -82,7 +82,7 @@ class MobDefinitionResourcesTest {
     private static final Set<String> SIZES = Set.of("small", "medium", "large");
 
     @Test
-    void vanillaHostileManualMobDefinitionsAreComplete() throws IOException {
+    void vanillaHostileMobDefinitionsAreComplete() throws IOException {
         List<Path> files;
         try (Stream<Path> stream = Files.list(DEFINITIONS_DIR)) {
             files = stream
@@ -130,7 +130,7 @@ class MobDefinitionResourcesTest {
     }
 
     @Test
-    void manualMobResolverDerivesPreRenewalMobHitFleeAndCrit() {
+    void mobDefinitionResolverDerivesPreRenewalMobHitFleeAndCrit() {
         ResourceLocation entityId = requireResourceLocation("minecraft:piglin");
         MobDefinition definition = new MobDefinition(
                 entityId,
@@ -151,11 +151,11 @@ class MobDefinitionResourcesTest {
         registry.replace(Map.of(), Map.of(entityId, definition), Map.of(entityId, definition), List.of());
         try {
             var result = ManualMobProfileResolver.resolve(entityId, registry);
-            assertTrue(result.isSuccess(), () -> "Expected manual profile to resolve: " + result.issues());
+            assertTrue(result.isSuccess(), () -> "Expected authored mob profile to resolve: " + result.issues());
             assertNotNull(result.profile());
-            assertEquals(40, result.profile().hit(), "manual mob HIT should derive as level + dex");
-            assertEquals(36, result.profile().flee(), "manual mob FLEE should derive as level + agi");
-            assertEquals(0, result.profile().crit(), "normal manual mob crit should not derive from LUK");
+            assertEquals(40, result.profile().hit(), "authored mob HIT should derive as level + dex");
+            assertEquals(36, result.profile().flee(), "authored mob FLEE should derive as level + agi");
+            assertEquals(0, result.profile().crit(), "normal authored mob crit should not derive from LUK");
         } finally {
             registry.replace(
                     previousTemplatesById,

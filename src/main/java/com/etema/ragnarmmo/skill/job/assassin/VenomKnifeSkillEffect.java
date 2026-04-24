@@ -36,7 +36,7 @@ public class VenomKnifeSkillEffect implements ISkillEffect {
             serverLevel.playSound(null, target.blockPosition(), SoundEvents.ARROW_HIT, SoundSource.PLAYERS, 1.0f, 1.0f);
 
             target.hurt(player.damageSources().playerAttack(player), 5.0f + level);
-            int duration = com.etema.ragnarmmo.system.stats.compute.CombatMath.computePoisonDuration(100, target);
+            int duration = com.etema.ragnarmmo.player.stats.compute.CombatMath.computePoisonDuration(100, target);
             if (duration > 0) {
                 target.addEffect(new MobEffectInstance(MobEffects.POISON, duration, 1));
             }

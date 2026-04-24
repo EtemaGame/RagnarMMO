@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.skill.job.merchant;
 
-import com.etema.ragnarmmo.roitems.ZenyItems;
-import com.etema.ragnarmmo.roitems.runtime.ZenyWalletHelper;
+import com.etema.ragnarmmo.items.ZenyItems;
+import com.etema.ragnarmmo.items.runtime.ZenyWalletHelper;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import com.etema.ragnarmmo.skill.data.SkillDefinition;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;

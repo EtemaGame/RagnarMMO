@@ -7,8 +7,8 @@ import com.etema.ragnarmmo.skill.api.SkillTier;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
-import com.etema.ragnarmmo.system.stats.net.PacketUpgradeSkill;
-import com.etema.ragnarmmo.system.lifeskills.LifeSkillProgress;
+import com.etema.ragnarmmo.player.stats.network.PacketUpgradeSkill;
+import com.etema.ragnarmmo.lifeskills.LifeSkillProgress;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.ChatFormatting;
@@ -513,7 +513,7 @@ public class SkillsScreen extends Screen {
         TabEntry currentTab = getActiveTab();
         if (currentTab.isLifeTab()) {
             if (player != null) {
-                var lifeManager = com.etema.ragnarmmo.system.lifeskills.LifeSkillCapability.get(player).orElse(null);
+                var lifeManager = com.etema.ragnarmmo.lifeskills.LifeSkillCapability.get(player).orElse(null);
                 if (lifeManager != null) {
                     renderLifeSkillTreeLocal(g, lifeManager, 16, 54, mxLocal, myLocal + scrollOffset);
                     // compute tooltip in LOCAL; render later
@@ -537,7 +537,7 @@ public class SkillsScreen extends Screen {
 
         if (currentTab.isLifeTab()) {
             if (player != null) {
-                var lifeManager = com.etema.ragnarmmo.system.lifeskills.LifeSkillCapability.get(player).orElse(null);
+                var lifeManager = com.etema.ragnarmmo.lifeskills.LifeSkillCapability.get(player).orElse(null);
                 if (lifeManager != null) {
                     renderLifeFooterInfoLocal(g, lifeManager);
                 }
@@ -927,7 +927,7 @@ public class SkillsScreen extends Screen {
     // === LIFE SKILLS RENDERING ===
 
     private void renderLifeSkillTreeLocal(GuiGraphics g,
-            com.etema.ragnarmmo.system.lifeskills.LifeSkillManager lifeManager,
+            com.etema.ragnarmmo.lifeskills.LifeSkillManager lifeManager,
             int startX, int startY, double mx, double my) {
 
         int col = 0;
@@ -1023,7 +1023,7 @@ public class SkillsScreen extends Screen {
     }
 
     private void renderLifeFooterInfoLocal(GuiGraphics g,
-            com.etema.ragnarmmo.system.lifeskills.LifeSkillManager lifeManager) {
+            com.etema.ragnarmmo.lifeskills.LifeSkillManager lifeManager) {
         double avg = Arrays.stream(LifeSkillType.values())
                 .map(lifeManager::getSkill)
                 .filter(Objects::nonNull)
@@ -1049,7 +1049,7 @@ public class SkillsScreen extends Screen {
         g.pose().popPose();
     }
 
-    private List<Component> buildLifeTooltipLocal(com.etema.ragnarmmo.system.lifeskills.LifeSkillManager lifeManager,
+    private List<Component> buildLifeTooltipLocal(com.etema.ragnarmmo.lifeskills.LifeSkillManager lifeManager,
             int startX, int startY, double mx, double my) {
 
         int col = 0;

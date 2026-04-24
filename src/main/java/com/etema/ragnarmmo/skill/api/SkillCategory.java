@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.skill.api;
 
 /**
  * Categories for skill organization.
- * Extracted from SkillType for data-driven skill system.
+ * Skill category used by the data-driven skill system.
  */
 public enum SkillCategory {
     CLASS_PASSIVE("Class Tree"),

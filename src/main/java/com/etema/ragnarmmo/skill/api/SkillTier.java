@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.skill.api;
 
 /**
  * Skill tier for RO-style tree organization.
- * Extracted from SkillType for data-driven skill system.
+ * Skill tier used by the data-driven skill system.
  *
  * - NOVICE: Common starter skills available to all
  * - FIRST: 1st job class skills (Swordsman, Mage, etc.)

@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.client;
 
 import com.etema.ragnarmmo.client.ui.RagnarStatusOverlay;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
-import com.etema.ragnarmmo.system.stats.RagnarStats;
+import com.etema.ragnarmmo.player.stats.PlayerStatsModule;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
@@ -21,7 +21,7 @@ public class ClientModEvents {
     /**
      * MOD bus events (overlay registration, keybinds, etc.)
      */
-    @Mod.EventBusSubscriber(modid = RagnarStats.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+    @Mod.EventBusSubscriber(modid = PlayerStatsModule.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ModBusEvents {
         @SubscribeEvent
         public static void registerOverlays(RegisterGuiOverlaysEvent event) {
@@ -80,7 +80,7 @@ public class ClientModEvents {
     /**
      * FORGE bus events (client commands, input events, etc.)
      */
-    @Mod.EventBusSubscriber(modid = RagnarStats.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+    @Mod.EventBusSubscriber(modid = PlayerStatsModule.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class ForgeBusEvents {
         @SubscribeEvent
         public static void registerClientCommands(RegisterClientCommandsEvent event) {

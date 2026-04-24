@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.skill.job.merchant;
 
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.common.WeightConstants;
-import com.etema.ragnarmmo.roitems.ZenyItems;
+import com.etema.ragnarmmo.items.ZenyItems;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.execution.EconomicSkillHelper;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;

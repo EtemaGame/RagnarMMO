@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.system.economy.net;
 
-import com.etema.ragnarmmo.roitems.ZenyItems;
-import com.etema.ragnarmmo.roitems.runtime.ZenyWalletHelper;
+import com.etema.ragnarmmo.items.ZenyItems;
+import com.etema.ragnarmmo.items.runtime.ZenyWalletHelper;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;

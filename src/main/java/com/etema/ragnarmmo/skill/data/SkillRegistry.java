@@ -13,13 +13,10 @@ import java.util.stream.Collectors;
 /**
  * Runtime registry for skill definitions and effects.
  * Skills are loaded from JSON files by SkillDataLoader.
- * This registry supports /reload for hot-reloading skill definitions.
  */
 public final class SkillRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SkillRegistry.class);
-    private static final String DEFAULT_NAMESPACE = "ragnarmmo";
-
     // Thread-safe maps for runtime access
     private static final Map<ResourceLocation, SkillDefinition> SKILLS = new ConcurrentHashMap<>();
     private static final Map<ResourceLocation, ISkillEffect> EFFECTS = new ConcurrentHashMap<>();
@@ -43,25 +40,12 @@ public final class SkillRegistry {
         return Optional.ofNullable(SKILLS.get(id));
     }
 
-    /**
-     * Get a skill definition by its legacy string ID.
-     * Supports both full IDs ("ragnarmmo:bash") and legacy IDs ("bash").
-     *
-     * @param id The skill ID string
-     * @return Optional containing the skill definition, or empty if not found
-     */
     public static Optional<SkillDefinition> get(String id) {
         if (id == null || id.isEmpty()) {
             return Optional.empty();
         }
-
-        // If it contains ":", parse as ResourceLocation
-        if (id.contains(":")) {
-            return get(ResourceLocation.tryParse(id));
-        }
-
-        // Legacy format: assume default namespace
-        return get(new ResourceLocation(DEFAULT_NAMESPACE, id.toLowerCase(Locale.ROOT)));
+        return Optional.ofNullable(ResourceLocation.tryParse(id))
+                .flatMap(SkillRegistry::get);
     }
 
     /**
@@ -158,10 +142,8 @@ public final class SkillRegistry {
         if (skillId == null || skillId.isEmpty()) {
             return Optional.empty();
         }
-        if (skillId.contains(":")) {
-            return getEffect(ResourceLocation.tryParse(skillId));
-        }
-        return getEffect(new ResourceLocation(DEFAULT_NAMESPACE, skillId.toLowerCase(Locale.ROOT)));
+        return Optional.ofNullable(ResourceLocation.tryParse(skillId))
+                .flatMap(SkillRegistry::getEffect);
     }
 
     /**
@@ -174,8 +156,6 @@ public final class SkillRegistry {
     }
 
     // === Registration (internal use) ===
-
-    /**
 
     /**
      * Register a skill definition.
@@ -254,15 +234,6 @@ public final class SkillRegistry {
      */
     public static boolean isFrozen() {
         return frozen;
-    }
-
-    /**
-     * Get the default namespace used for legacy IDs.
-     *
-     * @return The default namespace ("ragnarmmo")
-     */
-    public static String getDefaultNamespace() {
-        return DEFAULT_NAMESPACE;
     }
 
     /**

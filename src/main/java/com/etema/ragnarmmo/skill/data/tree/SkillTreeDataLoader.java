@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.skill.data.tree;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.system.stats.RagnarStats;
+import com.etema.ragnarmmo.player.stats.PlayerStatsModule;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;

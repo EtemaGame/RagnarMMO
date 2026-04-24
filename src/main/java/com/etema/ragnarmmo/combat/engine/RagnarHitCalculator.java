@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.combat.engine;
 
 import com.etema.ragnarmmo.combat.api.CombatHitResultType;
-import com.etema.ragnarmmo.system.stats.compute.CombatMath;
+import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 import net.minecraft.util.RandomSource;
 
 /**

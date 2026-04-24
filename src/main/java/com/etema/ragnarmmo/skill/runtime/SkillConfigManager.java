@@ -3,10 +3,8 @@ package com.etema.ragnarmmo.skill.runtime;
 import com.etema.ragnarmmo.skill.api.SkillConstants;
 import com.etema.ragnarmmo.skill.api.XPGainReason;
 import com.etema.ragnarmmo.skill.data.progression.SkillProgress;
-import com.etema.ragnarmmo.skill.api.SkillType;
 import com.etema.ragnarmmo.skill.api.ISkillDefinition;
 import com.etema.ragnarmmo.skill.api.SkillCategory;
-import com.etema.ragnarmmo.skill.data.SkillDefinition;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import net.minecraft.resources.ResourceLocation;
 

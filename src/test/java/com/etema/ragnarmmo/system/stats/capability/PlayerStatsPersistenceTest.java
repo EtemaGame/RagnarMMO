@@ -14,9 +14,10 @@ class PlayerStatsPersistenceTest {
         PlayerStats stats = new PlayerStats();
 
         CompoundTag tag = stats.serializeNBT();
-        CompoundTag statTag = tag.getCompound("Stats");
+        CompoundTag progressionTag = tag.getCompound("Progression");
+        CompoundTag statTag = tag.getCompound("PrimaryStats");
 
-        assertEquals(1, tag.getInt("Level"));
+        assertEquals(1, progressionTag.getInt("BaseLevel"));
         assertTrue(statTag.contains("str"));
         assertFalse(statTag.contains("level"));
     }

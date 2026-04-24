@@ -5,10 +5,10 @@ import com.etema.ragnarmmo.common.init.modules.BarModule;
 import com.etema.ragnarmmo.common.init.modules.CoreModule;
 import com.etema.ragnarmmo.common.init.modules.CombatModule;
 import com.etema.ragnarmmo.common.init.modules.LifeSkillsModule;
-import com.etema.ragnarmmo.common.init.modules.MobStatsModule;
+import com.etema.ragnarmmo.common.init.modules.MobsModule;
 import com.etema.ragnarmmo.common.init.modules.SkillsModule;
 import com.etema.ragnarmmo.common.init.modules.StatsModule;
-import com.etema.ragnarmmo.roitems.RoItemsModule;
+import com.etema.ragnarmmo.items.ItemsModule;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -59,10 +59,10 @@ public class RagnarMMO {
         CoreModule.init(modBus);
         CombatModule.init(modBus);
         StatsModule.init(modBus);
-        MobStatsModule.init(modBus);
+        MobsModule.init(modBus);
         SkillsModule.init(modBus);
         LifeSkillsModule.init(modBus);
-        RoItemsModule.init(modBus);
+        ItemsModule.init(modBus);
         com.etema.ragnarmmo.common.init.modules.EconomyModule.init(modBus);
 
         // Client-only rendering is handled by its own @EventBusSubscriber(Dist.CLIENT)

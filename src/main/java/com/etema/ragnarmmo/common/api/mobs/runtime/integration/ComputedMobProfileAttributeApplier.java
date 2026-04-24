@@ -3,7 +3,7 @@ package com.etema.ragnarmmo.common.api.mobs.runtime.integration;
 import com.etema.ragnarmmo.common.api.attributes.RagnarAttributes;
 import com.etema.ragnarmmo.common.api.mobs.runtime.ComputedMobBaseStats;
 import com.etema.ragnarmmo.common.api.mobs.runtime.ComputedMobProfile;
-import com.etema.ragnarmmo.common.config.access.MobStatsConfigAccess;
+import com.etema.ragnarmmo.common.config.access.MobConfigAccess;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -15,7 +15,7 @@ import java.util.Objects;
  * Applies a resolved manual {@link ComputedMobProfile} to live mob attributes.
  *
  * <p>This is a narrow runtime bridge for the new manual path only. It does not introduce a second
- * authority and does not mutate legacy {@code MobStats} state.</p>
+ * authority or mutate any obsolete runtime container.</p>
  */
 public final class ComputedMobProfileAttributeApplier {
 
@@ -30,7 +30,7 @@ public final class ComputedMobProfileAttributeApplier {
         setBaseValue(entity, Attributes.ATTACK_DAMAGE, averageAttack(profile));
         setBaseValue(entity, Attributes.ARMOR, profile.def());
         setBaseValue(entity, Attributes.MOVEMENT_SPEED,
-                Math.min(MobStatsConfigAccess.getMaxMovementSpeed(), Math.max(0.01D, profile.moveSpeed())));
+                Math.min(MobConfigAccess.getMaxMovementSpeed(), Math.max(0.01D, profile.moveSpeed())));
         setBaseValue(entity, RagnarAttributes.MAGIC_DEFENSE.get(), profile.mdef());
 
         ComputedMobBaseStats baseStats = profile.baseCombatStats();
@@ -42,7 +42,7 @@ public final class ComputedMobProfileAttributeApplier {
             setBaseValue(entity, RagnarAttributes.DEX.get(), baseStats.dex() != null ? baseStats.dex() : 1);
             setBaseValue(entity, RagnarAttributes.LUK.get(), baseStats.luk());
             setBaseValue(entity, Attributes.KNOCKBACK_RESISTANCE,
-                    Math.min(1.0D, baseStats.luk() * MobStatsConfigAccess.getLukToKbResist()));
+                    Math.min(1.0D, baseStats.luk() * MobConfigAccess.getLukToKbResist()));
         }
 
         AttributeInstance maxHealth = entity.getAttribute(Attributes.MAX_HEALTH);

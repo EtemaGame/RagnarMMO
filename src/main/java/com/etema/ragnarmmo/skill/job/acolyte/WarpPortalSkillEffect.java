@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.skill.job.acolyte;
 
 import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.entity.aoe.WarpPortalAoe;
-import com.etema.ragnarmmo.roitems.UtilityItems;
+import com.etema.ragnarmmo.items.UtilityItems;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;

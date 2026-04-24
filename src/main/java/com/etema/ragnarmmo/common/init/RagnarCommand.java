@@ -4,11 +4,9 @@ import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.common.command.RagnarAdminCommands;
 import com.etema.ragnarmmo.skill.job.merchant.CartCommands;
 import com.etema.ragnarmmo.skill.job.acolyte.MemoCommands;
-import com.etema.ragnarmmo.system.mobstats.commands.MobStatsCommand;
-import com.etema.ragnarmmo.system.mobstats.commands.MobManualCommand;
-import com.etema.ragnarmmo.system.stats.commands.ExpCommands;
-import com.etema.ragnarmmo.system.stats.commands.StatsCommands;
-import com.etema.ragnarmmo.system.stats.party.PartyCommands;
+import com.etema.ragnarmmo.player.command.ExpCommands;
+import com.etema.ragnarmmo.player.command.PartyCommands;
+import com.etema.ragnarmmo.player.command.StatsCommands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -26,15 +24,12 @@ public class RagnarCommand {
                 .then(ExpCommands.createExpNode())
                 .then(ExpCommands.createSetNode())
                 .then(PartyCommands.createNode())
-                .then(MobStatsCommand.createNode())
-                .then(MobManualCommand.createNode())
                 .then(RagnarAdminCommands.createNode()));
 
         // Register root-level abbreviations (aliases)
         registerAlias(dispatcher, "stats", ragnarNode.getChild("stats"));
         registerAlias(dispatcher, "cart", ragnarNode.getChild("cart"));
         registerAlias(dispatcher, "party", ragnarNode.getChild("party"));
-        registerAlias(dispatcher, "mobmanual", ragnarNode.getChild("mobmanual"));
         registerAlias(dispatcher, "memo", ragnarNode.getChild("memo"));
 
         // Party chat shortcut: /pc <message> -> /ragnar party chat <message>

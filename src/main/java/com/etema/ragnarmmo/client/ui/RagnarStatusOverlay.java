@@ -8,7 +8,7 @@ import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
-import com.etema.ragnarmmo.system.stats.progression.ExpTable;
+import com.etema.ragnarmmo.player.progression.PlayerProgressionService;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -217,8 +217,10 @@ public class RagnarStatusOverlay implements IGuiOverlay {
 
     private static void renderExpBars(GuiGraphics graphics, Font font, IPlayerStats stats,
             int x, int y, int w) {
-        float basePct = ExpTable.getProgressPercent(stats.getExp(), stats.getLevel());
-        float jobPct = ExpTable.getJobProgressPercent(stats.getJobExp(), stats.getJobLevel());
+        PlayerProgressionService progressionService = PlayerProgressionService
+                .forJobId(net.minecraft.resources.ResourceLocation.tryParse(stats.getJobId()));
+        float basePct = progressionService.getBaseProgressPercent(stats.getExp(), stats.getLevel());
+        float jobPct = progressionService.getJobProgressPercent(stats.getJobExp(), stats.getJobLevel());
 
         // Split into two halves with a small gap
         int gap = 6;

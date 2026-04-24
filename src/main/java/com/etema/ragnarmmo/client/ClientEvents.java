@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.client;
 
-import com.etema.ragnarmmo.system.stats.RagnarStats;
+import com.etema.ragnarmmo.player.stats.PlayerStatsModule;
 import com.etema.ragnarmmo.client.ui.StatsScreen;
 import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -12,7 +12,7 @@ import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import org.lwjgl.glfw.GLFW;
 
-@Mod.EventBusSubscriber(modid = RagnarStats.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = PlayerStatsModule.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ClientEvents {
 
     private static boolean isCombatMode = false;

@@ -45,8 +45,8 @@ public class HammerFallSkillEffect implements ISkillEffect {
             int baseStunDuration = 60 + (level * 5); // 3s to 5.5s
             
             for (LivingEntity target : targets) {
-                float stunChance = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStunChance(baseStunChance, target);
-                int stunDuration = com.etema.ragnarmmo.system.stats.compute.CombatMath.computeStunDuration(baseStunDuration, target);
+                float stunChance = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeStunChance(baseStunChance, target);
+                int stunDuration = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeStunDuration(baseStunDuration, target);
 
                 if (stunDuration > 0 && serverLevel.random.nextFloat() < stunChance) {
                     long until = serverLevel.getGameTime() + stunDuration;

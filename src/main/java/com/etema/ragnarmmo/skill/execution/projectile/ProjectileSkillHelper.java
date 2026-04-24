@@ -4,7 +4,7 @@ import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.api.compute.DerivedStats;
 import com.etema.ragnarmmo.skill.data.SkillDefinition;
-import com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot;
+import com.etema.ragnarmmo.player.stats.compute.EquipmentStatSnapshot;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;

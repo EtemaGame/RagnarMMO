@@ -1,28 +1,16 @@
 package com.etema.ragnarmmo.common.api.mobs.query;
 
-import com.etema.ragnarmmo.combat.element.CombatPropertyResolver;
-import com.etema.ragnarmmo.common.api.mobs.LegacyMobTierRankMapper;
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
-import com.etema.ragnarmmo.common.api.mobs.runtime.ComputedMobProfile;
-import com.etema.ragnarmmo.common.api.mobs.runtime.projection.ComputedMobProfileReadView;
-import com.etema.ragnarmmo.common.api.mobs.runtime.store.ManualMobProfileRuntimeStore;
-import com.etema.ragnarmmo.system.mobstats.core.MobStats;
-import com.etema.ragnarmmo.system.mobstats.core.capability.MobStatsProvider;
-import com.etema.ragnarmmo.system.mobstats.world.MobSpawnOverrides;
+import com.etema.ragnarmmo.mobs.capability.MobProfileProvider;
+import com.etema.ragnarmmo.mobs.capability.MobProfileState;
+import com.etema.ragnarmmo.mobs.profile.MobProfile;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
 
-/**
- * Central source selector for the shared mob consumer read surface.
- *
- * <p>This resolver prefers the new {@link ComputedMobProfile} when present and otherwise falls back
- * to a controlled legacy compatibility projection. It does not migrate any concrete consumer by itself.</p>
- */
 public final class MobConsumerReadViewResolver {
 
     private MobConsumerReadViewResolver() {
@@ -31,104 +19,39 @@ public final class MobConsumerReadViewResolver {
     public static Optional<MobConsumerReadView> resolve(LivingEntity entity) {
         Objects.requireNonNull(entity, "entity");
 
-        ComputedMobProfile computedProfile = ManualMobProfileRuntimeStore.get(entity).orElse(null);
-        if (computedProfile != null) {
-            return resolve(entity, computedProfile, null);
-        }
-
-        return resolve(entity, null, MobStatsProvider.get(entity).orElse(null));
-    }
-
-    public static Optional<MobConsumerReadView> resolve(
-            LivingEntity entity,
-            @Nullable MobStats legacyStats) {
-        return resolve(entity, null, legacyStats);
-    }
-
-    public static Optional<MobConsumerReadView> resolve(
-            LivingEntity entity,
-            @Nullable ComputedMobProfile computedProfile,
-            @Nullable MobStats legacyStats) {
-        Objects.requireNonNull(entity, "entity");
-
-        com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority authority = com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthorityResolver.classify(entity);
-
-        ComputedMobProfile effectiveProfile = computedProfile != null
-                ? computedProfile
-                : ManualMobProfileRuntimeStore.get(entity).orElse(null);
-
-        if (effectiveProfile != null) {
-            return Optional.of(fromComputedProfile(entity, effectiveProfile));
-        }
-
-        // Audit Logging & Strict Enforcement
-        if (authority == com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority.STRICT_NEW_AUTHORITY) {
-            com.etema.ragnarmmo.common.debug.RagnarDebugLog.migration("CRITICAL: Mob classified as STRICT but has no profile attached! entity={}",
-                    com.etema.ragnarmmo.common.debug.RagnarDebugLog.entityLabel(entity));
-            return Optional.empty();
-        }
-
-        if (legacyStats != null) {
-            if (authority == com.etema.ragnarmmo.common.api.mobs.MobRuntimeAuthority.TEMP_COMPAT) {
-                com.etema.ragnarmmo.common.debug.RagnarDebugLog.migration("DEBT: Fallback to LEGACY for mob in TEMP_COMPAT category. entity={}",
-                        com.etema.ragnarmmo.common.debug.RagnarDebugLog.entityLabel(entity));
-            }
-            return fromLegacyCompatibility(entity, legacyStats);
+        MobProfile canonicalProfile = MobProfileProvider.get(entity)
+                .resolve()
+                .filter(MobProfileState::isInitialized)
+                .map(MobProfileState::profile)
+                .orElse(null);
+        if (canonicalProfile != null) {
+            return Optional.of(fromCanonicalProfile(entity, canonicalProfile));
         }
         return Optional.empty();
     }
 
-    private static MobConsumerReadView fromComputedProfile(
+    private static MobConsumerReadView fromCanonicalProfile(
             LivingEntity entity,
-            ComputedMobProfile computedProfile) {
+            MobProfile profile) {
         ResourceLocation entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-        ComputedMobProfileReadView readView = ComputedMobProfileReadView.from(computedProfile);
-        boolean bossLikeForCompatibility = readView.isBossLikeForCompatibility()
-                || MobSpawnOverrides.isManualBoss(entity);
+        boolean bossLikeForCompatibility = profile.rank() == MobRank.BOSS
+                || profile.rank() == MobRank.MVP;
 
         return new MobConsumerReadView(
                 entityTypeId,
                 MobConsumerDataOrigin.NEW_RUNTIME_PROFILE,
-                readView.level(),
-                readView.rank(),
-                readView.race(),
-                readView.element(),
-                readView.size(),
+                profile.level(),
+                profile.rank(),
+                profile.race(),
+                profile.element(),
+                profile.size(),
                 bossLikeForCompatibility,
                 true,
                 new MobConsumerInspectionStatsView(
-                        computedProfile.maxHp(),
-                        computedProfile.atkMin(),
-                        computedProfile.atkMax(),
-                        computedProfile.def(),
-                        computedProfile.mdef()));
-    }
-
-    private static Optional<MobConsumerReadView> fromLegacyCompatibility(
-            LivingEntity entity,
-            MobStats legacyStats) {
-        ResourceLocation entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-        MobRank legacyRank = LegacyMobTierRankMapper.toMobRank(legacyStats.getTier());
-        String race = CombatPropertyResolver.getRaceId(entity);
-        String size = CombatPropertyResolver.getSizeId(entity);
-        String element = CombatPropertyResolver.getElementId(legacyStats.getElement());
-        boolean bossLikeForCompatibility = legacyRank == MobRank.BOSS
-                || MobSpawnOverrides.isManualBoss(entity);
-
-        if (race.isBlank() || size.isBlank() || element.isBlank()) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new MobConsumerReadView(
-                entityTypeId,
-                MobConsumerDataOrigin.LEGACY_COMPATIBILITY,
-                legacyStats.getLevel(),
-                legacyRank,
-                race,
-                element,
-                size,
-                bossLikeForCompatibility,
-                false,
-                null));
+                        profile.maxHp(),
+                        profile.atkMin(),
+                        profile.atkMax(),
+                        profile.def(),
+                        profile.mdef()));
     }
 }

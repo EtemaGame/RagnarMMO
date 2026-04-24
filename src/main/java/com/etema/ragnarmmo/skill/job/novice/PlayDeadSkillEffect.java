@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.skill.job.novice;
 
 import com.etema.ragnarmmo.combat.aggro.AggroManager;
-import com.etema.ragnarmmo.system.mobstats.util.MobUtils;
+import com.etema.ragnarmmo.mobs.util.MobUtils;
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;

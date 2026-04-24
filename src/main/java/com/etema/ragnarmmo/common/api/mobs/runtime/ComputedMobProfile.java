@@ -10,8 +10,8 @@ import java.util.Objects;
  * Final runtime profile for one mob encounter instance in the new mob system.
  *
  * <p>This is the only new runtime-final authority. It is intentionally separate from declarative
- * loading models such as {@code MobDefinition} and {@code ResolvedMobDefinition}, and from legacy
- * runtime containers such as {@code MobStats}.</p>
+ * loading models such as {@code MobDefinition} and {@code ResolvedMobDefinition}, and from older
+ * runtime-side containers.</p>
  *
  * <p>This type carries resolved semantic values only. It does not apply attributes, perform sync,
  * or imply any runtime wiring on its own.</p>

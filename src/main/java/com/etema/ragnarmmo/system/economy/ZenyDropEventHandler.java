@@ -18,7 +18,7 @@ public class ZenyDropEventHandler {
 
         // Only drop Zeny if killed by a player and it's a hostile mob
         if (event.getSource().getEntity() instanceof Player player && isHostile(killed)) {
-            double penalty = com.etema.ragnarmmo.system.stats.util.AntiFarmManager.getPenaltyFactor(player);
+            double penalty = com.etema.ragnarmmo.player.stats.util.AntiFarmManager.getPenaltyFactor(player);
             List<ItemStack> zenyDrops = ZenyDropManager.calculateDrops(killed, player, killed.getRandom());
             
             for (ItemStack zeny : zenyDrops) {
@@ -51,8 +51,8 @@ public class ZenyDropEventHandler {
         if (event.getEntity().level().isClientSide) return;
 
         ItemStack stack = event.getItem().getItem();
-        if (com.etema.ragnarmmo.roitems.runtime.ZenyWalletHelper.isZeny(stack)) {
-            int value = com.etema.ragnarmmo.roitems.runtime.ZenyWalletHelper.getValue(stack);
+        if (com.etema.ragnarmmo.items.runtime.ZenyWalletHelper.isZeny(stack)) {
+            int value = com.etema.ragnarmmo.items.runtime.ZenyWalletHelper.getValue(stack);
             int totalZeny = stack.getCount() * value;
             Player player = event.getEntity();
 

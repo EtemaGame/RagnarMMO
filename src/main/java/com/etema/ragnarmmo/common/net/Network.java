@@ -1,11 +1,11 @@
 package com.etema.ragnarmmo.common.net;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.system.stats.net.StatsNetwork;
-import com.etema.ragnarmmo.system.stats.party.net.PartyNetwork;
-import com.etema.ragnarmmo.system.mobstats.network.MobStatsNetwork;
-import com.etema.ragnarmmo.system.lifeskills.LifeSkillsNetwork;
-import com.etema.ragnarmmo.roitems.network.RoItemsNetwork;
+import com.etema.ragnarmmo.player.stats.network.StatsNetwork;
+import com.etema.ragnarmmo.player.party.net.PartyNetwork;
+import com.etema.ragnarmmo.mobs.network.MobNetwork;
+import com.etema.ragnarmmo.lifeskills.LifeSkillsNetwork;
+import com.etema.ragnarmmo.items.network.RoItemsNetwork;
 import com.etema.ragnarmmo.system.achievements.network.AchievementNetwork;
 import com.etema.ragnarmmo.common.net.effects.SkillEffectsNetwork;
 import com.etema.ragnarmmo.combat.net.CombatNetwork;
@@ -57,8 +57,8 @@ public final class Network {
                 PartyNetwork.register(CH, NEXT_ID);
         }
 
-        public static void registerMobStatsPackets() {
-                MobStatsNetwork.register(CH, NEXT_ID);
+        public static void registerMobPackets() {
+                MobNetwork.register(CH, NEXT_ID);
         }
 
         public static void registerRoItemPackets() {

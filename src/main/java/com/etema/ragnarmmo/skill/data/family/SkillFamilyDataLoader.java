@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.skill.data.family;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.system.stats.RagnarStats;
+import com.etema.ragnarmmo.player.stats.PlayerStatsModule;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -134,7 +134,7 @@ public class SkillFamilyDataLoader extends SimpleJsonResourceReloadListener {
     /**
      * Register this data loader to the reload listener event.
      */
-    @Mod.EventBusSubscriber(modid = RagnarStats.MOD_ID)
+    @Mod.EventBusSubscriber(modid = PlayerStatsModule.MOD_ID)
     public static class Events {
         @SubscribeEvent
         public static void onAddReloadListeners(AddReloadListenerEvent event) {

@@ -48,14 +48,14 @@ class SkillResourcesTest {
 
                 Path skillFile = skillFileFor(skillId);
                 assertTrue(Files.isRegularFile(skillFile),
-                        () -> skillId + " must be authored in JSON, not injected from SkillType fallback");
+                        () -> skillId + " must be authored in JSON, not reconstructed from code");
 
                 JsonObject skill = readObject(skillFile);
                 assertEquals(skillId, skill.get("id").getAsString(), skillFile + " id must match tree entry");
                 assertTrue(skill.has("display_name"), () -> skillId + " must have display_name");
                 assertTrue(USAGE_TYPES.contains(skill.get("usage").getAsString()),
                         () -> skillId + " has invalid usage " + skill.get("usage"));
-                assertTrue(skill.has("effect_class"), () -> skillId + " must point to a Java effect during migration");
+                assertTrue(skill.has("effect_class"), () -> skillId + " must point to a Java effect");
                 assertTrue(skillHasJob(skill, job), () -> skillId + " must include job " + job);
                 assertTrue(getMaxLevel(skill) >= 1, () -> skillId + " max level must be >= 1");
             }

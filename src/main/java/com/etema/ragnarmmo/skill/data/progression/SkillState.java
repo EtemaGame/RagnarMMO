@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * Tracks XP and level progress for a single skill.
  * This is the data-driven replacement for SkillProgress.
- * Uses ResourceLocation instead of SkillType enum.
+ * Uses canonical ResourceLocation skill IDs.
  */
 public class SkillState {
 

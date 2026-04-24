@@ -1,7 +1,6 @@
 package com.etema.ragnarmmo.skill.runtime;
 
 import com.etema.ragnarmmo.skill.api.IPlayerSkills;
-import com.etema.ragnarmmo.skill.api.SkillType;
 import com.etema.ragnarmmo.common.command.CommandUtil;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -78,24 +77,6 @@ public final class SkillCommands {
 
                         for (net.minecraft.resources.ResourceLocation id : categorySkills) {
                                 int level = skills.getSkillLevel(id);
-                                // Calculate progress percent (legacy logic approximation or new logic)
-                                double xp = skills.getSkillXp(id);
-                                // We need max level for percent? Or XP to next level?
-                                // SkillState has XP logic, but IPlayerSkills exposes raw values.
-                                // Simplified: Just show Level for now, or fetch definition for max.
-
-                                // Note: Legacy command showed percent.
-                                // We can't easily get "percent to next level" from IPlayerSkills without
-                                // duplicating logic
-                                // or exposing it. SkillState has it.
-                                // For now, let's just show Level.
-                                // Wait, users might want percent.
-                                // IPlayerSkills doesn't have "getPercent".
-                                // But SkillConfigsManager has logic? No.
-                                // SkillManager.getSkillState(id) returns SkillState which has percent.
-                                // But that method is not in IPlayerSkills interface.
-                                // Cast to SkillManager?
-
                                 int percent = 0;
                                 if (skills instanceof SkillManager sm) {
                                         com.etema.ragnarmmo.skill.data.progression.SkillState state = sm.getSkillState(id);
@@ -104,14 +85,9 @@ public final class SkillCommands {
                                         }
                                 }
 
-                                // Get Display Name from Registry
                                 String displayName = com.etema.ragnarmmo.skill.data.SkillRegistry.get(id)
                                                 .map(com.etema.ragnarmmo.skill.api.ISkillDefinition::getDisplayName)
                                                 .orElse(id.getPath());
-
-                                // Actually ISkillDefinition has getDisplayName?
-                                // I need to check ISkillDefinition to be sure.
-                                // Assuming it does for now as it replaced SkillType.
 
                                 CommandUtil.sendOk(source, Component.translatable("commands.ragnarmmo.skills.line",
                                                 displayName, level, percent).withStyle(ChatFormatting.GRAY));
@@ -156,12 +132,6 @@ public final class SkillCommands {
                                 (int) xp, (int) nextXp).withStyle(ChatFormatting.GRAY));
                 CommandUtil.sendOk(source, Component.translatable("commands.ragnarmmo.skills.info.progress",
                                 percent).withStyle(ChatFormatting.GRAY));
-                // Primary Stat? Def might have it.
-                // If not, remove it.
-                // SkillType had getPrimaryStat().
-                // Does ISkillDefinition have it?
-                // Let's check or assume removal if not critical.
-                // It's just info.
                 return 1;
         }
 }

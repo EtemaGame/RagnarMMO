@@ -6,8 +6,9 @@ import com.etema.ragnarmmo.common.api.stats.ChangeReason;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
-import com.etema.ragnarmmo.system.stats.StatContainer;
+import com.etema.ragnarmmo.player.stats.StatContainer;
 import net.minecraft.util.Mth;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -19,10 +20,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.IntUnaryOperator;
-import com.etema.ragnarmmo.system.stats.compute.StatResolutionService;
-import com.etema.ragnarmmo.system.stats.progression.StatPointProgression;
+import com.etema.ragnarmmo.player.stats.compute.StatResolutionService;
+import com.etema.ragnarmmo.player.progression.PlayerProgression;
+import com.etema.ragnarmmo.player.progression.PlayerProgressionService;
+import com.etema.ragnarmmo.player.progression.ProgressionResult;
 
 public class PlayerStats implements IPlayerStats {
+    private static final ResourceLocation DEFAULT_JOB_ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "novice");
 
     private final StatContainer<StatKeys> stats = new StatContainer<>(StatKeys.class);
 
@@ -53,7 +57,7 @@ public class PlayerStats implements IPlayerStats {
     private int jobLevel = 1;
     private int jobExp = 0;
     private int skillPoints = 0;
-    private String jobId = "ragnarmmo:novice";
+    private ResourceLocation jobId = DEFAULT_JOB_ID;
     private boolean baseStatPointsGranted = false;
     private int dirtyMask = RoPlayerSyncDomain.allMask();
 
@@ -296,10 +300,11 @@ public class PlayerStats implements IPlayerStats {
     }
 
     @Override
-    public String getJobId() { return jobId; }
+    public String getJobId() { return jobId.toString(); }
     @Override
     public void setJobId(String id) {
-        this.jobId = id;
+        ResourceLocation parsed = ResourceLocation.tryParse(id);
+        this.jobId = parsed == null ? DEFAULT_JOB_ID : parsed;
         sanitizeProgressionCaps();
         markDirty(RoPlayerSyncDomain.PROGRESSION);
         StatResolutionService.resolve(owner, this);
@@ -330,7 +335,7 @@ public class PlayerStats implements IPlayerStats {
     }
 
     private JobType getCurrentJobType() {
-        return JobType.fromId(jobId);
+        return JobType.fromId(jobId.toString());
     }
 
     private void sanitizeProgressionCaps() {
@@ -347,7 +352,7 @@ public class PlayerStats implements IPlayerStats {
 
     @Override
     public void resetAll(ChangeReason reason) {
-        jobId = "ragnarmmo:novice";
+        jobId = DEFAULT_JOB_ID;
         level = 1;
         jobLevel = 1;
         exp = 0;
@@ -362,97 +367,72 @@ public class PlayerStats implements IPlayerStats {
 
     @Override
     public int addExpAndProcessLevelUps(int add, int ptsPerLvl, IntUnaryOperator nextFunc) {
-        if (add <= 0) return 0;
-        int levelCap = getLevelCap();
-        if (level >= levelCap) {
-            level = levelCap;
-            exp = 0;
-            markDirty(RoPlayerSyncDomain.PROGRESSION);
-            return 0;
-        }
-        exp += add;
-        int gained = 0;
-        while (level < levelCap && exp >= nextFunc.applyAsInt(level)) {
-            exp -= nextFunc.applyAsInt(level);
-            level++;
-            statPoints += StatPointProgression.pointsForLevelUp(level, ptsPerLvl);
-            gained++;
-        }
-        if (level >= levelCap) {
-            level = levelCap;
-            exp = 0;
-        }
+        ProgressionResult result = progressionService().addBaseExp(toProgression(), add);
+        applyProgression(result.progression());
         markDirty(RoPlayerSyncDomain.PROGRESSION);
-        return gained;
+        return result.baseLevelsGained();
     }
 
     @Override
     public int addJobExpAndProcessLevelUps(int add, IntUnaryOperator nextFunc) {
-        if (add <= 0) return 0;
-        int jobLevelCap = getJobLevelCap();
-        if (jobLevel >= jobLevelCap) {
-            jobLevel = jobLevelCap;
-            jobExp = 0;
-            markDirty(RoPlayerSyncDomain.PROGRESSION);
-            return 0;
-        }
-        jobExp += add;
-        int gained = 0;
-        while (jobLevel < jobLevelCap && jobExp >= nextFunc.applyAsInt(jobLevel)) {
-            jobExp -= nextFunc.applyAsInt(jobLevel);
-            jobLevel++;
-            skillPoints++;
-            gained++;
-        }
-        if (jobLevel >= jobLevelCap) {
-            jobLevel = jobLevelCap;
-            jobExp = 0;
-        }
+        ProgressionResult result = progressionService().addJobExp(toProgression(), add);
+        applyProgression(result.progression());
         markDirty(RoPlayerSyncDomain.PROGRESSION);
-        return gained;
+        return result.jobLevelsGained();
     }
 
     @Override
     public net.minecraft.nbt.CompoundTag serializeNBT() {
         net.minecraft.nbt.CompoundTag nbt = new net.minecraft.nbt.CompoundTag();
-        nbt.putInt("Level", level);
-        nbt.putInt("Exp", exp);
-        nbt.putInt("StatPoints", statPoints);
-        nbt.putInt("JobLevel", jobLevel);
-        nbt.putInt("JobExp", jobExp);
-        nbt.putInt("SkillPoints", skillPoints);
-        nbt.putString("JobId", jobId);
-        nbt.putBoolean("BaseStatPointsGranted", baseStatPointsGranted);
-        nbt.putDouble("Mana", mana);
-        nbt.putDouble("ManaMax", manaMax);
-        nbt.putDouble("SP", sp);
-        nbt.putDouble("SPMax", spMax);
+        net.minecraft.nbt.CompoundTag progression = new net.minecraft.nbt.CompoundTag();
+        progression.putInt("BaseLevel", level);
+        progression.putLong("BaseExp", exp);
+        progression.putInt("JobLevel", jobLevel);
+        progression.putLong("JobExp", jobExp);
+        progression.putInt("StatPoints", statPoints);
+        progression.putInt("SkillPoints", skillPoints);
+        progression.putString("JobId", jobId.toString());
+        progression.putBoolean("BaseStatPointsGranted", baseStatPointsGranted);
+        nbt.put("Progression", progression);
+
+        net.minecraft.nbt.CompoundTag resources = new net.minecraft.nbt.CompoundTag();
+        resources.putDouble("Mana", mana);
+        resources.putDouble("ManaMax", manaMax);
+        resources.putDouble("SP", sp);
+        resources.putDouble("SPMax", spMax);
+        nbt.put("Resources", resources);
+
         net.minecraft.nbt.CompoundTag s = new net.minecraft.nbt.CompoundTag();
         for (StatKeys k : StatKeys.values()) {
             if (isAttributeBackedStat(k)) {
                 s.putInt(k.id(), get(k));
             }
         }
-        nbt.put("Stats", s);
+        nbt.put("PrimaryStats", s);
         return nbt;
     }
 
     @Override
     public void deserializeNBT(net.minecraft.nbt.CompoundTag nbt) {
-        level = nbt.getInt("Level");
-        exp = nbt.getInt("Exp");
-        statPoints = nbt.getInt("StatPoints");
-        jobLevel = nbt.getInt("JobLevel");
-        jobExp = nbt.getInt("JobExp");
-        skillPoints = nbt.getInt("SkillPoints");
-        jobId = nbt.getString("JobId");
-        baseStatPointsGranted = nbt.getBoolean("BaseStatPointsGranted");
-        mana = nbt.getDouble("Mana");
-        manaMax = nbt.getDouble("ManaMax");
-        sp = nbt.getDouble("SP");
-        spMax = nbt.getDouble("SPMax");
-        if (nbt.contains("Stats")) {
-            net.minecraft.nbt.CompoundTag s = nbt.getCompound("Stats");
+        net.minecraft.nbt.CompoundTag progression = nbt.getCompound("Progression");
+        level = progression.getInt("BaseLevel");
+        exp = (int) progression.getLong("BaseExp");
+        statPoints = progression.getInt("StatPoints");
+        jobLevel = progression.getInt("JobLevel");
+        jobExp = (int) progression.getLong("JobExp");
+        skillPoints = progression.getInt("SkillPoints");
+        ResourceLocation parsedJobId = ResourceLocation.tryParse(progression.getString("JobId"));
+        jobId = parsedJobId == null ? DEFAULT_JOB_ID : parsedJobId;
+        baseStatPointsGranted = progression.getBoolean("BaseStatPointsGranted");
+
+        net.minecraft.nbt.CompoundTag resources = nbt.getCompound("Resources");
+        mana = resources.getDouble("Mana");
+        manaMax = resources.getDouble("ManaMax");
+        sp = resources.getDouble("SP");
+        spMax = resources.getDouble("SPMax");
+
+        if (nbt.contains("PrimaryStats")) {
+            net.minecraft.nbt.CompoundTag s = nbt.getCompound("PrimaryStats");
             for (StatKeys k : StatKeys.values()) {
                 if (!isAttributeBackedStat(k)) {
                     continue;
@@ -465,6 +445,24 @@ public class PlayerStats implements IPlayerStats {
             }
         }
         sanitizeProgressionCaps();
+    }
+
+    private PlayerProgression toProgression() {
+        return new PlayerProgression(level, exp, jobLevel, jobExp, statPoints, skillPoints, jobId);
+    }
+
+    private void applyProgression(PlayerProgression progression) {
+        this.level = progression.baseLevel();
+        this.exp = (int) progression.baseExp();
+        this.jobLevel = progression.jobLevel();
+        this.jobExp = (int) progression.jobExp();
+        this.statPoints = progression.statPoints();
+        this.skillPoints = progression.skillPoints();
+        this.jobId = progression.jobId();
+    }
+
+    private PlayerProgressionService progressionService() {
+        return PlayerProgressionService.forJobId(jobId);
     }
 
     @Override
@@ -493,7 +491,7 @@ public class PlayerStats implements IPlayerStats {
      *
      * @param msg The synchronization packet from the server.
      */
-    public void applyMirrorState(com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncPacket msg) {
+    public void applyMirrorState(com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncPacket msg) {
         int mask = msg.syncMask;
 
         if (com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.includes(mask, com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS)) {
@@ -528,7 +526,8 @@ public class PlayerStats implements IPlayerStats {
             this.jobLevel = msg.jobLevel;
             this.jobExp = msg.jobExp;
             this.skillPoints = msg.skillPoints;
-            this.jobId = msg.jobId;
+            ResourceLocation parsedJobId = ResourceLocation.tryParse(msg.jobId);
+            this.jobId = parsedJobId == null ? DEFAULT_JOB_ID : parsedJobId;
             this.baseStatPointsGranted = msg.baseStatPointsGranted;
         }
     }

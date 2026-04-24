@@ -9,7 +9,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import com.etema.ragnarmmo.system.mobstats.util.MobUtils;
+import com.etema.ragnarmmo.mobs.util.MobUtils;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.AABB;
 

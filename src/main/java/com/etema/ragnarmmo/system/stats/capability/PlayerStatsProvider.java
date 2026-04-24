@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.system.stats.capability;
 
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
-import com.etema.ragnarmmo.system.stats.RagnarStats;
+import com.etema.ragnarmmo.player.stats.PlayerStatsModule;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -15,7 +15,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import com.etema.ragnarmmo.system.stats.compute.StatResolutionService;
+import com.etema.ragnarmmo.player.stats.compute.StatResolutionService;
 
 @net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "ragnarmmo")
 public class PlayerStatsProvider
@@ -37,7 +37,7 @@ public class PlayerStatsProvider
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> evt) {
         if (evt.getObject() instanceof Player player) {
             RagnarDebugLog.playerData("ATTACH_CAP player={}", playerName(player));
-            evt.addCapability(new ResourceLocation(RagnarStats.MOD_ID, "player_stats"),
+            evt.addCapability(new ResourceLocation(PlayerStatsModule.MOD_ID, "player_stats"),
                     new PlayerStatsProvider(player));
         }
     }
@@ -89,7 +89,7 @@ public class PlayerStatsProvider
     public static void onStartTracking(PlayerEvent.StartTracking event) {
         if (event.getTarget() instanceof ServerPlayer target) {
             target.getCapability(CAP).ifPresent(stats -> {
-                com.etema.ragnarmmo.system.stats.net.PlayerStatsSyncService.sync(target, stats);
+                com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncService.sync(target, stats);
             });
         }
     }
@@ -99,8 +99,8 @@ public class PlayerStatsProvider
         if (event.getEntity() instanceof ServerPlayer player) {
             player.getCapability(CAP).ifPresent(stats -> {
                 // Forzar el recálculo y aplicación de MaxHealth antes de rellenar.
-                var derived = com.etema.ragnarmmo.system.stats.compute.StatComputer.compute(
-                        player, stats, com.etema.ragnarmmo.system.stats.compute.EquipmentStatSnapshot.capture(player));
+                var derived = com.etema.ragnarmmo.player.stats.compute.StatComputer.compute(
+                        player, stats, com.etema.ragnarmmo.player.stats.compute.EquipmentStatSnapshot.capture(player));
 
                 var maxHealthAttr = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
                 if (maxHealthAttr != null) {

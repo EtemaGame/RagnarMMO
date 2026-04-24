@@ -38,7 +38,7 @@ public class VenomDustSkillEffect implements ISkillEffect {
                     e -> e != player && e.isAlive());
             for (LivingEntity target : targets) {
                 int baseDuration = 100 + (level * 20);
-                int duration = com.etema.ragnarmmo.system.stats.compute.CombatMath.computePoisonDuration(baseDuration, target);
+                int duration = com.etema.ragnarmmo.player.stats.compute.CombatMath.computePoisonDuration(baseDuration, target);
                 if (duration > 0) {
                     target.addEffect(new MobEffectInstance(MobEffects.POISON, duration, 1));
                 }

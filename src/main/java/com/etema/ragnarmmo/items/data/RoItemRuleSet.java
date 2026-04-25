@@ -24,8 +24,8 @@ public class RoItemRuleSet {
     // Rules keyed by mod namespace and equipment type.
     private final Map<String, Map<CardEquipType, RoItemRule>> byModAndType = new ConcurrentHashMap<>();
 
-    // Generic fallback rules by equipment type.
-    private final Map<CardEquipType, RoItemRule> fallbackByType = new ConcurrentHashMap<>();
+    // Generic base rules by equipment type.
+    private final Map<CardEquipType, RoItemRule> baseRuleByType = new ConcurrentHashMap<>();
 
     /**
      * Clear all loaded rules. Called before reload.
@@ -34,7 +34,7 @@ public class RoItemRuleSet {
         byItemId.clear();
         byTagId.clear();
         byModAndType.clear();
-        fallbackByType.clear();
+        baseRuleByType.clear();
     }
 
     /**
@@ -67,9 +67,9 @@ public class RoItemRuleSet {
                 .put(equipType, rule);
     }
 
-    public void addFallbackRule(CardEquipType equipType, RoItemRule rule) {
+    public void addBaseTypeRule(CardEquipType equipType, RoItemRule rule) {
         if (equipType != null && equipType != CardEquipType.ANY && rule != null) {
-            fallbackByType.put(equipType, rule);
+            baseRuleByType.put(equipType, rule);
         }
     }
 
@@ -103,8 +103,8 @@ public class RoItemRuleSet {
         return byType != null ? byType.get(equipType) : null;
     }
 
-    public RoItemRule getFallback(CardEquipType equipType) {
-        return fallbackByType.get(equipType);
+    public RoItemRule getBaseTypeRule(CardEquipType equipType) {
+        return baseRuleByType.get(equipType);
     }
 
     public Map<String, Map<CardEquipType, RoItemRule>> getModTypeRules() {
@@ -117,9 +117,9 @@ public class RoItemRuleSet {
         return Collections.unmodifiableMap(copy);
     }
 
-    public Map<CardEquipType, RoItemRule> getFallbackRules() {
+    public Map<CardEquipType, RoItemRule> getBaseTypeRules() {
         EnumMap<CardEquipType, RoItemRule> copy = new EnumMap<>(CardEquipType.class);
-        copy.putAll(fallbackByType);
+        copy.putAll(baseRuleByType);
         return Collections.unmodifiableMap(copy);
     }
 
@@ -142,14 +142,14 @@ public class RoItemRuleSet {
      */
     public int getTotalRuleCount() {
         int modTypeCount = byModAndType.values().stream().mapToInt(Map::size).sum();
-        return byItemId.size() + byTagId.size() + modTypeCount + fallbackByType.size();
+        return byItemId.size() + byTagId.size() + modTypeCount + baseRuleByType.size();
     }
 
     public int getModTypeRuleCount() {
         return byModAndType.values().stream().mapToInt(Map::size).sum();
     }
 
-    public int getFallbackRuleCount() {
-        return fallbackByType.size();
+    public int getBaseTypeRuleCount() {
+        return baseRuleByType.size();
     }
 }

@@ -26,7 +26,7 @@ public final class RoRequirementChecker {
         LEVEL_TOO_LOW,
         /** Player's job/class is not allowed */
         WRONG_CLASS,
-        /** Could not retrieve player stats (fallback behavior applies) */
+        /** Could not retrieve player stats, so requirement validation is skipped */
         NO_STATS_DATA
     }
 

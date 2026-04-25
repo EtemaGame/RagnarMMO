@@ -20,10 +20,10 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Resolves skill icon textures with backwards-compatible fallbacks.
+ * Resolves skill icon textures with stable default candidates.
  *
- * <p>This avoids hard failures when an old skill icon name is still referenced,
- * and it gives the UI a stable way to render a fallback label if the texture is
+ * <p>This avoids hard failures when a previous icon name is still referenced,
+ * and it gives the UI a stable way to render a default label if the texture is
  * genuinely missing from resources.</p>
  */
 public final class SkillIconResolver {

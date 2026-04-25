@@ -14,7 +14,7 @@ public final class EconomicSkillHelper {
         return definition != null ? definition.getLevelDouble("vendor_sell_bonus", level, 0.0D) : 0.0D;
     }
 
-    public static int zenyCost(SkillDefinition definition, int level, int fallback) {
-        return definition != null ? definition.getLevelInt("zeny_cost", level, fallback) : fallback;
+    public static int zenyCost(SkillDefinition definition, int level, int defaultValue) {
+        return definition != null ? definition.getLevelInt("zeny_cost", level, defaultValue) : defaultValue;
     }
 }

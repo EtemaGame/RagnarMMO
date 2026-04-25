@@ -300,10 +300,10 @@ public final class SkillDefinition implements ISkillDefinition {
         return levelData;
     }
 
-    private int getAliasedLevelInt(int level, int fallback, String... aliases) {
+    private int getAliasedLevelInt(int level, int defaultValue, String... aliases) {
         SkillLevelData data = levelData.get(level);
         if (data == null) {
-            return fallback;
+            return defaultValue;
         }
 
         for (String alias : aliases) {
@@ -313,7 +313,7 @@ public final class SkillDefinition implements ISkillDefinition {
             }
         }
 
-        return fallback;
+        return defaultValue;
     }
 
     // === Object methods ===

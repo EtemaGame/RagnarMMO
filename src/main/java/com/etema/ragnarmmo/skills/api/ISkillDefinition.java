@@ -248,16 +248,16 @@ public interface ISkillDefinition {
         return Optional.ofNullable(getLevelDataMap().get(level));
     }
 
-    default int getLevelInt(String key, int level, int fallback) {
+    default int getLevelInt(String key, int level, int defaultValue) {
         return getLevelData(level)
                 .flatMap(data -> data.getInt(key))
-                .orElse(fallback);
+                .orElse(defaultValue);
     }
 
-    default double getLevelDouble(String key, int level, double fallback) {
+    default double getLevelDouble(String key, int level, double defaultValue) {
         return getLevelData(level)
                 .flatMap(data -> data.getNumber(key))
-                .orElse(fallback);
+                .orElse(defaultValue);
     }
 
     default Optional<String> getLevelString(String key, int level) {
@@ -265,9 +265,9 @@ public interface ISkillDefinition {
                 .flatMap(data -> data.getString(key));
     }
 
-    default boolean getLevelBoolean(String key, int level, boolean fallback) {
+    default boolean getLevelBoolean(String key, int level, boolean defaultValue) {
         return getLevelData(level)
                 .flatMap(data -> data.getBoolean(key))
-                .orElse(fallback);
+                .orElse(defaultValue);
     }
 }

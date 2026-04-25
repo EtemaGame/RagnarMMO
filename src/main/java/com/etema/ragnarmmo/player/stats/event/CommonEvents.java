@@ -613,7 +613,7 @@ public class CommonEvents {
             return normalizedLevel;
         }
 
-        // Fallback: estimate from HP
+        // If no resolved level exists yet, estimate from HP.
         double hp = mob.getMaxHealth();
         return Math.max(1, (int) (hp / 10.0));
     }
@@ -716,7 +716,7 @@ public class CommonEvents {
         if (source.typeHolder().is(new net.minecraft.resources.ResourceLocation("ragnarmmo", "is_magic"))) {
             return true;
         }
-        // Minimal fallback: exact match only, no substring matching
+        // Minimal exact-match path only, no substring matching
         String msgId = source.getMsgId();
         return msgId.equals("magic") || msgId.equals("indirectMagic");
     }

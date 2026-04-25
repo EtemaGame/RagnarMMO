@@ -60,7 +60,7 @@ public final class ClientPacketHandler {
 
         Entity entity = mc.level.getEntity(entityId);
         
-        // Fallback for local player if not yet in level (common on join/respawn)
+        // Use the local player directly if the level entity map has not caught up yet.
         if (entity == null && mc.player != null && mc.player.getId() == entityId) {
             entity = mc.player;
         }
@@ -83,7 +83,7 @@ public final class ClientPacketHandler {
         
         net.minecraft.world.entity.Entity entity = mc.level.getEntity(msg.entityId);
         if (entity == null && mc.player != null && mc.player.getId() == msg.entityId) {
-            entity = mc.player; // Fallback during very early join
+            entity = mc.player; // Direct local mirror during very early join
         }
 
         if (!(entity instanceof net.minecraft.world.entity.player.Player p)) {
@@ -94,7 +94,7 @@ public final class ClientPacketHandler {
             if (s instanceof com.etema.ragnarmmo.player.stats.capability.PlayerStats ps) {
                 ps.applyMirrorState(msg);
             } else {
-                // Fallback for non-concrete instances
+                // Generic mirror path for non-concrete implementations
                 if (RoPlayerSyncDomain.includes(msg.syncMask, RoPlayerSyncDomain.RESOURCES)) {
                     s.setMana(msg.mana);
                     s.setManaMaxClient(msg.manaMax);
@@ -309,8 +309,8 @@ public final class ClientPacketHandler {
             java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.items.data.RoItemRule> itemRules,
             java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.items.data.RoItemRule> tagRules,
             java.util.Map<String, java.util.Map<com.etema.ragnarmmo.items.cards.CardEquipType, com.etema.ragnarmmo.items.data.RoItemRule>> modTypeRules,
-            java.util.Map<com.etema.ragnarmmo.items.cards.CardEquipType, com.etema.ragnarmmo.items.data.RoItemRule> fallbackRules) {
-        com.etema.ragnarmmo.items.data.RoItemRuleLoader.applyClientSync(itemRules, tagRules, modTypeRules, fallbackRules);
+            java.util.Map<com.etema.ragnarmmo.items.cards.CardEquipType, com.etema.ragnarmmo.items.data.RoItemRule> baseTypeRules) {
+        com.etema.ragnarmmo.items.data.RoItemRuleLoader.applyClientSync(itemRules, tagRules, modTypeRules, baseTypeRules);
     }
 
     // ═══════════════════════════════════════════════

@@ -35,7 +35,7 @@ public final class RoStrAdapter {
             for (RoStrParser.RoStrEffect.KeyFrame keyFrame : layer.keyframes()) {
                 int texIndex = Math.max(0, Math.min(layer.textures().size() - 1, (int) keyFrame.texId()));
                 if (layer.textures().isEmpty()) {
-                    warnings.add("Layer " + layerIndex + " has no textures; using fallback texture.");
+                    warnings.add("Layer " + layerIndex + " has no textures; using default texture.");
                 }
 
                 ResourceLocation texture = layer.textures().isEmpty()
@@ -107,7 +107,7 @@ public final class RoStrAdapter {
         }
 
         warnings.add("Unknown STR blend mode src=" + first.srcAlpha() + " dest=" + first.destAlpha()
-                + " on layer " + layerIndex + " of " + id + "; using translucent fallback.");
+                + " on layer " + layerIndex + " of " + id + "; using default translucent blend.");
         return BlendMode.TRANSLUCENT;
     }
 

@@ -76,7 +76,7 @@ public class RagnarSkillResolver {
                 int intel = stats.getINT();
                 int lvl = stats.getLevel();
 
-                // Skill multiplier logic (Simplified fallback)
+                // Temporary skill multiplier logic until per-skill authored formulas are wired in.
                 double damageMultiplier = 1.0 + (finalLevel * 0.2);
                 
                 // Fetch Defender Stats (Ideally reuse the logic from RagnarCombatEngine)

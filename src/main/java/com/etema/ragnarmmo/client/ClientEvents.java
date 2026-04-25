@@ -83,7 +83,7 @@ public class ClientEvents {
             return;
         }
 
-        // Handle skill assignment in Skills Screen or fallback casting
+        // Handle skill assignment in Skills Screen or direct hotbar casting
         for (int i = 0; i < Keybinds.HOTBAR_KEYS.length; i++) {
             if (Keybinds.HOTBAR_KEYS[i].isActiveAndMatches(key)) {
                 if (e.getAction() == GLFW.GLFW_PRESS) {

@@ -143,7 +143,7 @@ public class SkillEvents {
                         continue;
 
                     int xp = SourceConfig.getInstance().getXp(target, skill);
-                    // Fallback XP if config is missing for new skills
+                    // Use a neutral default if config entries are not present yet.
                     if (xp == 0)
                         xp = 10;
 

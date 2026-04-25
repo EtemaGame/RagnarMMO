@@ -15,7 +15,7 @@ import java.util.Objects;
  * Pure declarative resolver for authored mob definitions.
  *
  * <p>This class only handles authored merge, override precedence, and declarative validation. It does not
- * perform datapack loading, taxonomy fallback, or runtime stat derivation.</p>
+ * perform datapack loading, taxonomy defaults, or runtime stat derivation.</p>
  */
 public final class MobDefinitionResolver {
 
@@ -40,13 +40,13 @@ public final class MobDefinitionResolver {
 
         ResolvedMobDefinition resolved = new ResolvedMobDefinition(
                 definition.entity(),
-                firstNonNull(definition.rank(), template != null ? template.rank() : null),
-                firstNonNull(definition.level(), template != null ? template.level() : null),
+                preferPrimary(definition.rank(), template != null ? template.rank() : null),
+                preferPrimary(definition.level(), template != null ? template.level() : null),
                 mergeRoStats(template != null ? template.roStats() : null, definition.roStats()),
                 mergeDirectStats(template != null ? template.directStats() : null, definition.directStats()),
-                firstNonNull(definition.race(), template != null ? template.race() : null),
-                firstNonNull(definition.element(), template != null ? template.element() : null),
-                firstNonNull(definition.size(), template != null ? template.size() : null));
+                preferPrimary(definition.race(), template != null ? template.race() : null),
+                preferPrimary(definition.element(), template != null ? template.element() : null),
+                preferPrimary(definition.size(), template != null ? template.size() : null));
 
         return new MobDefinitionResolutionResult(resolved, validate(resolved));
     }
@@ -151,12 +151,12 @@ public final class MobDefinitionResolver {
             return templateBlock;
         }
         return new MobRoStatsBlock(
-                firstNonNull(definitionBlock.str(), templateBlock.str()),
-                firstNonNull(definitionBlock.agi(), templateBlock.agi()),
-                firstNonNull(definitionBlock.vit(), templateBlock.vit()),
-                firstNonNull(definitionBlock.int_(), templateBlock.int_()),
-                firstNonNull(definitionBlock.dex(), templateBlock.dex()),
-                firstNonNull(definitionBlock.luk(), templateBlock.luk()));
+                preferPrimary(definitionBlock.str(), templateBlock.str()),
+                preferPrimary(definitionBlock.agi(), templateBlock.agi()),
+                preferPrimary(definitionBlock.vit(), templateBlock.vit()),
+                preferPrimary(definitionBlock.int_(), templateBlock.int_()),
+                preferPrimary(definitionBlock.dex(), templateBlock.dex()),
+                preferPrimary(definitionBlock.luk(), templateBlock.luk()));
     }
 
     private static @Nullable MobDirectStatsBlock mergeDirectStats(
@@ -169,16 +169,16 @@ public final class MobDefinitionResolver {
             return templateBlock;
         }
         return new MobDirectStatsBlock(
-                firstNonNull(definitionBlock.maxHp(), templateBlock.maxHp()),
-                firstNonNull(definitionBlock.atkMin(), templateBlock.atkMin()),
-                firstNonNull(definitionBlock.atkMax(), templateBlock.atkMax()),
-                firstNonNull(definitionBlock.def(), templateBlock.def()),
-                firstNonNull(definitionBlock.mdef(), templateBlock.mdef()),
-                firstNonNull(definitionBlock.hit(), templateBlock.hit()),
-                firstNonNull(definitionBlock.flee(), templateBlock.flee()),
-                firstNonNull(definitionBlock.crit(), templateBlock.crit()),
-                firstNonNull(definitionBlock.aspd(), templateBlock.aspd()),
-                firstNonNull(definitionBlock.moveSpeed(), templateBlock.moveSpeed()));
+                preferPrimary(definitionBlock.maxHp(), templateBlock.maxHp()),
+                preferPrimary(definitionBlock.atkMin(), templateBlock.atkMin()),
+                preferPrimary(definitionBlock.atkMax(), templateBlock.atkMax()),
+                preferPrimary(definitionBlock.def(), templateBlock.def()),
+                preferPrimary(definitionBlock.mdef(), templateBlock.mdef()),
+                preferPrimary(definitionBlock.hit(), templateBlock.hit()),
+                preferPrimary(definitionBlock.flee(), templateBlock.flee()),
+                preferPrimary(definitionBlock.crit(), templateBlock.crit()),
+                preferPrimary(definitionBlock.aspd(), templateBlock.aspd()),
+                preferPrimary(definitionBlock.moveSpeed(), templateBlock.moveSpeed()));
     }
 
     private static boolean isCompleteRoStats(@Nullable MobRoStatsBlock roStats) {
@@ -256,8 +256,8 @@ public final class MobDefinitionResolver {
         }
     }
 
-    private static <T> @Nullable T firstNonNull(@Nullable T preferred, @Nullable T fallback) {
-        return preferred != null ? preferred : fallback;
+    private static <T> @Nullable T preferPrimary(@Nullable T primary, @Nullable T secondary) {
+        return primary != null ? primary : secondary;
     }
 
     private static MobDefinitionResolutionIssue invalid(String field, String message) {

@@ -21,7 +21,7 @@ public enum RagnarTargetSource {
     SKILL_AUTO,
 
     /**
-     * Target resolved on the server as a fallback (e.g., proximity).
+     * Target resolved on the server when no direct client target is used.
      */
-    SERVER_FALLBACK
+    SERVER_RESOLVED
 }

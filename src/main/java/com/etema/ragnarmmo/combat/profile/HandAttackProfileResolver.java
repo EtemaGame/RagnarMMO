@@ -222,10 +222,10 @@ public final class HandAttackProfileResolver {
         return hitBonus;
     }
 
-    private static double getSkillLevelDouble(ResourceLocation skillId, int level, String key, double fallback) {
+    private static double getSkillLevelDouble(ResourceLocation skillId, int level, String key, double defaultValue) {
         return SkillRegistry.get(skillId)
-                .map(def -> def.getLevelDouble(key, level, fallback))
-                .orElse(fallback);
+                .map(def -> def.getLevelDouble(key, level, defaultValue))
+                .orElse(defaultValue);
     }
 
     private static double getCritChance(Player player) {

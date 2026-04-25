@@ -240,7 +240,7 @@ public class RagnarCombatEngine {
             }
         }
 
-        // Fallback for vanilla mobs without stats
+        // Neutral baseline for mobs that still do not expose resolved combat stats.
         int lvl = target.getAttributes().hasAttribute(Attributes.MAX_HEALTH)
                 ? (int) (target.getMaxHealth() / 10) : 10;
         return new DefenderStats(lvl + CombatMath.FLEE_BASE, lvl / 5.0, 0, lvl, lvl, lvl, lvl, 0,

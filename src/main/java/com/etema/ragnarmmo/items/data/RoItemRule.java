@@ -16,7 +16,7 @@ public record RoItemRule(
         int requiredBaseLevel, // 0 = no level requirement
         Set<JobType> allowedJobs, // empty = all jobs allowed
         int cardSlots, // number of card slots (for future use)
-        boolean showTooltip, // true = show RO combat block even if only fallback data exists
+        boolean showTooltip, // true = show RO combat block even if only base-type data exists
         RoCombatProfile combatProfile // optional manual combat compatibility for external weapons
 ) {
     /**

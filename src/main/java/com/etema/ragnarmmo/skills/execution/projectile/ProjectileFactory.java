@@ -24,7 +24,7 @@ public final class ProjectileFactory {
             case FIRE -> new FireBoltProjectile(level, owner, damage);
             case WATER -> new IceBoltProjectile(level, owner, damage);
             case WIND -> new LightningBoltProjectile(level, owner, damage);
-            default -> new FireBoltProjectile(level, owner, damage); // Fallback
+            default -> new FireBoltProjectile(level, owner, damage); // Neutral default
         };
     }
 }

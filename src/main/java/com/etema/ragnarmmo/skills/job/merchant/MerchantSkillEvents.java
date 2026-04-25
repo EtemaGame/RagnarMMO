@@ -160,11 +160,11 @@ public class MerchantSkillEvents {
         if (level <= 0) {
             return 0.0D;
         }
-        double fallback = Math.min(WeightConstants.CART_WEIGHT_REDUCTION_CAP,
+        double defaultReduction = Math.min(WeightConstants.CART_WEIGHT_REDUCTION_CAP,
                 level * WeightConstants.CART_WEIGHT_REDUCTION_PER_LEVEL);
         double configured = SkillRegistry.get(PUSHCART)
-                .map(def -> def.getLevelDouble("cart_weight_reduction", level, fallback))
-                .orElse(fallback);
+                .map(def -> def.getLevelDouble("cart_weight_reduction", level, defaultReduction))
+                .orElse(defaultReduction);
         return Math.min(WeightConstants.CART_WEIGHT_REDUCTION_CAP, Math.max(0.0D, configured));
     }
 

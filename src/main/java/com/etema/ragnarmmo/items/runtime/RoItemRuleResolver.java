@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Resolves an Item to its applicable RoItemRule.
  * Uses caching for performance and implements precedence logic:
- * 1. Fallback by equipment type (lowest priority)
+ * 1. Base rule by equipment type (lowest priority)
  * 2. Namespace + equipment type profile
  * 3. Tag match
  * 4. Exact item ID match (highest priority)
@@ -110,7 +110,7 @@ public final class RoItemRuleResolver {
 
     /**
      * Compute the rule for an item (not cached).
-     * Implements precedence: fallback < mod/type < tags < itemId
+     * Implements precedence: base-type < mod/type < tags < itemId
      */
     private static RoItemRule computeRule(Item item) {
         RoItemRuleSet ruleSet = RoItemRuleLoader.getRuleSet();
@@ -124,9 +124,9 @@ public final class RoItemRuleResolver {
         RoItemRule resolved = RoItemRule.EMPTY;
 
         if (equipType != CardEquipType.ANY) {
-            RoItemRule fallbackRule = ruleSet.getFallback(equipType);
-            if (fallbackRule != null) {
-                resolved = RoItemRule.merge(resolved, fallbackRule);
+            RoItemRule baseTypeRule = ruleSet.getBaseTypeRule(equipType);
+            if (baseTypeRule != null) {
+                resolved = RoItemRule.merge(resolved, baseTypeRule);
             }
 
             RoItemRule byModAndType = ruleSet.getByModAndType(itemId.getNamespace(), equipType);

@@ -840,8 +840,8 @@ public class SkillManager implements com.etema.ragnarmmo.skills.api.IPlayerSkill
         long localEnd = cooldowns.getOrDefault(skillId, 0L);
         int localDuration = cooldownDurations.getOrDefault(skillId, 0);
         
-        // Fallback: If we don't have the duration (e.g. just synced to client), 
-        // try to get it from the registry.
+        // If the duration is not mirrored yet (for example right after sync),
+        // recover it from the registry for local UI pacing.
         if (localDuration <= 0 && now < localEnd) {
             localDuration = SkillRegistry.get(skillId)
                 .map(com.etema.ragnarmmo.skills.api.ISkillDefinition::getCooldownTicks)

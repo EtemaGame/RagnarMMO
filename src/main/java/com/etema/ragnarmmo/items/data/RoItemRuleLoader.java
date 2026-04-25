@@ -66,15 +66,15 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
             JsonObject root = jsonElement.getAsJsonObject();
             parseItemAndTagRules(location, root);
             parseModTypeRules(location, root);
-            parseFallbackRules(location, root);
+            parseBaseTypeRules(location, root);
         });
 
-        RagnarMMO.LOGGER.info("Loaded {} RO item rules ({} by item, {} by tag, {} by mod/type, {} fallbacks)",
+        RagnarMMO.LOGGER.info("Loaded {} RO item rules ({} by item, {} by tag, {} by mod/type, {} base-type)",
                 ruleSet.getTotalRuleCount(),
                 ruleSet.getItemRuleCount(),
                 ruleSet.getTagRuleCount(),
                 ruleSet.getModTypeRuleCount(),
-                ruleSet.getFallbackRuleCount());
+                ruleSet.getBaseTypeRuleCount());
 
         // Sync to all connected clients after reload
         syncToAllPlayers();
@@ -92,7 +92,7 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
                 ruleSet.getItemRules(),
                 ruleSet.getTagRules(),
                 ruleSet.getModTypeRules(),
-                ruleSet.getFallbackRules()
+                ruleSet.getBaseTypeRules()
         );
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -109,7 +109,7 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
                 INSTANCE.ruleSet.getItemRules(),
                 INSTANCE.ruleSet.getTagRules(),
                 INSTANCE.ruleSet.getModTypeRules(),
-                INSTANCE.ruleSet.getFallbackRules()
+                INSTANCE.ruleSet.getBaseTypeRules()
         );
         Network.sendToPlayer(player, packet);
         RagnarMMO.LOGGER.debug("Synced RO item rules to player {}", player.getName().getString());
@@ -121,7 +121,7 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
     public static void applyClientSync(Map<ResourceLocation, RoItemRule> itemRules,
                                        Map<ResourceLocation, RoItemRule> tagRules,
                                        Map<String, Map<CardEquipType, RoItemRule>> modTypeRules,
-                                       Map<CardEquipType, RoItemRule> fallbackRules) {
+                                       Map<CardEquipType, RoItemRule> baseTypeRules) {
         INSTANCE.ruleSet.clear();
         RoItemRuleResolver.clearCache();
 
@@ -136,16 +136,16 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
                 INSTANCE.ruleSet.addModTypeRule(modEntry.getKey(), typeEntry.getKey(), typeEntry.getValue());
             }
         }
-        for (var entry : fallbackRules.entrySet()) {
-            INSTANCE.ruleSet.addFallbackRule(entry.getKey(), entry.getValue());
+        for (var entry : baseTypeRules.entrySet()) {
+            INSTANCE.ruleSet.addBaseTypeRule(entry.getKey(), entry.getValue());
         }
 
-        RagnarMMO.LOGGER.info("Received {} RO item rules from server ({} by item, {} by tag, {} by mod/type, {} fallbacks)",
+        RagnarMMO.LOGGER.info("Received {} RO item rules from server ({} by item, {} by tag, {} by mod/type, {} base-type)",
                 INSTANCE.ruleSet.getTotalRuleCount(),
                 INSTANCE.ruleSet.getItemRuleCount(),
                 INSTANCE.ruleSet.getTagRuleCount(),
                 INSTANCE.ruleSet.getModTypeRuleCount(),
-                INSTANCE.ruleSet.getFallbackRuleCount());
+                INSTANCE.ruleSet.getBaseTypeRuleCount());
     }
 
     private void parseItemAndTagRules(ResourceLocation location, JsonObject root) {
@@ -206,7 +206,7 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
         });
     }
 
-    private void parseFallbackRules(ResourceLocation location, JsonObject root) {
+    private void parseBaseTypeRules(ResourceLocation location, JsonObject root) {
         if (!root.has("fallbacks") || !root.get("fallbacks").isJsonObject()) {
             return;
         }
@@ -219,9 +219,9 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
                     return;
                 }
                 RoItemRule rule = parseRule(entry.getValue().getAsJsonObject(), true);
-                ruleSet.addFallbackRule(equipType, rule);
+                ruleSet.addBaseTypeRule(equipType, rule);
             } catch (Exception e) {
-                RagnarMMO.LOGGER.warn("Failed to parse RO fallback rule '{}' in {}: {}",
+                RagnarMMO.LOGGER.warn("Failed to parse RO base-type rule '{}' in {}: {}",
                         entry.getKey(), location, e.getMessage());
             }
         });

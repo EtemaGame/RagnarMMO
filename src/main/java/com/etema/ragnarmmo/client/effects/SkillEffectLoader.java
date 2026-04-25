@@ -77,7 +77,7 @@ public final class SkillEffectLoader extends SimpleJsonResourceReloadListener {
             case COMPOSITE -> parseComposite(id, json);
             case STR_LAYERED -> parseStrLayered(id, json, resourceManager);
             case PARTICLE_EMITTER -> parseParticleEmitter(id, json);
-            default -> throw new IOException("Unsupported effect type in MVP: " + type);
+            default -> throw new IOException("Unsupported effect type in prototype: " + type);
         };
     }
 

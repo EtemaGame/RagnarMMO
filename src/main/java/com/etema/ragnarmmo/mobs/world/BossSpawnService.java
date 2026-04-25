@@ -35,7 +35,7 @@ public final class BossSpawnService {
         if (rank == null || !BossRankRules.isControlledSpawnRank(rank)) {
             RagnarDebugLog.bossWorld("SPAWN_CONTROLLED result=FAIL reason=invalid_rank entityType={} rank={} source={} key={}",
                     entityType, rank, spawnSource, spawnKey);
-            return SpawnResult.failure("Controlled spawns require MINI_BOSS, BOSS or MVP rank.");
+            return SpawnResult.failure("Controlled spawns require MINI_BOSS or BOSS rank.");
         }
         if (spawnSource == null || !spawnSource.isControlled()) {
             RagnarDebugLog.bossWorld("SPAWN_CONTROLLED result=FAIL reason=invalid_source entityType={} rank={} source={} key={}",

@@ -57,7 +57,7 @@ public class MobProfileHudIntegration implements EntityStatResolver {
                 .map(MobProfile::rank)
                 .map(rank -> switch (rank) {
                     case ELITE, MINI_BOSS -> "* ";
-                    case BOSS, MVP -> "! ";
+                    case BOSS -> "! ";
                     default -> "";
                 })
                 .orElse("");
@@ -105,7 +105,7 @@ public class MobProfileHudIntegration implements EntityStatResolver {
     private static int colorForRank(MobRank rank) {
         return switch (rank) {
             case ELITE, MINI_BOSS -> ELITE_PRIMARY_COLOR;
-            case BOSS, MVP -> BOSS_PRIMARY_COLOR;
+            case BOSS -> BOSS_PRIMARY_COLOR;
             default -> DEFAULT_PRIMARY_COLOR;
         };
     }

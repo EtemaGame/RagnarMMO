@@ -84,7 +84,7 @@ public class SourceConfig extends SimpleJsonResourceReloadListener {
     // check tags.
     // Since we only have ResourceLocation here in the simple signature, we might
     // need a better method.
-    // For MVP, if we pass a Block ID, we can't easily check Tags without the Block
+    // For the prototype path, if we pass a Block ID, we can't easily check Tags without the Block
     // object or World.
     // BUT, we can use ForgeRegistries to look up the Block/Entity from ID and check
     // tags.

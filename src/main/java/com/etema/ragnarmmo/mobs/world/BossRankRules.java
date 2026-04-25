@@ -10,7 +10,7 @@ public final class BossRankRules {
     }
 
     public static boolean shouldPersistWorldState(MobRank rank) {
-        return rank == MobRank.MINI_BOSS || rank == MobRank.BOSS || rank == MobRank.MVP;
+        return rank == MobRank.MINI_BOSS || rank == MobRank.BOSS;
     }
 
     public static boolean isControlledSpawnRank(MobRank rank) {

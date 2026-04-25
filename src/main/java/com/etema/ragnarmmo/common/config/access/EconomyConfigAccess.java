@@ -41,8 +41,9 @@ public final class EconomyConfigAccess {
     public static double getCopperBaseChance() { return RagnarConfigs.SERVER.zeny.copperBaseChance.get(); }
     public static double getSilverBaseChance() { return RagnarConfigs.SERVER.zeny.silverBaseChance.get(); }
     public static double getGoldBaseChance() { return RagnarConfigs.SERVER.zeny.goldBaseChance.get(); }
-    public static double getEliteChanceMult() { return RagnarConfigs.SERVER.zeny.eliteChanceMult.get(); }
-    public static double getBossChanceMult() { return RagnarConfigs.SERVER.zeny.bossChanceMult.get(); }
+    public static double getEliteDropMultiplier() { return RagnarConfigs.SERVER.zeny.eliteDropMultiplier.get(); }
+    public static double getMiniBossDropMultiplier() { return RagnarConfigs.SERVER.zeny.miniBossDropMultiplier.get(); }
+    public static double getBossDropMultiplier() { return RagnarConfigs.SERVER.zeny.bossDropMultiplier.get(); }
     public static double getDropLukBonusFactor() { return RagnarConfigs.SERVER.zeny.dropLukBonusFactor.get(); }
 
     public static double getDimensionMultiplier(ResourceLocation dimension) {

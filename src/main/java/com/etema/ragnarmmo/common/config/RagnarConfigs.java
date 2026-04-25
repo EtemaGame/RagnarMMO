@@ -217,7 +217,7 @@ public final class RagnarConfigs {
             public final DimensionConfig nether;
             public final DimensionConfig end;
             public final ForgeConfigSpec.ConfigValue<Map<String, String>> structures;
-            public final ForgeConfigSpec.ConfigValue<Map<String, String>> bossRules;
+            public final ForgeConfigSpec.ConfigValue<Map<String, String>> specialMobs;
 
             Difficulty(ForgeConfigSpec.Builder builder) {
                 builder.comment("V2 mob difficulty configuration").push("difficulty");
@@ -238,26 +238,21 @@ public final class RagnarConfigs {
 
                 structures = builder.comment("Structure difficulty rules keyed by structure id. Format: min_level=70,min_rank=ELITE")
                         .define("structures", new java.util.LinkedHashMap<String, String>());
-                java.util.LinkedHashMap<String, String> defaultBossRules = new java.util.LinkedHashMap<>();
-                defaultBossRules.put("minecraft:ender_dragon", "min_level=99,rank=MVP");
-                defaultBossRules.put("minecraft:wither", "min_level=80,rank=BOSS");
-                bossRules = builder.comment("Boss difficulty rules keyed by entity type id. Format: min_level=99,rank=MVP")
-                        .define("boss_rules", defaultBossRules);
+                java.util.LinkedHashMap<String, String> defaultSpecialMobs = new java.util.LinkedHashMap<>();
+                defaultSpecialMobs.put("minecraft:wither", "rank=MINI_BOSS,min_level=80");
+                defaultSpecialMobs.put("minecraft:warden", "rank=BOSS,min_level=90");
+                defaultSpecialMobs.put("minecraft:ender_dragon", "rank=BOSS,min_level=99");
+                specialMobs = builder.comment("Special mob rules keyed by entity type id. Format: rank=BOSS,min_level=99")
+                        .define("special_mobs", defaultSpecialMobs);
                 builder.pop();
             }
 
             public static final class RankChances {
                 public final ForgeConfigSpec.DoubleValue elite;
-                public final ForgeConfigSpec.DoubleValue miniBoss;
-                public final ForgeConfigSpec.DoubleValue boss;
-                public final ForgeConfigSpec.DoubleValue mvp;
 
                 RankChances(ForgeConfigSpec.Builder builder) {
                     builder.push("rank_chances");
                     elite = builder.defineInRange("elite", 0.08, 0.0, 1.0);
-                    miniBoss = builder.defineInRange("mini_boss", 0.02, 0.0, 1.0);
-                    boss = builder.defineInRange("boss", 0.01, 0.0, 1.0);
-                    mvp = builder.defineInRange("mvp", 0.002, 0.0, 1.0);
                     builder.pop();
                 }
             }
@@ -439,8 +434,9 @@ public final class RagnarConfigs {
             public final ForgeConfigSpec.DoubleValue copperBaseChance;
             public final ForgeConfigSpec.DoubleValue silverBaseChance;
             public final ForgeConfigSpec.DoubleValue goldBaseChance;
-            public final ForgeConfigSpec.DoubleValue eliteChanceMult;
-            public final ForgeConfigSpec.DoubleValue bossChanceMult;
+            public final ForgeConfigSpec.DoubleValue eliteDropMultiplier;
+            public final ForgeConfigSpec.DoubleValue miniBossDropMultiplier;
+            public final ForgeConfigSpec.DoubleValue bossDropMultiplier;
             public final ForgeConfigSpec.DoubleValue dropLukBonusFactor;
             public final ForgeConfigSpec.ConfigValue<List<? extends String>> dimensionMultipliers;
             public final ForgeConfigSpec.DoubleValue dimensionMultCap;
@@ -462,8 +458,9 @@ public final class RagnarConfigs {
                 copperBaseChance = builder.defineInRange("copper_base_chance", 0.15, 0.0, 1.0);
                 silverBaseChance = builder.defineInRange("silver_base_chance", 0.02, 0.0, 1.0);
                 goldBaseChance = builder.defineInRange("gold_base_chance", 0.001, 0.0, 1.0);
-                eliteChanceMult = builder.defineInRange("elite_chance_multiplier", 3.0, 1.0, 100.0);
-                bossChanceMult = builder.defineInRange("boss_chance_multiplier", 10.0, 1.0, 1000.0);
+                eliteDropMultiplier = builder.defineInRange("elite_drop_multiplier", 3.0, 1.0, 100.0);
+                miniBossDropMultiplier = builder.defineInRange("mini_boss_drop_multiplier", 6.0, 1.0, 1000.0);
+                bossDropMultiplier = builder.defineInRange("boss_drop_multiplier", 10.0, 1.0, 1000.0);
                 dropLukBonusFactor = builder.defineInRange("luk_bonus_factor", 0.005, 0.0, 1.0);
                 dimensionMultipliers = builder.defineList("dimension_multipliers", List.of("minecraft:the_nether=1.5", "minecraft:the_end=2.0"), o -> o instanceof String);
                 dimensionMultCap = builder.defineInRange("dimension_multiplier_cap", 5.0, 1.0, 100.0);

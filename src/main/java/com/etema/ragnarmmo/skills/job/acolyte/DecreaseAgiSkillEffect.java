@@ -38,7 +38,7 @@ public class DecreaseAgiSkillEffect implements ISkillEffect {
             return;
         }
 
-        if (MobUtils.isMVPBoss(target)) {
+        if (MobUtils.isBossLike(target)) {
             player.sendSystemMessage(Component.literal("§7Decrease AGI no afecta a Boss monsters."));
             return;
         }

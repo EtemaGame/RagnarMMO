@@ -1,12 +1,12 @@
 {
     "category": "GREAT",
-    "name": "achievement.ragnarmmo.mvp_slayer.name",
-    "description": "achievement.ragnarmmo.mvp_slayer.desc",
+    "name": "achievement.ragnarmmo.boss_slayer.name",
+    "description": "achievement.ragnarmmo.boss_slayer.desc",
     "trigger_type": "kill_mob",
     "trigger_id": "minecraft:wither",
     "required_amount": 1,
     "points": 100,
-    "title": "title.ragnarmmo.mvp",
+    "title": "title.ragnarmmo.boss",
     "rewards": {
         "minecraft:nether_star": 1
     }

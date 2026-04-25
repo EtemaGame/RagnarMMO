@@ -4,6 +4,5 @@ public enum MobRank {
     NORMAL,
     ELITE,
     MINI_BOSS,
-    BOSS,
-    MVP
+    BOSS
 }

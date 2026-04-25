@@ -383,7 +383,7 @@ public final class MobDefinitionDataLoader extends SimpleJsonResourceReloadListe
         try {
             return MobRank.valueOf(raw);
         } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException(field + " must be one of NORMAL, ELITE, BOSS in " + sourceId);
+            throw new IllegalArgumentException(field + " must be one of NORMAL, ELITE, MINI_BOSS, BOSS in " + sourceId);
         }
     }
 

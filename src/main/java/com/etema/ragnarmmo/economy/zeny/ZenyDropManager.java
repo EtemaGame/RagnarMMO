@@ -62,10 +62,9 @@ public class ZenyDropManager {
         MobRank rank = readView != null ? readView.rank() : MobRank.NORMAL;
 
         return switch (rank) {
-            case ELITE -> new ZenyDropProfile(EconomyConfigAccess.getEliteChanceMult(), 5, 0, 0);
-            case MINI_BOSS -> new ZenyDropProfile(EconomyConfigAccess.getBossChanceMult(), 8, 1, 0);
-            case BOSS -> new ZenyDropProfile(EconomyConfigAccess.getBossChanceMult(), 12, 1, 0);
-            case MVP -> new ZenyDropProfile(EconomyConfigAccess.getBossChanceMult() * 1.5D, 16, 2, 1);
+            case ELITE -> new ZenyDropProfile(EconomyConfigAccess.getEliteDropMultiplier(), 5, 0, 0);
+            case MINI_BOSS -> new ZenyDropProfile(EconomyConfigAccess.getMiniBossDropMultiplier(), 8, 1, 0);
+            case BOSS -> new ZenyDropProfile(EconomyConfigAccess.getBossDropMultiplier(), 12, 2, 1);
             case NORMAL -> new ZenyDropProfile(1.0D, 2, 0, 0);
         };
     }

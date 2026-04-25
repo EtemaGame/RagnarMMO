@@ -51,7 +51,7 @@ public class ProvokeSkillEffect implements ISkillEffect {
         if (target == null || target == user)
             return;
 
-        if (target.getMobType() == net.minecraft.world.entity.MobType.UNDEAD || MobUtils.isMVPBoss(target)) {
+        if (target.getMobType() == net.minecraft.world.entity.MobType.UNDEAD || MobUtils.isBossLike(target)) {
             if (user instanceof Player player) {
                 player.sendSystemMessage(
                     net.minecraft.network.chat.Component.translatable("message.ragnarmmo.skill_blocked_type")

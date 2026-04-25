@@ -28,8 +28,4 @@ public class MobUtils {
     public static boolean isBossLikeForCompatibility(LivingEntity mob) {
         return isBossLike(mob);
     }
-
-    public static boolean isMVPBoss(LivingEntity mob) {
-        return isBossLike(mob);
-    }
 }

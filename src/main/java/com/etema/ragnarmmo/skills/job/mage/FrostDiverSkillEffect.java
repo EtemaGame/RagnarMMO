@@ -47,7 +47,7 @@ public class FrostDiverSkillEffect implements ISkillEffect {
 
         // Restriction: Boss and Undead monsters
         if (target.getMobType() == net.minecraft.world.entity.MobType.UNDEAD || 
-            com.etema.ragnarmmo.mobs.util.MobUtils.isMVPBoss(target)) {
+            com.etema.ragnarmmo.mobs.util.MobUtils.isBossLike(target)) {
             player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("message.ragnarmmo.skill_blocked_type")
                     .withStyle(net.minecraft.ChatFormatting.GRAY));
             return;

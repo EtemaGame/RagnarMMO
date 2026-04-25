@@ -58,7 +58,7 @@ public class HidingSkillEffect implements ISkillEffect {
             double revealRadius = definition.getLevelDouble("reveal_radius", level, 32.0D);
             AABB area = player.getBoundingBox().inflate(revealRadius);
             player.level().getEntitiesOfClass(Mob.class, area).forEach(mob -> {
-                if (mob.getTarget() == player && !MobUtils.isMVPBoss(mob)) {
+                if (mob.getTarget() == player && !MobUtils.isBossLike(mob)) {
                     mob.setTarget(null);
                 }
             });

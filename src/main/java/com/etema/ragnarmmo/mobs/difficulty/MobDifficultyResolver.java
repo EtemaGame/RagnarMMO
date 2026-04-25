@@ -33,12 +33,12 @@ public final class MobDifficultyResolver {
             }
         }
 
-        Optional<ResourceLocation> matchedBoss = Optional.ofNullable(context.entityType())
-                .filter(id -> rules.bossRules().containsKey(id));
-        if (matchedBoss.isPresent()) {
-            DifficultyRule bossRule = rules.bossRules().get(matchedBoss.get());
-            if (bossRule.minLevel().isPresent()) {
-                level = Math.max(level, bossRule.minLevel().getAsInt());
+        Optional<ResourceLocation> matchedSpecialMob = Optional.ofNullable(context.entityType())
+                .filter(id -> rules.specialMobs().containsKey(id));
+        if (matchedSpecialMob.isPresent()) {
+            DifficultyRule specialRule = rules.specialMobs().get(matchedSpecialMob.get());
+            if (specialRule.minLevel().isPresent()) {
+                level = Math.max(level, specialRule.minLevel().getAsInt());
             }
         }
 
@@ -47,13 +47,13 @@ public final class MobDifficultyResolver {
 
         MobRank rank = rules.rankChances().roll(random.nextDouble());
         if (matchedStructure.isPresent()) {
-            rank = applyRankRule(rank, rules.structures().get(matchedStructure.get()), false);
+            rank = applyStructureRankRule(rank, rules.structures().get(matchedStructure.get()));
         }
-        if (matchedBoss.isPresent()) {
-            rank = applyRankRule(rank, rules.bossRules().get(matchedBoss.get()), true);
+        if (matchedSpecialMob.isPresent()) {
+            rank = rules.specialMobs().get(matchedSpecialMob.get()).fixedRank().orElse(rank);
         }
 
-        return new DifficultyResult(level, rank, dimension.floor(), dimension.cap(), matchedStructure, matchedBoss,
+        return new DifficultyResult(level, rank, dimension.floor(), dimension.cap(), matchedStructure, matchedSpecialMob,
                 rules.mode());
     }
 
@@ -80,10 +80,7 @@ public final class MobDifficultyResolver {
                 .orElse(Math.max(1, (distance / 125) + 1));
     }
 
-    private static MobRank applyRankRule(MobRank current, DifficultyRule rule, boolean allowFixedRank) {
-        if (allowFixedRank && rule.fixedRank().isPresent()) {
-            return MobConfigAccess.maxSeverity(current, rule.fixedRank().get());
-        }
+    private static MobRank applyStructureRankRule(MobRank current, DifficultyRule rule) {
         if (rule.minRank().isPresent()) {
             return MobConfigAccess.maxSeverity(current, rule.minRank().get());
         }

@@ -552,13 +552,13 @@ public class CommonEvents {
     /**
      * RO-style EXP multiplier based on level difference.
      * Mobs lower than player give reduced EXP, mobs higher give bonus.
-     * MVP/Boss mobs are exempt from penalties (always 100%).
+     * Boss-like mobs are exempt from penalties (always 100%).
      */
     private static int applyLevelPenalty(int baseExp, ServerPlayer player, LivingEntity mob, int playerLevel) {
         int mobLevel = estimateMobLevel(mob);
         boolean isBoss = MobUtils.isBossLikeForCompatibility(mob);
 
-        // MVP/Boss monsters never get EXP penalty
+        // Boss-like monsters never get EXP penalty
         if (isBoss) {
             return baseExp;
         }

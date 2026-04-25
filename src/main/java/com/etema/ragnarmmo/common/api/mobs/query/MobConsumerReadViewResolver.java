@@ -34,8 +34,8 @@ public final class MobConsumerReadViewResolver {
             LivingEntity entity,
             MobProfile profile) {
         ResourceLocation entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-        boolean bossLikeForCompatibility = profile.rank() == MobRank.BOSS
-                || profile.rank() == MobRank.MVP;
+        boolean bossLikeForCompatibility = profile.rank() == MobRank.MINI_BOSS
+                || profile.rank() == MobRank.BOSS;
 
         return new MobConsumerReadView(
                 entityTypeId,

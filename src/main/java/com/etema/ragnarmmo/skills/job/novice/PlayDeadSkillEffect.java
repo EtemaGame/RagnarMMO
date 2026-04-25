@@ -40,7 +40,7 @@ public class PlayDeadSkillEffect implements ISkillEffect {
         player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, durationTicks, 1, false, false, true));
 
         AABB area = player.getBoundingBox().inflate(12.0);
-        for (Mob mob : player.level().getEntitiesOfClass(Mob.class, area, mob -> mob.isAlive() && !MobUtils.isMVPBoss(mob))) {
+        for (Mob mob : player.level().getEntitiesOfClass(Mob.class, area, mob -> mob.isAlive() && !MobUtils.isBossLike(mob))) {
             if (mob.getTarget() == player) {
                 mob.setTarget(null);
             }

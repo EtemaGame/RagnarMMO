@@ -9,7 +9,7 @@ Este directorio contiene el sistema visual genérico nuevo.
 - `assets/ragnarmmo/effects/impact/...`: bursts efímeros de impacto.
 - `assets/ragnarmmo/effect_bindings/...`: relación entre `skill_id`, fase y `effect`.
 
-## Tipos soportados en el MVP
+## Tipos soportados en el prototipo
 
 - `sprite_sheet`
 - `layered`

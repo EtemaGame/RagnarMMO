@@ -71,7 +71,7 @@ class MobDefinitionResourcesTest {
 
     private static final Set<String> TOP_LEVEL_FIELDS = Set.of(
             "entity", "rank", "level", "ro_stats", "direct_stats", "race", "element", "size");
-    private static final Set<String> RANKS = Set.of("NORMAL", "ELITE", "BOSS");
+    private static final Set<String> RANKS = Set.of("NORMAL", "ELITE", "MINI_BOSS", "BOSS");
     private static final Set<String> RO_STATS_FIELDS = Set.of("str", "agi", "vit", "int", "dex", "luk");
     private static final Set<String> DIRECT_STATS_FIELDS = Set.of(
             "max_hp", "atk_min", "atk_max", "def", "mdef", "aspd", "move_speed");

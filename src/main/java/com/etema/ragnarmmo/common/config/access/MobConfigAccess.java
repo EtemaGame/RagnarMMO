@@ -157,11 +157,7 @@ public final class MobConfigAccess {
     }
 
     private static DifficultyRules readDifficultyRules(RagnarConfigs.Server.Difficulty config) {
-        RankChanceTable rankChances = new RankChanceTable(
-                config.rankChances.elite.get(),
-                config.rankChances.miniBoss.get(),
-                config.rankChances.boss.get(),
-                config.rankChances.mvp.get());
+        RankChanceTable rankChances = new RankChanceTable(config.rankChances.elite.get());
 
         Map<ResourceLocation, DimensionRules> dimensions = new HashMap<>();
         dimensions.put(Level.OVERWORLD.location(), new DimensionRules(config.overworld));
@@ -177,15 +173,15 @@ public final class MobConfigAccess {
                 config.playerLevel.variance.get(),
                 Map.copyOf(dimensions),
                 dimensions.get(Level.OVERWORLD.location()),
-                parseRuleMap(config.structures.get(), false),
-                parseRuleMap(config.bossRules.get(), true));
+                parseRuleMap(config.structures.get(), RuleScope.STRUCTURE),
+                parseRuleMap(config.specialMobs.get(), RuleScope.SPECIAL_MOB));
     }
 
-    private static Map<ResourceLocation, DifficultyRule> parseRuleMap(Map<String, String> raw, boolean bossRule) {
+    private static Map<ResourceLocation, DifficultyRule> parseRuleMap(Map<String, String> raw, RuleScope scope) {
         Map<ResourceLocation, DifficultyRule> parsed = new HashMap<>();
         for (Map.Entry<String, String> entry : raw.entrySet()) {
             ResourceLocation id = new ResourceLocation(entry.getKey().trim());
-            DifficultyRule rule = DifficultyRule.parse(entry.getValue(), bossRule);
+            DifficultyRule rule = DifficultyRule.parse(entry.getValue(), scope);
             parsed.put(id, rule);
         }
         return Map.copyOf(parsed);
@@ -247,30 +243,18 @@ public final class MobConfigAccess {
             Map<ResourceLocation, DimensionRules> dimensions,
             DimensionRules defaultDimension,
             Map<ResourceLocation, DifficultyRule> structures,
-            Map<ResourceLocation, DifficultyRule> bossRules) {
+            Map<ResourceLocation, DifficultyRule> specialMobs) {
     }
 
-    public record RankChanceTable(double elite, double miniBoss, double boss, double mvp) {
+    public record RankChanceTable(double elite) {
         public RankChanceTable {
-            if (elite < 0.0D || miniBoss < 0.0D || boss < 0.0D || mvp < 0.0D) {
-                throw new IllegalArgumentException("difficulty.rank_chances must be >= 0");
-            }
-            double sum = elite + miniBoss + boss + mvp;
-            if (sum > 1.0D) {
-                throw new IllegalArgumentException("difficulty.rank_chances sum must not exceed 1.0");
+            if (elite < 0.0D || elite > 1.0D) {
+                throw new IllegalArgumentException("difficulty.rank_chances.elite must be between 0 and 1");
             }
         }
 
         public MobRank roll(double roll) {
-            double cursor = mvp;
-            if (roll < cursor) return MobRank.MVP;
-            cursor += boss;
-            if (roll < cursor) return MobRank.BOSS;
-            cursor += miniBoss;
-            if (roll < cursor) return MobRank.MINI_BOSS;
-            cursor += elite;
-            if (roll < cursor) return MobRank.ELITE;
-            return MobRank.NORMAL;
+            return roll < elite ? MobRank.ELITE : MobRank.NORMAL;
         }
     }
 
@@ -311,8 +295,13 @@ public final class MobConfigAccess {
         }
     }
 
+    public enum RuleScope {
+        STRUCTURE,
+        SPECIAL_MOB
+    }
+
     public record DifficultyRule(OptionalInt minLevel, Optional<MobRank> minRank, Optional<MobRank> fixedRank) {
-        public static DifficultyRule parse(String raw, boolean bossRule) {
+        public static DifficultyRule parse(String raw, RuleScope scope) {
             OptionalInt minLevel = OptionalInt.empty();
             Optional<MobRank> minRank = Optional.empty();
             Optional<MobRank> fixedRank = Optional.empty();
@@ -333,8 +322,24 @@ public final class MobConfigAccess {
                     default -> throw new IllegalArgumentException("unknown difficulty rule key: " + key);
                 }
             }
-            if (bossRule && minLevel.isEmpty() && minRank.isEmpty() && fixedRank.isEmpty()) {
-                throw new IllegalArgumentException("boss rule must define min_level, min_rank, or rank");
+            if (scope == RuleScope.STRUCTURE) {
+                if (fixedRank.isPresent()) {
+                    throw new IllegalArgumentException("structure rules must use min_rank, not rank");
+                }
+                if (minRank.isPresent() && minRank.get() != MobRank.NORMAL && minRank.get() != MobRank.ELITE) {
+                    throw new IllegalArgumentException("structure min_rank must be NORMAL or ELITE");
+                }
+            } else if (scope == RuleScope.SPECIAL_MOB) {
+                if (minRank.isPresent()) {
+                    throw new IllegalArgumentException("special_mobs rules must use rank, not min_rank");
+                }
+                if (fixedRank.isEmpty()) {
+                    throw new IllegalArgumentException("special_mobs rules must define rank=MINI_BOSS or rank=BOSS");
+                }
+                MobRank rank = fixedRank.get();
+                if (rank != MobRank.MINI_BOSS && rank != MobRank.BOSS) {
+                    throw new IllegalArgumentException("special_mobs rank must be MINI_BOSS or BOSS");
+                }
             }
             return new DifficultyRule(minLevel, minRank, fixedRank);
         }
@@ -400,7 +405,6 @@ public final class MobConfigAccess {
             case ELITE -> 1;
             case MINI_BOSS -> 2;
             case BOSS -> 3;
-            case MVP -> 4;
         };
     }
 }

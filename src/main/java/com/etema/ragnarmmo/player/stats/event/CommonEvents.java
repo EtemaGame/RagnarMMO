@@ -222,7 +222,7 @@ public class CommonEvents {
                 processRangedDamage(e, snapshotTag, arrow.getOwner(), tgt);
                 return; // EXIT EARLY
             }
-            // Arrow + INVALID/Missing Snapshot -> Return IMMEDIATELY without marking (Safe vanilla fallback)
+            // Arrow + INVALID/Missing Snapshot -> Return IMMEDIATELY without marking (Safe vanilla handoff)
             return;
         }
 

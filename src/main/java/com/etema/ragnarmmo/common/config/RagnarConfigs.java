@@ -134,7 +134,6 @@ public final class RagnarConfigs {
         public final Mobs mobs;
         public final Logging logging;
         public final Zeny zeny;
-        public final Economy economy;
         public final Items items;
 
         Server(ForgeConfigSpec.Builder builder) {
@@ -148,7 +147,6 @@ public final class RagnarConfigs {
             this.mobs = new Mobs(builder);
             this.logging = new Logging(builder);
             this.zeny = new Zeny(builder);
-            this.economy = new Economy(builder);
             this.items = new Items(builder);
         }
 
@@ -212,21 +210,87 @@ public final class RagnarConfigs {
         public static final class Difficulty {
             public final ForgeConfigSpec.BooleanValue enabled;
             public final ForgeConfigSpec.EnumValue<DifficultyMode> mode;
+            public final ForgeConfigSpec.IntValue maxLevel;
+            public final RankChances rankChances;
+            public final PlayerLevel playerLevel;
+            public final DimensionConfig overworld;
+            public final DimensionConfig nether;
+            public final DimensionConfig end;
+            public final ForgeConfigSpec.ConfigValue<Map<String, String>> structures;
+            public final ForgeConfigSpec.ConfigValue<Map<String, String>> bossRules;
 
             Difficulty(ForgeConfigSpec.Builder builder) {
                 builder.comment("V2 mob difficulty configuration").push("difficulty");
                 enabled = builder.define("enabled", true);
                 mode = builder.defineEnum("mode", DifficultyMode.DISTANCE);
+                maxLevel = builder.defineInRange("max_level", 160, 1, 100000);
+                rankChances = new RankChances(builder);
+                playerLevel = new PlayerLevel(builder);
+
+                builder.push("dimensions");
+                overworld = new DimensionConfig(builder, "overworld", 1, 160,
+                        () -> List.of("0-999=1-5", "1000-2499=5-10", "2500+=10-15"));
+                nether = new DimensionConfig(builder, "nether", 30, 320,
+                        () -> List.of("0-999=30-38", "1000+=38-48"));
+                end = new DimensionConfig(builder, "end", 60, 420,
+                        () -> List.of("0-999=60-70", "1000+=70-82"));
                 builder.pop();
+
+                structures = builder.comment("Structure difficulty rules keyed by structure id. Format: min_level=70,min_rank=ELITE")
+                        .define("structures", new java.util.LinkedHashMap<String, String>());
+                java.util.LinkedHashMap<String, String> defaultBossRules = new java.util.LinkedHashMap<>();
+                defaultBossRules.put("minecraft:ender_dragon", "min_level=99,rank=MVP");
+                defaultBossRules.put("minecraft:wither", "min_level=80,rank=BOSS");
+                bossRules = builder.comment("Boss difficulty rules keyed by entity type id. Format: min_level=99,rank=MVP")
+                        .define("boss_rules", defaultBossRules);
+                builder.pop();
+            }
+
+            public static final class RankChances {
+                public final ForgeConfigSpec.DoubleValue elite;
+                public final ForgeConfigSpec.DoubleValue miniBoss;
+                public final ForgeConfigSpec.DoubleValue boss;
+                public final ForgeConfigSpec.DoubleValue mvp;
+
+                RankChances(ForgeConfigSpec.Builder builder) {
+                    builder.push("rank_chances");
+                    elite = builder.defineInRange("elite", 0.08, 0.0, 1.0);
+                    miniBoss = builder.defineInRange("mini_boss", 0.02, 0.0, 1.0);
+                    boss = builder.defineInRange("boss", 0.01, 0.0, 1.0);
+                    mvp = builder.defineInRange("mvp", 0.002, 0.0, 1.0);
+                    builder.pop();
+                }
+            }
+
+            public static final class PlayerLevel {
+                public final ForgeConfigSpec.IntValue radius;
+                public final ForgeConfigSpec.IntValue variance;
+
+                PlayerLevel(ForgeConfigSpec.Builder builder) {
+                    builder.push("player_level");
+                    radius = builder.defineInRange("radius", 64, 8, 256);
+                    variance = builder.defineInRange("variance", 2, 0, 100);
+                    builder.pop();
+                }
             }
         }
 
         public static final class Combat {
             public final ForgeConfigSpec.BooleanValue enabled;
+            public final ForgeConfigSpec.DoubleValue mobDamagePerStr;
+            public final ForgeConfigSpec.DoubleValue mobDamagePerDex;
+            public final ForgeConfigSpec.DoubleValue mobReductionPerVit;
 
             Combat(ForgeConfigSpec.Builder builder) {
                 builder.comment("V2 combat configuration").push("combat");
                 enabled = builder.define("enabled", true);
+                builder.push("mob_damage");
+                mobDamagePerStr = builder.defineInRange("damage_per_str", 0.01, 0.0, 100.0);
+                mobDamagePerDex = builder.defineInRange("damage_per_dex", 0.005, 0.0, 100.0);
+                builder.pop();
+                builder.push("defense");
+                mobReductionPerVit = builder.defineInRange("reduction_per_vit", 0.003, 0.0, 1.0);
+                builder.pop();
                 builder.pop();
             }
         }
@@ -253,161 +317,21 @@ public final class RagnarConfigs {
 
         public static final class Mobs {
             public final ForgeConfigSpec.BooleanValue enabled;
-            public final ForgeConfigSpec.IntValue maxLevel;
-            public final ForgeConfigSpec.DoubleValue eliteChance;
-            public final ForgeConfigSpec.DoubleValue miniBossChance;
-            public final ForgeConfigSpec.DoubleValue bossChance;
-            public final ForgeConfigSpec.DoubleValue mvpChance;
-            public final ForgeConfigSpec.DoubleValue naturalTierChanceScale;
-            public final ForgeConfigSpec.ConfigValue<List<? extends String>> mobExcludeList;
-
-            public final ForgeConfigSpec.DoubleValue hpBase;
-            public final ForgeConfigSpec.DoubleValue vitToHp;
-            public final ForgeConfigSpec.DoubleValue levelToHp;
-            public final ForgeConfigSpec.DoubleValue atkBase;
-            public final ForgeConfigSpec.DoubleValue strToAtk;
-            public final ForgeConfigSpec.DoubleValue dexToAtk;
-            public final ForgeConfigSpec.DoubleValue lukToAtk;
-            public final ForgeConfigSpec.DoubleValue armorBase;
-            public final ForgeConfigSpec.DoubleValue vitToArmor;
-            public final ForgeConfigSpec.DoubleValue intToArmor;
-            public final ForgeConfigSpec.DoubleValue agiToSpeed;
-            public final ForgeConfigSpec.DoubleValue maxMovementSpeed;
-            public final ForgeConfigSpec.DoubleValue lukToKbResist;
-
-            public final ForgeConfigSpec.DoubleValue damagePerStr;
-            public final ForgeConfigSpec.DoubleValue damagePerDex;
-            public final ForgeConfigSpec.DoubleValue reductionPerVit;
-
-            public final ForgeConfigSpec.IntValue basePointsNormal;
-            public final ForgeConfigSpec.IntValue basePointsElite;
-            public final ForgeConfigSpec.IntValue basePointsMiniBoss;
-            public final ForgeConfigSpec.IntValue basePointsBoss;
-            public final ForgeConfigSpec.IntValue basePointsMvp;
-            public final ForgeConfigSpec.IntValue pointsPerLevelNormal;
-            public final ForgeConfigSpec.IntValue pointsPerLevelElite;
-            public final ForgeConfigSpec.IntValue pointsPerLevelMiniBoss;
-            public final ForgeConfigSpec.IntValue pointsPerLevelBoss;
-            public final ForgeConfigSpec.IntValue pointsPerLevelMvp;
-
-            public final ForgeConfigSpec.DoubleValue healthMultNormal;
-            public final ForgeConfigSpec.DoubleValue healthMultElite;
-            public final ForgeConfigSpec.DoubleValue healthMultMiniBoss;
-            public final ForgeConfigSpec.DoubleValue healthMultBoss;
-            public final ForgeConfigSpec.DoubleValue healthMultMvp;
-            public final ForgeConfigSpec.DoubleValue damageMultNormal;
-            public final ForgeConfigSpec.DoubleValue damageMultElite;
-            public final ForgeConfigSpec.DoubleValue damageMultMiniBoss;
-            public final ForgeConfigSpec.DoubleValue damageMultBoss;
-            public final ForgeConfigSpec.DoubleValue damageMultMvp;
-            public final ForgeConfigSpec.DoubleValue defenseMultNormal;
-            public final ForgeConfigSpec.DoubleValue defenseMultElite;
-            public final ForgeConfigSpec.DoubleValue defenseMultMiniBoss;
-            public final ForgeConfigSpec.DoubleValue defenseMultBoss;
-            public final ForgeConfigSpec.DoubleValue defenseMultMvp;
-
+            public final ForgeConfigSpec.ConfigValue<List<? extends String>> excludeList;
             public final ForgeConfigSpec.BooleanValue renderNumericHealth;
-            public final ForgeConfigSpec.EnumValue<LevelScalingMode> levelScalingMode;
-            public final ForgeConfigSpec.IntValue playerLevelRadius;
-            public final ForgeConfigSpec.IntValue playerLevelVariance;
-
-            public final DimensionConfig overworld;
-            public final DimensionConfig nether;
-            public final DimensionConfig end;
-
-            public final ForgeConfigSpec.ConfigValue<List<? extends String>> dimensionMinLevels;
-            public final ForgeConfigSpec.ConfigValue<List<? extends String>> structureMinLevels;
-            public final ForgeConfigSpec.ConfigValue<List<? extends String>> bossMinLevels;
-
+            public final DefaultProfile defaultProfile;
+            public final Attributes attributes;
             public final ForgeConfigSpec.DoubleValue partyScalingRadius;
             public final ForgeConfigSpec.DoubleValue partyHpMultiplier;
             public final ForgeConfigSpec.DoubleValue partyAtkMultiplier;
 
             Mobs(ForgeConfigSpec.Builder builder) {
-                builder.comment("Mob scaling and tier system").push("mobs");
+                builder.comment("V2 mob runtime profile configuration").push("mobs");
                 enabled = builder.define("enabled", true);
-                maxLevel = builder.defineInRange("max_level", 0, 0, 100000);
-                eliteChance = builder.defineInRange("elite_chance", 0.08, 0.0, 1.0);
-                miniBossChance = builder.defineInRange("mini_boss_chance", 0.02, 0.0, 1.0);
-                bossChance = builder.defineInRange("boss_chance", 0.01, 0.0, 1.0);
-                mvpChance = builder.defineInRange("mvp_chance", 0.002, 0.0, 1.0);
-                naturalTierChanceScale = builder.defineInRange("natural_tier_chance_scale", 0.2, 0.0, 1.0);
-                mobExcludeList = builder.defineList("mob_exclude_list", List.of("minecraft:armor_stand", "minecraft:villager"), o -> o instanceof String);
-
-                builder.push("attributes");
-                hpBase = builder.defineInRange("hp_base", 20.0, 0.0, 1.0E9);
-                vitToHp = builder.defineInRange("vit_to_hp", 5.0, 0.0, 1.0E6);
-                levelToHp = builder.defineInRange("level_to_hp", 5.0, 0.0, 1.0E6);
-                atkBase = builder.defineInRange("atk_base", 4.0, 0.0, 1.0E9);
-                strToAtk = builder.defineInRange("str_to_atk", 1.0, 0.0, 1.0E6);
-                dexToAtk = builder.defineInRange("dex_to_atk", 0.2, 0.0, 1.0E6);
-                lukToAtk = builder.defineInRange("luk_to_atk", 0.1, 0.0, 1.0E6);
-                armorBase = builder.defineInRange("armor_base", 0.0, 0.0, 1.0E9);
-                vitToArmor = builder.defineInRange("vit_to_armor", 0.2, 0.0, 1.0E6);
-                intToArmor = builder.defineInRange("int_to_armor", 0.1, 0.0, 1.0E6);
-                agiToSpeed = builder.defineInRange("agi_to_speed", 0.0025, 0.0, 1.0);
-                maxMovementSpeed = builder.defineInRange("max_movement_speed", 0.36, 0.05, 2.0);
-                lukToKbResist = builder.defineInRange("luk_to_kb_resist", 0.002, 0.0, 1.0);
-                builder.pop();
-
-                builder.push("combat");
-                damagePerStr = builder.defineInRange("damage_per_str", 0.01, 0.0, 100.0);
-                damagePerDex = builder.defineInRange("damage_per_dex", 0.005, 0.0, 100.0);
-                reductionPerVit = builder.defineInRange("reduction_per_vit", 0.003, 0.0, 1.0);
-                builder.pop();
-
-                builder.push("progression");
-                basePointsNormal = builder.defineInRange("base_points_normal", 5, 0, 100000);
-                basePointsElite = builder.defineInRange("base_points_elite", 20, 0, 100000);
-                basePointsMiniBoss = builder.defineInRange("base_points_mini_boss", 30, 0, 100000);
-                basePointsBoss = builder.defineInRange("base_points_boss", 40, 0, 100000);
-                basePointsMvp = builder.defineInRange("base_points_mvp", 60, 0, 100000);
-                pointsPerLevelNormal = builder.defineInRange("per_level_normal", 3, 0, 10000);
-                pointsPerLevelElite = builder.defineInRange("per_level_elite", 5, 0, 10000);
-                pointsPerLevelMiniBoss = builder.defineInRange("per_level_mini_boss", 6, 0, 10000);
-                pointsPerLevelBoss = builder.defineInRange("per_level_boss", 8, 0, 10000);
-                pointsPerLevelMvp = builder.defineInRange("per_level_mvp", 10, 0, 10000);
-                builder.pop();
-
-                builder.push("multipliers");
-                healthMultNormal = builder.defineInRange("health_normal", 1.0, 0.0, 100.0);
-                healthMultElite = builder.defineInRange("health_elite", 2.0, 0.0, 100.0);
-                healthMultMiniBoss = builder.defineInRange("health_mini_boss", 3.0, 0.0, 100.0);
-                healthMultBoss = builder.defineInRange("health_boss", 4.0, 0.0, 100.0);
-                healthMultMvp = builder.defineInRange("health_mvp", 6.0, 0.0, 100.0);
-                damageMultNormal = builder.defineInRange("damage_normal", 1.0, 0.0, 100.0);
-                damageMultElite = builder.defineInRange("damage_elite", 1.5, 0.0, 100.0);
-                damageMultMiniBoss = builder.defineInRange("damage_mini_boss", 2.0, 0.0, 100.0);
-                damageMultBoss = builder.defineInRange("damage_boss", 2.5, 0.0, 100.0);
-                damageMultMvp = builder.defineInRange("damage_mvp", 3.2, 0.0, 100.0);
-                defenseMultNormal = builder.defineInRange("defense_normal", 1.0, 0.0, 100.0);
-                defenseMultElite = builder.defineInRange("defense_elite", 1.5, 0.0, 100.0);
-                defenseMultMiniBoss = builder.defineInRange("defense_mini_boss", 1.65, 0.0, 100.0);
-                defenseMultBoss = builder.defineInRange("defense_boss", 1.8, 0.0, 100.0);
-                defenseMultMvp = builder.defineInRange("defense_mvp", 2.2, 0.0, 100.0);
-                builder.pop();
-
-                builder.push("world_scaling");
+                excludeList = builder.defineList("exclude_list", List.of("minecraft:armor_stand", "minecraft:villager"), o -> o instanceof String);
                 renderNumericHealth = builder.define("render_numeric_health", true);
-                levelScalingMode = builder.defineEnum("level_scaling_mode", LevelScalingMode.DISTANCE);
-                playerLevelRadius = builder.defineInRange("player_level_radius", 64, 8, 256);
-                playerLevelVariance = builder.defineInRange("player_level_variance", 2, 0, 100);
-
-                overworld = new DimensionConfig(builder, "overworld", 1, 160,
-                        () -> List.of("0-999=1-5", "1000-2499=5-10", "2500+=10-15"));
-
-                nether = new DimensionConfig(builder, "nether", 30, 320,
-                        () -> List.of("0-999=30-38", "1000+=38-48"));
-
-                end = new DimensionConfig(builder, "end", 60, 420,
-                        () -> List.of("0-999=60-70", "1000+=70-82"));
-
-                builder.push("minimums");
-                dimensionMinLevels = builder.defineList("dimension_min_levels", List.of(), o -> o instanceof String);
-                structureMinLevels = builder.defineList("structure_min_levels", List.of(), o -> o instanceof String);
-                bossMinLevels = builder.defineList("boss_min_levels", List.of(), o -> o instanceof String);
-                builder.pop();
-                builder.pop();
+                defaultProfile = new DefaultProfile(builder);
+                attributes = new Attributes(builder);
 
                 builder.push("multiplayer_scaling");
                 partyScalingRadius = builder.defineInRange("radius", 32.0, 1.0, 256.0);
@@ -415,6 +339,68 @@ public final class RagnarConfigs {
                 partyAtkMultiplier = builder.defineInRange("atk_per_player", 0.2, 0.0, 10.0);
                 builder.pop();
                 builder.pop();
+            }
+
+            public static final class DefaultProfile {
+                public final ForgeConfigSpec.ConfigValue<String> race;
+                public final ForgeConfigSpec.ConfigValue<String> element;
+                public final ForgeConfigSpec.ConfigValue<String> size;
+                public final ForgeConfigSpec.IntValue maxHp;
+                public final ForgeConfigSpec.IntValue atkMin;
+                public final ForgeConfigSpec.IntValue atkMax;
+                public final ForgeConfigSpec.IntValue def;
+                public final ForgeConfigSpec.IntValue mdef;
+                public final ForgeConfigSpec.IntValue hit;
+                public final ForgeConfigSpec.IntValue flee;
+                public final ForgeConfigSpec.IntValue crit;
+                public final ForgeConfigSpec.IntValue aspd;
+                public final ForgeConfigSpec.DoubleValue moveSpeed;
+
+                DefaultProfile(ForgeConfigSpec.Builder builder) {
+                    builder.push("default_profile");
+                    race = builder.define("race", "unknown");
+                    element = builder.define("element", "neutral");
+                    size = builder.define("size", "medium");
+                    maxHp = builder.defineInRange("max_hp", 20, 1, 1_000_000_000);
+                    atkMin = builder.defineInRange("atk_min", 2, 0, 1_000_000_000);
+                    atkMax = builder.defineInRange("atk_max", 4, 0, 1_000_000_000);
+                    def = builder.defineInRange("def", 0, 0, 1_000_000_000);
+                    mdef = builder.defineInRange("mdef", 0, 0, 1_000_000_000);
+                    hit = builder.defineInRange("hit", 10, 0, 1_000_000_000);
+                    flee = builder.defineInRange("flee", 5, 0, 1_000_000_000);
+                    crit = builder.defineInRange("crit", 1, 0, 1_000_000_000);
+                    aspd = builder.defineInRange("aspd", 150, 1, 1_000_000_000);
+                    moveSpeed = builder.defineInRange("move_speed", 0.20D, 0.0001D, 10.0D);
+                    builder.pop();
+                }
+            }
+
+            public static final class Attributes {
+                public final ForgeConfigSpec.DoubleValue hpPerLevel;
+                public final ForgeConfigSpec.DoubleValue atkMinPerLevel;
+                public final ForgeConfigSpec.DoubleValue atkMaxExtraPerLevel;
+                public final ForgeConfigSpec.DoubleValue defPerLevel;
+                public final ForgeConfigSpec.DoubleValue mdefPerLevel;
+                public final ForgeConfigSpec.DoubleValue hitPerLevel;
+                public final ForgeConfigSpec.DoubleValue fleePerLevel;
+                public final ForgeConfigSpec.DoubleValue aspdPerLevel;
+                public final ForgeConfigSpec.DoubleValue moveSpeedPerLevel;
+                public final ForgeConfigSpec.DoubleValue moveSpeedCap;
+
+                Attributes(ForgeConfigSpec.Builder builder) {
+                    builder.push("attributes");
+                    hpPerLevel = builder.defineInRange("hp_per_level", 8.0D, 0.0D, 1.0E6D);
+                    atkMinPerLevel = builder.defineInRange("atk_min_per_level", 1.0D, 0.0D, 1.0E6D);
+                    atkMaxExtraPerLevel = builder.defineInRange("atk_max_extra_per_level", 0.5D, 0.0D, 1.0E6D);
+                    defPerLevel = builder.defineInRange("def_per_level", 0.333D, 0.0D, 1.0E6D);
+                    mdefPerLevel = builder.defineInRange("mdef_per_level", 0.25D, 0.0D, 1.0E6D);
+                    hitPerLevel = builder.defineInRange("hit_per_level", 2.0D, 0.0D, 1.0E6D);
+                    fleePerLevel = builder.defineInRange("flee_per_level", 1.0D, 0.0D, 1.0E6D);
+                    aspdPerLevel = builder.defineInRange("aspd_per_level", 0.5D, 0.0D, 1.0E6D);
+                    moveSpeedPerLevel = builder.defineInRange("move_speed_per_level", 0.002D, 0.0D, 1.0D);
+                    moveSpeedCap = builder.defineInRange("move_speed_cap", 0.36D, 0.0001D, 10.0D);
+                    builder.pop();
+                }
             }
         }
 
@@ -486,16 +472,6 @@ public final class RagnarConfigs {
             }
         }
 
-        public static final class Economy {
-            public final ForgeConfigSpec.BooleanValue enabled;
-
-            Economy(ForgeConfigSpec.Builder builder) {
-                builder.comment("V2 economy configuration").push("economy_v2");
-                enabled = builder.define("enabled", true);
-                builder.pop();
-            }
-        }
-
         public static final class Items {
             public final ForgeConfigSpec.BooleanValue enabled;
             public final ForgeConfigSpec.BooleanValue enableHeuristics;
@@ -545,10 +521,6 @@ public final class RagnarConfigs {
                 builder.pop();
             }
         }
-    }
-
-    public enum LevelScalingMode {
-        PLAYER_LEVEL, DISTANCE
     }
 
     public static class DimensionConfig {

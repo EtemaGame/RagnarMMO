@@ -24,9 +24,6 @@ public class RoItemRuleSet {
     // Rules keyed by mod namespace and equipment type.
     private final Map<String, Map<CardEquipType, RoItemRule>> byModAndType = new ConcurrentHashMap<>();
 
-    // Generic base rules by equipment type.
-    private final Map<CardEquipType, RoItemRule> baseRuleByType = new ConcurrentHashMap<>();
-
     /**
      * Clear all loaded rules. Called before reload.
      */
@@ -34,7 +31,6 @@ public class RoItemRuleSet {
         byItemId.clear();
         byTagId.clear();
         byModAndType.clear();
-        baseRuleByType.clear();
     }
 
     /**
@@ -67,12 +63,6 @@ public class RoItemRuleSet {
                 .put(equipType, rule);
     }
 
-    public void addBaseTypeRule(CardEquipType equipType, RoItemRule rule) {
-        if (equipType != null && equipType != CardEquipType.ANY && rule != null) {
-            baseRuleByType.put(equipType, rule);
-        }
-    }
-
     /**
      * Get a rule by exact item ID.
      * @param itemId the item's registry name
@@ -103,10 +93,6 @@ public class RoItemRuleSet {
         return byType != null ? byType.get(equipType) : null;
     }
 
-    public RoItemRule getBaseTypeRule(CardEquipType equipType) {
-        return baseRuleByType.get(equipType);
-    }
-
     public Map<String, Map<CardEquipType, RoItemRule>> getModTypeRules() {
         Map<String, Map<CardEquipType, RoItemRule>> copy = new java.util.LinkedHashMap<>();
         byModAndType.forEach((modId, rules) -> {
@@ -114,12 +100,6 @@ public class RoItemRuleSet {
             typedCopy.putAll(rules);
             copy.put(modId, Collections.unmodifiableMap(typedCopy));
         });
-        return Collections.unmodifiableMap(copy);
-    }
-
-    public Map<CardEquipType, RoItemRule> getBaseTypeRules() {
-        EnumMap<CardEquipType, RoItemRule> copy = new EnumMap<>(CardEquipType.class);
-        copy.putAll(baseRuleByType);
         return Collections.unmodifiableMap(copy);
     }
 
@@ -142,14 +122,11 @@ public class RoItemRuleSet {
      */
     public int getTotalRuleCount() {
         int modTypeCount = byModAndType.values().stream().mapToInt(Map::size).sum();
-        return byItemId.size() + byTagId.size() + modTypeCount + baseRuleByType.size();
+        return byItemId.size() + byTagId.size() + modTypeCount;
     }
 
     public int getModTypeRuleCount() {
         return byModAndType.values().stream().mapToInt(Map::size).sum();
     }
 
-    public int getBaseTypeRuleCount() {
-        return baseRuleByType.size();
-    }
 }

@@ -64,9 +64,9 @@ public final class RagnarArrowSpawnHelper {
     }
 
     private static Vec3 sanitizeDirection(ServerPlayer player, Vec3 direction) {
-        Vec3 fallback = player.getLookAngle();
+        Vec3 lookDirection = player.getLookAngle();
         if (direction == null || direction.lengthSqr() <= 1.0E-7D) {
-            return fallback;
+            return lookDirection;
         }
         return direction.normalize();
     }

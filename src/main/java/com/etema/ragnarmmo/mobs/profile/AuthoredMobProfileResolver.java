@@ -16,6 +16,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 
 public final class AuthoredMobProfileResolver {
 
@@ -116,6 +119,45 @@ public final class AuthoredMobProfileResolver {
         } catch (IllegalArgumentException ex) {
             return failure(invalid("mob_profile", ex.getMessage()));
         }
+    }
+
+    public static Optional<AuthoredMobDefinition> resolvePartialDefinition(ResourceLocation entityTypeId) {
+        Objects.requireNonNull(entityTypeId, "entityTypeId");
+        MobDefinition definition = MobDefinitionRegistry.getInstance().getDefinition(entityTypeId).orElse(null);
+        if (definition == null) {
+            return Optional.empty();
+        }
+
+        MobTemplate template = null;
+        if (definition.template() != null) {
+            template = MobDefinitionRegistry.getInstance().getTemplate(definition.template()).orElse(null);
+            if (template == null) {
+                return Optional.empty();
+            }
+        }
+
+        MobDefinitionResolutionResult result = MobDefinitionResolver.resolve(definition, template);
+        if (!result.issues().isEmpty() || result.definition() == null) {
+            return Optional.empty();
+        }
+
+        ResolvedMobDefinition resolved = result.definition();
+        MobDirectStatsBlock directStats = resolved.directStats();
+        return Optional.of(new AuthoredMobDefinition(
+                entityTypeId,
+                optionalText(resolved.race()),
+                optionalText(resolved.element()),
+                optionalText(resolved.size()),
+                optionalInt(directStats != null ? directStats.maxHp() : null),
+                optionalInt(directStats != null ? directStats.atkMin() : null),
+                optionalInt(directStats != null ? directStats.atkMax() : null),
+                optionalInt(directStats != null ? directStats.def() : null),
+                optionalInt(directStats != null ? directStats.mdef() : null),
+                optionalInt(directStats != null ? directStats.hit() : null),
+                optionalInt(directStats != null ? directStats.flee() : null),
+                optionalInt(directStats != null ? directStats.crit() : null),
+                optionalInt(directStats != null ? directStats.aspd() : null),
+                optionalDouble(directStats != null ? directStats.moveSpeed() : null)));
     }
 
     private static @Nullable Integer resolveLevel(
@@ -260,5 +302,17 @@ public final class AuthoredMobProfileResolver {
 
     private static AuthoredMobProfileIssue derivationUnimplemented(String field, String message) {
         return new AuthoredMobProfileIssue(AuthoredMobProfileIssue.Kind.DERIVATION_UNIMPLEMENTED, field, message);
+    }
+
+    private static Optional<String> optionalText(@Nullable String value) {
+        return value == null || value.isBlank() ? Optional.empty() : Optional.of(value);
+    }
+
+    private static OptionalInt optionalInt(@Nullable Integer value) {
+        return value == null ? OptionalInt.empty() : OptionalInt.of(value);
+    }
+
+    private static OptionalDouble optionalDouble(@Nullable Double value) {
+        return value == null ? OptionalDouble.empty() : OptionalDouble.of(value);
     }
 }

@@ -17,7 +17,7 @@ public final class BossSpawnMetadata {
     private BossSpawnMetadata() {
     }
 
-    public static SpawnInfo read(LivingEntity entity, MobRank fallbackRank) {
+    public static SpawnInfo read(LivingEntity entity, MobRank defaultRank) {
         if (entity == null) {
             return SpawnInfo.natural("", 0);
         }
@@ -30,7 +30,7 @@ public final class BossSpawnMetadata {
         String spawnKey = root.getString(SPAWN_KEY);
         int respawnDelayTicks = Math.max(0, root.getInt(RESPAWN_DELAY_KEY));
 
-        if (fallbackRank != null && BossRankRules.shouldPersistWorldState(fallbackRank) && source == BossSpawnSource.NATURAL
+        if (defaultRank != null && BossRankRules.shouldPersistWorldState(defaultRank) && source == BossSpawnSource.NATURAL
                 && respawnDelayTicks <= 0) {
             return SpawnInfo.natural(spawnKey, 0);
         }

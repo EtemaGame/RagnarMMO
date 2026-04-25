@@ -9,10 +9,10 @@ class ProgressionServiceTest {
 
     @Test
     void baseExpLevelsUpAndAwardsPoints() {
-        PlayerProgressionService service = PlayerProgressionService
-                .forJobId(ResourceLocation.fromNamespaceAndPath("ragnarmmo", "novice"));
+        ResourceLocation novice = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "novice");
+        PlayerProgressionService service = new PlayerProgressionService(ProgressionRules.defaultsForTests(novice));
         PlayerProgression progression = new PlayerProgression(1, 0, 1, 0, 0, 0,
-                ResourceLocation.fromNamespaceAndPath("ragnarmmo", "novice"));
+                novice);
 
         ProgressionResult result = service.addBaseExp(progression, 10_000);
 

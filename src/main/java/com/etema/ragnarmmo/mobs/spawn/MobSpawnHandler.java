@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.mobs.spawn;
 
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
+import com.etema.ragnarmmo.common.config.access.MobConfigAccess;
 import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.mobs.capability.MobProfileProvider;
@@ -31,7 +32,7 @@ public class MobSpawnHandler {
 
     private final Random rng = new Random();
     private final MobSpawnInitializer profileInitializer = new MobSpawnInitializer(
-            new MobDifficultyResolver(RagnarConfigs.SERVER.difficulty.mode.get()),
+            new MobDifficultyResolver(),
             new MobProfileFactory());
 
     @SubscribeEvent
@@ -55,6 +56,10 @@ public class MobSpawnHandler {
             return;
         }
         if (!(event.getEntity() instanceof LivingEntity living) || living instanceof Player) {
+            return;
+        }
+        ResourceLocation entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(living.getType());
+        if (!MobConfigAccess.isEnabled() || MobConfigAccess.isExcluded(entityTypeId)) {
             return;
         }
 
@@ -89,7 +94,8 @@ public class MobSpawnHandler {
         BlockPos worldSpawnPos = living.level() instanceof net.minecraft.server.level.ServerLevel serverLevel
                 ? serverLevel.getSharedSpawnPos()
                 : BlockPos.ZERO;
-        Player nearest = living.level().getNearestPlayer(living, 64.0D);
+        Player nearest = living.level().getNearestPlayer(living,
+                MobConfigAccess.getDifficultyRules().playerLevelRadius());
         OptionalInt nearestPlayerLevel = nearest != null
                 ? RagnarCoreAPI.get(nearest).map(stats -> OptionalInt.of(stats.getLevel())).orElse(OptionalInt.empty())
                 : OptionalInt.empty();

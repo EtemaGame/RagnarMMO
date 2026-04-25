@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.mobs.spawn;
 
 import com.etema.ragnarmmo.mobs.difficulty.DifficultyContext;
 import com.etema.ragnarmmo.mobs.difficulty.MobDifficultyResolver;
+import com.etema.ragnarmmo.mobs.profile.AuthoredMobProfileResolver;
 import com.etema.ragnarmmo.mobs.profile.MobProfile;
 import com.etema.ragnarmmo.mobs.profile.MobProfileFactory;
 
@@ -15,6 +16,8 @@ public final class MobSpawnInitializer {
     }
 
     public MobProfile initialize(DifficultyContext context) {
-        return profileFactory.create(difficultyResolver.resolve(context));
+        return profileFactory.create(
+                difficultyResolver.resolve(context),
+                AuthoredMobProfileResolver.resolvePartialDefinition(context.entityType()));
     }
 }

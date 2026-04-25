@@ -35,7 +35,7 @@ public class TwoHandMasterySkillEffect implements ISkillEffect {
         if (!(held.getItem() instanceof net.minecraft.world.item.SwordItem)) return;
 
         // Check for the two_handed tag; if no tag system exists, the skill still gives
-        // a slight bonus to all swords as a fallback.
+        // a slight bonus to all swords as a default path.
         boolean isTwoHanded = held.getTags()
                 .anyMatch(tag -> tag.location().toString().equals("ragnarmmo:two_handed"));
 

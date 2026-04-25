@@ -29,16 +29,14 @@ public class SyncRoItemRulesPacket {
     private final Map<ResourceLocation, RoItemRule> itemRules;
     private final Map<ResourceLocation, RoItemRule> tagRules;
     private final Map<String, Map<CardEquipType, RoItemRule>> modTypeRules;
-    private final Map<CardEquipType, RoItemRule> baseTypeRules;
 
     public SyncRoItemRulesPacket(RoItemRuleSet ruleSet) {
-        this(ruleSet.getItemRules(), ruleSet.getTagRules(), ruleSet.getModTypeRules(), ruleSet.getBaseTypeRules());
+        this(ruleSet.getItemRules(), ruleSet.getTagRules(), ruleSet.getModTypeRules());
     }
 
     public SyncRoItemRulesPacket(Map<ResourceLocation, RoItemRule> itemRules,
                                  Map<ResourceLocation, RoItemRule> tagRules,
-                                 Map<String, Map<CardEquipType, RoItemRule>> modTypeRules,
-                                 Map<CardEquipType, RoItemRule> baseTypeRules) {
+                                 Map<String, Map<CardEquipType, RoItemRule>> modTypeRules) {
         this.itemRules = new HashMap<>(itemRules);
         this.tagRules = new HashMap<>(tagRules);
         this.modTypeRules = new HashMap<>();
@@ -47,8 +45,6 @@ public class SyncRoItemRulesPacket {
             byType.putAll(rules);
             this.modTypeRules.put(modId, byType);
         });
-        this.baseTypeRules = new EnumMap<>(CardEquipType.class);
-        this.baseTypeRules.putAll(baseTypeRules);
     }
 
     public static void encode(SyncRoItemRulesPacket msg, FriendlyByteBuf buf) {
@@ -76,11 +72,6 @@ public class SyncRoItemRulesPacket {
             }
         }
 
-        buf.writeVarInt(msg.baseTypeRules.size());
-        for (var entry : msg.baseTypeRules.entrySet()) {
-            buf.writeEnum(entry.getKey());
-            encodeRule(buf, entry.getValue());
-        }
     }
 
     private static void encodeRule(FriendlyByteBuf buf, RoItemRule rule) {
@@ -171,14 +162,7 @@ public class SyncRoItemRulesPacket {
             modTypeRules.put(modId, byType);
         }
 
-        int baseTypeCount = buf.readVarInt();
-        Map<CardEquipType, RoItemRule> baseTypeRules = new EnumMap<>(CardEquipType.class);
-        for (int i = 0; i < baseTypeCount; i++) {
-            CardEquipType equipType = buf.readEnum(CardEquipType.class);
-            baseTypeRules.put(equipType, decodeRule(buf));
-        }
-
-        return new SyncRoItemRulesPacket(itemRules, tagRules, modTypeRules, baseTypeRules);
+        return new SyncRoItemRulesPacket(itemRules, tagRules, modTypeRules);
     }
 
     private static RoItemRule decodeRule(FriendlyByteBuf buf) {
@@ -244,7 +228,7 @@ public class SyncRoItemRulesPacket {
         var ctx = ctxSup.get();
         ctx.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
                 () -> () -> com.etema.ragnarmmo.client.ClientPacketHandler.handleRoItemRulesSync(
-                        msg.itemRules, msg.tagRules, msg.modTypeRules, msg.baseTypeRules)));
+                        msg.itemRules, msg.tagRules, msg.modTypeRules)));
         ctx.setPacketHandled(true);
     }
 
@@ -260,7 +244,4 @@ public class SyncRoItemRulesPacket {
         return modTypeRules;
     }
 
-    public Map<CardEquipType, RoItemRule> getBaseTypeRules() {
-        return baseTypeRules;
-    }
 }

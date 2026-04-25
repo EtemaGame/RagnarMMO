@@ -20,37 +20,11 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Resolves skill icon textures with stable default candidates.
- *
- * <p>This avoids hard failures when a previous icon name is still referenced,
- * and it gives the UI a stable way to render a default label if the texture is
- * genuinely missing from resources.</p>
+ * Resolves skill icon textures with stable canonical candidates.
  */
 public final class SkillIconResolver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SkillIconResolver.class);
-
-    private static final Map<String, String> LEGACY_TEXTURE_ALIASES = Map.ofEntries(
-            Map.entry("basic_skill", "common/common_basic_conditioning"),
-            Map.entry("first_aid", "common/common_first_aid"),
-            Map.entry("play_dead", "common/common_survival_instinct"),
-            Map.entry("survival_instinct", "common/common_survival_instinct"),
-            Map.entry("increase_hp_recovery", "swordman/swordman_increase_recuperative_power"),
-            Map.entry("increase_sp_recovery", "mage/mage_increase_spiritual_power"),
-            Map.entry("increase_sp_recovery_priest", "priest/priest_increase_spiritual_power"),
-            Map.entry("improve_dodge", "thief/thief_increase_dodge"),
-            Map.entry("improve_concentration", "archer/archer_attention_concentrate"),
-            Map.entry("owls_eye", "archer/archer_owl_s_eye"),
-            Map.entry("vultures_eye", "archer/archer_vulture_s_eye"),
-            Map.entry("decrease_agi", "acolyte/acolyte_decrease_agility"),
-            Map.entry("increase_agi", "acolyte/acolyte_increase_agility"),
-            Map.entry("cloak", "assassin/assassin_cloaking"),
-            Map.entry("lefthand_mastery", "assassin/assassin_left_hand_mastery"),
-            Map.entry("righthand_mastery", "assassin/assassin_right_hand_mastery"),
-            Map.entry("over_thrust", "blacksmith/blacksmith_power_thrust"),
-            Map.entry("status_recovery", "priest/priest_recovery"),
-            Map.entry("heavens_drive", "wizard/wizard_heaven_s_drive"),
-            Map.entry("thunder_storm", "mage/mage_thunder_storm"));
 
     private static final Map<String, Optional<ResourceLocation>> CACHE = new HashMap<>();
     private static final Set<String> WARNED_UNRESOLVED = new HashSet<>();
@@ -65,9 +39,7 @@ public final class SkillIconResolver {
 
         List<String> candidates = new ArrayList<>();
         addCandidate(candidates, definition.getTextureName());
-        addAliasCandidate(candidates, definition.getTextureName());
         addCandidate(candidates, definition.getId().getPath());
-        addAliasCandidate(candidates, definition.getId().getPath());
         return resolve("skill:" + definition.getId(), candidates);
     }
 
@@ -80,11 +52,9 @@ public final class SkillIconResolver {
         ResourceLocation skillId = ResourceLocation.fromNamespaceAndPath("ragnarmmo", type.getId());
         SkillRegistry.get(skillId).ifPresent(def -> {
             addCandidate(candidates, def.getTextureName());
-            addAliasCandidate(candidates, def.getTextureName());
         });
         addCandidate(candidates, "lifeskill/" + type.getTextureName());
         addCandidate(candidates, type.getTextureName());
-        addAliasCandidate(candidates, type.getTextureName());
         return resolve("life:" + type.getId(), candidates);
     }
 
@@ -132,16 +102,6 @@ public final class SkillIconResolver {
         }
         if (!candidates.contains(candidate)) {
             candidates.add(candidate);
-        }
-    }
-
-    private static void addAliasCandidate(List<String> candidates, String source) {
-        if (source == null || source.isBlank()) {
-            return;
-        }
-        String alias = LEGACY_TEXTURE_ALIASES.get(source);
-        if (alias != null && !candidates.contains(alias)) {
-            candidates.add(alias);
         }
     }
 

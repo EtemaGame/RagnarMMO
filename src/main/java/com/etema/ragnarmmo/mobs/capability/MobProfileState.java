@@ -50,27 +50,29 @@ public final class MobProfileState {
             rank = MobRank.NORMAL;
         }
         initialized = nbt.getBoolean("Initialized");
+        int atkMin = Math.max(0, nbt.getInt("AtkMin"));
+        int atkMax = Math.max(atkMin, nbt.getInt("AtkMax"));
         profile = new MobProfile(
                 Math.max(1, nbt.getInt("Level")),
                 rank,
                 Math.max(1, nbt.getInt("MaxHp")),
-                Math.max(0, nbt.getInt("AtkMin")),
-                Math.max(0, nbt.getInt("AtkMax")),
+                atkMin,
+                atkMax,
                 Math.max(0, nbt.getInt("Def")),
                 Math.max(0, nbt.getInt("MDef")),
                 Math.max(0, nbt.getInt("Hit")),
                 Math.max(0, nbt.getInt("Flee")),
                 Math.max(0, nbt.getInt("Crit")),
-                Math.max(0, nbt.getInt("Aspd")),
-                nbt.getDouble("MoveSpeed"),
-                readToken(nbt, "Race", "unknown"),
-                readToken(nbt, "Element", "neutral"),
-                readToken(nbt, "Size", "medium"));
+                Math.max(1, nbt.getInt("Aspd")),
+                Math.max(0.0001D, nbt.getDouble("MoveSpeed")),
+                readTokenOrDefault(nbt, "Race", "unknown"),
+                readTokenOrDefault(nbt, "Element", "neutral"),
+                readTokenOrDefault(nbt, "Size", "medium"));
     }
 
-    private static String readToken(CompoundTag nbt, String key, String fallbackValue) {
+    private static String readTokenOrDefault(CompoundTag nbt, String key, String defaultValue) {
         String value = nbt.getString(key);
-        return value == null || value.isBlank() ? fallbackValue : value;
+        return value == null || value.isBlank() ? defaultValue : value;
     }
 
     public static MobProfile defaultProfile() {

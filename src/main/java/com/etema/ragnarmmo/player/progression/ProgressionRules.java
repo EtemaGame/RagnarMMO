@@ -4,6 +4,8 @@ import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.Objects;
+
 public record ProgressionRules(
         int maxBaseLevel,
         int maxJobLevel,
@@ -17,21 +19,49 @@ public record ProgressionRules(
         LevelCurve baseLevelCurve,
         LevelCurve jobLevelCurve) {
 
-    public static ProgressionRules current(ResourceLocation jobId) {
+    public ProgressionRules {
+        if (maxBaseLevel < 1) throw new IllegalArgumentException("maxBaseLevel must be >= 1");
+        if (maxJobLevel < 1) throw new IllegalArgumentException("maxJobLevel must be >= 1");
+        if (baseStatPoints < 0) throw new IllegalArgumentException("baseStatPoints must be >= 0");
+        if (pointsPerLevel < 0) throw new IllegalArgumentException("pointsPerLevel must be >= 0");
+        if (baseExpRate < 0.0D || jobExpRate < 0.0D) throw new IllegalArgumentException("exp rates must be >= 0");
+        if (baseDeathPenaltyRate < 0.0D || jobDeathPenaltyRate < 0.0D) {
+            throw new IllegalArgumentException("death penalty rates must be >= 0");
+        }
+        Objects.requireNonNull(baseLevelCurve, "baseLevelCurve");
+        Objects.requireNonNull(jobLevelCurve, "jobLevelCurve");
+    }
+
+    public static ProgressionRules currentFromConfig(ResourceLocation jobId) {
         JobType jobType = JobType.fromId(jobId == null ? "ragnarmmo:novice" : jobId.toString());
         boolean novice = jobType == JobType.NOVICE;
         return new ProgressionRules(
-                novice ? configInt(() -> RagnarConfigs.SERVER.caps.noviceMaxLevel.get(), 10)
-                        : configInt(() -> RagnarConfigs.SERVER.caps.maxLevel.get(), 99),
-                novice ? configInt(() -> RagnarConfigs.SERVER.caps.noviceMaxJobLevel.get(), 10)
-                        : configInt(() -> RagnarConfigs.SERVER.caps.maxJobLevel.get(), 50),
-                configInt(() -> RagnarConfigs.SERVER.progression.baseStatPoints.get(), 48),
-                configInt(() -> RagnarConfigs.SERVER.progression.pointsPerLevel.get(), 3),
-                configBoolean(() -> RagnarConfigs.SERVER.progression.usePreRenewalStatPointCurve.get(), true),
-                configDouble(() -> RagnarConfigs.SERVER.progression.expGlobalMultiplier.get(), 1.0D),
-                configDouble(() -> RagnarConfigs.SERVER.progression.jobExpGlobalMultiplier.get(), 1.0D),
-                configDouble(() -> RagnarConfigs.SERVER.progression.baseExpDeathPenaltyRate.get(), 0.05D),
-                configDouble(() -> RagnarConfigs.SERVER.progression.jobExpDeathPenaltyRate.get(), 0.05D),
+                novice ? RagnarConfigs.SERVER.caps.noviceMaxLevel.get() : RagnarConfigs.SERVER.caps.maxLevel.get(),
+                novice ? RagnarConfigs.SERVER.caps.noviceMaxJobLevel.get() : RagnarConfigs.SERVER.caps.maxJobLevel.get(),
+                RagnarConfigs.SERVER.progression.baseStatPoints.get(),
+                RagnarConfigs.SERVER.progression.pointsPerLevel.get(),
+                RagnarConfigs.SERVER.progression.usePreRenewalStatPointCurve.get(),
+                RagnarConfigs.SERVER.progression.expGlobalMultiplier.get(),
+                RagnarConfigs.SERVER.progression.jobExpGlobalMultiplier.get(),
+                RagnarConfigs.SERVER.progression.baseExpDeathPenaltyRate.get(),
+                RagnarConfigs.SERVER.progression.jobExpDeathPenaltyRate.get(),
+                new FormulaLevelCurve(50, 100.0, 1.15, 4.0, 0.05),
+                new FormulaLevelCurve(25, 50.0, 1.12, 3.5, 0.04));
+    }
+
+    public static ProgressionRules defaultsForTests(ResourceLocation jobId) {
+        JobType jobType = JobType.fromId(jobId == null ? "ragnarmmo:novice" : jobId.toString());
+        boolean novice = jobType == JobType.NOVICE;
+        return new ProgressionRules(
+                novice ? 10 : 99,
+                novice ? 10 : 50,
+                48,
+                3,
+                true,
+                1.0D,
+                1.0D,
+                0.05D,
+                0.05D,
                 new FormulaLevelCurve(50, 100.0, 1.15, 4.0, 0.05),
                 new FormulaLevelCurve(25, 50.0, 1.12, 3.5, 0.04));
     }
@@ -73,27 +103,4 @@ public record ProgressionRules(
         return Math.max(0, (int) Math.round(currentExp * penaltyRate));
     }
 
-    private static int configInt(java.util.function.IntSupplier supplier, int fallbackValue) {
-        try {
-            return supplier.getAsInt();
-        } catch (IllegalStateException ex) {
-            return fallbackValue;
-        }
-    }
-
-    private static double configDouble(java.util.function.DoubleSupplier supplier, double fallbackValue) {
-        try {
-            return supplier.getAsDouble();
-        } catch (IllegalStateException ex) {
-            return fallbackValue;
-        }
-    }
-
-    private static boolean configBoolean(java.util.function.BooleanSupplier supplier, boolean fallbackValue) {
-        try {
-            return supplier.getAsBoolean();
-        } catch (IllegalStateException ex) {
-            return fallbackValue;
-        }
-    }
 }

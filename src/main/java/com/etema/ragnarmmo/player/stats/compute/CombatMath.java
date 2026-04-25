@@ -640,7 +640,7 @@ public final class CombatMath {
      * Returns a normalized target level when a safe source exists.
      *
      * <p>For mobs, this prefers the shared read surface. Callers that need a vanilla estimate
-     * should handle their own fallback.</p>
+     * should handle their own default path.</p>
      */
     public static OptionalInt tryGetTargetLevel(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player p) {
@@ -661,7 +661,7 @@ public final class CombatMath {
 
     /**
      * Returns a normalized final HIT value for resolved mob profiles when that source exposes it
-     * directly. Callers should keep their existing formula-based fallback when this is empty.
+     * directly. Callers should keep their existing formula-based default path when this is empty.
      */
     public static OptionalInt tryGetResolvedMobHit(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player) {
@@ -679,7 +679,7 @@ public final class CombatMath {
 
     /**
      * Returns a normalized final FLEE value for resolved mob profiles when that source exposes it
-     * directly. Callers should keep their existing formula-based fallback when this is empty.
+     * directly. Callers should keep their existing formula-based default path when this is empty.
      */
     public static OptionalInt tryGetResolvedMobFlee(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player) {

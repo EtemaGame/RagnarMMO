@@ -13,18 +13,18 @@ final class TooltipTextHelper {
     private TooltipTextHelper() {
     }
 
-    static Component displayName(String fallbackKey, String customName) {
+    static Component displayName(String defaultTranslationKey, String customName) {
         return customName != null && !customName.isBlank()
                 ? Component.literal(customName)
-                : Component.translatable(fallbackKey);
+                : Component.translatable(defaultTranslationKey);
     }
 
-    static void appendDescription(List<Component> tooltip, String fallbackKey, String customDescription) {
+    static void appendDescription(List<Component> tooltip, String defaultTranslationKey, String customDescription) {
         if (customDescription != null && !customDescription.isBlank()) {
             tooltip.add(Component.literal(customDescription).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
             return;
         }
-        tooltip.add(Component.translatable(fallbackKey + ".desc").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+        tooltip.add(Component.translatable(defaultTranslationKey + ".desc").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
     }
 
     static void appendRangedStats(List<Component> tooltip, RagnarRangedWeaponStats stats, ItemStack stack) {

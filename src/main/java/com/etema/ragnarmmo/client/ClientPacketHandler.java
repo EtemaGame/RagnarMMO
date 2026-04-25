@@ -308,9 +308,8 @@ public final class ClientPacketHandler {
     public static void handleRoItemRulesSync(
             java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.items.data.RoItemRule> itemRules,
             java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.items.data.RoItemRule> tagRules,
-            java.util.Map<String, java.util.Map<com.etema.ragnarmmo.items.cards.CardEquipType, com.etema.ragnarmmo.items.data.RoItemRule>> modTypeRules,
-            java.util.Map<com.etema.ragnarmmo.items.cards.CardEquipType, com.etema.ragnarmmo.items.data.RoItemRule> baseTypeRules) {
-        com.etema.ragnarmmo.items.data.RoItemRuleLoader.applyClientSync(itemRules, tagRules, modTypeRules, baseTypeRules);
+            java.util.Map<String, java.util.Map<com.etema.ragnarmmo.items.cards.CardEquipType, com.etema.ragnarmmo.items.data.RoItemRule>> modTypeRules) {
+        com.etema.ragnarmmo.items.data.RoItemRuleLoader.applyClientSync(itemRules, tagRules, modTypeRules);
     }
 
     // ═══════════════════════════════════════════════

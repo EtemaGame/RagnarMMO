@@ -12,7 +12,7 @@ public final class PlayerProgressionService {
     }
 
     public static PlayerProgressionService forJobId(ResourceLocation jobId) {
-        return new PlayerProgressionService(ProgressionRules.current(jobId == null ? DEFAULT_JOB_ID : jobId));
+        return new PlayerProgressionService(ProgressionRules.currentFromConfig(jobId == null ? DEFAULT_JOB_ID : jobId));
     }
 
     public ProgressionResult addBaseExp(PlayerProgression current, long amount) {

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Pure declarative resolver for manual mob definitions.
+ * Pure declarative resolver for authored mob definitions.
  *
  * <p>This class only handles authored merge, override precedence, and declarative validation. It does not
  * perform datapack loading, taxonomy fallback, or runtime stat derivation.</p>

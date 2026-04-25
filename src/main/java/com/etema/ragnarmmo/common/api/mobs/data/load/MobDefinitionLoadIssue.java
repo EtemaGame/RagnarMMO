@@ -4,7 +4,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Load-time diagnostic for manual mob datapack resources.
+ * Load-time diagnostic for authored mob datapack resources.
  */
 public record MobDefinitionLoadIssue(
         Kind kind,

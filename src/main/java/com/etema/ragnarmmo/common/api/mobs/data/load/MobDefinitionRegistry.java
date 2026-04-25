@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Declarative registry for loaded manual mob datapack resources.
+ * Declarative registry for loaded authored mob datapack resources.
  *
  * <p>This registry stores loaded templates and exact-match definitions only. It is not a runtime authority.</p>
  */

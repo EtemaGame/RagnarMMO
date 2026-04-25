@@ -1,4 +1,4 @@
-package com.etema.ragnarmmo.system.economy;
+package com.etema.ragnarmmo.economy.zeny;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadView;

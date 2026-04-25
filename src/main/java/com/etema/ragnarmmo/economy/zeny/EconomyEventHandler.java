@@ -1,8 +1,8 @@
-package com.etema.ragnarmmo.system.economy;
+package com.etema.ragnarmmo.economy.zeny;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.system.economy.capability.PlayerWalletProvider;
-import com.etema.ragnarmmo.system.economy.net.WalletSyncPacket;
+import com.etema.ragnarmmo.economy.zeny.capability.PlayerWalletProvider;
+import com.etema.ragnarmmo.economy.zeny.network.WalletSyncPacket;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;

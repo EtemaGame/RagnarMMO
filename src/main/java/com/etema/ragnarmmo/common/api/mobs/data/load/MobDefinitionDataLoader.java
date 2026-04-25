@@ -34,7 +34,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Datapack loader for V1 manual mob templates and definitions.
+ * Datapack loader for authored mob templates and definitions.
  *
  * <p>This loader is limited to declarative resource parsing, exact-match registry population, and
  * load-time diagnostics. It does not perform runtime integration.</p>

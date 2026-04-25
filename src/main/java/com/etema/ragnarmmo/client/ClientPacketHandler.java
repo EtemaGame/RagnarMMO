@@ -196,10 +196,10 @@ public final class ClientPacketHandler {
     // Wallet Sync Packet
 
     // ═══════════════════════════════════════════════
-    public static void handleWalletSync(com.etema.ragnarmmo.system.economy.net.WalletSyncPacket msg) {
+    public static void handleWalletSync(com.etema.ragnarmmo.economy.zeny.network.WalletSyncPacket msg) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null) {
-            com.etema.ragnarmmo.system.economy.capability.PlayerWalletProvider.get(mc.player).ifPresent(wallet -> {
+            com.etema.ragnarmmo.economy.zeny.capability.PlayerWalletProvider.get(mc.player).ifPresent(wallet -> {
                 wallet.setZeny(msg.zeny);
             });
         }

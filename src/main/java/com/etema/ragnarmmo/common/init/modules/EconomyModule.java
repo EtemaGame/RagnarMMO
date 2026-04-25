@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.common.init.modules;
 
-import com.etema.ragnarmmo.system.economy.ZenyDropEventHandler;
+import com.etema.ragnarmmo.economy.zeny.ZenyDropEventHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 

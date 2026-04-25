@@ -82,7 +82,7 @@ public final class Network {
         }
 
         public static void registerEconomyPackets() {
-                com.etema.ragnarmmo.system.economy.net.EconomyNetwork.register(CH, NEXT_ID);
+                com.etema.ragnarmmo.economy.zeny.network.EconomyNetwork.register(CH, NEXT_ID);
         }
 
         /* ─── Helpers ─── */

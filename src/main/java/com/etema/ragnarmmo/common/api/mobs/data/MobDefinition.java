@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Declarative manual mob definition authored for one exact {@code entity_type} target.
+ * Declarative authored mob definition for one exact {@code entity_type} target.
  *
  * <p>This type represents external authored data only. It is not runtime-final and does not contain
  * application or world-state semantics.</p>

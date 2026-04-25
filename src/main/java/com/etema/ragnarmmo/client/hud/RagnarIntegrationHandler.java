@@ -21,7 +21,7 @@ public final class RagnarIntegrationHandler {
     }
 
     public static EntityStatResolver getResolverFor(LivingEntity e) {
-        if (hasMobResolver && !(e instanceof Player)) return new MobStatsIntegration();
+        if (hasMobResolver && !(e instanceof Player)) return new MobProfileHudIntegration();
         if (hasRagnarStats && e instanceof Player) return new RagnarStatsIntegration();
         return null;
     }

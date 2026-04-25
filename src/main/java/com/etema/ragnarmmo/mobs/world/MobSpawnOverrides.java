@@ -14,7 +14,7 @@ public final class MobSpawnOverrides {
     private static final String ROOT_KEY = "RagnarMobSpawnOverrides";
     private static final String FORCED_RANK_KEY = "ForcedRank";
     private static final String MINIMUM_LEVEL_KEY = "MinimumLevel";
-    private static final String MANUAL_BOSS_KEY = "ManualBoss";
+    private static final String FORCED_BOSS_KEY = "ForcedBoss";
 
     private MobSpawnOverrides() {
     }
@@ -73,25 +73,31 @@ public final class MobSpawnOverrides {
         return OptionalInt.of(Math.max(1, root.getInt(MINIMUM_LEVEL_KEY)));
     }
 
-    public static void setManualBoss(LivingEntity entity, boolean manualBoss) {
+    public static void setForcedBoss(LivingEntity entity, boolean forcedBoss) {
         if (entity == null) {
             return;
         }
 
         CompoundTag root = getOrCreateRoot(entity);
-        root.putBoolean(MANUAL_BOSS_KEY, manualBoss);
+        root.putBoolean(FORCED_BOSS_KEY, forcedBoss);
     }
 
-    public static boolean isManualBoss(LivingEntity entity) {
+    public static boolean isForcedBoss(LivingEntity entity) {
         if (entity == null) {
             return false;
         }
 
         CompoundTag root = getRoot(entity);
-        return root != null && root.getBoolean(MANUAL_BOSS_KEY);
+        if (root == null) {
+            return false;
+        }
+        if (root.contains(FORCED_BOSS_KEY, Tag.TAG_BYTE)) {
+            return root.getBoolean(FORCED_BOSS_KEY);
+        }
+        return root.getBoolean("ManualBoss");
     }
 
-    public static void clearManualBoss(LivingEntity entity) {
+    public static void clearForcedBoss(LivingEntity entity) {
         if (entity == null) {
             return;
         }
@@ -101,7 +107,8 @@ public final class MobSpawnOverrides {
             return;
         }
 
-        root.remove(MANUAL_BOSS_KEY);
+        root.remove(FORCED_BOSS_KEY);
+        root.remove("ManualBoss");
         root.remove(MINIMUM_LEVEL_KEY);
         cleanupRoot(entity);
     }

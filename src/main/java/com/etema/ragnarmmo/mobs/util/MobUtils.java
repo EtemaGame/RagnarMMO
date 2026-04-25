@@ -18,7 +18,7 @@ public class MobUtils {
             return readView.get().isBossLikeForCompatibility();
         }
 
-        if (MobSpawnOverrides.isManualBoss(mob)) {
+        if (MobSpawnOverrides.isForcedBoss(mob)) {
             return true;
         }
 

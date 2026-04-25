@@ -1,4 +1,4 @@
-package com.etema.ragnarmmo.system.economy.net;
+package com.etema.ragnarmmo.economy.zeny.network;
 
 import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.concurrent.atomic.AtomicInteger;

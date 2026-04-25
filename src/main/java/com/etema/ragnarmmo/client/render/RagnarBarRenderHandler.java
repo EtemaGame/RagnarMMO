@@ -26,7 +26,7 @@ import java.util.WeakHashMap;
 
 /**
  * Renderiza una barra de vida y etiquetas sobre mobs o jugadores
- * con integración automática a RagnarStats y RagnarMobStats.
+ * con integración automática a RagnarStats y perfiles canónicos de mobs.
  */
 @Mod.EventBusSubscriber(modid = com.etema.ragnarmmo.RagnarMMO.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class RagnarBarRenderHandler {

@@ -1,4 +1,4 @@
-package com.etema.ragnarmmo.system.economy;
+package com.etema.ragnarmmo.economy.zeny;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -61,10 +61,10 @@ public class ZenyDropEventHandler {
                 return;
             }
 
-            com.etema.ragnarmmo.system.economy.capability.PlayerWalletProvider.get(player).ifPresent(wallet -> {
+            com.etema.ragnarmmo.economy.zeny.capability.PlayerWalletProvider.get(player).ifPresent(wallet -> {
                 wallet.addZeny(totalZeny);
                 com.etema.ragnarmmo.common.net.Network.sendToPlayer((net.minecraft.server.level.ServerPlayer) player,
-                        new com.etema.ragnarmmo.system.economy.net.WalletSyncPacket(wallet.getZeny()));
+                        new com.etema.ragnarmmo.economy.zeny.network.WalletSyncPacket(wallet.getZeny()));
                 
                 // Visual feedback of pick up without inventory clutter
                 player.take(event.getItem(), stack.getCount());

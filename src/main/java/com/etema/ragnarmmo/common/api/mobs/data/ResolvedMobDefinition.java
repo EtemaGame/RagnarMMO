@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Declarative manual mob definition after template expansion and override resolution.
+ * Declarative authored mob definition after template expansion and override resolution.
  *
  * <p>This type is still declarative data. It is not the runtime-final mob profile.</p>
  */

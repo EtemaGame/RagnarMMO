@@ -3,7 +3,7 @@ package com.etema.ragnarmmo.common.api.mobs.data;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Declarative {@code ro_stats} block for manual mob data.
+ * Declarative {@code ro_stats} block for authored mob data.
  *
  * <p>This block is authored/resolved declarative data only. It is not a runtime-final combat profile.</p>
  */

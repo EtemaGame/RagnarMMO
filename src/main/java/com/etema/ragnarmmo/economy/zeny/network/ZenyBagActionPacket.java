@@ -1,4 +1,4 @@
-package com.etema.ragnarmmo.system.economy.net;
+package com.etema.ragnarmmo.economy.zeny.network;
 
 import com.etema.ragnarmmo.items.ZenyItems;
 import com.etema.ragnarmmo.items.runtime.ZenyWalletHelper;

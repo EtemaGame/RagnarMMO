@@ -5,7 +5,7 @@ import com.etema.ragnarmmo.common.api.mobs.data.ResolvedMobDefinition;
 import java.util.List;
 
 /**
- * Pure declarative resolution result for manual mob data.
+ * Pure declarative resolution result for authored mob data.
  *
  * <p>This result does not imply datapack IO, runtime integration, or stat derivation.</p>
  */

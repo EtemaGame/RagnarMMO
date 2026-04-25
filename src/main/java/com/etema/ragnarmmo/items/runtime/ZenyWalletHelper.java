@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.items.runtime;
 
 import com.etema.ragnarmmo.items.ZenyItems;
-import com.etema.ragnarmmo.system.economy.capability.PlayerWalletProvider;
+import com.etema.ragnarmmo.economy.zeny.capability.PlayerWalletProvider;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
@@ -36,7 +36,7 @@ public final class ZenyWalletHelper {
                     boolean success = wallet.consumeZeny(amount);
                     if (success) {
                         com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
-                                new com.etema.ragnarmmo.system.economy.net.WalletSyncPacket(wallet.getZeny()));
+                                new com.etema.ragnarmmo.economy.zeny.network.WalletSyncPacket(wallet.getZeny()));
                     }
                     return success;
                 })
@@ -51,7 +51,7 @@ public final class ZenyWalletHelper {
         PlayerWalletProvider.get(player).ifPresent(wallet -> {
             wallet.addZeny(amount);
             com.etema.ragnarmmo.common.net.Network.sendToPlayer(player,
-                    new com.etema.ragnarmmo.system.economy.net.WalletSyncPacket(wallet.getZeny()));
+                    new com.etema.ragnarmmo.economy.zeny.network.WalletSyncPacket(wallet.getZeny()));
         });
     }
 

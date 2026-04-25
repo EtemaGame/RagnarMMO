@@ -1,4 +1,4 @@
-package com.etema.ragnarmmo.system.economy.capability;
+package com.etema.ragnarmmo.economy.zeny.capability;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.common.util.INBTSerializable;

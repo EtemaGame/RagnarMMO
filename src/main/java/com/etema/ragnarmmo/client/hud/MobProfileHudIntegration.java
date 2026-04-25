@@ -9,7 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.Locale;
 import java.util.Optional;
 
-public class MobStatsIntegration implements EntityStatResolver {
+public class MobProfileHudIntegration implements EntityStatResolver {
 
     private static final int DEFAULT_PRIMARY_COLOR = 0xFFFFFF;
     private static final int ELITE_PRIMARY_COLOR = 0xFFD966;
@@ -66,7 +66,7 @@ public class MobStatsIntegration implements EntityStatResolver {
     @Override
     public String getSecondaryLabel(LivingEntity e) {
         return getCanonicalProfile(e)
-                .map(MobStatsIntegration::formatTaxonomyLine)
+                .map(MobProfileHudIntegration::formatTaxonomyLine)
                 .orElse("");
     }
 
@@ -74,14 +74,14 @@ public class MobStatsIntegration implements EntityStatResolver {
     public int getPrimaryLabelColor(LivingEntity e) {
         return getCanonicalProfile(e)
                 .map(MobProfile::rank)
-                .map(MobStatsIntegration::colorForRank)
+                .map(MobProfileHudIntegration::colorForRank)
                 .orElse(DEFAULT_PRIMARY_COLOR);
     }
 
     @Override
     public int getSecondaryLabelColor(LivingEntity e) {
         return getCanonicalProfile(e)
-                .map(MobStatsIntegration::colorForElement)
+                .map(MobProfileHudIntegration::colorForElement)
                 .orElse(DEFAULT_SECONDARY_COLOR);
     }
 
@@ -89,16 +89,16 @@ public class MobStatsIntegration implements EntityStatResolver {
     public int getHealthBarFrameColor(LivingEntity e) {
         return getCanonicalProfile(e)
                 .map(MobProfile::rank)
-                .map(MobStatsIntegration::colorForRank)
-                .map(MobStatsIntegration::withAlphaFrame)
+                .map(MobProfileHudIntegration::colorForRank)
+                .map(MobProfileHudIntegration::withAlphaFrame)
                 .orElse(DEFAULT_BAR_FRAME_COLOR);
     }
 
     @Override
     public int getHealthBarAccentColor(LivingEntity e) {
         return getCanonicalProfile(e)
-                .map(MobStatsIntegration::colorForElement)
-                .map(MobStatsIntegration::withAlphaAccent)
+                .map(MobProfileHudIntegration::colorForElement)
+                .map(MobProfileHudIntegration::withAlphaAccent)
                 .orElse(0);
     }
 

@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.items.hook;
 
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.items.runtime.RangedWeaponStatsHelper;
-import com.etema.ragnarmmo.skill.execution.projectile.ProjectileSkillHelper;
+import com.etema.ragnarmmo.skills.execution.projectile.ProjectileSkillHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;

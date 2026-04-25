@@ -1,10 +1,10 @@
 package com.etema.ragnarmmo.client.ui;
 
 import com.etema.ragnarmmo.common.api.jobs.JobType;
-import com.etema.ragnarmmo.skill.api.ISkillDefinition;
+import com.etema.ragnarmmo.skills.api.ISkillDefinition;
 import com.etema.ragnarmmo.common.net.Network;
-import com.etema.ragnarmmo.skill.data.SkillRegistry;
-import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skills.data.SkillRegistry;
+import com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.player.stats.network.PacketChangeJob;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;

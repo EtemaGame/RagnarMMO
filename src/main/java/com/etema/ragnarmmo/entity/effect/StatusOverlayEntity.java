@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.entity.effect;
 
 import com.etema.ragnarmmo.common.init.RagnarEntities;
-import com.etema.ragnarmmo.skill.runtime.SkillVisualFx;
+import com.etema.ragnarmmo.skills.runtime.SkillVisualFx;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;

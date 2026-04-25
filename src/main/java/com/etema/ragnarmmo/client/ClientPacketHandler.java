@@ -10,12 +10,12 @@ import com.etema.ragnarmmo.mobs.capability.MobProfileProvider;
 import com.etema.ragnarmmo.mobs.profile.MobProfile;
 import net.minecraft.resources.ResourceLocation;
 import com.etema.ragnarmmo.common.api.lifeskills.LifeSkillType;
-import com.etema.ragnarmmo.system.achievements.capability.PlayerAchievementsProvider;
+import com.etema.ragnarmmo.achievements.capability.PlayerAchievementsProvider;
 import com.etema.ragnarmmo.lifeskills.LifeSkillCapability;
 import com.etema.ragnarmmo.lifeskills.LifeSkillClientHandler;
 import com.etema.ragnarmmo.lifeskills.LifeSkillProgress;
 
-import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncPacket;
 import com.etema.ragnarmmo.player.party.PartyClientData;
 import com.etema.ragnarmmo.player.party.net.PartyMemberData;
@@ -308,8 +308,8 @@ public final class ClientPacketHandler {
     public static void handleRoItemRulesSync(
             java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.items.data.RoItemRule> itemRules,
             java.util.Map<net.minecraft.resources.ResourceLocation, com.etema.ragnarmmo.items.data.RoItemRule> tagRules,
-            java.util.Map<String, java.util.Map<com.etema.ragnarmmo.system.loot.cards.CardEquipType, com.etema.ragnarmmo.items.data.RoItemRule>> modTypeRules,
-            java.util.Map<com.etema.ragnarmmo.system.loot.cards.CardEquipType, com.etema.ragnarmmo.items.data.RoItemRule> fallbackRules) {
+            java.util.Map<String, java.util.Map<com.etema.ragnarmmo.items.cards.CardEquipType, com.etema.ragnarmmo.items.data.RoItemRule>> modTypeRules,
+            java.util.Map<com.etema.ragnarmmo.items.cards.CardEquipType, com.etema.ragnarmmo.items.data.RoItemRule> fallbackRules) {
         com.etema.ragnarmmo.items.data.RoItemRuleLoader.applyClientSync(itemRules, tagRules, modTypeRules, fallbackRules);
     }
 

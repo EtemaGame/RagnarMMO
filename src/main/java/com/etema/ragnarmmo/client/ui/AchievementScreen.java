@@ -1,12 +1,12 @@
 package com.etema.ragnarmmo.client.ui;
 
 import com.etema.ragnarmmo.common.net.Network;
-import com.etema.ragnarmmo.system.achievements.capability.PlayerAchievementsProvider;
-import com.etema.ragnarmmo.system.achievements.data.AchievementCategory;
-import com.etema.ragnarmmo.system.achievements.data.AchievementDefinition;
-import com.etema.ragnarmmo.system.achievements.data.AchievementRegistry;
-import com.etema.ragnarmmo.system.achievements.network.ClaimAchievementPacket;
-import com.etema.ragnarmmo.system.achievements.network.SetTitlePacket;
+import com.etema.ragnarmmo.achievements.capability.PlayerAchievementsProvider;
+import com.etema.ragnarmmo.achievements.data.AchievementCategory;
+import com.etema.ragnarmmo.achievements.data.AchievementDefinition;
+import com.etema.ragnarmmo.achievements.data.AchievementRegistry;
+import com.etema.ragnarmmo.achievements.network.ClaimAchievementPacket;
+import com.etema.ragnarmmo.achievements.network.SetTitlePacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -509,7 +509,7 @@ public class AchievementScreen extends Screen {
      * Network calls are unchanged from the original implementation.
      */
     private void handleItemClick(AchievementDefinition def,
-                                 com.etema.ragnarmmo.system.achievements.capability.IPlayerAchievements cap) {
+                                 com.etema.ragnarmmo.achievements.capability.IPlayerAchievements cap) {
         if (!cap.isUnlocked(def.id())) return;
 
         if (!cap.isClaimed(def.id())) {

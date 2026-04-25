@@ -12,10 +12,10 @@ import com.etema.ragnarmmo.combat.state.CombatActorState;
 import com.etema.ragnarmmo.combat.util.CombatDebugLog;
 import com.etema.ragnarmmo.common.api.player.RoPlayerDataAccess;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
-import com.etema.ragnarmmo.skill.api.ISkillEffect;
-import com.etema.ragnarmmo.skill.data.SkillDefinition;
-import com.etema.ragnarmmo.skill.data.SkillRegistry;
-import com.etema.ragnarmmo.skill.runtime.SkillManager;
+import com.etema.ragnarmmo.skills.api.ISkillEffect;
+import com.etema.ragnarmmo.skills.data.SkillDefinition;
+import com.etema.ragnarmmo.skills.data.SkillRegistry;
+import com.etema.ragnarmmo.skills.runtime.SkillManager;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;

@@ -4,7 +4,7 @@ import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.items.runtime.RagnarRangedWeaponStats;
 import com.etema.ragnarmmo.items.runtime.RangedWeaponStatsHelper;
-import com.etema.ragnarmmo.skill.execution.projectile.ProjectileSkillHelper;
+import com.etema.ragnarmmo.skills.execution.projectile.ProjectileSkillHelper;
 import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stats;

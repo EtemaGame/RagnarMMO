@@ -5,7 +5,7 @@ import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.combat.element.CombatPropertyResolver;
 import com.etema.ragnarmmo.items.data.RoCombatProfile;
-import com.etema.ragnarmmo.skill.execution.projectile.ProjectileSkillHelper;
+import com.etema.ragnarmmo.skills.execution.projectile.ProjectileSkillHelper;
 import com.etema.ragnarmmo.player.stats.compute.EquipmentStatSnapshot;
 import com.etema.ragnarmmo.player.stats.compute.StatComputer;
 import net.minecraft.nbt.CompoundTag;

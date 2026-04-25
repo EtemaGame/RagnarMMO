@@ -11,8 +11,8 @@ import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.items.runtime.RangedWeaponStatsHelper;
 import com.etema.ragnarmmo.items.runtime.RoRefineMath;
 import com.etema.ragnarmmo.items.runtime.WeaponStatHelper;
-import com.etema.ragnarmmo.skill.data.SkillRegistry;
-import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skills.data.SkillRegistry;
+import com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 import com.google.common.collect.Multimap;
 

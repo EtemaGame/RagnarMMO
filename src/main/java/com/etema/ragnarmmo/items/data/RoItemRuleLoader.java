@@ -6,7 +6,7 @@ import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.items.network.SyncRoItemRulesPacket;
 import com.etema.ragnarmmo.items.runtime.RoItemRuleResolver;
-import com.etema.ragnarmmo.system.loot.cards.CardEquipType;
+import com.etema.ragnarmmo.items.cards.CardEquipType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;

@@ -30,7 +30,7 @@ public class RagnarMobEffects {
                     .addAttributeModifier(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR, "7107DE5E-7CE8-4030-940E-514C1F160895", 2.0D, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION));
 
     public static final RegistryObject<MobEffect> SIGNUM_CRUCIS = MOB_EFFECTS.register("signum_crucis",
-            com.etema.ragnarmmo.skill.job.acolyte.SignumCrucisMobEffect::new);
+            com.etema.ragnarmmo.skills.job.acolyte.SignumCrucisMobEffect::new);
 
     public static final RegistryObject<MobEffect> MAGNIFICAT = MOB_EFFECTS.register("magnificat", 
             () -> new StandardMobEffect(MobEffectCategory.BENEFICIAL, 0xE6E6FA));
@@ -66,13 +66,13 @@ public class RagnarMobEffects {
                     .addAttributeModifier(com.etema.ragnarmmo.common.api.attributes.RagnarAttributes.STR.get(), "7107DE5E-7CE8-4030-940E-514C1F16089A", 4.0D, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION));
 
     public static final RegistryObject<MobEffect> MAGNUM_BREAK_FIRE = MOB_EFFECTS.register("magnum_break_fire",
-            com.etema.ragnarmmo.skill.job.swordman.MagnumBreakFireMobEffect::new);
+            com.etema.ragnarmmo.skills.job.swordman.MagnumBreakFireMobEffect::new);
 
     public static final RegistryObject<MobEffect> SIGHT = MOB_EFFECTS.register("sight", 
-            com.etema.ragnarmmo.skill.job.mage.SightMobEffect::new);
+            com.etema.ragnarmmo.skills.job.mage.SightMobEffect::new);
 
     public static final RegistryObject<MobEffect> FROZEN = MOB_EFFECTS.register("frozen", 
-            com.etema.ragnarmmo.skill.job.mage.FrozenMobEffect::new);
+            com.etema.ragnarmmo.skills.job.mage.FrozenMobEffect::new);
 
     public static void register(IEventBus eventBus) {
         MOB_EFFECTS.register(eventBus);

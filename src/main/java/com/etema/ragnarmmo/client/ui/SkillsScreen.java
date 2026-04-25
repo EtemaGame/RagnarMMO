@@ -3,10 +3,10 @@ package com.etema.ragnarmmo.client.ui;
 import com.etema.ragnarmmo.client.ui.SkillTreeAdapter.SkillNodeWrapper;
 import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.api.lifeskills.LifeSkillType;
-import com.etema.ragnarmmo.skill.api.SkillTier;
-import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skills.api.SkillTier;
+import com.etema.ragnarmmo.skills.data.SkillRegistry;
 import com.etema.ragnarmmo.common.net.Network;
-import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.player.stats.network.PacketUpgradeSkill;
 import com.etema.ragnarmmo.lifeskills.LifeSkillProgress;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -322,7 +322,7 @@ public class SkillsScreen extends Screen {
     }
 
     private List<ResourceLocation> buildUpgradePacketOrder(
-            com.etema.ragnarmmo.skill.runtime.SkillManager skillManager) {
+            com.etema.ragnarmmo.skills.runtime.SkillManager skillManager) {
         Map<ResourceLocation, Integer> remaining = new HashMap<>(pendingUpgrades);
         Map<ResourceLocation, Integer> simulatedLevels = new HashMap<>();
         for (ResourceLocation skillId : remaining.keySet()) {
@@ -646,7 +646,7 @@ public class SkillsScreen extends Screen {
         g.drawString(this.font, label, tx, ty, text, false);
     }
 
-    private void renderSkillTreeLocal(GuiGraphics g, com.etema.ragnarmmo.skill.runtime.SkillManager skillManager,
+    private void renderSkillTreeLocal(GuiGraphics g, com.etema.ragnarmmo.skills.runtime.SkillManager skillManager,
             JobType job, int startX, int startY, double mx, double my) {
 
         List<SkillNodeWrapper> skills = visibleSkills;
@@ -786,7 +786,7 @@ public class SkillsScreen extends Screen {
         }
     }
 
-    private List<Component> buildSkillTooltipLocal(com.etema.ragnarmmo.skill.runtime.SkillManager skillManager,
+    private List<Component> buildSkillTooltipLocal(com.etema.ragnarmmo.skills.runtime.SkillManager skillManager,
             int startX, int startY, double mx, double my) {
         var player = Minecraft.getInstance().player;
         if (player == null)
@@ -1296,7 +1296,7 @@ public class SkillsScreen extends Screen {
         g.pose().popPose();
     }
 
-    private boolean checkRequirements(com.etema.ragnarmmo.skill.runtime.SkillManager manager, SkillNodeWrapper wrapper,
+    private boolean checkRequirements(com.etema.ragnarmmo.skills.runtime.SkillManager manager, SkillNodeWrapper wrapper,
             Map<ResourceLocation, Integer> pending) {
         for (var entry : wrapper.getRequirements().entrySet()) {
             ResourceLocation reqId = entry.getKey();

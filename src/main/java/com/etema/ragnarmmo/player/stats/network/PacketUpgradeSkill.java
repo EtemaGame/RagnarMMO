@@ -1,8 +1,8 @@
 package com.etema.ragnarmmo.player.stats.network;
 
-import com.etema.ragnarmmo.skill.api.SkillCategory;
-import com.etema.ragnarmmo.skill.data.SkillRegistry;
-import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skills.api.SkillCategory;
+import com.etema.ragnarmmo.skills.data.SkillRegistry;
+import com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;

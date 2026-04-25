@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.client.ui;
 
-import com.etema.ragnarmmo.system.achievements.capability.IPlayerAchievements;
-import com.etema.ragnarmmo.system.achievements.data.AchievementDefinition;
+import com.etema.ragnarmmo.achievements.capability.IPlayerAchievements;
+import com.etema.ragnarmmo.achievements.data.AchievementDefinition;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;

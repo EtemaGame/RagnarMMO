@@ -4,7 +4,7 @@ import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.items.RagnarWeaponItems;
 import com.etema.ragnarmmo.items.UtilityItems;
 import com.etema.ragnarmmo.items.ZenyItems;
-import com.etema.ragnarmmo.system.loot.cards.RagnarCardItems;
+import com.etema.ragnarmmo.items.cards.RagnarCardItems;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;

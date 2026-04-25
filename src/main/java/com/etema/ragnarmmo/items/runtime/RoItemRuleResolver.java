@@ -4,7 +4,7 @@ import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.items.data.RoItemRule;
 import com.etema.ragnarmmo.items.data.RoItemRuleLoader;
 import com.etema.ragnarmmo.items.data.RoItemRuleSet;
-import com.etema.ragnarmmo.system.loot.cards.CardEquipType;
+import com.etema.ragnarmmo.items.cards.CardEquipType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -79,7 +79,7 @@ public final class RoItemRuleResolver {
         mergedBonuses.putAll(baseRule.attributeBonuses());
 
         for (String cardId : slottedCards) {
-            var cardDef = com.etema.ragnarmmo.system.loot.cards.CardRegistry.getInstance().get(cardId);
+            var cardDef = com.etema.ragnarmmo.items.cards.CardRegistry.getInstance().get(cardId);
             if (cardDef != null && cardDef.modifiers() != null) {
                 cardDef.modifiers().forEach((attr, val) -> {
                     if (attr.startsWith("ragnarmmo:")) {

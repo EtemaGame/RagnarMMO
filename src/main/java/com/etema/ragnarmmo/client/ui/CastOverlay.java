@@ -6,7 +6,7 @@ import com.etema.ragnarmmo.client.hud.HudLayoutManager;
 import com.etema.ragnarmmo.client.hud.HudRenderUtil;
 import com.etema.ragnarmmo.client.hud.HudWidgetState;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
-import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skills.data.SkillRegistry;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

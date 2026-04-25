@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.entity.aoe;
 
-import com.etema.ragnarmmo.skill.job.acolyte.WarpPortalHelper;
+import com.etema.ragnarmmo.skills.job.acolyte.WarpPortalHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;

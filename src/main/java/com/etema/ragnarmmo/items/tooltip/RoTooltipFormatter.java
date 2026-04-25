@@ -113,7 +113,7 @@ public final class RoTooltipFormatter {
 
             for (int i = 0; i < rule.cardSlots(); i++) {
                 if (i < slottedCards.size()) {
-                    var cardDef = com.etema.ragnarmmo.system.loot.cards.CardRegistry.getInstance()
+                    var cardDef = com.etema.ragnarmmo.items.cards.CardRegistry.getInstance()
                             .get(slottedCards.get(i));
                     String cardName = cardDef != null ? cardDef.displayName() : "Unknown Card";
                     tooltip.add(Component.literal("  - " + cardName).withStyle(ChatFormatting.YELLOW));

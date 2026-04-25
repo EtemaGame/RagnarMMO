@@ -7,7 +7,7 @@ import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.common.net.Network;
-import com.etema.ragnarmmo.skill.job.merchant.MerchantSkillEvents;
+import com.etema.ragnarmmo.skills.job.merchant.MerchantSkillEvents;
 import com.etema.ragnarmmo.client.DerivedStatsClientCache;
 import com.etema.ragnarmmo.player.stats.compute.StatComputer;
 import com.etema.ragnarmmo.player.stats.network.AllocateStatPacket;
@@ -38,7 +38,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import net.minecraftforge.items.ItemStackHandler;
 
-import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
+import com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.common.api.attributes.RagnarAttributes;
 
 import java.util.EnumMap;

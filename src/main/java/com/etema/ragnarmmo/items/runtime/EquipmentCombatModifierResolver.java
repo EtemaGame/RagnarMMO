@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.items.runtime;
 
 import com.etema.ragnarmmo.combat.element.CombatPropertyResolver;
 import com.etema.ragnarmmo.combat.element.ElementType;
-import com.etema.ragnarmmo.system.loot.cards.CardRegistry;
+import com.etema.ragnarmmo.items.cards.CardRegistry;
 import com.etema.ragnarmmo.mobs.util.MobUtils;
 
 import net.minecraft.world.entity.LivingEntity;

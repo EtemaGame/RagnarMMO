@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.common.command;
 
 import com.etema.ragnarmmo.common.api.player.IRoPlayerData;
 import com.etema.ragnarmmo.common.api.player.RoPlayerDataAccess;
-import com.etema.ragnarmmo.skill.api.IPlayerSkills;
+import com.etema.ragnarmmo.skills.api.IPlayerSkills;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;

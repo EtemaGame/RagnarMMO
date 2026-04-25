@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.items.runtime;
 
-import com.etema.ragnarmmo.system.loot.cards.CardEquipType;
+import com.etema.ragnarmmo.items.cards.CardEquipType;
 
 import net.minecraft.world.item.ItemStack;
 

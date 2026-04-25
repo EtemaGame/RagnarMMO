@@ -240,14 +240,14 @@ public class SkillOverlay {
     }
 
     private static boolean isLifeSkill(ResourceLocation skillId) {
-        return com.etema.ragnarmmo.skill.data.SkillRegistry.get(skillId)
-                .map(def -> def.getCategory() == com.etema.ragnarmmo.skill.api.SkillCategory.LIFE)
+        return com.etema.ragnarmmo.skills.data.SkillRegistry.get(skillId)
+                .map(def -> def.getCategory() == com.etema.ragnarmmo.skills.api.SkillCategory.LIFE)
                 .orElse(false);
     }
 
     private static Component getDisplayName(ResourceLocation skillId) {
-        return com.etema.ragnarmmo.skill.data.SkillRegistry.get(skillId)
-                .map(com.etema.ragnarmmo.skill.api.ISkillDefinition::getTranslatedName)
+        return com.etema.ragnarmmo.skills.data.SkillRegistry.get(skillId)
+                .map(com.etema.ragnarmmo.skills.api.ISkillDefinition::getTranslatedName)
                 .orElseGet(() -> Component.literal(skillId.getPath()));
     }
 

@@ -1,8 +1,8 @@
 package com.etema.ragnarmmo.client.ui;
 
 import com.etema.ragnarmmo.common.api.lifeskills.LifeSkillType;
-import com.etema.ragnarmmo.skill.api.ISkillDefinition;
-import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skills.api.ISkillDefinition;
+import com.etema.ragnarmmo.skills.data.SkillRegistry;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;

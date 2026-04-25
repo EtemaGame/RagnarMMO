@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.common.api.player;
 
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
-import com.etema.ragnarmmo.skill.api.IPlayerSkills;
+import com.etema.ragnarmmo.skills.api.IPlayerSkills;
 
 import net.minecraft.world.entity.player.Player;
 

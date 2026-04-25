@@ -98,13 +98,13 @@ public class ClientEvents {
     private static void castSkill(Minecraft mc, int slot) {
         if (!isCombatMode) return; // double check
 
-        com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider.get(mc.player).ifPresent(skills -> {
+        com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider.get(mc.player).ifPresent(skills -> {
             String[] hotbar = skills.getHotbar();
             if (slot < hotbar.length) {
                 String skillId = hotbar[slot];
                 if (skillId != null && !skillId.isEmpty()) {
                     com.etema.ragnarmmo.common.net.Network.sendToServer(
-                            new com.etema.ragnarmmo.skill.net.PacketUseSkill(skillId));
+                            new com.etema.ragnarmmo.skills.net.PacketUseSkill(skillId));
                 }
             }
         });
@@ -119,7 +119,7 @@ public class ClientEvents {
         if (hovered != null) {
             if (hovered.getDefinition().isActive()) {
                 com.etema.ragnarmmo.common.net.Network.sendToServer(
-                        new com.etema.ragnarmmo.skill.net.PacketSetHotbarSlot(i,
+                        new com.etema.ragnarmmo.skills.net.PacketSetHotbarSlot(i,
                                 hovered.getSkillId().toString()));
                 mc.player.displayClientMessage(
                         net.minecraft.network.chat.Component.translatable(

@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.items.data;
 
 import net.minecraft.resources.ResourceLocation;
-import com.etema.ragnarmmo.system.loot.cards.CardEquipType;
+import com.etema.ragnarmmo.items.cards.CardEquipType;
 
 import java.util.Collections;
 import java.util.EnumMap;

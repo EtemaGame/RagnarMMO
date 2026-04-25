@@ -6,7 +6,7 @@ import com.etema.ragnarmmo.player.party.net.PartyNetwork;
 import com.etema.ragnarmmo.mobs.network.MobNetwork;
 import com.etema.ragnarmmo.lifeskills.LifeSkillsNetwork;
 import com.etema.ragnarmmo.items.network.RoItemsNetwork;
-import com.etema.ragnarmmo.system.achievements.network.AchievementNetwork;
+import com.etema.ragnarmmo.achievements.network.AchievementNetwork;
 import com.etema.ragnarmmo.common.net.effects.SkillEffectsNetwork;
 import com.etema.ragnarmmo.combat.net.CombatNetwork;
 

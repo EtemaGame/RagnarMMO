@@ -7,8 +7,8 @@ import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.common.command.CommandUtil;
 import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncService;
 import com.etema.ragnarmmo.player.stats.progression.StatCost;
-import com.etema.ragnarmmo.skill.api.ISkillDefinition;
-import com.etema.ragnarmmo.skill.data.SkillRegistry;
+import com.etema.ragnarmmo.skills.api.ISkillDefinition;
+import com.etema.ragnarmmo.skills.data.SkillRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 

@@ -2,8 +2,8 @@ package com.etema.ragnarmmo.items.runtime;
 
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.etema.ragnarmmo.items.UtilityItems;
-import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
-import com.etema.ragnarmmo.system.loot.cards.CardEquipType;
+import com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider;
+import com.etema.ragnarmmo.items.cards.CardEquipType;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;

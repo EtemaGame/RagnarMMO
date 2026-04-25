@@ -12,7 +12,7 @@ import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.items.data.RoCombatProfile;
 import com.etema.ragnarmmo.items.data.RoItemRule;
 import com.etema.ragnarmmo.items.data.RoItemRuleSet;
-import com.etema.ragnarmmo.system.loot.cards.CardEquipType;
+import com.etema.ragnarmmo.items.cards.CardEquipType;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;

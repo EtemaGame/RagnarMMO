@@ -1,4 +1,4 @@
-package com.etema.ragnarmmo.system.stats.capability;
+package com.etema.ragnarmmo.player.stats.capability;
 
 import com.etema.ragnarmmo.common.api.jobs.JobType;
 import com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain;

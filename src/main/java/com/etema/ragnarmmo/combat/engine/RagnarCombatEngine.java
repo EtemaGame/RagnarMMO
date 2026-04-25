@@ -223,7 +223,7 @@ public class RagnarCombatEngine {
                         .orElseGet(() -> (int) CombatMath.computeFLEE(targetStats.agi, targetStats.luk, lvl, 0));
                 double pd = CombatMath.computePerfectDodge(targetStats.luk);
                 double criticalShield = Math.floor(lvl / 15.0) + Math.floor(targetStats.luk / 5.0);
-                double armorEff = com.etema.ragnarmmo.system.stats.event.CommonEvents.getArmorEff(mob);
+                double armorEff = com.etema.ragnarmmo.player.stats.event.CommonEvents.getArmorEff(mob);
                 com.etema.ragnarmmo.combat.element.ElementType element =
                         com.etema.ragnarmmo.combat.element.CombatPropertyResolver.getDefensiveElement(mob);
 
@@ -309,7 +309,7 @@ public class RagnarCombatEngine {
                 var hitCalc = RagnarCombatEngine.get().hitCalculator;
 
                 double rawDamage = e.getAmount();
-                boolean isMagic = com.etema.ragnarmmo.system.stats.event.CommonEvents.isMagicDamage(e.getSource());
+                boolean isMagic = com.etema.ragnarmmo.player.stats.event.CommonEvents.isMagicDamage(e.getSource());
                 LivingEntity attacker = e.getSource().getEntity() instanceof LivingEntity living ? living : null;
 
                 DefenderStats def = RagnarCombatEngine.get().fetchDefenderStats(p);
@@ -357,7 +357,7 @@ public class RagnarCombatEngine {
                 if (isMagic) {
                     int intel = (int) StatAttributes.getTotal(p, StatKeys.INT);
                     int dex = (int) StatAttributes.getTotal(p, StatKeys.DEX);
-                    double armorMdef = com.etema.ragnarmmo.system.stats.event.CommonEvents.getArmorMagicDefense(p);
+                    double armorMdef = com.etema.ragnarmmo.player.stats.event.CommonEvents.getArmorMagicDefense(p);
                     finalDmg = dmgCalc.applyMagicDefense(rawDamage, intel, def.vit(), dex, def.lvl(), armorMdef);
                 } else {
                     finalDmg = dmgCalc.applyPhysicalDefense(rawDamage, def.vit(), def.agi(), def.lvl(), def.armorEff());
@@ -365,7 +365,7 @@ public class RagnarCombatEngine {
 
                 // Elemental
                 com.etema.ragnarmmo.combat.element.ElementType attackElement =
-                        com.etema.ragnarmmo.system.stats.event.CommonEvents.resolveIncomingAttackElement(
+                        com.etema.ragnarmmo.player.stats.event.CommonEvents.resolveIncomingAttackElement(
                                 attacker, e.getSource().getDirectEntity(), isMagic);
                 finalDmg *= com.etema.ragnarmmo.combat.element.CombatPropertyResolver.getElementalModifier(
                         attackElement, def.element());

@@ -91,7 +91,7 @@ public final class ClientPacketHandler {
         }
 
         RagnarCoreAPI.get(p).ifPresent(s -> {
-            if (s instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps) {
+            if (s instanceof com.etema.ragnarmmo.player.stats.capability.PlayerStats ps) {
                 ps.applyMirrorState(msg);
             } else {
                 // Fallback for non-concrete instances

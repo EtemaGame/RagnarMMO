@@ -1,14 +1,12 @@
 package com.etema.ragnarmmo.mobs.integration;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
-import com.etema.ragnarmmo.common.api.mobs.MobTier;
 import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
 
 import net.minecraft.world.entity.LivingEntity;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -37,7 +35,7 @@ public final class MobInfoIntegration {
         return MobConsumerReadViewResolver.resolve(entity)
                 .map(readView -> new MobInfo(
                         readView.level(),
-                        toMobTier(readView.rank())));
+                        readView.rank()));
     }
 
     @Nonnull
@@ -62,40 +60,19 @@ public final class MobInfoIntegration {
         return entity != null && MobConsumerReadViewResolver.resolve(entity).isPresent();
     }
 
-    @Deprecated(forRemoval = false)
-    @Nonnull
-    public static Optional<MobTier> getMobTier(@Nullable LivingEntity entity) {
-        return getMobInfo(entity)
-                .map(MobInfo::tier)
-                .filter(Objects::nonNull);
-    }
-
     public record MobInfo(
             int level,
-            @Nullable MobTier tier) {
+            @Nullable MobRank rank) {
 
         @Nonnull
-        public String getTierDisplayName() {
-            return tier != null ? tier.name().toLowerCase() : "normal";
+        public String getRankDisplayName() {
+            return rank != null ? rank.name().toLowerCase() : "normal";
         }
     }
 
     public record CompatibilityMobInfo(
             int level,
             MobRank rank) {
-    }
-
-    private static MobTier toMobTier(MobRank rank) {
-        if (rank == null) {
-            return MobTier.NORMAL;
-        }
-        return switch (rank) {
-            case NORMAL -> MobTier.NORMAL;
-            case ELITE -> MobTier.ELITE;
-            case MINI_BOSS -> MobTier.MINI_BOSS;
-            case BOSS -> MobTier.BOSS;
-            case MVP -> MobTier.MVP;
-        };
     }
 }
 

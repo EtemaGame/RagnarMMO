@@ -1,6 +1,5 @@
 package com.etema.ragnarmmo.mobs.util;
 
-import com.etema.ragnarmmo.common.api.mobs.runtime.integration.ComputedMobProfileAttributeApplier;
 import com.etema.ragnarmmo.common.config.access.MobConfigAccess;
 import com.etema.ragnarmmo.mobs.profile.MobProfile;
 import net.minecraft.world.entity.LivingEntity;
@@ -11,10 +10,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 public final class MobAttributeHelper {
 
     private MobAttributeHelper() {}
-
-    public static void applyAttributes(LivingEntity mob, com.etema.ragnarmmo.common.api.mobs.runtime.ComputedMobProfile profile) {
-        ComputedMobProfileAttributeApplier.apply(mob, profile);
-    }
 
     public static void applyAttributes(LivingEntity mob, MobProfile profile) {
         AttributeInstance maxHealth = getInstance(mob, Attributes.MAX_HEALTH);

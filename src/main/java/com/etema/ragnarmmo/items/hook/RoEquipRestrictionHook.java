@@ -95,7 +95,7 @@ public final class RoEquipRestrictionHook {
 
         // Trigger sync of derived stats since equipment modifiers changed
         com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(player).ifPresent(stats -> {
-            if (stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats internal) {
+            if (stats instanceof com.etema.ragnarmmo.player.stats.capability.PlayerStats internal) {
                 internal.markDirty(com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS);
             }
         });

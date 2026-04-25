@@ -9,7 +9,7 @@ import com.etema.ragnarmmo.common.api.mobs.data.MobDefinition;
 import com.etema.ragnarmmo.common.api.mobs.data.MobDirectStatsBlock;
 import com.etema.ragnarmmo.common.api.mobs.data.MobRoStatsBlock;
 import com.etema.ragnarmmo.common.api.mobs.data.load.MobDefinitionRegistry;
-import com.etema.ragnarmmo.common.api.mobs.runtime.resolve.ManualMobProfileResolver;
+import com.etema.ragnarmmo.mobs.profile.AuthoredMobProfileResolver;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -150,7 +150,7 @@ class MobDefinitionResourcesTest {
         var previousLoadIssues = registry.getLoadIssues();
         registry.replace(Map.of(), Map.of(entityId, definition), Map.of(entityId, definition), List.of());
         try {
-            var result = ManualMobProfileResolver.resolve(entityId, registry);
+            var result = AuthoredMobProfileResolver.resolve(entityId, registry);
             assertTrue(result.isSuccess(), () -> "Expected authored mob profile to resolve: " + result.issues());
             assertNotNull(result.profile());
             assertEquals(40, result.profile().hit(), "authored mob HIT should derive as level + dex");

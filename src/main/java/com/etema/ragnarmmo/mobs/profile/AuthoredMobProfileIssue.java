@@ -1,9 +1,6 @@
-package com.etema.ragnarmmo.common.api.mobs.runtime.resolve;
+package com.etema.ragnarmmo.mobs.profile;
 
-/**
- * Issue detected while resolving the new manual mob path into a runtime-final profile.
- */
-public record ManualMobProfileIssue(
+public record AuthoredMobProfileIssue(
         Kind kind,
         String field,
         String message) {

@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.client.hud;
 
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
+import com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 

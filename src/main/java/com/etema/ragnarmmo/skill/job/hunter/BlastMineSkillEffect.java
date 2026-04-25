@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.skill.job.hunter;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
+import com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;

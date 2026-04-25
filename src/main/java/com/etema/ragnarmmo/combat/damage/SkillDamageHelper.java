@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.combat.damage;
 
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.items.runtime.WeaponStatHelper;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStats;
+import com.etema.ragnarmmo.player.stats.capability.PlayerStats;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;

@@ -1,4 +1,4 @@
-package com.etema.ragnarmmo.common.api.mobs.runtime.resolve;
+package com.etema.ragnarmmo.mobs.profile;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import com.etema.ragnarmmo.common.api.mobs.data.MobDefinition;
@@ -6,12 +6,10 @@ import com.etema.ragnarmmo.common.api.mobs.data.MobDirectStatsBlock;
 import com.etema.ragnarmmo.common.api.mobs.data.MobRoStatsBlock;
 import com.etema.ragnarmmo.common.api.mobs.data.MobTemplate;
 import com.etema.ragnarmmo.common.api.mobs.data.ResolvedMobDefinition;
-import com.etema.ragnarmmo.common.api.mobs.runtime.ComputedMobBaseStats;
 import com.etema.ragnarmmo.common.api.mobs.data.load.MobDefinitionRegistry;
 import com.etema.ragnarmmo.common.api.mobs.data.resolve.MobDefinitionResolutionIssue;
 import com.etema.ragnarmmo.common.api.mobs.data.resolve.MobDefinitionResolutionResult;
 import com.etema.ragnarmmo.common.api.mobs.data.resolve.MobDefinitionResolver;
-import com.etema.ragnarmmo.common.api.mobs.runtime.ComputedMobProfile;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,32 +17,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Pure orchestrator for the new strict manual mob path.
- *
- * <p>This resolver performs exact-match definition lookup, declarative resolution, and construction of
- * {@link ComputedMobProfile}. It does not fall back to automatic modes and does not apply anything to
- * runtime entities.</p>
- */
-public final class ManualMobProfileResolver {
+public final class AuthoredMobProfileResolver {
 
-    private ManualMobProfileResolver() {
+    private AuthoredMobProfileResolver() {
     }
 
-    public static boolean hasManualDefinition(ResourceLocation entityTypeId) {
+    public static boolean hasAuthoring(ResourceLocation entityTypeId) {
         return MobDefinitionRegistry.getInstance().getDefinition(entityTypeId).isPresent();
     }
 
-    public static boolean hasStrictResolvableManualProfile(ResourceLocation entityTypeId) {
-        ManualMobProfileResolutionResult result = resolve(entityTypeId);
+    public static boolean hasResolvableProfile(ResourceLocation entityTypeId) {
+        AuthoredMobProfileResolutionResult result = resolve(entityTypeId);
         return result.isSuccess() && result.profile() != null;
     }
 
-    public static ManualMobProfileResolutionResult resolve(ResourceLocation entityTypeId) {
+    public static AuthoredMobProfileResolutionResult resolve(ResourceLocation entityTypeId) {
         return resolve(entityTypeId, MobDefinitionRegistry.getInstance());
     }
 
-    public static ManualMobProfileResolutionResult resolve(
+    public static AuthoredMobProfileResolutionResult resolve(
             ResourceLocation entityTypeId,
             MobDefinitionRegistry registry) {
         Objects.requireNonNull(entityTypeId, "entityTypeId");
@@ -54,7 +45,7 @@ public final class ManualMobProfileResolver {
         if (definition == null) {
             return failure(missingCoverage(
                     "entity_type",
-                    "no manual mob definition is registered for entity_type id " + entityTypeId));
+                    "no authored mob definition is registered for entity_type id " + entityTypeId));
         }
 
         MobTemplate template = null;
@@ -69,14 +60,14 @@ public final class ManualMobProfileResolver {
 
         MobDefinitionResolutionResult declarativeResult = MobDefinitionResolver.resolve(definition, template);
         if (!declarativeResult.issues().isEmpty()) {
-            return new ManualMobProfileResolutionResult(null, mapDeclarativeIssues(declarativeResult.issues()));
+            return new AuthoredMobProfileResolutionResult(null, mapDeclarativeIssues(declarativeResult.issues()));
         }
 
         ResolvedMobDefinition resolvedDefinition = declarativeResult.definition();
-        List<ManualMobProfileIssue> issues = new ArrayList<>();
+        List<AuthoredMobProfileIssue> issues = new ArrayList<>();
 
-        Integer level = resolveManualLevel(resolvedDefinition, issues);
-        MobRank rank = resolveManualRank(resolvedDefinition, issues);
+        Integer level = resolveLevel(resolvedDefinition, issues);
+        MobRank rank = resolveRank(resolvedDefinition, issues);
         String race = requireResolvedText("race", resolvedDefinition.race(), issues);
         String element = requireResolvedText("element", resolvedDefinition.element(), issues);
         String size = requireResolvedText("size", resolvedDefinition.size(), issues);
@@ -98,15 +89,14 @@ public final class ManualMobProfileResolver {
                 directStats != null ? directStats.moveSpeed() : null,
                 roStats,
                 issues);
-        ComputedMobBaseStats baseCombatStats = resolveOptionalBaseCombatStats(roStats);
 
         if (!issues.isEmpty()) {
-            return new ManualMobProfileResolutionResult(null, issues);
+            return new AuthoredMobProfileResolutionResult(null, issues);
         }
 
         try {
-            return new ManualMobProfileResolutionResult(
-                    new ComputedMobProfile(
+            return new AuthoredMobProfileResolutionResult(
+                    new MobProfile(
                             level,
                             rank,
                             maxHp,
@@ -119,30 +109,29 @@ public final class ManualMobProfileResolver {
                             crit,
                             aspd,
                             moveSpeed,
-                            baseCombatStats,
                             race,
                             element,
                             size),
                     List.of());
         } catch (IllegalArgumentException ex) {
-            return failure(invalid("computed_profile", ex.getMessage()));
+            return failure(invalid("mob_profile", ex.getMessage()));
         }
     }
 
-    private static @Nullable Integer resolveManualLevel(
+    private static @Nullable Integer resolveLevel(
             ResolvedMobDefinition definition,
-            List<ManualMobProfileIssue> issues) {
+            List<AuthoredMobProfileIssue> issues) {
         if (definition.level() == null) {
-            issues.add(incomplete("level", "level is unresolved for the manual runtime profile"));
+            issues.add(incomplete("level", "level is unresolved for the authored mob profile"));
         }
         return definition.level();
     }
 
-    private static @Nullable MobRank resolveManualRank(
+    private static @Nullable MobRank resolveRank(
             ResolvedMobDefinition definition,
-            List<ManualMobProfileIssue> issues) {
+            List<AuthoredMobProfileIssue> issues) {
         if (definition.rank() == null) {
-            issues.add(incomplete("rank", "rank is unresolved for the manual runtime profile"));
+            issues.add(incomplete("rank", "rank is unresolved for the authored mob profile"));
         }
         return definition.rank();
     }
@@ -150,9 +139,9 @@ public final class ManualMobProfileResolver {
     private static @Nullable String requireResolvedText(
             String field,
             @Nullable String value,
-            List<ManualMobProfileIssue> issues) {
+            List<AuthoredMobProfileIssue> issues) {
         if (value == null || value.isBlank()) {
-            issues.add(incomplete(field, field + " is unresolved for the manual runtime profile"));
+            issues.add(incomplete(field, field + " is unresolved for the authored mob profile"));
             return null;
         }
         return value;
@@ -163,7 +152,7 @@ public final class ManualMobProfileResolver {
             @Nullable Integer directValue,
             @Nullable Integer level,
             @Nullable MobRoStatsBlock roStats,
-            List<ManualMobProfileIssue> issues) {
+            List<AuthoredMobProfileIssue> issues) {
         if (directValue != null) {
             return directValue;
         }
@@ -180,9 +169,9 @@ public final class ManualMobProfileResolver {
             }
             issues.add(derivationUnimplemented(
                     field,
-                    field + " requires derivation from complete ro_stats, but manual stat derivation is not implemented yet"));
+                    field + " requires derivation from complete ro_stats, but that derivation is not implemented yet"));
         } else {
-            issues.add(incomplete(field, field + " is unresolved for the manual runtime profile"));
+            issues.add(incomplete(field, field + " is unresolved for the authored mob profile"));
         }
         return null;
     }
@@ -199,16 +188,9 @@ public final class ManualMobProfileResolver {
             return null;
         }
 
-        // Pre-renewal-style mob stats: normal mob HIT/FLEE come from level plus
-        // the authored base stat. Normal mob crit is not derived from LUK; special
-        // critical behavior should be authored directly or modeled as a skill later.
         return switch (field) {
-            case "hit" -> level == null
-                    ? null
-                    : Math.max(0, level + roStats.dex());
-            case "flee" -> level == null
-                    ? null
-                    : Math.max(0, level + roStats.agi());
+            case "hit" -> level == null ? null : Math.max(0, level + roStats.dex());
+            case "flee" -> level == null ? null : Math.max(0, level + roStats.agi());
             case "crit" -> 0;
             default -> null;
         };
@@ -218,16 +200,16 @@ public final class ManualMobProfileResolver {
             String field,
             @Nullable Double directValue,
             @Nullable MobRoStatsBlock roStats,
-            List<ManualMobProfileIssue> issues) {
+            List<AuthoredMobProfileIssue> issues) {
         if (directValue != null) {
             return directValue;
         }
         if (hasCompleteRoStats(roStats)) {
             issues.add(derivationUnimplemented(
                     field,
-                    field + " requires derivation from complete ro_stats, but manual stat derivation is not implemented yet"));
+                    field + " requires derivation from complete ro_stats, but that derivation is not implemented yet"));
         } else {
-            issues.add(incomplete(field, field + " is unresolved for the manual runtime profile"));
+            issues.add(incomplete(field, field + " is unresolved for the authored mob profile"));
         }
         return null;
     }
@@ -242,28 +224,10 @@ public final class ManualMobProfileResolver {
                 && roStats.luk() != null;
     }
 
-    private static @Nullable ComputedMobBaseStats resolveOptionalBaseCombatStats(@Nullable MobRoStatsBlock roStats) {
-        if (roStats == null
-                || roStats.vit() == null
-                || roStats.int_() == null
-                || roStats.agi() == null
-                || roStats.luk() == null) {
-            return null;
-        }
-
-        return new ComputedMobBaseStats(
-                roStats.str(),
-                roStats.vit(),
-                roStats.int_(),
-                roStats.agi(),
-                roStats.luk(),
-                roStats.dex());
-    }
-
-    private static List<ManualMobProfileIssue> mapDeclarativeIssues(List<MobDefinitionResolutionIssue> issues) {
-        List<ManualMobProfileIssue> mapped = new ArrayList<>(issues.size());
+    private static List<AuthoredMobProfileIssue> mapDeclarativeIssues(List<MobDefinitionResolutionIssue> issues) {
+        List<AuthoredMobProfileIssue> mapped = new ArrayList<>(issues.size());
         for (MobDefinitionResolutionIssue issue : issues) {
-            mapped.add(new ManualMobProfileIssue(
+            mapped.add(new AuthoredMobProfileIssue(
                     mapDeclarativeKind(issue.kind()),
                     issue.field(),
                     issue.message()));
@@ -271,30 +235,30 @@ public final class ManualMobProfileResolver {
         return mapped;
     }
 
-    private static ManualMobProfileIssue.Kind mapDeclarativeKind(MobDefinitionResolutionIssue.Kind kind) {
+    private static AuthoredMobProfileIssue.Kind mapDeclarativeKind(MobDefinitionResolutionIssue.Kind kind) {
         return switch (Objects.requireNonNull(kind, "kind")) {
-            case INVALID -> ManualMobProfileIssue.Kind.INVALID;
-            case INCOMPLETE -> ManualMobProfileIssue.Kind.INCOMPLETE;
+            case INVALID -> AuthoredMobProfileIssue.Kind.INVALID;
+            case INCOMPLETE -> AuthoredMobProfileIssue.Kind.INCOMPLETE;
         };
     }
 
-    private static ManualMobProfileResolutionResult failure(ManualMobProfileIssue issue) {
-        return new ManualMobProfileResolutionResult(null, List.of(issue));
+    private static AuthoredMobProfileResolutionResult failure(AuthoredMobProfileIssue issue) {
+        return new AuthoredMobProfileResolutionResult(null, List.of(issue));
     }
 
-    private static ManualMobProfileIssue missingCoverage(String field, String message) {
-        return new ManualMobProfileIssue(ManualMobProfileIssue.Kind.MISSING_COVERAGE, field, message);
+    private static AuthoredMobProfileIssue missingCoverage(String field, String message) {
+        return new AuthoredMobProfileIssue(AuthoredMobProfileIssue.Kind.MISSING_COVERAGE, field, message);
     }
 
-    private static ManualMobProfileIssue invalid(String field, String message) {
-        return new ManualMobProfileIssue(ManualMobProfileIssue.Kind.INVALID, field, message);
+    private static AuthoredMobProfileIssue invalid(String field, String message) {
+        return new AuthoredMobProfileIssue(AuthoredMobProfileIssue.Kind.INVALID, field, message);
     }
 
-    private static ManualMobProfileIssue incomplete(String field, String message) {
-        return new ManualMobProfileIssue(ManualMobProfileIssue.Kind.INCOMPLETE, field, message);
+    private static AuthoredMobProfileIssue incomplete(String field, String message) {
+        return new AuthoredMobProfileIssue(AuthoredMobProfileIssue.Kind.INCOMPLETE, field, message);
     }
 
-    private static ManualMobProfileIssue derivationUnimplemented(String field, String message) {
-        return new ManualMobProfileIssue(ManualMobProfileIssue.Kind.DERIVATION_UNIMPLEMENTED, field, message);
+    private static AuthoredMobProfileIssue derivationUnimplemented(String field, String message) {
+        return new AuthoredMobProfileIssue(AuthoredMobProfileIssue.Kind.DERIVATION_UNIMPLEMENTED, field, message);
     }
 }

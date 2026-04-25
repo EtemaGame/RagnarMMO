@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.skill.job.mage;
 
 import com.etema.ragnarmmo.skill.api.ISkillEffect;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
+import com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;

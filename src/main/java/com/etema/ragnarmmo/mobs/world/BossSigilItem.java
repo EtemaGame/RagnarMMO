@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.mobs.world;
 
-import com.etema.ragnarmmo.common.api.mobs.MobTier;
+import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import com.etema.ragnarmmo.items.UtilityItems;
 
 import net.minecraft.ChatFormatting;
@@ -30,7 +30,7 @@ import java.util.Optional;
 public class BossSigilItem extends Item {
 
     private static final String TAG_ENTITY_TYPE = "BossEntityType";
-    private static final String TAG_TIER = "BossTier";
+    private static final String TAG_RANK = "BossRank";
     private static final String TAG_SPAWN_KEY = "BossSpawnKey";
     private static final String TAG_RESPAWN_SECONDS = "BossRespawnSeconds";
 
@@ -40,13 +40,13 @@ public class BossSigilItem extends Item {
 
     public static ItemStack createConfiguredStack(
             EntityType<?> entityType,
-            MobTier tier,
+            MobRank rank,
             String spawnKey,
             int respawnSeconds) {
         ItemStack stack = new ItemStack(UtilityItems.BOSS_SIGIL.get());
         CompoundTag tag = stack.getOrCreateTag();
         tag.putString(TAG_ENTITY_TYPE, BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString());
-        tag.putString(TAG_TIER, tier.name());
+        tag.putString(TAG_RANK, rank.name());
         tag.putString(TAG_SPAWN_KEY, sanitizeSpawnKey(spawnKey));
         tag.putInt(TAG_RESPAWN_SECONDS, Math.max(0, respawnSeconds));
         return stack;
@@ -69,11 +69,11 @@ public class BossSigilItem extends Item {
         }
 
         Optional<EntityType<?>> entityType = getConfiguredEntityType(context.getItemInHand());
-        Optional<MobTier> tier = getConfiguredTier(context.getItemInHand());
+        Optional<MobRank> rank = getConfiguredRank(context.getItemInHand());
         String spawnKey = getSpawnKey(context.getItemInHand());
         int respawnSeconds = getRespawnSeconds(context.getItemInHand());
 
-        if (entityType.isEmpty() || tier.isEmpty() || spawnKey.isBlank()) {
+        if (entityType.isEmpty() || rank.isEmpty() || spawnKey.isBlank()) {
             sendPlayerMessage(context, Component.translatable("tooltip.ragnarmmo.boss_sigil.unconfigured")
                     .withStyle(ChatFormatting.RED));
             return InteractionResult.FAIL;
@@ -90,7 +90,7 @@ public class BossSigilItem extends Item {
                 serverLevel,
                 spawnPos,
                 entityType.get(),
-                tier.get(),
+                rank.get(),
                 BossSpawnSource.ALTAR,
                 spawnKey,
                 respawnSeconds);
@@ -112,11 +112,11 @@ public class BossSigilItem extends Item {
         super.appendHoverText(stack, level, tooltip, flag);
 
         Optional<EntityType<?>> entityType = getConfiguredEntityType(stack);
-        Optional<MobTier> tier = getConfiguredTier(stack);
+        Optional<MobRank> rank = getConfiguredRank(stack);
         String spawnKey = getSpawnKey(stack);
         int respawnSeconds = getRespawnSeconds(stack);
 
-        if (entityType.isEmpty() || tier.isEmpty() || spawnKey.isBlank()) {
+        if (entityType.isEmpty() || rank.isEmpty() || spawnKey.isBlank()) {
             tooltip.add(Component.translatable("tooltip.ragnarmmo.boss_sigil.unconfigured")
                     .withStyle(ChatFormatting.RED));
             return;
@@ -124,7 +124,7 @@ public class BossSigilItem extends Item {
 
         tooltip.add(Component.translatable("tooltip.ragnarmmo.boss_sigil.entity", entityType.get().getDescription())
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable("tooltip.ragnarmmo.boss_sigil.tier", formatTier(tier.get()))
+        tooltip.add(Component.translatable("tooltip.ragnarmmo.boss_sigil.tier", formatRank(rank.get()))
                 .withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.ragnarmmo.boss_sigil.spawn_key", spawnKey)
                 .withStyle(ChatFormatting.GRAY));
@@ -137,11 +137,11 @@ public class BossSigilItem extends Item {
     @Override
     public Component getName(ItemStack stack) {
         Optional<EntityType<?>> entityType = getConfiguredEntityType(stack);
-        Optional<MobTier> tier = getConfiguredTier(stack);
-        if (entityType.isPresent() && tier.isPresent()) {
+        Optional<MobRank> rank = getConfiguredRank(stack);
+        if (entityType.isPresent() && rank.isPresent()) {
             return Component.translatable(
                     "item.ragnarmmo.utility.boss_sigil.named",
-                    formatTier(tier.get()),
+                    formatRank(rank.get()),
                     entityType.get().getDescription());
         }
         return super.getName(stack);
@@ -160,14 +160,20 @@ public class BossSigilItem extends Item {
         return Optional.of(BuiltInRegistries.ENTITY_TYPE.get(id));
     }
 
-    public static Optional<MobTier> getConfiguredTier(ItemStack stack) {
+    public static Optional<MobRank> getConfiguredRank(ItemStack stack) {
         CompoundTag tag = stack.getTag();
-        if (tag == null || !tag.contains(TAG_TIER)) {
+        if (tag == null) {
             return Optional.empty();
         }
 
         try {
-            return Optional.of(MobTier.valueOf(tag.getString(TAG_TIER)));
+            if (tag.contains(TAG_RANK)) {
+                return Optional.of(MobRank.valueOf(tag.getString(TAG_RANK)));
+            }
+            if (tag.contains("BossTier")) {
+                return Optional.of(MobRank.valueOf(tag.getString("BossTier")));
+            }
+            return Optional.empty();
         } catch (IllegalArgumentException ex) {
             return Optional.empty();
         }
@@ -199,22 +205,7 @@ public class BossSigilItem extends Item {
         return spawnKey == null ? "" : spawnKey.trim().toLowerCase(Locale.ROOT);
     }
 
-    private static Component formatTier(MobTier tier) {
-        String raw = tier.name().toLowerCase(Locale.ROOT).replace('_', ' ');
-        String[] words = raw.split(" ");
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < words.length; i++) {
-            if (words[i].isEmpty()) {
-                continue;
-            }
-            if (builder.length() > 0) {
-                builder.append(' ');
-            }
-            builder.append(Character.toUpperCase(words[i].charAt(0)));
-            if (words[i].length() > 1) {
-                builder.append(words[i].substring(1));
-            }
-        }
-        return Component.literal(builder.toString());
+    private static Component formatRank(MobRank rank) {
+        return Component.literal(BossRankRules.displayName(rank));
     }
 }

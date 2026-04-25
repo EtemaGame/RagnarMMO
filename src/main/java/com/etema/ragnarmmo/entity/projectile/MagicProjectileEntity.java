@@ -258,7 +258,7 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
         
         final int[] levelArr = {1};
         if (entity instanceof Player p) {
-            p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).ifPresent(stats -> levelArr[0] = stats.getLevel());
+            p.getCapability(com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider.CAP).ifPresent(stats -> levelArr[0] = stats.getLevel());
         }
         return com.etema.ragnarmmo.player.stats.compute.CombatMath.computeHIT(dex, luk, levelArr[0], 0);
     }
@@ -274,7 +274,7 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
         
         final int[] levelArr = {1};
         if (entity instanceof Player p) {
-            p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).ifPresent(stats -> levelArr[0] = stats.getLevel());
+            p.getCapability(com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider.CAP).ifPresent(stats -> levelArr[0] = stats.getLevel());
         }
         return com.etema.ragnarmmo.player.stats.compute.CombatMath.computeFLEE(agi, luk, levelArr[0], 0);
     }

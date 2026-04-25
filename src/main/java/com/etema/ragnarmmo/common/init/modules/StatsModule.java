@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.common.init.modules;
 
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
+import com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider;
 import com.etema.ragnarmmo.player.stats.compute.StatComputer;
 import com.etema.ragnarmmo.common.net.Network;
 import net.minecraftforge.eventbus.api.IEventBus;

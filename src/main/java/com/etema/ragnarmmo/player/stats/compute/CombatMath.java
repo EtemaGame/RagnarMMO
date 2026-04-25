@@ -644,7 +644,7 @@ public final class CombatMath {
      */
     public static OptionalInt tryGetTargetLevel(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player p) {
-            var stats = p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).resolve();
+            var stats = p.getCapability(com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider.CAP).resolve();
             if (stats.isPresent() && stats.get().getLevel() > 0) {
                 return OptionalInt.of(stats.get().getLevel());
             }
@@ -744,7 +744,7 @@ public final class CombatMath {
 
     public static TargetStats getTargetStats(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player p) {
-            var stats = p.getCapability(com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider.CAP).resolve();
+            var stats = p.getCapability(com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider.CAP).resolve();
             if (stats.isPresent()) {
                 var s = stats.get();
                 return new TargetStats(

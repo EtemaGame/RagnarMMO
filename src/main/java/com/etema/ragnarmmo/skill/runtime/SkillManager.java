@@ -218,7 +218,7 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
                     new com.etema.ragnarmmo.player.stats.network.ClientboundSkillSyncPacket(serializeNBT()));
             SkillEffectHandler.refreshPassiveEffects(serverPlayer);
             com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(serverPlayer).ifPresent(stats -> {
-                if (stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats internal) {
+                if (stats instanceof com.etema.ragnarmmo.player.stats.capability.PlayerStats internal) {
                     internal.markDirty(com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS);
                 }
             });
@@ -780,7 +780,7 @@ public class SkillManager implements com.etema.ragnarmmo.skill.api.IPlayerSkills
                     new com.etema.ragnarmmo.player.stats.network.ClientboundSkillSyncPacket(serializeNBT()));
             SkillEffectHandler.refreshPassiveEffects(serverPlayer);
             com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(serverPlayer).ifPresent(stats -> {
-                if (stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats internal) {
+                if (stats instanceof com.etema.ragnarmmo.player.stats.capability.PlayerStats internal) {
                     internal.markDirty(com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS);
                 }
             });

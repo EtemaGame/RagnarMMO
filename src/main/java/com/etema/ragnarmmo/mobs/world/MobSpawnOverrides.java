@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.mobs.world;
 
-import com.etema.ragnarmmo.common.api.mobs.MobTier;
+import com.etema.ragnarmmo.common.api.mobs.MobRank;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -12,43 +12,43 @@ import java.util.OptionalInt;
 public final class MobSpawnOverrides {
 
     private static final String ROOT_KEY = "RagnarMobSpawnOverrides";
-    private static final String FORCED_TIER_KEY = "ForcedTier";
+    private static final String FORCED_RANK_KEY = "ForcedRank";
     private static final String MINIMUM_LEVEL_KEY = "MinimumLevel";
     private static final String MANUAL_BOSS_KEY = "ManualBoss";
 
     private MobSpawnOverrides() {
     }
 
-    public static void setForcedTier(LivingEntity entity, MobTier tier) {
-        if (entity == null || tier == null) {
+    public static void setForcedRank(LivingEntity entity, MobRank rank) {
+        if (entity == null || rank == null) {
             return;
         }
 
         CompoundTag root = getOrCreateRoot(entity);
-        root.putString(FORCED_TIER_KEY, tier.name());
+        root.putString(FORCED_RANK_KEY, rank.name());
     }
 
-    public static Optional<MobTier> getForcedTier(LivingEntity entity) {
+    public static Optional<MobRank> getForcedRank(LivingEntity entity) {
         if (entity == null) {
             return Optional.empty();
         }
 
         CompoundTag root = getRoot(entity);
-        if (root == null || !root.contains(FORCED_TIER_KEY, Tag.TAG_STRING)) {
+        if (root == null || !root.contains(FORCED_RANK_KEY, Tag.TAG_STRING)) {
             return Optional.empty();
         }
 
         try {
-            return Optional.of(MobTier.valueOf(root.getString(FORCED_TIER_KEY)));
+            return Optional.of(MobRank.valueOf(root.getString(FORCED_RANK_KEY)));
         } catch (IllegalArgumentException ex) {
             return Optional.empty();
         }
     }
 
-    public static Optional<MobTier> consumeForcedTier(LivingEntity entity) {
-        Optional<MobTier> tier = getForcedTier(entity);
-        clearForcedTier(entity);
-        return tier;
+    public static Optional<MobRank> consumeForcedRank(LivingEntity entity) {
+        Optional<MobRank> rank = getForcedRank(entity);
+        clearForcedRank(entity);
+        return rank;
     }
 
     public static void setMinimumLevel(LivingEntity entity, int level) {
@@ -114,13 +114,13 @@ public final class MobSpawnOverrides {
         entity.getPersistentData().remove(ROOT_KEY);
     }
 
-    private static void clearForcedTier(LivingEntity entity) {
+    private static void clearForcedRank(LivingEntity entity) {
         CompoundTag root = getRoot(entity);
         if (root == null) {
             return;
         }
 
-        root.remove(FORCED_TIER_KEY);
+        root.remove(FORCED_RANK_KEY);
         cleanupRoot(entity);
     }
 

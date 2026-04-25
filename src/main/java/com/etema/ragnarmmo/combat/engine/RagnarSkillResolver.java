@@ -84,7 +84,7 @@ public class RagnarSkillResolver {
                 double attackerHit = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeHIT(stats.getDEX(), stats.getLUK(), stats.getLevel(), 0);
                 
                 // Temporary simplified resolution - to be expanded with full defender stats
-                double weaponBaseAtk = com.etema.ragnarmmo.system.stats.event.CommonEvents.getWeaponDamage(player);
+                double weaponBaseAtk = com.etema.ragnarmmo.player.stats.event.CommonEvents.getWeaponDamage(player);
                 boolean isRanged = com.etema.ragnarmmo.player.stats.compute.CombatMath.isRangedWeapon(player.getMainHandItem());
                 double baseDamage = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeTotalATK(stats.getSTR(), stats.getDEX(), stats.getLUK(), stats.getLevel(), weaponBaseAtk, 0, isRanged);
                 double skillDmg = damageCalculator.computePhysicalDamage(baseDamage, dex, luk, new java.util.Random(player.getRandom().nextLong()));
@@ -127,7 +127,7 @@ public class RagnarSkillResolver {
                 if (landedHits <= 0) {
                     results.add(CombatResolution.miss(player.getId(), target.getId()));
                 } else {
-                    double weaponBaseAtk = com.etema.ragnarmmo.system.stats.event.CommonEvents.getWeaponDamage(player);
+                    double weaponBaseAtk = com.etema.ragnarmmo.player.stats.event.CommonEvents.getWeaponDamage(player);
                     boolean isRanged = com.etema.ragnarmmo.player.stats.compute.CombatMath.isRangedWeapon(player.getMainHandItem());
                     double baseAtk = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeTotalATK(stats.getSTR(), stats.getDEX(), stats.getLUK(), stats.getLevel(), weaponBaseAtk, 0, isRanged);
                     double totalDamage = 0;

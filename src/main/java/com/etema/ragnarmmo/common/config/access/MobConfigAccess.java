@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.common.config.access;
 
-import com.etema.ragnarmmo.common.api.mobs.MobTier;
+import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -53,8 +53,8 @@ public final class MobConfigAccess {
     public static double getDamagePerDex() { return RagnarConfigs.SERVER.mobs.damagePerDex.get(); }
     public static double getReductionPerVit() { return RagnarConfigs.SERVER.mobs.reductionPerVit.get(); }
 
-    public static int getBasePoints(MobTier tier) {
-        return switch (tier) {
+    public static int getBasePoints(MobRank rank) {
+        return switch (rank) {
             case NORMAL -> RagnarConfigs.SERVER.mobs.basePointsNormal.get();
             case ELITE -> RagnarConfigs.SERVER.mobs.basePointsElite.get();
             case MINI_BOSS -> RagnarConfigs.SERVER.mobs.basePointsMiniBoss.get();
@@ -63,8 +63,8 @@ public final class MobConfigAccess {
         };
     }
 
-    public static int getPointsPerLevel(MobTier tier) {
-        return switch (tier) {
+    public static int getPointsPerLevel(MobRank rank) {
+        return switch (rank) {
             case NORMAL -> RagnarConfigs.SERVER.mobs.pointsPerLevelNormal.get();
             case ELITE -> RagnarConfigs.SERVER.mobs.pointsPerLevelElite.get();
             case MINI_BOSS -> RagnarConfigs.SERVER.mobs.pointsPerLevelMiniBoss.get();
@@ -73,8 +73,8 @@ public final class MobConfigAccess {
         };
     }
 
-    public static double getHealthMultiplier(MobTier tier) {
-        return switch (tier) {
+    public static double getHealthMultiplier(MobRank rank) {
+        return switch (rank) {
             case NORMAL -> RagnarConfigs.SERVER.mobs.healthMultNormal.get();
             case ELITE -> RagnarConfigs.SERVER.mobs.healthMultElite.get();
             case MINI_BOSS -> RagnarConfigs.SERVER.mobs.healthMultMiniBoss.get();
@@ -83,8 +83,8 @@ public final class MobConfigAccess {
         };
     }
 
-    public static double getDamageMultiplier(MobTier tier) {
-        return switch (tier) {
+    public static double getDamageMultiplier(MobRank rank) {
+        return switch (rank) {
             case NORMAL -> RagnarConfigs.SERVER.mobs.damageMultNormal.get();
             case ELITE -> RagnarConfigs.SERVER.mobs.damageMultElite.get();
             case MINI_BOSS -> RagnarConfigs.SERVER.mobs.damageMultMiniBoss.get();
@@ -93,8 +93,8 @@ public final class MobConfigAccess {
         };
     }
 
-    public static double getDefenseMultiplier(MobTier tier) {
-        return switch (tier) {
+    public static double getDefenseMultiplier(MobRank rank) {
+        return switch (rank) {
             case NORMAL -> RagnarConfigs.SERVER.mobs.defenseMultNormal.get();
             case ELITE -> RagnarConfigs.SERVER.mobs.defenseMultElite.get();
             case MINI_BOSS -> RagnarConfigs.SERVER.mobs.defenseMultMiniBoss.get();

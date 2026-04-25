@@ -152,7 +152,7 @@ public class RagnarStatusOverlay implements IGuiOverlay {
 
     private static int renderSpBar(GuiGraphics graphics, Font font, IPlayerStats stats,
             int x, int y, int w) {
-        if (!(stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps)) {
+        if (!(stats instanceof com.etema.ragnarmmo.player.stats.capability.PlayerStats ps)) {
             return y + BAR_HEIGHT;
         }
 

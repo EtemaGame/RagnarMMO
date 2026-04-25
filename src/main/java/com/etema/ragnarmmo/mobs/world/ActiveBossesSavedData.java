@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.mobs.world;
 
 import com.etema.ragnarmmo.RagnarMMO;
-import com.etema.ragnarmmo.common.api.mobs.MobTier;
+import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
 
 import net.minecraft.core.BlockPos;
@@ -38,12 +38,12 @@ public class ActiveBossesSavedData extends SavedData {
                 DATA_NAME);
     }
 
-    public void registerBoss(ServerLevel level, LivingEntity entity, MobTier tier) {
-        if (level == null || entity == null || tier == null || !tier.shouldPersistWorldState()) {
+    public void registerBoss(ServerLevel level, LivingEntity entity, MobRank rank) {
+        if (level == null || entity == null || rank == null || !BossRankRules.shouldPersistWorldState(rank)) {
             return;
         }
 
-        BossEntry next = BossEntry.from(level, entity, tier);
+        BossEntry next = BossEntry.from(level, entity, rank);
         BossEntry previous = activeBosses.put(entity.getUUID(), next);
         boolean removedCooldown = false;
         if (next.hasSpawnKey()) {
@@ -59,7 +59,7 @@ public class ActiveBossesSavedData extends SavedData {
         RagnarDebugLog.bossWorld(
                 "REGISTER boss={} tier={} source={} key={} respawnTicks={} dim={} pos=({}, {}, {}) replaced={} clearedCooldown={}",
                 RagnarDebugLog.entityLabel(entity),
-                tier,
+                rank,
                 next.spawnSource(),
                 next.spawnKey(),
                 next.respawnDelayTicks(),
@@ -71,20 +71,20 @@ public class ActiveBossesSavedData extends SavedData {
                 removedCooldown);
     }
 
-    public void handleBossDeath(ServerLevel level, LivingEntity entity, MobTier tier) {
-        if (level == null || entity == null || tier == null || !tier.shouldPersistWorldState()) {
+    public void handleBossDeath(ServerLevel level, LivingEntity entity, MobRank rank) {
+        if (level == null || entity == null || rank == null || !BossRankRules.shouldPersistWorldState(rank)) {
             return;
         }
 
         BossEntry removed = activeBosses.remove(entity.getUUID());
-        BossEntry snapshot = removed != null ? removed : BossEntry.from(level, entity, tier);
+        BossEntry snapshot = removed != null ? removed : BossEntry.from(level, entity, rank);
         if (snapshot.hasRespawnRule()) {
             RespawnEntry next = RespawnEntry.fromDeath(snapshot, level.getGameTime());
             respawnCooldowns.put(snapshot.spawnKey(), next);
             RagnarDebugLog.bossWorld(
                     "DEFEAT boss={} tier={} key={} cooldownStart={} cooldownEnd={} delayTicks={} source={}",
                     RagnarDebugLog.entityLabel(entity),
-                    tier,
+                    rank,
                     next.spawnKey(),
                     next.lastDefeatedGameTime(),
                     next.nextAllowedGameTime(),
@@ -94,7 +94,7 @@ public class ActiveBossesSavedData extends SavedData {
             RagnarDebugLog.bossWorld(
                     "DEFEAT boss={} tier={} key={} cooldown=none source={}",
                     RagnarDebugLog.entityLabel(entity),
-                    tier,
+                    rank,
                     snapshot.spawnKey(),
                     snapshot.spawnSource());
         }
@@ -175,15 +175,15 @@ public class ActiveBossesSavedData extends SavedData {
                 continue;
             }
 
-            MobTier tier = BossTierResolver.resolveTier(entity).orElse(entry.getValue().tier());
-            if (!tier.shouldPersistWorldState()) {
+            MobRank rank = BossRankResolver.resolveRank(entity).orElse(entry.getValue().rank());
+            if (!BossRankRules.shouldPersistWorldState(rank)) {
                 iterator.remove();
                 changed++;
                 continue;
             }
 
             ServerLevel level = (ServerLevel) entity.level();
-            BossEntry refreshed = BossEntry.from(level, entity, tier);
+            BossEntry refreshed = BossEntry.from(level, entity, rank);
             if (!refreshed.equals(entry.getValue())) {
                 entry.setValue(refreshed);
                 changed++;
@@ -268,15 +268,15 @@ public class ActiveBossesSavedData extends SavedData {
             int x,
             int y,
             int z,
-            MobTier tier,
+            MobRank rank,
             BossSpawnSource spawnSource,
             String spawnKey,
             int respawnDelayTicks,
             long lastSeenGameTime) {
 
-        public static BossEntry from(ServerLevel level, LivingEntity entity, MobTier tier) {
+        public static BossEntry from(ServerLevel level, LivingEntity entity, MobRank rank) {
             BlockPos pos = entity.blockPosition();
-            BossSpawnMetadata.SpawnInfo spawnInfo = BossSpawnMetadata.read(entity, tier);
+            BossSpawnMetadata.SpawnInfo spawnInfo = BossSpawnMetadata.read(entity, rank);
             return new BossEntry(
                     entity.getUUID(),
                     BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString(),
@@ -285,7 +285,7 @@ public class ActiveBossesSavedData extends SavedData {
                     pos.getX(),
                     pos.getY(),
                     pos.getZ(),
-                    tier,
+                    rank,
                     spawnInfo.source(),
                     spawnInfo.spawnKey(),
                     spawnInfo.respawnDelayTicks(),
@@ -309,7 +309,7 @@ public class ActiveBossesSavedData extends SavedData {
             tag.putInt("x", x);
             tag.putInt("y", y);
             tag.putInt("z", z);
-            tag.putString("tier", tier.name());
+            tag.putString("rank", rank.name());
             tag.putString("spawnSource", spawnSource.name());
             tag.putString("spawnKey", spawnKey);
             tag.putInt("respawnDelayTicks", respawnDelayTicks);
@@ -327,7 +327,7 @@ public class ActiveBossesSavedData extends SavedData {
                     tag.getInt("x"),
                     tag.getInt("y"),
                     tag.getInt("z"),
-                    MobTier.valueOf(tag.getString("tier")),
+                    parseRank(tag),
                     spawnSource,
                     tag.getString("spawnKey"),
                     tag.getInt("respawnDelayTicks"),
@@ -340,7 +340,7 @@ public class ActiveBossesSavedData extends SavedData {
             String entityTypeId,
             String displayName,
             String dimensionId,
-            MobTier tier,
+            MobRank rank,
             BossSpawnSource spawnSource,
             int x,
             int y,
@@ -354,7 +354,7 @@ public class ActiveBossesSavedData extends SavedData {
                     entry.entityTypeId(),
                     entry.displayName(),
                     entry.dimensionId(),
-                    entry.tier(),
+                    entry.rank(),
                     entry.spawnSource(),
                     entry.x(),
                     entry.y(),
@@ -373,7 +373,7 @@ public class ActiveBossesSavedData extends SavedData {
             tag.putString("entityTypeId", entityTypeId);
             tag.putString("displayName", displayName);
             tag.putString("dimensionId", dimensionId);
-            tag.putString("tier", tier.name());
+            tag.putString("rank", rank.name());
             tag.putString("spawnSource", spawnSource.name());
             tag.putInt("x", x);
             tag.putInt("y", y);
@@ -389,13 +389,22 @@ public class ActiveBossesSavedData extends SavedData {
                     tag.getString("entityTypeId"),
                     tag.getString("displayName"),
                     tag.getString("dimensionId"),
-                    MobTier.valueOf(tag.getString("tier")),
+                    parseRank(tag),
                     BossSpawnSource.parse(tag.getString("spawnSource")).orElse(BossSpawnSource.DEBUG),
                     tag.getInt("x"),
                     tag.getInt("y"),
                     tag.getInt("z"),
                     tag.getLong("lastDefeatedGameTime"),
                     tag.getLong("nextAllowedGameTime"));
+        }
+    }
+
+    private static MobRank parseRank(CompoundTag tag) {
+        String value = tag.contains("rank") ? tag.getString("rank") : tag.getString("tier");
+        try {
+            return MobRank.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            return MobRank.BOSS;
         }
     }
 }

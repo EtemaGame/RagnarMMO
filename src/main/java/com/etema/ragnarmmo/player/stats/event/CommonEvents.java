@@ -1,4 +1,4 @@
-package com.etema.ragnarmmo.system.stats.event;
+package com.etema.ragnarmmo.player.stats.event;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -17,7 +17,7 @@ import com.etema.ragnarmmo.items.runtime.RoRefineMath;
 import com.etema.ragnarmmo.items.runtime.RangedWeaponStatsHelper;
 import com.etema.ragnarmmo.items.runtime.WeaponStatHelper;
 import com.etema.ragnarmmo.player.stats.PlayerStatsModule;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStats;
+import com.etema.ragnarmmo.player.stats.capability.PlayerStats;
 import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 import com.etema.ragnarmmo.player.stats.compute.EquipmentStatSnapshot;
 import com.etema.ragnarmmo.player.stats.compute.StatComputer;

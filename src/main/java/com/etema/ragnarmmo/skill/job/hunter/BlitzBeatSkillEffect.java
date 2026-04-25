@@ -5,7 +5,7 @@ import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skill.runtime.SkillManager;
 import com.etema.ragnarmmo.skill.runtime.SkillSequencer;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
+import com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;

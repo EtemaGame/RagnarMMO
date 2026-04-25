@@ -2,7 +2,7 @@ package com.etema.ragnarmmo.player.command;
 
 import com.etema.ragnarmmo.common.command.CommandUtil;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
+import com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider;
 import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncService;
 import com.etema.ragnarmmo.player.progression.PlayerProgressionService;
 import com.mojang.brigadier.arguments.IntegerArgumentType;

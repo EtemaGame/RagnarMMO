@@ -10,7 +10,7 @@
  *
  * <h3>Dependencies</h3>
  * <ul>
- * <li>{@code system.stats} — Player LUK for drop rate scaling</li>
+ * <li>{@code player.stats} — Player LUK for drop rate scaling</li>
  * <li>{@code roitems} — {@code RoItemNbtHelper} for rarity application</li>
  * <li>{@code common.api} — Stat access via {@code RagnarCoreAPI}</li>
  * </ul>

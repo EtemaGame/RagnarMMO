@@ -6,7 +6,7 @@ import com.etema.ragnarmmo.items.ZenyItems;
 import com.etema.ragnarmmo.skill.data.SkillRegistry;
 import com.etema.ragnarmmo.skill.execution.EconomicSkillHelper;
 import com.etema.ragnarmmo.skill.runtime.PlayerSkillsProvider;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
+import com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider;
 import com.etema.ragnarmmo.util.AttrUtil;
 
 import net.minecraft.resources.ResourceLocation;

@@ -5,7 +5,7 @@ import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadView;
 import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
 import com.etema.ragnarmmo.items.ZenyItems;
 import com.etema.ragnarmmo.common.config.access.EconomyConfigAccess;
-import com.etema.ragnarmmo.system.stats.capability.PlayerStatsProvider;
+import com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;

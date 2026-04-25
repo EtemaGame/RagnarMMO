@@ -1,6 +1,6 @@
 package com.etema.ragnarmmo.mobs.world;
 
-import com.etema.ragnarmmo.common.api.mobs.MobTier;
+import com.etema.ragnarmmo.common.api.mobs.MobRank;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,7 +17,7 @@ public final class BossSpawnMetadata {
     private BossSpawnMetadata() {
     }
 
-    public static SpawnInfo read(LivingEntity entity, MobTier fallbackTier) {
+    public static SpawnInfo read(LivingEntity entity, MobRank fallbackRank) {
         if (entity == null) {
             return SpawnInfo.natural("", 0);
         }
@@ -30,7 +30,7 @@ public final class BossSpawnMetadata {
         String spawnKey = root.getString(SPAWN_KEY);
         int respawnDelayTicks = Math.max(0, root.getInt(RESPAWN_DELAY_KEY));
 
-        if (fallbackTier != null && fallbackTier.shouldPersistWorldState() && source == BossSpawnSource.NATURAL
+        if (fallbackRank != null && BossRankRules.shouldPersistWorldState(fallbackRank) && source == BossSpawnSource.NATURAL
                 && respawnDelayTicks <= 0) {
             return SpawnInfo.natural(spawnKey, 0);
         }

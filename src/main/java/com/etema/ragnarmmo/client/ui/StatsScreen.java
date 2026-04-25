@@ -433,7 +433,7 @@ public class StatsScreen extends Screen {
                                         renderDerivedStat(g, 0, yLine[8], "MDEF",
                                                         hasData ? String.format(Locale.ROOT, "%.1f", d.magicDefense) : "--", 0xFFFFFFFF);
                                         
-                                        double trueSP = (stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps)
+                                        double trueSP = (stats instanceof com.etema.ragnarmmo.player.stats.capability.PlayerStats ps)
                                                         ? ps.getMaxResource()
                                                         : stats.getManaMax();
                                         

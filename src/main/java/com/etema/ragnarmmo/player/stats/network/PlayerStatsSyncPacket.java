@@ -55,11 +55,11 @@ public class PlayerStatsSyncPacket {
     public PlayerStatsSyncPacket(int entityId, com.etema.ragnarmmo.common.api.stats.IPlayerStats stats, int syncMask) {
         this(entityId, syncMask,
                 stats.getMana(), stats.getManaMax(),
-                stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps ? ps.getSP() : 0,
-                stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps2 ? ps2.getSPMax() : 100,
+                stats instanceof com.etema.ragnarmmo.player.stats.capability.PlayerStats ps ? ps.getSP() : 0,
+                stats instanceof com.etema.ragnarmmo.player.stats.capability.PlayerStats ps2 ? ps2.getSPMax() : 100,
                 stats.getLevel(), stats.getExp(), stats.getStatPoints(),
                 stats.getJobLevel(), stats.getJobExp(), stats.getSkillPoints(), stats.getJobId(),
-                stats instanceof com.etema.ragnarmmo.system.stats.capability.PlayerStats ps3 ? ps3.isBaseStatPointsGranted() : true,
+                stats instanceof com.etema.ragnarmmo.player.stats.capability.PlayerStats ps3 ? ps3.isBaseStatPointsGranted() : true,
                 stats.getSTR(), stats.getAGI(), stats.getVIT(), stats.getINT(), stats.getDEX(), stats.getLUK());
     }
 

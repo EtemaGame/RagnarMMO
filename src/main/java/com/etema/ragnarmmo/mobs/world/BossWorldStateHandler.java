@@ -29,10 +29,10 @@ public final class BossWorldStateHandler {
             return;
         }
 
-        BossTierResolver.resolveTier(living)
-                .filter(tier -> tier.shouldPersistWorldState())
-                .ifPresent(tier -> ActiveBossesSavedData.get(serverLevel.getServer())
-                        .registerBoss(serverLevel, living, tier));
+        BossRankResolver.resolveRank(living)
+                .filter(BossRankRules::shouldPersistWorldState)
+                .ifPresent(rank -> ActiveBossesSavedData.get(serverLevel.getServer())
+                        .registerBoss(serverLevel, living, rank));
     }
 
     @SubscribeEvent
@@ -44,10 +44,10 @@ public final class BossWorldStateHandler {
             return;
         }
 
-        BossTierResolver.resolveTier(event.getEntity())
-                .filter(tier -> tier.shouldPersistWorldState())
-                .ifPresent(tier -> ActiveBossesSavedData.get(serverLevel.getServer())
-                        .handleBossDeath(serverLevel, event.getEntity(), tier));
+        BossRankResolver.resolveRank(event.getEntity())
+                .filter(BossRankRules::shouldPersistWorldState)
+                .ifPresent(rank -> ActiveBossesSavedData.get(serverLevel.getServer())
+                        .handleBossDeath(serverLevel, event.getEntity(), rank));
     }
 
     @SubscribeEvent

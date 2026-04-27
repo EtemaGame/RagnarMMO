@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class SwordMasterySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "sword_mastery");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "sword_mastery");
 
     @Override
     public Set<TriggerType> getSupportedTriggers() {

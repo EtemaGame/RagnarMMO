@@ -44,5 +44,5 @@
         "9": { "sp_cost": 40, "damage_percent": 50, "duration_ticks": 260, "max_hits": 11, "segment_count": 3, "range": 2.5, "cast_time_ticks": 16, "cast_delay_ticks": 0, "cooldown_ticks": 0 },
         "10": { "sp_cost": 40, "damage_percent": 50, "duration_ticks": 280, "max_hits": 12, "segment_count": 3, "range": 2.5, "cast_time_ticks": 13, "cast_delay_ticks": 0, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.mage.FireWallSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.mage.FireWallSkillEffect"
 }

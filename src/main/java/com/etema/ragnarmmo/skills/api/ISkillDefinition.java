@@ -49,7 +49,7 @@ public interface ISkillDefinition {
 
     /**
      * @return The tier of this skill. Current core scope is NOVICE/FIRST/SECOND/LIFE;
-     *         additional tiers may exist as reserved future placeholders.
+     *         additional tiers may exist as reserved future entries.
      */
     com.etema.ragnarmmo.skills.api.SkillTier getTier();
 

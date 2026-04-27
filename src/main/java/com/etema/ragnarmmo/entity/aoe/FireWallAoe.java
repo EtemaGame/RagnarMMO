@@ -12,7 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class FireWallAoe extends AoeEntity {
-    private static final ResourceLocation SKILL_ID = new ResourceLocation("ragnarmmo", "fire_wall");
+    private static final ResourceLocation SKILL_ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "fire_wall");
 
     @Override
     public ResourceLocation getSkillId() {

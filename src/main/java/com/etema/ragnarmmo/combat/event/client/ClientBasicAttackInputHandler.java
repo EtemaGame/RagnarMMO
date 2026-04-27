@@ -53,6 +53,9 @@ public final class ClientBasicAttackInputHandler {
             return;
         }
 
+        if (!wasAttackDown) {
+            sequenceId = Math.max(sequenceId, player.tickCount + 1);
+        }
         wasAttackDown = true;
 
         if (localAttackCooldownTicks > 0) {

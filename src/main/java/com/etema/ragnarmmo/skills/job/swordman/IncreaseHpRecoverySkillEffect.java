@@ -24,7 +24,7 @@ import java.util.Set;
  */
 public class IncreaseHpRecoverySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "increase_hp_recovery");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "increase_hp_recovery");
 
     @Override
     public ResourceLocation getSkillId() {

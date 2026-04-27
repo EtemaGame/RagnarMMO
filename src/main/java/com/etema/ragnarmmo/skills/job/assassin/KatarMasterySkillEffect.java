@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public class KatarMasterySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "katar_mastery");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "katar_mastery");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

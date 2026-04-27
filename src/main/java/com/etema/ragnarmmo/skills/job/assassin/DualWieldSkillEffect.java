@@ -17,7 +17,7 @@ import net.minecraft.world.item.AxeItem;
  */
 public class DualWieldSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "dual_wield");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "dual_wield");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

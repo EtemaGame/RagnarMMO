@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
  *     a minor damage bonus via NBT affixes.
  */
 public class SmithAxeSkillEffect implements ISkillEffect {
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "smith_axe");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "smith_axe");
     @Override public ResourceLocation getSkillId() { return ID; }
     @Override
     public void execute(ServerPlayer player, int level) {

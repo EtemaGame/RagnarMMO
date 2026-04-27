@@ -10,7 +10,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class BackSlideSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "back_slide");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "back_slide");
 
     @Override
     public ResourceLocation getSkillId() {

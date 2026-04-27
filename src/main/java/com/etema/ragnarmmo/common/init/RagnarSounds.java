@@ -48,7 +48,7 @@ public class RagnarSounds {
     public static final RegistryObject<SoundEvent> BOLT_HIT = registerSound("skill.bolt_hit");
 
     private static RegistryObject<SoundEvent> registerSound(String name) {
-        return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(RagnarMMO.MODID, name)));
+        return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(RagnarMMO.MODID, name)));
     }
 
     public static void register(IEventBus eventBus) {

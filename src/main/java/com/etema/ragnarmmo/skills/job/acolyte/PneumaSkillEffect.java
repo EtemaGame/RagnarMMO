@@ -15,7 +15,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class PneumaSkillEffect extends GroundAoEPersistentEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "pneuma");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "pneuma");
 
     public PneumaSkillEffect() {
         super(ID);

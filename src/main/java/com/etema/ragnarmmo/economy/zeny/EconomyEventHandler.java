@@ -16,7 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = RagnarMMO.MODID)
 public class EconomyEventHandler {
 
-    public static final ResourceLocation WALLET_CAP_ID = new ResourceLocation(RagnarMMO.MODID, "player_wallet");
+    public static final ResourceLocation WALLET_CAP_ID = ResourceLocation.fromNamespaceAndPath(RagnarMMO.MODID, "player_wallet");
 
     @SubscribeEvent
     public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event) {

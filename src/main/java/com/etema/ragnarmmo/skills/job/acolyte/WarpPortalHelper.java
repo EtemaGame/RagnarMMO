@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.skills.job.acolyte;
 
 import com.etema.ragnarmmo.skills.runtime.SkillManager;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -144,7 +145,7 @@ public final class WarpPortalHelper {
 
         BlockPos below = pos.below();
         BlockState belowState = level.getBlockState(below);
-        if (belowState.isAir() || !belowState.blocksMotion()) {
+        if (belowState.isAir() || !belowState.isFaceSturdy(level, below, Direction.UP)) {
             return false;
         }
 

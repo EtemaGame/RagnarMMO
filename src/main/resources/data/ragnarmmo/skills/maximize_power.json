@@ -25,5 +25,5 @@
         "grid_x": 6,
         "grid_y": 5
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.blacksmith.MaximizePowerSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.blacksmith.MaximizePowerSkillEffect"
 }

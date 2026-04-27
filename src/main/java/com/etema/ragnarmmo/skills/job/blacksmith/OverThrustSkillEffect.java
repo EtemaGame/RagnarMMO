@@ -16,7 +16,7 @@ import java.util.List;
 
 public class OverThrustSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "over_thrust");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "over_thrust");
 
     @Override
     public ResourceLocation getSkillId() {

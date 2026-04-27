@@ -336,20 +336,20 @@ public final class ClientPacketHandler {
 
         switch (result) {
             case HIT -> {
-                text = String.valueOf((int) amount);
-                color = 0xFFFF00; // Yellow (standard for damage)
+                text = formatDamageAmount(amount);
+                color = 0xFFE8EDF5;
             }
             case CRIT -> {
-                text = String.valueOf((int) amount);
-                color = 0xFF0000; // Red
+                text = formatDamageAmount(amount);
+                color = 0xFFFF5C5C;
             }
             case MISS -> {
                 text = "Miss";
-                color = 0xAAAAAA; // Gray
+                color = 0xFF9BA7B4;
             }
             case DODGE -> {
                 text = "Dodge";
-                color = 0xAAAAAA; // Gray
+                color = 0xFF9BA7B4;
             }
             default -> {
                 return;
@@ -357,5 +357,12 @@ public final class ClientPacketHandler {
         }
 
         RagnarPopoffHandler.addPopoff(targetId, text, color);
+    }
+
+    private static String formatDamageAmount(double amount) {
+        if (!Double.isFinite(amount) || amount <= 0.0D) {
+            return "0";
+        }
+        return String.valueOf(Math.max(1, Math.round(amount)));
     }
 }

@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class PierceSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "pierce");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "pierce");
 
     @Override
     public ResourceLocation getSkillId() {

@@ -14,7 +14,7 @@ import java.util.List;
 
 public class SoulStrikeSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "soul_strike");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "soul_strike");
 
     @Override
     public ResourceLocation getSkillId() {

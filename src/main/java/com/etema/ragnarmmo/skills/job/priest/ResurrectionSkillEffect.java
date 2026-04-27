@@ -14,7 +14,7 @@ import java.util.List;
 
 public class ResurrectionSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:resurrection");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:resurrection");
 
     @Override
     public ResourceLocation getSkillId() {

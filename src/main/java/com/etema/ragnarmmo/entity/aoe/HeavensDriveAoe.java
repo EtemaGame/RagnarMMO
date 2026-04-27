@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
 public class HeavensDriveAoe extends AoeEntity {
-    private static final ResourceLocation SKILL_ID = new ResourceLocation("ragnarmmo", "heavens_drive");
+    private static final ResourceLocation SKILL_ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "heavens_drive");
 
     @Override
     public ResourceLocation getSkillId() {

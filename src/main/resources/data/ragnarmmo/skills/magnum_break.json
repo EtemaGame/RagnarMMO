@@ -41,5 +41,5 @@
         "9": { "sp_cost": 30, "damage_percent": 280, "hp_cost": 16, "accuracy_multiplier": 1.90, "aoe_radius": 2.5, "knockback_strength": 0.75, "burn_seconds": 3, "fire_bonus_percent": 20, "buff_duration_ticks": 200, "cast_time_ticks": 0, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
         "10": { "sp_cost": 30, "damage_percent": 300, "hp_cost": 16, "accuracy_multiplier": 2.00, "aoe_radius": 2.5, "knockback_strength": 0.75, "burn_seconds": 3, "fire_bonus_percent": 20, "buff_duration_ticks": 200, "cast_time_ticks": 0, "cast_delay_ticks": 40, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.swordman.MagnumBreakSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.swordman.MagnumBreakSkillEffect"
 }

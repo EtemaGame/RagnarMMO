@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class SpearMasterySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "spear_mastery");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "spear_mastery");
 
     @Override
     public ResourceLocation getSkillId() {

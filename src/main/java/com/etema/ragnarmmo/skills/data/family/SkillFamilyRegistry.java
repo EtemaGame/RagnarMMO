@@ -52,7 +52,7 @@ public final class SkillFamilyRegistry {
      * @return Optional containing the family if found
      */
     public static Optional<SkillFamily> get(String namespace, String path) {
-        return get(new ResourceLocation(namespace, path));
+        return get(ResourceLocation.fromNamespaceAndPath(namespace, path));
     }
 
     /**

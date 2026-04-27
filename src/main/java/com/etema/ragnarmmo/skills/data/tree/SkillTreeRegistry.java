@@ -52,7 +52,7 @@ public final class SkillTreeRegistry {
      * @return Optional containing the tree if found
      */
     public static Optional<SkillTreeDefinition> get(String namespace, String path) {
-        return get(new ResourceLocation(namespace, path));
+        return get(ResourceLocation.fromNamespaceAndPath(namespace, path));
     }
 
     /**

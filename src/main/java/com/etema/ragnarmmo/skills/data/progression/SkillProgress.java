@@ -6,9 +6,7 @@ import com.etema.ragnarmmo.skills.runtime.SkillConfigManager;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Tracks XP and level progress for a single skill.
- * Now uses ResourceLocation for skill identity instead of the deprecated
- * canonical ResourceLocation-based skill state.
+ * Tracks XP and level progress for a ResourceLocation-backed skill.
  */
 public class SkillProgress {
     private final ResourceLocation skillId;

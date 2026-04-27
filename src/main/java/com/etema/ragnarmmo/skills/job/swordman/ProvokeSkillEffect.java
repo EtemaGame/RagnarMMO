@@ -23,7 +23,7 @@ import java.util.UUID;
 
 public class ProvokeSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "provoke");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "provoke");
 
     // Fixed UUIDs for the Provoke modifiers (Must match AggroEvents)
     private static final UUID PROVOKE_DEF_DEBUFF_UUID = UUID.fromString("a1b2c3d4-dead-beef-cafe-000000000001");

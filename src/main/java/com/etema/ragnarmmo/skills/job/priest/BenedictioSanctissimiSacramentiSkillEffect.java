@@ -21,7 +21,7 @@ import net.minecraft.world.phys.AABB;
 
 public class BenedictioSanctissimiSacramentiSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "benedictio_sanctissimi_sacramenti");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "benedictio_sanctissimi_sacramenti");
 
     @Override
     public ResourceLocation getSkillId() {

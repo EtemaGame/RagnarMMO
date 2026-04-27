@@ -33,5 +33,5 @@
         "9": { "dex_bonus": 9 },
         "10": { "dex_bonus": 10 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.archer.OwlsEyeSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.archer.OwlsEyeSkillEffect"
 }

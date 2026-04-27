@@ -6,7 +6,6 @@ import com.etema.ragnarmmo.items.UtilityItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -20,6 +19,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -45,7 +45,7 @@ public class BossSigilItem extends Item {
             int respawnSeconds) {
         ItemStack stack = new ItemStack(UtilityItems.BOSS_SIGIL.get());
         CompoundTag tag = stack.getOrCreateTag();
-        tag.putString(TAG_ENTITY_TYPE, BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString());
+        tag.putString(TAG_ENTITY_TYPE, ForgeRegistries.ENTITY_TYPES.getKey(entityType).toString());
         tag.putString(TAG_RANK, rank.name());
         tag.putString(TAG_SPAWN_KEY, sanitizeSpawnKey(spawnKey));
         tag.putInt(TAG_RESPAWN_SECONDS, Math.max(0, respawnSeconds));
@@ -154,10 +154,10 @@ public class BossSigilItem extends Item {
         }
 
         ResourceLocation id = ResourceLocation.tryParse(tag.getString(TAG_ENTITY_TYPE));
-        if (id == null || !BuiltInRegistries.ENTITY_TYPE.containsKey(id)) {
+        if (id == null || !ForgeRegistries.ENTITY_TYPES.containsKey(id)) {
             return Optional.empty();
         }
-        return Optional.of(BuiltInRegistries.ENTITY_TYPE.get(id));
+        return Optional.ofNullable(ForgeRegistries.ENTITY_TYPES.getValue(id));
     }
 
     public static Optional<MobRank> getConfiguredRank(ItemStack stack) {

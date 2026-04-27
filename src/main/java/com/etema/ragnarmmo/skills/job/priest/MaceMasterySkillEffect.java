@@ -16,7 +16,7 @@ import net.minecraft.world.item.PickaxeItem;
  */
 public class MaceMasterySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "mace_mastery");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "mace_mastery");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

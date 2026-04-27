@@ -477,8 +477,6 @@ public final class CombatMath {
     public static int computeCastDelay(int baseDelayTicks, net.minecraft.world.entity.player.Player player) {
         if (baseDelayTicks <= 0) return 0;
         
-        // Global after-cast delay reduction logic placeholder.
-        // e.g., Kiel-D-01 card effect (reduction = 0.3), or Bragi's Poem.
         double reduction = 0.0; 
         
         return Math.max(0, (int) Math.round(baseDelayTicks * (1.0 - Math.min(1.0, reduction))));
@@ -520,29 +518,12 @@ public final class CombatMath {
         return Math.min(regen, maxHP * HP_REGEN_MAX_PERCENT);
     }
 
-    @Deprecated
-    public static double computeMaxMana(int INT, int level, String jobId) {
-        return computeMaxSP(INT, level, jobId);
-    }
-
-    @Deprecated
-    public static double computeManaRegen(int INT, double maxMana) {
-        return computeSPRegen(INT, maxMana);
-    }
-
-    /**
-     * Replaces previous dual-system with canonical RO SP scaling.
-     * All classes use INT to scale their SP pool and regen.
-     */
     public static double computeMaxSP(int INT, int level, String jobId) {
         double jobMult = getJobSpMultiplier(jobId);
         double spBase = 100 + ((level - 1) * 3 * jobMult);
         return Math.floor(spBase * (1.0 + INT / 100.0));
     }
 
-    /**
-     * Canonical RO SP regen (INT based for all classes).
-     */
     public static double computeSPRegen(int INT, double maxSP) {
         double regen = maxSP * (MANA_REGEN_BASE_PERCENT + INT * INT_TO_MANA_REGEN);
         return Math.min(regen, maxSP * MANA_REGEN_MAX_PERCENT);
@@ -640,7 +621,7 @@ public final class CombatMath {
      * Returns a normalized target level when a safe source exists.
      *
      * <p>For mobs, this prefers the shared read surface. Callers that need a vanilla estimate
-     * should handle their own default path.</p>
+     * should handle their own neutral estimate path.</p>
      */
     public static OptionalInt tryGetTargetLevel(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player p) {
@@ -661,7 +642,7 @@ public final class CombatMath {
 
     /**
      * Returns a normalized final HIT value for resolved mob profiles when that source exposes it
-     * directly. Callers should keep their existing formula-based default path when this is empty.
+     * directly. Callers should keep their existing formula-based estimate when this is empty.
      */
     public static OptionalInt tryGetResolvedMobHit(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player) {
@@ -679,7 +660,7 @@ public final class CombatMath {
 
     /**
      * Returns a normalized final FLEE value for resolved mob profiles when that source exposes it
-     * directly. Callers should keep their existing formula-based default path when this is empty.
+     * directly. Callers should keep their existing formula-based estimate when this is empty.
      */
     public static OptionalInt tryGetResolvedMobFlee(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player) {
@@ -713,7 +694,7 @@ public final class CombatMath {
     }
 
     /**
-     * Returns the final manual-runtime ASPD in RO scale when that source exposes it directly.
+     * Returns the final resolved ASPD in RO scale when that source exposes it directly.
      */
     public static OptionalInt tryGetResolvedMobAspd(net.minecraft.world.entity.LivingEntity entity) {
         if (entity instanceof net.minecraft.world.entity.player.Player) {
@@ -730,7 +711,7 @@ public final class CombatMath {
     }
 
     /**
-     * Converts manual-runtime ASPD into a melee attack interval in ticks for vanilla mob AI.
+     * Converts resolved mob ASPD into a melee attack interval in ticks for vanilla mob AI.
      */
     public static OptionalInt tryGetResolvedMobAttackIntervalTicks(net.minecraft.world.entity.LivingEntity entity) {
         OptionalInt aspd = tryGetResolvedMobAspd(entity);

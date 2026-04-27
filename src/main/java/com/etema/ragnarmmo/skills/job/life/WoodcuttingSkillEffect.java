@@ -11,6 +11,6 @@ public class WoodcuttingSkillEffect implements ISkillEffect {
 
     @Override
     public ResourceLocation getSkillId() {
-        return new ResourceLocation("ragnarmmo", "woodcutting");
+        return ResourceLocation.fromNamespaceAndPath("ragnarmmo", "woodcutting");
     }
 }

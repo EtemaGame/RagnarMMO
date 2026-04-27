@@ -32,9 +32,16 @@ public class RagnarStatsIntegration implements EntityStatResolver {
         return p.getCapability(PlayerStatsProvider.CAP)
                 .map(IPlayerStats::getJobId)
                 .map(jobId -> {
-                    // limpia namespace tipo "ragnarmmo:novice"
-                    if (jobId.contains(":")) jobId = jobId.split(":")[1];
-                    // capitaliza
+                    if (jobId == null || jobId.isBlank()) {
+                        return "";
+                    }
+                    int namespaceSeparator = jobId.indexOf(':');
+                    if (namespaceSeparator >= 0 && namespaceSeparator < jobId.length() - 1) {
+                        jobId = jobId.substring(namespaceSeparator + 1);
+                    }
+                    if (jobId.isBlank()) {
+                        return "";
+                    }
                     return jobId.substring(0, 1).toUpperCase() + jobId.substring(1).toLowerCase();
                 })
                 .orElse("");

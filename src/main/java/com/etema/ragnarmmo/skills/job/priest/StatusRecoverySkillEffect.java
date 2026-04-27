@@ -10,7 +10,7 @@ import java.util.List;
 
 public class StatusRecoverySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:status_recovery");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:status_recovery");
 
     @Override
     public ResourceLocation getSkillId() {

@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class ShockwaveTrapSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "shockwave_trap");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "shockwave_trap");
     private final HunterTrapManager.TrapDefinition definition;
 
     public ShockwaveTrapSkillEffect() {

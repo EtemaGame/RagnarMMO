@@ -17,7 +17,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public class ThunderStormSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "thunder_storm");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "thunder_storm");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

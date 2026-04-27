@@ -3,6 +3,7 @@ package com.etema.ragnarmmo.mobs.event;
 import com.etema.ragnarmmo.common.config.access.MobConfigAccess;
 import com.etema.ragnarmmo.common.util.DamageProcessingGuard;
 import com.etema.ragnarmmo.RagnarMMO;
+import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -35,12 +36,11 @@ public final class MobCombatHandler {
             return;
         Entity src = event.getSource().getEntity();
         if (src instanceof LivingEntity attacker) {
-            com.etema.ragnarmmo.common.api.mobs.combat.MobCombatViewResolver.resolve(attacker).ifPresent(view -> {
+            MobConsumerReadViewResolver.resolve(attacker).ifPresent(view -> {
                 com.etema.ragnarmmo.player.stats.compute.CombatMath.TargetStats attackerStats = com.etema.ragnarmmo.player.stats.compute.CombatMath.getTargetStats(attacker);
                 double mult = 1.0D
                         + attackerStats.str * MobConfigAccess.getDamagePerStr()
                         + attackerStats.dex * MobConfigAccess.getDamagePerDex();
-                mult *= view.damageMultiplier();
                 
                 float finalAmount = (float) Math.max(0.0D, event.getAmount() * mult);
 
@@ -58,10 +58,10 @@ public final class MobCombatHandler {
             });
         }
 
-        com.etema.ragnarmmo.common.api.mobs.combat.MobCombatViewResolver.resolve(target).ifPresent(view -> {
+        MobConsumerReadViewResolver.resolve(target).ifPresent(view -> {
             com.etema.ragnarmmo.player.stats.compute.CombatMath.TargetStats targetStats = com.etema.ragnarmmo.player.stats.compute.CombatMath.getTargetStats(target);
             double reduction = targetStats.vit * MobConfigAccess.getReductionPerVit();
-            double mult = Math.max(0.0D, 1.0D - reduction * view.defenseMultiplier());
+            double mult = Math.max(0.0D, 1.0D - reduction);
             event.setAmount((float) Math.max(0.0D, event.getAmount() * mult));
         });
 
@@ -72,14 +72,14 @@ public final class MobCombatHandler {
     }
 
     private static boolean usesMobCombatScaling(LivingEntity entity) {
-        return com.etema.ragnarmmo.common.api.mobs.combat.MobCombatViewResolver.resolve(entity).isPresent();
+        return MobConsumerReadViewResolver.resolve(entity).isPresent();
     }
 
     private static boolean isMagicDamage(DamageSource source) {
         if (source.is(net.minecraft.tags.DamageTypeTags.WITCH_RESISTANT_TO)) {
             return true;
         }
-        if (source.typeHolder().is(new net.minecraft.resources.ResourceLocation("ragnarmmo", "is_magic"))) {
+        if (source.typeHolder().is(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("ragnarmmo", "is_magic"))) {
             return true;
         }
         String msgId = source.getMsgId();

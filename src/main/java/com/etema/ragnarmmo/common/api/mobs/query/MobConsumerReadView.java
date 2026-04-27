@@ -20,7 +20,7 @@ public record MobConsumerReadView(
         String race,
         String element,
         String size,
-        boolean isBossLikeForCompatibility,
+        boolean bossLike,
         boolean hasNewRuntimeProfile,
         @Nullable MobConsumerInspectionStatsView inspectionStats) {
 

@@ -5,6 +5,7 @@ import com.etema.ragnarmmo.player.stats.network.StatsNetwork;
 import com.etema.ragnarmmo.player.party.net.PartyNetwork;
 import com.etema.ragnarmmo.mobs.network.MobNetwork;
 import com.etema.ragnarmmo.lifeskills.LifeSkillsNetwork;
+import com.etema.ragnarmmo.skills.net.SkillsNetwork;
 import com.etema.ragnarmmo.items.network.RoItemsNetwork;
 import com.etema.ragnarmmo.achievements.network.AchievementNetwork;
 import com.etema.ragnarmmo.common.net.effects.SkillEffectsNetwork;
@@ -28,11 +29,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * Registration order is preserved to maintain stable packet IDs.
  */
-@SuppressWarnings("removal") // ResourceLocation constructor deprecated in 1.20.4+, valid for 1.20.1
 public final class Network {
         private static final String PROTOCOL = "2";
         private static final SimpleChannel CH = NetworkRegistry.ChannelBuilder
-                        .named(new ResourceLocation(RagnarMMO.MODID, "main"))
+                        .named(ResourceLocation.fromNamespaceAndPath(RagnarMMO.MODID, "main"))
                         .networkProtocolVersion(() -> PROTOCOL)
                         .clientAcceptedVersions(PROTOCOL::equals)
                         .serverAcceptedVersions(PROTOCOL::equals)
@@ -51,6 +51,10 @@ public final class Network {
 
         public static void registerStatsPackets() {
                 StatsNetwork.register(CH, NEXT_ID);
+        }
+
+        public static void registerSkillPackets() {
+                SkillsNetwork.register(CH, NEXT_ID);
         }
 
         public static void registerPartyPackets() {

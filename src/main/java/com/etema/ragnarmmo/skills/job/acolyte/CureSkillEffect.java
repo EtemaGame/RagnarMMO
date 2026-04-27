@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class CureSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "cure");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "cure");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

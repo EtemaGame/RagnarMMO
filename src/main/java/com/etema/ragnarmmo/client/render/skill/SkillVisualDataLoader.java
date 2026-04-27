@@ -135,20 +135,20 @@ public final class SkillVisualDataLoader extends SimpleJsonResourceReloadListene
         return value != null && !value.isBlank() ? ResourceLocation.tryParse(value) : null;
     }
 
-    private String getStringOrDefault(JsonObject json, String key, String fallback) {
-        return json.has(key) && json.get(key).isJsonPrimitive() ? json.get(key).getAsString() : fallback;
+    private String getStringOrDefault(JsonObject json, String key, String defaultValue) {
+        return json.has(key) && json.get(key).isJsonPrimitive() ? json.get(key).getAsString() : defaultValue;
     }
 
-    private int getIntOrDefault(JsonObject json, String key, int fallback) {
-        return json.has(key) && json.get(key).isJsonPrimitive() ? json.get(key).getAsInt() : fallback;
+    private int getIntOrDefault(JsonObject json, String key, int defaultValue) {
+        return json.has(key) && json.get(key).isJsonPrimitive() ? json.get(key).getAsInt() : defaultValue;
     }
 
-    private double getDoubleOrDefault(JsonObject json, String key, double fallback) {
-        return json.has(key) && json.get(key).isJsonPrimitive() ? json.get(key).getAsDouble() : fallback;
+    private double getDoubleOrDefault(JsonObject json, String key, double defaultValue) {
+        return json.has(key) && json.get(key).isJsonPrimitive() ? json.get(key).getAsDouble() : defaultValue;
     }
 
-    private boolean getBooleanOrDefault(JsonObject json, String key, boolean fallback) {
-        return json.has(key) && json.get(key).isJsonPrimitive() ? json.get(key).getAsBoolean() : fallback;
+    private boolean getBooleanOrDefault(JsonObject json, String key, boolean defaultValue) {
+        return json.has(key) && json.get(key).isJsonPrimitive() ? json.get(key).getAsBoolean() : defaultValue;
     }
 
     @Mod.EventBusSubscriber(modid = RagnarMMO.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)

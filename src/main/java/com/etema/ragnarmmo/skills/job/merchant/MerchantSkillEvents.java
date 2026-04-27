@@ -43,10 +43,10 @@ import java.util.UUID;
 public class MerchantSkillEvents {
 
     // ── Skill ResourceLocations ──────────────────────────────────────────────
-    private static final ResourceLocation DISCOUNT   = new ResourceLocation("ragnarmmo", "discount");
-    private static final ResourceLocation OVERCHARGE = new ResourceLocation("ragnarmmo", "overcharge");
-    private static final ResourceLocation ENLARGE_WEIGHT_LIMIT = new ResourceLocation("ragnarmmo", "enlarge_weight_limit");
-    private static final ResourceLocation PUSHCART = new ResourceLocation("ragnarmmo", "pushcart");
+    private static final ResourceLocation DISCOUNT = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "discount");
+    private static final ResourceLocation OVERCHARGE = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "overcharge");
+    private static final ResourceLocation ENLARGE_WEIGHT_LIMIT = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "enlarge_weight_limit");
+    private static final ResourceLocation PUSHCART = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "pushcart");
 
     // ── Encumbrance ──────────────────────────────────────────────────────────
     private static final UUID ENCUMBRANCE_SPEED_UUID =
@@ -244,8 +244,8 @@ public class MerchantSkillEvents {
         if (item instanceof TieredItem tiered) return getWeightForTier(tiered);
         if (item instanceof ArmorItem armor)   return getWeightForArmor(armor);
         return stack.getMaxStackSize() > 1
-                ? WeightConstants.WEIGHT_FALLBACK_STACKABLE
-                : WeightConstants.WEIGHT_FALLBACK_UNSTACKABLE;
+                ? WeightConstants.WEIGHT_DEFAULT_STACKABLE
+                : WeightConstants.WEIGHT_DEFAULT_UNSTACKABLE;
     }
 
     private static double getWeightForTier(TieredItem tiered) {
@@ -256,11 +256,11 @@ public class MerchantSkillEvents {
         if (tier == Tiers.IRON)      return WeightConstants.WEIGHT_VAL_TOOL_IRON;
         if (tier == Tiers.DIAMOND)   return WeightConstants.WEIGHT_VAL_TOOL_DIAMOND;
         if (tier == Tiers.NETHERITE) return WeightConstants.WEIGHT_VAL_TOOL_NETHERITE;
-        int ml = tier.getLevel();
-        if (ml <= 0) return WeightConstants.WEIGHT_VAL_TOOL_WOOD;
-        if (ml == 1) return WeightConstants.WEIGHT_VAL_TOOL_STONE;
-        if (ml == 2) return WeightConstants.WEIGHT_VAL_TOOL_IRON;
-        if (ml == 3) return WeightConstants.WEIGHT_VAL_TOOL_DIAMOND;
+        int uses = tier.getUses();
+        if (uses <= Tiers.WOOD.getUses()) return WeightConstants.WEIGHT_VAL_TOOL_WOOD;
+        if (uses <= Tiers.STONE.getUses()) return WeightConstants.WEIGHT_VAL_TOOL_STONE;
+        if (uses <= Tiers.IRON.getUses()) return WeightConstants.WEIGHT_VAL_TOOL_IRON;
+        if (uses <= Tiers.DIAMOND.getUses()) return WeightConstants.WEIGHT_VAL_TOOL_DIAMOND;
         return WeightConstants.WEIGHT_VAL_TOOL_NETHERITE;
     }
 

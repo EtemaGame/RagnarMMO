@@ -26,7 +26,7 @@ import net.minecraft.world.phys.AABB;
  */
 public class JupitelThunderSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "jupitel_thunder");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "jupitel_thunder");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

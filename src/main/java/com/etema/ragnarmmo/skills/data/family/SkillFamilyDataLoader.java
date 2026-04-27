@@ -62,8 +62,8 @@ public class SkillFamilyDataLoader extends SimpleJsonResourceReloadListener {
     }
 
     private SkillFamily parseFamily(ResourceLocation id, JsonObject json) {
-        // Full ID with namespace
-        ResourceLocation fullId = new ResourceLocation(json.has("id") ? parseId(json.get("id").getAsString()).getNamespace() : id.getNamespace(), json.has("id") ? parseId(json.get("id").getAsString()).getPath() : id.getPath());
+        ResourceLocation parsedId = json.has("id") ? parseId(json.get("id").getAsString()) : id;
+        ResourceLocation fullId = ResourceLocation.fromNamespaceAndPath(parsedId.getNamespace(), parsedId.getPath());
 
         SkillFamily.Builder builder = SkillFamily.builder(fullId);
 
@@ -126,9 +126,9 @@ public class SkillFamilyDataLoader extends SimpleJsonResourceReloadListener {
     private ResourceLocation parseId(String id) {
         if (id.contains(":")) {
             String[] parts = id.split(":", 2);
-            return new ResourceLocation(parts[0], parts[1]);
+            return ResourceLocation.fromNamespaceAndPath(parts[0], parts[1]);
         }
-        return new ResourceLocation("ragnarmmo", id);
+        return ResourceLocation.fromNamespaceAndPath("ragnarmmo", id);
     }
 
     /**

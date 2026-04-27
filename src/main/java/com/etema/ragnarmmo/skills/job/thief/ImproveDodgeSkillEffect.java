@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class ImproveDodgeSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "improve_dodge");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "improve_dodge");
 
     @Override
     public ResourceLocation getSkillId() {

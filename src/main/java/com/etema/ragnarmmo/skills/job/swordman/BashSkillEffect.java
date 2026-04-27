@@ -22,8 +22,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class BashSkillEffect extends InstantTargetSkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "bash");
-    private static final ResourceLocation FATAL_BLOW = new ResourceLocation("ragnarmmo", "fatal_blow");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "bash");
+    private static final ResourceLocation FATAL_BLOW = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "fatal_blow");
 
     public BashSkillEffect() {
         super(ID);

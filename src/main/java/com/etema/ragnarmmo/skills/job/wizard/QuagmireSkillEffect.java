@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class QuagmireSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "quagmire");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "quagmire");
 
     @Override
     public ResourceLocation getSkillId() {

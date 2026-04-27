@@ -28,5 +28,5 @@
         "grid_x": 7,
         "grid_y": 3
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.wizard.QuagmireSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.wizard.QuagmireSkillEffect"
 }

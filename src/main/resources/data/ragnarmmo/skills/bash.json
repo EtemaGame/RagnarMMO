@@ -39,5 +39,5 @@
         "9": { "damage_percent": 370, "accuracy_bonus": 45, "sp_cost": 15, "stun_chance_percent": 20, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
         "10": { "damage_percent": 400, "accuracy_bonus": 50, "sp_cost": 15, "stun_chance_percent": 25, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.swordman.BashSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.swordman.BashSkillEffect"
 }

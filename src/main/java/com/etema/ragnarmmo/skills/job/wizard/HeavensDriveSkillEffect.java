@@ -32,7 +32,7 @@ import java.util.Random;
  */
 public class HeavensDriveSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "heavens_drive");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "heavens_drive");
     private static final Random RANDOM = new Random();
 
     @Override

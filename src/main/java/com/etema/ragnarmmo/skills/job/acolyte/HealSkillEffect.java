@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class HealSkillEffect extends InstantTargetSkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "heal");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "heal");
 
     public HealSkillEffect() {
         super(ID);

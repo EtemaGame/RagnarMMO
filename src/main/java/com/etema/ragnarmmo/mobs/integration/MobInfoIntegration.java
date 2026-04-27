@@ -13,13 +13,12 @@ import java.util.OptionalInt;
 public final class MobInfoIntegration {
 
     private MobInfoIntegration() {
-        // Utility class
     }
 
     @Nonnull
     public static OptionalInt getMobLevel(@Nullable LivingEntity entity) {
-        return getCompatibilityMobInfo(entity)
-                .map(CompatibilityMobInfo::level)
+        return getMobInfo(entity)
+                .map(MobInfo::level)
                 .filter(level -> level > 0)
                 .stream()
                 .mapToInt(Integer::intValue)
@@ -40,20 +39,7 @@ public final class MobInfoIntegration {
 
     @Nonnull
     public static Optional<MobRank> getMobRank(@Nullable LivingEntity entity) {
-        return getCompatibilityMobInfo(entity)
-                .map(CompatibilityMobInfo::rank);
-    }
-
-    @Nonnull
-    public static Optional<CompatibilityMobInfo> getCompatibilityMobInfo(@Nullable LivingEntity entity) {
-        if (entity == null) {
-            return Optional.empty();
-        }
-
-        return MobConsumerReadViewResolver.resolve(entity)
-                .map(readView -> new CompatibilityMobInfo(
-                        readView.level(),
-                        readView.rank()));
+        return getMobInfo(entity).map(MobInfo::rank);
     }
 
     public static boolean hasMobProfile(@Nullable LivingEntity entity) {
@@ -70,10 +56,6 @@ public final class MobInfoIntegration {
         }
     }
 
-    public record CompatibilityMobInfo(
-            int level,
-            MobRank rank) {
-    }
 }
 
 

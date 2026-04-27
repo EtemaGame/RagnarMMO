@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class SafetyWallSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "safety_wall");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "safety_wall");
     public static final String SW_HITS_TAG  = "ragnar_safetywall_hits";
     public static final String SW_UNTIL_TAG = "ragnar_safetywall_until";
 

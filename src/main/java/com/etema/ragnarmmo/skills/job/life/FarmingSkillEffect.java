@@ -13,7 +13,7 @@ public class FarmingSkillEffect implements ISkillEffect {
 
     @Override
     public ResourceLocation getSkillId() {
-        return new ResourceLocation("ragnarmmo", "farming");
+        return ResourceLocation.fromNamespaceAndPath("ragnarmmo", "farming");
     }
 
     /**

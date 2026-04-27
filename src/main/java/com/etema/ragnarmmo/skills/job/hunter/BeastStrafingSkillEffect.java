@@ -26,7 +26,7 @@ import java.util.Set;
  */
 public class BeastStrafingSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "beast_strafing");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "beast_strafing");
 
     private static final java.util.Map<java.util.UUID, Long> STRAFING_STANCE = new java.util.concurrent.ConcurrentHashMap<>();
 

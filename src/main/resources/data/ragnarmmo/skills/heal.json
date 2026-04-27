@@ -39,5 +39,5 @@
         "9": { "sp_cost": 37, "heal_base": 76, "undead_damage_ratio": 0.5, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
         "10": { "sp_cost": 40, "heal_base": 84, "undead_damage_ratio": 0.5, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.HealSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.acolyte.HealSkillEffect"
 }

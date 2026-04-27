@@ -11,7 +11,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public final class RoRefineService {
-    private static final ResourceLocation RESEARCH_ORIDECON = new ResourceLocation("ragnarmmo", "research_oridecon");
+    private static final ResourceLocation RESEARCH_ORIDECON = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "research_oridecon");
 
     private RoRefineService() {
     }

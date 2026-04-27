@@ -18,7 +18,7 @@ import java.util.List;
 
 public class FireBallSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "fire_ball");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "fire_ball");
 
     @Override
     public ResourceLocation getSkillId() {

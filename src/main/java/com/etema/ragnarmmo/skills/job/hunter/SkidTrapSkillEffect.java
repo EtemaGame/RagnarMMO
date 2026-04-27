@@ -19,7 +19,7 @@ import net.minecraft.world.effect.MobEffects;
  */
 public class SkidTrapSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "skid_trap");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "skid_trap");
     private final HunterTrapManager.TrapDefinition definition;
 
     public SkidTrapSkillEffect() {

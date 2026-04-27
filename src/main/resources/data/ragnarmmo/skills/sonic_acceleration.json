@@ -16,5 +16,5 @@
         "grid_x": 5,
         "grid_y": 2
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.assassin.SonicAccelerationSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.assassin.SonicAccelerationSkillEffect"
 }

@@ -138,7 +138,7 @@ public final class RangedWeaponStatsHelper {
 
         RagnarCoreAPI.get(player).ifPresent(stats -> {
             ResolvedRangedWeaponStats resolved = resolvedOpt.get();
-            int powerLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, weapon);
+            int powerLevel = weapon.getEnchantmentLevel(Enchantments.POWER_ARROWS);
             double bonusAtk = powerLevel > 0 ? (powerLevel * 0.5D + 0.5D) * 10.0D : 0.0D;
 
             EquipmentStatSnapshot baseSnapshot = EquipmentStatSnapshot.capture(player);

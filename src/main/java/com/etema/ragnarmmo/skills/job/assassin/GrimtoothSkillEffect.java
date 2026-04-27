@@ -14,7 +14,7 @@ import java.util.List;
 
 public class GrimtoothSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "grimtooth");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "grimtooth");
 
     @Override
     public ResourceLocation getSkillId() {

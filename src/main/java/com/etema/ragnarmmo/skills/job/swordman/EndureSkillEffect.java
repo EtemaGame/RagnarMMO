@@ -26,7 +26,7 @@ import net.minecraft.world.entity.player.Player;
  */
 public class EndureSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "endure");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "endure");
     public static final String ENDURE_TAG = "ragnar_endure_until";
     public static final String ENDURE_HITS_TAG = "ragnar_endure_hits";
 

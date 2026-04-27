@@ -19,7 +19,7 @@ import java.util.List;
 
 public class RuwachSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "ruwach");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "ruwach");
 
     @Override
     public ResourceLocation getSkillId() {

@@ -4,9 +4,9 @@ import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import com.etema.ragnarmmo.mobs.capability.MobProfileProvider;
 import com.etema.ragnarmmo.mobs.capability.MobProfileState;
 import com.etema.ragnarmmo.mobs.profile.MobProfile;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -33,8 +33,8 @@ public final class MobConsumerReadViewResolver {
     private static MobConsumerReadView fromCanonicalProfile(
             LivingEntity entity,
             MobProfile profile) {
-        ResourceLocation entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-        boolean bossLikeForCompatibility = profile.rank() == MobRank.MINI_BOSS
+        ResourceLocation entityTypeId = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        boolean bossLike = profile.rank() == MobRank.MINI_BOSS
                 || profile.rank() == MobRank.BOSS;
 
         return new MobConsumerReadView(
@@ -45,7 +45,7 @@ public final class MobConsumerReadViewResolver {
                 profile.race(),
                 profile.element(),
                 profile.size(),
-                bossLikeForCompatibility,
+                bossLike,
                 true,
                 new MobConsumerInspectionStatsView(
                         profile.maxHp(),

@@ -16,7 +16,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public class IdentifySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "identify");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "identify");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

@@ -28,7 +28,7 @@ public class ClientCardTooltip implements ClientTooltipComponent {
 
         // This expects a texture at
         // assets/ragnarmmo/textures/gui/cards/<namespace>/<mobName>.png
-        this.mobTexture = new ResourceLocation("ragnarmmo", "textures/gui/cards/" + namespace + "/" + path + ".png");
+        this.mobTexture = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "textures/gui/cards/" + namespace + "/" + path + ".png");
 
         // If translation key is empty, don't show desc
         this.descriptionComponent = data.descriptionKey() != null && !data.descriptionKey().isEmpty()

@@ -16,7 +16,7 @@ import java.util.List;
 
 public class VenomDustSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:venom_dust");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:venom_dust");
 
     @Override
     public ResourceLocation getSkillId() {

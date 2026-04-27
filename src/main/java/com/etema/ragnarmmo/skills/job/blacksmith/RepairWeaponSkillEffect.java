@@ -20,7 +20,7 @@ import net.minecraft.world.item.Items;
  */
 public class RepairWeaponSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "repair_weapon");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "repair_weapon");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

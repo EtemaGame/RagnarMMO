@@ -23,7 +23,7 @@ import net.minecraft.world.entity.LivingEntity;
  */
 public class DecreaseAgiSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "decrease_agi");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "decrease_agi");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

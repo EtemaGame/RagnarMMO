@@ -69,7 +69,6 @@ public class AbstractMagicProjectile extends Projectile {
     }
 
     public void setSecondaryParticle(net.minecraft.core.particles.SimpleParticleType particle) {
-        // Placeholder or logic for secondary particles
     }
 
     public void shoot(Vec3 dir) {
@@ -204,7 +203,6 @@ public class AbstractMagicProjectile extends Projectile {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
-    // Compat getters
     public float getDamage() { return damage; }
     public ResourceLocation getSkillId() {
         if (this instanceof FireBoltProjectile) {

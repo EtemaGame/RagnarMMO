@@ -15,7 +15,7 @@ import java.util.List;
 
 public class DarkIllusionSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:dark_illusion");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:dark_illusion");
 
     @Override
     public ResourceLocation getSkillId() {

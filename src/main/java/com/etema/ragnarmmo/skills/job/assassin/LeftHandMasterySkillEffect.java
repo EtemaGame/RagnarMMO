@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public class LeftHandMasterySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "left_hand_mastery");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "left_hand_mastery");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

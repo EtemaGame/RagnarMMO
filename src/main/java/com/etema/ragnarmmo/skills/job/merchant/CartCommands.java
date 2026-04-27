@@ -17,7 +17,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.items.ItemStackHandler;
 
 public class CartCommands {
-    private static final ResourceLocation PUSHCART = new ResourceLocation("ragnarmmo", "pushcart");
+    private static final ResourceLocation PUSHCART = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "pushcart");
 
     public static LiteralArgumentBuilder<CommandSourceStack> createNode() {
         return Commands.literal("cart")

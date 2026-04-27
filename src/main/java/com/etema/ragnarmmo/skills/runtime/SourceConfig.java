@@ -52,7 +52,7 @@ public class SourceConfig extends SimpleJsonResourceReloadListener {
             json.entrySet().forEach(entry -> {
                 String key = entry.getKey();
                 boolean isTag = key.startsWith("#");
-                ResourceLocation targetId = new ResourceLocation(isTag ? key.substring(1) : key);
+                ResourceLocation targetId = ResourceLocation.parse(isTag ? key.substring(1) : key);
                 JsonObject skills = entry.getValue().getAsJsonObject();
 
                 Map<String, Integer> skillXp = new HashMap<>();

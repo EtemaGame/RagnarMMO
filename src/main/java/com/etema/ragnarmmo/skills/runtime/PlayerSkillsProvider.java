@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.skills.runtime;
 
+import com.etema.ragnarmmo.RagnarMMO;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -24,13 +25,12 @@ import net.minecraftforge.fml.common.Mod;
  * Capability provider for player skills.
  * Persists skill levels and XP across sessions.
  */
-@Mod.EventBusSubscriber(modid = "ragnarmmo")
+@Mod.EventBusSubscriber(modid = RagnarMMO.MODID)
 public class PlayerSkillsProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
 
     public static final Capability<SkillManager> CAP = CapabilityManager.get(new CapabilityToken<>() {
     });
-    @SuppressWarnings("removal") // ResourceLocation constructor deprecated in 1.20.4+, valid for 1.20.1
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "player_skills");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RagnarMMO.MODID, "player_skills");
 
     private final SkillManager skillManager = new SkillManager();
     private final LazyOptional<SkillManager> optional = LazyOptional.of(() -> skillManager);
@@ -56,8 +56,6 @@ public class PlayerSkillsProvider implements ICapabilityProvider, INBTSerializab
 
     @SubscribeEvent
     public static void onClone(PlayerEvent.Clone event) {
-        // FIX CRÍTICO: Al morir, las capabilities del original pueden estar invalidadas.
-        // Debemos revivirlas temporalmente para copiar los datos.
         if (event.isWasDeath()) {
             event.getOriginal().reviveCaps();
         }
@@ -67,7 +65,6 @@ public class PlayerSkillsProvider implements ICapabilityProvider, INBTSerializab
                         newCap.deserializeNBT(oldCap.serializeNBT());
                     }));
         } finally {
-            // Invalidar de nuevo las caps del original si fue muerte
             if (event.isWasDeath()) {
                 event.getOriginal().invalidateCaps();
             }

@@ -15,7 +15,7 @@ import net.minecraft.world.phys.AABB;
 
 public class HidingSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "hiding");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "hiding");
 
     @Override
     public ResourceLocation getSkillId() {

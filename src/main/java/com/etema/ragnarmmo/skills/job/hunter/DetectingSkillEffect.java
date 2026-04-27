@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class DetectingSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "detecting");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "detecting");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

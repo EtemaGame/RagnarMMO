@@ -40,7 +40,8 @@ public record SkillVisuals(
         private Optional<BlockState> blockState = Optional.empty();
         private int animationFPS = 20;
         private boolean billboard = true;
-        private RenderType renderType = RenderType.entityCutoutNoCull(new ResourceLocation("minecraft", "missingno")); // Placeholder
+        private RenderType renderType = RenderType.entityCutoutNoCull(
+                ResourceLocation.fromNamespaceAndPath("minecraft", "missingno"));
 
         public Builder(ResourceLocation texture) {
             this.texture = texture;

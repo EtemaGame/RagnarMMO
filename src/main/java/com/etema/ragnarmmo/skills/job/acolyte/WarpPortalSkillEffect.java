@@ -16,7 +16,7 @@ import net.minecraft.sounds.SoundSource;
 
 public class WarpPortalSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "warp_portal");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "warp_portal");
 
     @Override
     public ResourceLocation getSkillId() {

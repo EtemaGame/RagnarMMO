@@ -28,7 +28,7 @@ import java.util.List;
 public class SignumCrucisSkillEffect implements ISkillEffect {
     private static final int PERSISTENT_DURATION = Integer.MAX_VALUE / 4;
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "signum_crucis");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "signum_crucis");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

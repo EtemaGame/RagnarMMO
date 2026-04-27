@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.skills.api;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
@@ -55,21 +56,13 @@ public interface ISkillEffect {
     default void onItemUseFinish(net.minecraftforge.event.entity.living.LivingEntityUseItemEvent.Finish event, ServerPlayer player, int level) {
     }
 
-    /**
-     * Execute specific active skill logic (triggered by packet or AI).
-     * 
-     * @param entity The entity casting the skill.
-     * @param level  The skill level.
-     */
-    default void execute(net.minecraft.world.entity.LivingEntity entity, int level) {
+    default void execute(ServerPlayer player, int level) {
     }
 
-    /**
-     * @deprecated Use {@link #execute(net.minecraft.world.entity.LivingEntity, int)} instead.
-     */
-    @Deprecated
-    default void execute(ServerPlayer player, int level) {
-        execute((net.minecraft.world.entity.LivingEntity) player, level);
+    default void execute(LivingEntity entity, int level) {
+        if (entity instanceof ServerPlayer player) {
+            execute(player, level);
+        }
     }
 
     /**

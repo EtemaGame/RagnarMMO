@@ -10,7 +10,7 @@ import net.minecraft.world.item.Items;
 
 public class PickStoneSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "pick_stone");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "pick_stone");
 
     @Override
     public ResourceLocation getSkillId() {

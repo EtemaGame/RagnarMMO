@@ -40,5 +40,5 @@
         "9": { "sp_cost": 35, "success_rate": 59, "aoe_radius": 6, "cast_time_ticks": 10, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
         "10": { "sp_cost": 35, "success_rate": 63, "aoe_radius": 6, "cast_time_ticks": 10, "cast_delay_ticks": 40, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.SignumCrucisSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.acolyte.SignumCrucisSkillEffect"
 }

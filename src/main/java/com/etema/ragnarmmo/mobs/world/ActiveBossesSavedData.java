@@ -279,7 +279,7 @@ public class ActiveBossesSavedData extends SavedData {
             BossSpawnMetadata.SpawnInfo spawnInfo = BossSpawnMetadata.read(entity, rank);
             return new BossEntry(
                     entity.getUUID(),
-                    BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString(),
+                    net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString(),
                     entity.getName().getString(),
                     level.dimension().location().toString(),
                     pos.getX(),

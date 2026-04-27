@@ -21,7 +21,7 @@ import net.minecraftforge.network.NetworkHooks;
 import java.util.function.Consumer;
 
 public class MagicProjectileEntity extends ThrowableProjectile implements IVisualSkillEntity {
-    private ResourceLocation skillId = new ResourceLocation("ragnarmmo", "magic_projectile");
+    private ResourceLocation skillId = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "magic_projectile");
 
     public void setSkillId(ResourceLocation skillId) {
         this.skillId = skillId;

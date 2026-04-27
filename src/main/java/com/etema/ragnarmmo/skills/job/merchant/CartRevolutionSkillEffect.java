@@ -18,7 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 
 public class CartRevolutionSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "cart_revolution");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "cart_revolution");
 
     @Override
     public ResourceLocation getSkillId() {
@@ -30,13 +30,6 @@ public class CartRevolutionSkillEffect implements ISkillEffect {
         if (level <= 0)
             return;
 
-        // Cart Revolution: Deals heavy physical damage in a 3x3 area around the target
-        // and knocks them back.
-        // Requires a Pushcart equipped. (We bypass the strict requirement here for
-        // placeholder).
-        // Damage increases with Cart Weight.
-
-        // Cart Revolution: 150% ATK + Splash + Knockback
         float damage = SkillDamageHelper.scaleByATK(player, 150.0f);
         double radius = 3.5;
 

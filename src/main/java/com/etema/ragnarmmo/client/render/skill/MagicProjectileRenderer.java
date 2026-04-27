@@ -23,7 +23,8 @@ import org.joml.Matrix4f;
 
 public class MagicProjectileRenderer extends EntityRenderer<MagicProjectileEntity> {
 
-    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation("ragnarmmo", "magic_projectile"), "main");
+    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(
+            ResourceLocation.fromNamespaceAndPath("ragnarmmo", "magic_projectile"), "main");
 
     // Current visuals are vanilla-first. Future custom textures can be restored by
     // swapping these paths or by using explicit data-driven asset declarations.
@@ -49,7 +50,7 @@ public class MagicProjectileRenderer extends EntityRenderer<MagicProjectileEntit
     }
 
     private static ResourceLocation vanillaBlockTexture(String name) {
-        return new ResourceLocation("minecraft", "textures/block/" + name + ".png");
+        return ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/" + name + ".png");
     }
 
     public static net.minecraft.client.model.geom.builders.LayerDefinition createBodyLayer() {
@@ -143,7 +144,7 @@ public class MagicProjectileRenderer extends EntityRenderer<MagicProjectileEntit
             poseStack.scale(layer.scaleX(), layer.scaleY(), layer.scaleZ());
             poseStack.translate(-0.5, -0.5, -0.5);
             Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, poseStack, bufferSource, light,
-                    OverlayTexture.NO_OVERLAY);
+                    OverlayTexture.NO_OVERLAY, net.minecraftforge.client.model.data.ModelData.EMPTY, null);
             poseStack.popPose();
         }
 
@@ -159,7 +160,7 @@ public class MagicProjectileRenderer extends EntityRenderer<MagicProjectileEntit
         poseStack.scale(scaleX, scaleY, scaleZ);
         poseStack.translate(-0.5, -0.5, -0.5);
         Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, poseStack, bufferSource, light,
-                OverlayTexture.NO_OVERLAY);
+                OverlayTexture.NO_OVERLAY, net.minecraftforge.client.model.data.ModelData.EMPTY, null);
         poseStack.popPose();
     }
 

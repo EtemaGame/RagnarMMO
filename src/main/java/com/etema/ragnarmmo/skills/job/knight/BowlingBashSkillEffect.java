@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class BowlingBashSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "bowling_bash");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "bowling_bash");
 
     @Override
     public ResourceLocation getSkillId() {

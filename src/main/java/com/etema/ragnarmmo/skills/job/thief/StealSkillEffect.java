@@ -16,7 +16,7 @@ import java.util.List;
 
 public class StealSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "steal");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "steal");
 
     @Override
     public ResourceLocation getSkillId() {

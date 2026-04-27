@@ -16,21 +16,12 @@ import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * RagnarMMO - Unified mod jar that bundles the Ragnar module suite:
- * - Core API & attributes
- * - Player stats & progression
- * - Mob stats / levels / combat
- * - Health bar rendering
- * - Skills + loot modifiers
- */
 @Mod(RagnarMMO.MODID)
 public class RagnarMMO {
     public static final String MODID = "ragnarmmo";
@@ -48,14 +39,12 @@ public class RagnarMMO {
         }
     }
 
-    @SuppressWarnings("removal") // FMLJavaModLoadingContext.get() deprecated in 1.20.4+, still valid for 1.20.1
+    @SuppressWarnings("removal")
     public RagnarMMO() {
         LOGGER.info("=== Initializing RagnarMMO v{} ===", VERSION);
 
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-        ModLoadingContext modCtx = ModLoadingContext.get();
 
-        // Modules (order matters where networking/registries are involved)
         CoreModule.init(modBus);
         CombatModule.init(modBus);
         StatsModule.init(modBus);
@@ -65,14 +54,10 @@ public class RagnarMMO {
         ItemsModule.init(modBus);
         com.etema.ragnarmmo.common.init.modules.EconomyModule.init(modBus);
 
-        // Client-only rendering is handled by its own @EventBusSubscriber(Dist.CLIENT)
-        // classes.
         BarModule.init();
 
-        // Unified Forge events
         MinecraftForge.EVENT_BUS.register(this);
 
-        // Creative Tabs
         com.etema.ragnarmmo.common.init.RagnarCreativeTabs.register(modBus);
 
         LOGGER.info("=== RagnarMMO initialized successfully ===");

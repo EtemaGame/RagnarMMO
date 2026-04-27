@@ -19,6 +19,7 @@ public final class BossSpawnService {
     private BossSpawnService() {
     }
 
+    @SuppressWarnings("deprecation")
     public static SpawnResult spawnControlledBoss(
             ServerLevel level,
             BlockPos pos,

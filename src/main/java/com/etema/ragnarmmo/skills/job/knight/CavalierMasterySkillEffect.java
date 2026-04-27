@@ -27,7 +27,7 @@ import java.util.Set;
  */
 public class CavalierMasterySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "cavalier_mastery");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "cavalier_mastery");
 
     @Override
     public ResourceLocation getSkillId() {

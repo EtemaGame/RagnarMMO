@@ -21,7 +21,7 @@ public class ExplorationSkillEffect implements ISkillEffect {
 
     @Override
     public ResourceLocation getSkillId() {
-        return new ResourceLocation("ragnarmmo", "exploration");
+        return ResourceLocation.fromNamespaceAndPath("ragnarmmo", "exploration");
     }
 
     @Override

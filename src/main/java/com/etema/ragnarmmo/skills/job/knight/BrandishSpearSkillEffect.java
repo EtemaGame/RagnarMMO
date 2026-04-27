@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class BrandishSpearSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "brandish_spear");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "brandish_spear");
 
     @Override
     public ResourceLocation getSkillId() {

@@ -20,7 +20,7 @@ import net.minecraft.world.effect.MobEffects;
  */
 public class OneHandQuickenSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "one_hand_quicken");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "one_hand_quicken");
 
     @Override
     public ResourceLocation getSkillId() {

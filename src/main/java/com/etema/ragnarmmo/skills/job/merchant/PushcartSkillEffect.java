@@ -11,7 +11,7 @@ import net.minecraft.sounds.SoundSource;
 
 public class PushcartSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "pushcart");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "pushcart");
 
     @Override
     public ResourceLocation getSkillId() {

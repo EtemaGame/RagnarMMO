@@ -39,5 +39,5 @@
         "9": { "sp_cost": 12, "damage_percent": 210, "status_chance": 0.46, "duration_ticks": 380, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
         "10": { "sp_cost": 12, "damage_percent": 230, "status_chance": 0.50, "duration_ticks": 400, "range": 3.5, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.thief.EnvenomSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.thief.EnvenomSkillEffect"
 }

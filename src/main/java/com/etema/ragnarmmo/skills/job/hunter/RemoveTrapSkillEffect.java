@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class RemoveTrapSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "remove_trap");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "remove_trap");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

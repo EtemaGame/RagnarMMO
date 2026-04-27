@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public class DiscountSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "discount");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "discount");
 
     @Override
     public ResourceLocation getSkillId() {

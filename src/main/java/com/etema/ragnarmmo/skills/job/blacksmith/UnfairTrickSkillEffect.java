@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public class UnfairTrickSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "unfair_trick");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "unfair_trick");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

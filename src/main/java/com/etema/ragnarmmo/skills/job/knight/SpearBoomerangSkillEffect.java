@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class SpearBoomerangSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "spear_boomerang");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "spear_boomerang");
 
     @Override
     public ResourceLocation getSkillId() {

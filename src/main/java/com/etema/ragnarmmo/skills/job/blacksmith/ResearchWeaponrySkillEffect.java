@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public class ResearchWeaponrySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "research_weaponry");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "research_weaponry");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

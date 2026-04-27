@@ -17,7 +17,7 @@ import net.minecraft.world.effect.MobEffectInstance;
  */
 public class SightSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "sight");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "sight");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

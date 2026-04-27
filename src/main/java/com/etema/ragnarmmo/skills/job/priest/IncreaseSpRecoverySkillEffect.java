@@ -6,7 +6,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 public class IncreaseSpRecoverySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:increase_sp_recovery_priest");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:increase_sp_recovery_priest");
 
     @Override
     public ResourceLocation getSkillId() {

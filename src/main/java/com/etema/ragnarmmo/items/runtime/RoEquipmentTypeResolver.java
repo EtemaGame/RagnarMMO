@@ -2,7 +2,6 @@ package com.etema.ragnarmmo.items.runtime;
 
 import com.etema.ragnarmmo.items.cards.CardEquipType;
 
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorItem;
@@ -15,6 +14,7 @@ import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.TridentItem;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public final class RoEquipmentTypeResolver {
 
@@ -49,7 +49,7 @@ public final class RoEquipmentTypeResolver {
             return CardEquipType.WEAPON;
         }
 
-        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+        ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
         String path = id != null ? id.getPath() : "";
         if (path.contains("shield") || path.contains("buckler") || path.contains("pavise")
                 || path.contains("bulwark") || path.contains("barrier") || path.contains("aegis")) {

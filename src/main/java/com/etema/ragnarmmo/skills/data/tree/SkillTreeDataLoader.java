@@ -154,10 +154,9 @@ public class SkillTreeDataLoader extends SimpleJsonResourceReloadListener {
 
     private ResourceLocation parseResourceLocation(String id) {
         if (id.contains(":")) {
-            return new ResourceLocation(id);
+            return ResourceLocation.parse(id);
         } else {
-            // Default to ragnarmmo namespace
-            return new ResourceLocation("ragnarmmo", id);
+            return ResourceLocation.fromNamespaceAndPath("ragnarmmo", id);
         }
     }
 

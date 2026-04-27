@@ -14,6 +14,7 @@ public final class StatsModule {
         // Config registration moved to CoreModule (unified RagnarConfigs)
 
         Network.registerStatsPackets();
+        Network.registerSkillPackets();
         Network.registerPartyPackets();
 
         RagnarCoreAPI.registerAccessor(player -> player.getCapability(PlayerStatsProvider.CAP).resolve());

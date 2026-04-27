@@ -22,6 +22,7 @@ public class PlayerStatsProvider
         implements ICapabilityProvider, net.minecraftforge.common.util.INBTSerializable<CompoundTag> {
     public static final Capability<IPlayerStats> CAP = CapabilityManager.get(new CapabilityToken<>() {
     });
+    private static final ResourceLocation PLAYER_STATS_ID = ResourceLocation.fromNamespaceAndPath(PlayerStatsModule.MOD_ID, "player_stats");
 
     private final PlayerStats impl;
     private final LazyOptional<IPlayerStats> opt;
@@ -32,13 +33,11 @@ public class PlayerStatsProvider
         this.opt = LazyOptional.of(() -> impl);
     }
 
-    @SuppressWarnings("removal") // ResourceLocation constructor deprecated in 1.20.4+, valid for 1.20.1
     @SubscribeEvent
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> evt) {
         if (evt.getObject() instanceof Player player) {
             RagnarDebugLog.playerData("ATTACH_CAP player={}", playerName(player));
-            evt.addCapability(new ResourceLocation(PlayerStatsModule.MOD_ID, "player_stats"),
-                    new PlayerStatsProvider(player));
+            evt.addCapability(PLAYER_STATS_ID, new PlayerStatsProvider(player));
         }
     }
 
@@ -66,7 +65,7 @@ public class PlayerStatsProvider
                         cur.getExp(),
                         cur.getJobExp());
             } else {
-                com.etema.ragnarmmo.RagnarMMO.LOGGER.error("Failed to clone PlayerStats: caps missing! (Old: {}, New: {})", 
+                com.etema.ragnarmmo.RagnarMMO.LOGGER.error("Failed to clone PlayerStats: caps missing! (Original: {}, Current: {})",
                     oldOpt.isPresent(), newOpt.isPresent());
             }
         } catch (Exception ex) {

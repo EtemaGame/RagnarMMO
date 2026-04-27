@@ -26,5 +26,5 @@
         "grid_x": 0,
         "grid_y": 0
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.novice.BasicSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.novice.BasicSkillEffect"
 }

@@ -22,28 +22,29 @@ import net.minecraftforge.common.MinecraftForge;
  */
 public final class StatComputer {
 
+    private static final String MOD_ID = "ragnarmmo";
+
     private StatComputer() {}
 
-    private static final ResourceLocation SWORD_MASTERY = new ResourceLocation("ragnarmmo", "sword_mastery");
-    private static final ResourceLocation DAGGER_MASTERY = new ResourceLocation("ragnarmmo", "dagger_mastery");
-    private static final ResourceLocation MACE_MASTERY = new ResourceLocation("ragnarmmo", "mace_mastery");
-    private static final ResourceLocation BOW_MASTERY = new ResourceLocation("ragnarmmo", "bow_mastery");
-    private static final ResourceLocation WEAPON_TRAINER = new ResourceLocation("ragnarmmo", "weapon_trainer");
-    private static final ResourceLocation FAITH = new ResourceLocation("ragnarmmo", "faith");
-    private static final ResourceLocation ARCANE_REGENERATION = new ResourceLocation("ragnarmmo", "arcane_regeneration");
-    private static final ResourceLocation ACCURACY_TRAINING = new ResourceLocation("ragnarmmo", "accuracy_training");
-    private static final ResourceLocation MANA_CONTROL = new ResourceLocation("ragnarmmo", "mana_control");
-    private static final ResourceLocation SPEAR_MASTERY = new ResourceLocation("ragnarmmo", "spear_mastery");
-    private static final ResourceLocation KATAR_MASTERY = new ResourceLocation("ragnarmmo", "katar_mastery");
-    private static final ResourceLocation RIGHTHAND_MASTERY = new ResourceLocation("ragnarmmo", "righthand_mastery");
-    private static final ResourceLocation LEFTHAND_MASTERY = new ResourceLocation("ragnarmmo", "lefthand_mastery");
-    private static final ResourceLocation SONIC_ACCELERATION = new ResourceLocation("ragnarmmo", "sonic_acceleration");
-    private static final ResourceLocation RESEARCH_WEAPONRY = new ResourceLocation("ragnarmmo", "research_weaponry");
-    private static final ResourceLocation CRITICAL_SHOT = new ResourceLocation("ragnarmmo", "critical_shot");
-    private static final ResourceLocation SKIN_TEMPERING = new ResourceLocation("ragnarmmo", "skin_tempering");
-    private static final ResourceLocation VULTURES_EYE = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "vultures_eye");
-    private static final ResourceLocation IMPROVE_DODGE =
-            ResourceLocation.fromNamespaceAndPath("ragnarmmo", "improve_dodge");
+    private static final ResourceLocation SWORD_MASTERY = skillId("sword_mastery");
+    private static final ResourceLocation DAGGER_MASTERY = skillId("dagger_mastery");
+    private static final ResourceLocation MACE_MASTERY = skillId("mace_mastery");
+    private static final ResourceLocation BOW_MASTERY = skillId("bow_mastery");
+    private static final ResourceLocation WEAPON_TRAINER = skillId("weapon_trainer");
+    private static final ResourceLocation FAITH = skillId("faith");
+    private static final ResourceLocation ARCANE_REGENERATION = skillId("arcane_regeneration");
+    private static final ResourceLocation ACCURACY_TRAINING = skillId("accuracy_training");
+    private static final ResourceLocation MANA_CONTROL = skillId("mana_control");
+    private static final ResourceLocation SPEAR_MASTERY = skillId("spear_mastery");
+    private static final ResourceLocation KATAR_MASTERY = skillId("katar_mastery");
+    private static final ResourceLocation RIGHTHAND_MASTERY = skillId("righthand_mastery");
+    private static final ResourceLocation LEFTHAND_MASTERY = skillId("lefthand_mastery");
+    private static final ResourceLocation SONIC_ACCELERATION = skillId("sonic_acceleration");
+    private static final ResourceLocation RESEARCH_WEAPONRY = skillId("research_weaponry");
+    private static final ResourceLocation CRITICAL_SHOT = skillId("critical_shot");
+    private static final ResourceLocation SKIN_TEMPERING = skillId("skin_tempering");
+    private static final ResourceLocation VULTURES_EYE = skillId("vultures_eye");
+    private static final ResourceLocation IMPROVE_DODGE = skillId("improve_dodge");
 
     private record SkillContext(
             int sword, int dagger, int mace, int bow, int weaponTrainer,
@@ -51,6 +52,10 @@ public final class StatComputer {
             int spear, int katar, int rightHand, int leftHand, int sonicAccel,
             int researchWeaponry, int skinTempering, int criticalShot, int vulturesEye, int improveDodge
     ) {}
+
+    private static ResourceLocation skillId(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+    }
 
     public static DerivedStats compute(Player player, IPlayerStats stats, EquipmentStatSnapshot snapshot) {
         EquipmentStatSnapshot resolvedSnapshot = snapshot != null ? snapshot : EquipmentStatSnapshot.capture(player);
@@ -187,7 +192,6 @@ public final class StatComputer {
         double spRegen = CombatMath.computeSPRegen(intel, maxSp) + (ctx.arcaneRegen * 0.1D);
         derived.spRegenPerSecond = spRegen;
         
-        // Mirror to Mana for backwards compatibility
         derived.maxMana = maxSp;
         derived.manaRegenPerSecond = spRegen;
     }

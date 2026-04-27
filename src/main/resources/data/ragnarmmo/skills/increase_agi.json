@@ -42,5 +42,5 @@
         "9": { "sp_cost": 42, "hp_cost": 15, "effect_amplifier": 10, "duration_ticks": 4400, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
         "10": { "sp_cost": 45, "hp_cost": 15, "effect_amplifier": 11, "duration_ticks": 4800, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.IncreaseAgiSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.acolyte.IncreaseAgiSkillEffect"
 }

@@ -16,7 +16,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 
 public class MonsterPropertySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "monster_property");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "monster_property");
 
     @Override
     public ResourceLocation getSkillId() {

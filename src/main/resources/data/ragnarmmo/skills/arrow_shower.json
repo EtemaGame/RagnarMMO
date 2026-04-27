@@ -41,5 +41,5 @@
         "9": { "sp_cost": 15, "damage_percent": 120, "aoe_radius": 3.0, "knockback_strength": 0.28, "range": 12, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
         "10": { "sp_cost": 15, "damage_percent": 125, "aoe_radius": 3.0, "knockback_strength": 0.30, "range": 12, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.archer.ArrowShowerSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.archer.ArrowShowerSkillEffect"
 }

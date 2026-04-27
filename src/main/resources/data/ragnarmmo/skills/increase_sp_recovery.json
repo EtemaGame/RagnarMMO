@@ -34,5 +34,5 @@
         "9": { "resource_recovery_flat": 27, "resource_recovery_max_ratio": 0.018, "interval_ticks": 200 },
         "10": { "resource_recovery_flat": 30, "resource_recovery_max_ratio": 0.020, "interval_ticks": 200 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.mage.IncreaseSpRecoverySkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.mage.IncreaseSpRecoverySkillEffect"
 }

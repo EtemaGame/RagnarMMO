@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public class SkinTemperingSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "skin_tempering");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "skin_tempering");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

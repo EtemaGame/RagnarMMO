@@ -81,7 +81,7 @@ public class RagnarBowWeaponItem extends BowItem implements RagnarRangedWeaponSt
     @Override
     public void releaseUsing(ItemStack pStack, Level pLevel, LivingEntity pEntityLiving, int pTimeLeft) {
         if (pEntityLiving instanceof Player player) {
-            boolean flag = player.getAbilities().instabuild || EnchantmentHelper.getItemEnchantmentLevel(Enchantments.INFINITY_ARROWS, pStack) > 0;
+            boolean flag = player.getAbilities().instabuild || pStack.getEnchantmentLevel(Enchantments.INFINITY_ARROWS) > 0;
             ItemStack itemstack = player.getProjectile(pStack);
 
             int i = this.getUseDuration(pStack) - pTimeLeft;
@@ -115,12 +115,12 @@ public class RagnarBowWeaponItem extends BowItem implements RagnarRangedWeaponSt
 
                         // Note: Power enchantment is handled inside common math but vanilla also modifies baseDamage.
                         // We will ignore vanilla's baseDamage modification in onHurt if snapshot is present.
-                        int punchLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, pStack);
+                        int punchLevel = pStack.getEnchantmentLevel(Enchantments.PUNCH_ARROWS);
                         if (punchLevel > 0) {
                             abstractarrow.setKnockback(punchLevel);
                         }
 
-                        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, pStack) > 0) {
+                        if (pStack.getEnchantmentLevel(Enchantments.FLAMING_ARROWS) > 0) {
                             abstractarrow.setSecondsOnFire(100);
                         }
 

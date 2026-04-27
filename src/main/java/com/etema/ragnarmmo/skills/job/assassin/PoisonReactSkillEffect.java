@@ -12,7 +12,7 @@ import net.minecraft.world.effect.MobEffects;
 
 public class PoisonReactSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:poison_react");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:poison_react");
 
     @Override
     public ResourceLocation getSkillId() {

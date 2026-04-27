@@ -23,7 +23,7 @@ import net.minecraft.world.phys.AABB;
  */
 public class PlayDeadSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "play_dead");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "play_dead");
 
     @Override
     public ResourceLocation getSkillId() {

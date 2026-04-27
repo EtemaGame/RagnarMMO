@@ -25,7 +25,7 @@ import java.util.List;
  * Online.
  */
 public class JobSelectionScreen extends Screen {
-    private static final ResourceLocation BASIC_SKILL = new ResourceLocation("ragnarmmo", "basic_skill");
+    private static final ResourceLocation BASIC_SKILL = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "basic_skill");
 
     // === LAYOUT CONSTANTS ===
     private static final int WINDOW_WIDTH = 480;

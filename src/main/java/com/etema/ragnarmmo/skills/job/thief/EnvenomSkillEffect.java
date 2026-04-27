@@ -18,7 +18,7 @@ import java.util.List;
 
 public class EnvenomSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "envenom");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "envenom");
 
     @Override
     public ResourceLocation getSkillId() {

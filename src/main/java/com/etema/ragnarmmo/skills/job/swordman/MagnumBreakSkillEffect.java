@@ -35,7 +35,7 @@ import java.util.Set;
  */
 public class MagnumBreakSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "magnum_break");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "magnum_break");
     public static final String FIRE_BUFF_TAG = "ragnar_magnum_fire_until";
 
     @Override

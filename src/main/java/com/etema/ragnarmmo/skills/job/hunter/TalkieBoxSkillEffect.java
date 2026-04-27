@@ -22,7 +22,7 @@ import net.minecraft.world.effect.MobEffects;
  */
 public class TalkieBoxSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "talkie_box");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "talkie_box");
     private final HunterTrapManager.TrapDefinition definition;
 
     public TalkieBoxSkillEffect() {

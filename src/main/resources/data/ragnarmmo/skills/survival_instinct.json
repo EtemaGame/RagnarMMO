@@ -26,5 +26,5 @@
         "grid_x": 3,
         "grid_y": 1
     },
-    "effect_class": "com.etema.ragnarmmo.system.skills.novice.SurvivalInstinctSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.novice.SurvivalInstinctSkillEffect"
 }

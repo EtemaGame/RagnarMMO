@@ -23,8 +23,7 @@ import net.minecraftforge.fml.common.Mod;
 public class LifeSkillCapability implements ICapabilityProvider, INBTSerializable<CompoundTag> {
 
     public static final Capability<LifeSkillManager> CAP = CapabilityManager.get(new CapabilityToken<>() {});
-    @SuppressWarnings("removal") // ResourceLocation constructor deprecated in 1.20.4+, valid for 1.20.1
-    private static final ResourceLocation ID = new ResourceLocation(RagnarMMO.MODID, "life_skills");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(RagnarMMO.MODID, "life_skills");
 
     private final LifeSkillManager manager = new LifeSkillManager();
     private final LazyOptional<LifeSkillManager> optional = LazyOptional.of(() -> manager);
@@ -53,7 +52,6 @@ public class LifeSkillCapability implements ICapabilityProvider, INBTSerializabl
 
     @SubscribeEvent
     public static void onClone(PlayerEvent.Clone event) {
-        // FIX: Revive caps before reading to prevent death reset bug
         if (event.isWasDeath()) {
             event.getOriginal().reviveCaps();
         }

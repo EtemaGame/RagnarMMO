@@ -222,14 +222,14 @@ public class CommonEvents {
                 processRangedDamage(e, snapshotTag, arrow.getOwner(), tgt);
                 return; // EXIT EARLY
             }
-            // Arrow + INVALID/Missing Snapshot -> Return IMMEDIATELY without marking (Safe vanilla handoff)
+            // Arrow + invalid or missing snapshot -> return immediately without custom handling.
             return;
         }
 
         if (!(e.getSource().getEntity() instanceof Player p))
             return;
 
-        // --- GENERIC MELEE FALLBACK ---
+        // --- GENERIC MELEE PATH ---
         if (DamageProcessingGuard.isProcessedPlayer(tgt)) return;
         RagnarCoreAPI.get(p).ifPresent(stats -> {
             var dmgCalc = new com.etema.ragnarmmo.combat.engine.RagnarDamageCalculator();
@@ -556,7 +556,7 @@ public class CommonEvents {
      */
     private static int applyLevelPenalty(int baseExp, ServerPlayer player, LivingEntity mob, int playerLevel) {
         int mobLevel = estimateMobLevel(mob);
-        boolean isBoss = MobUtils.isBossLikeForCompatibility(mob);
+        boolean isBoss = MobUtils.isBossLike(mob);
 
         // Boss-like monsters never get EXP penalty
         if (isBoss) {
@@ -713,7 +713,7 @@ public class CommonEvents {
         if (source.is(net.minecraft.tags.DamageTypeTags.WITCH_RESISTANT_TO)) {
             return true;
         }
-        if (source.typeHolder().is(new net.minecraft.resources.ResourceLocation("ragnarmmo", "is_magic"))) {
+        if (source.typeHolder().is(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("ragnarmmo", "is_magic"))) {
             return true;
         }
         // Minimal exact-match path only, no substring matching
@@ -731,7 +731,7 @@ public class CommonEvents {
             if (inst != null && inst.getAmplifier() >= 3) {
                 Entity observer = e.getLookingEntity();
                 if (observer instanceof LivingEntity le) {
-                    if (!MobUtils.isBossLikeForCompatibility(le)) {
+                    if (!MobUtils.isBossLike(le)) {
                         e.modifyVisibility(0.0);
                     }
                 } else {
@@ -774,7 +774,7 @@ public class CommonEvents {
                     p.hasEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN)) {
                 var inst = p.getEffect(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN);
                 if (inst != null && inst.getAmplifier() >= 3) {
-                    if (!MobUtils.isBossLikeForCompatibility(e.getEntity())) {
+                    if (!MobUtils.isBossLike(e.getEntity())) {
                         e.setCanceled(true);
                     }
                 }

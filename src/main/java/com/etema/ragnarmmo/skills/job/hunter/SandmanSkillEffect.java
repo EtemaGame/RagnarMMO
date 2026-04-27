@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class SandmanSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "sandman");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "sandman");
     private final HunterTrapManager.TrapDefinition definition;
 
     public SandmanSkillEffect() {

@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public class FalconryMasterySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "falconry_mastery");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "falconry_mastery");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

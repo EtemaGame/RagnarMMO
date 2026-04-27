@@ -19,7 +19,7 @@ public class SkillProgressManager {
     public static SkillProgress getProgress(Player player, ResourceLocation skillId) {
         if (player == null || skillId == null) {
             return new SkillProgress(
-                    skillId != null ? skillId : new ResourceLocation("ragnarmmo", "unknown"));
+                    skillId != null ? skillId : ResourceLocation.fromNamespaceAndPath("ragnarmmo", "unknown"));
         }
 
         return com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider.get(player).map(manager -> {

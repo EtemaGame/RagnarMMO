@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class TeleportationSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "teleportation");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "teleportation");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

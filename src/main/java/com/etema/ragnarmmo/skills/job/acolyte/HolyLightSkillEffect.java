@@ -15,7 +15,7 @@ import java.util.List;
 
 public class HolyLightSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "holy_light");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "holy_light");
 
     @Override
     public ResourceLocation getSkillId() {

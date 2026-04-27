@@ -34,5 +34,5 @@
         "9": { "flee_bonus": 27 },
         "10": { "flee_bonus": 30 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.thief.ImproveDodgeSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.thief.ImproveDodgeSkillEffect"
 }

@@ -212,7 +212,7 @@ public final class SkillEffectLoader extends SimpleJsonResourceReloadListener {
         RoStrAdapter adapter = new RoStrAdapter();
         RoStrParser.RoStrEffect effect = parser.parse(bytes);
         ResourceLocation textureNamespace = ResourceLocation.fromNamespaceAndPath(
-                GsonHelper.getAsString(json, "texture_namespace", id.getNamespace()), "placeholder");
+                GsonHelper.getAsString(json, "texture_namespace", id.getNamespace()), id.getPath());
 
         return adapter.adapt(
                 id,
@@ -239,31 +239,31 @@ public final class SkillEffectLoader extends SimpleJsonResourceReloadListener {
         return parsed;
     }
 
-    private EffectOrientation parseOrientation(JsonObject json, boolean billboardFallback) {
+    private EffectOrientation parseOrientation(JsonObject json, boolean billboardDefault) {
         if (json.has("orientation")) {
             return EffectOrientation.valueOf(GsonHelper.getAsString(json, "orientation").toUpperCase(Locale.ROOT));
         }
-        return billboardFallback ? EffectOrientation.BILLBOARD : EffectOrientation.GROUND;
+        return billboardDefault ? EffectOrientation.BILLBOARD : EffectOrientation.GROUND;
     }
 
-    private EffectVec3 parseVec3(JsonObject json, String key, EffectVec3 fallback) {
+    private EffectVec3 parseVec3(JsonObject json, String key, EffectVec3 defaultValue) {
         if (!json.has(key) || !json.get(key).isJsonArray()) {
-            return fallback;
+            return defaultValue;
         }
         JsonArray array = json.getAsJsonArray(key);
         if (array.size() < 3) {
-            return fallback;
+            return defaultValue;
         }
         return new EffectVec3(array.get(0).getAsFloat(), array.get(1).getAsFloat(), array.get(2).getAsFloat());
     }
 
-    private EffectColor parseColor(JsonObject json, String key, EffectColor fallback) {
+    private EffectColor parseColor(JsonObject json, String key, EffectColor defaultValue) {
         if (!json.has(key) || !json.get(key).isJsonArray()) {
-            return fallback;
+            return defaultValue;
         }
         JsonArray array = json.getAsJsonArray(key);
         if (array.size() < 4) {
-            return fallback;
+            return defaultValue;
         }
         return new EffectColor(array.get(0).getAsFloat(), array.get(1).getAsFloat(),
                 array.get(2).getAsFloat(), array.get(3).getAsFloat());

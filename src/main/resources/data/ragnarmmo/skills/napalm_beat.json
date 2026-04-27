@@ -41,5 +41,5 @@
         "9": { "sp_cost": 15, "damage_percent": 160, "aoe_radius": 1.5, "range": 10, "cast_time_ticks": 0, "cast_delay_ticks": 12, "cooldown_ticks": 0 },
         "10": { "sp_cost": 18, "damage_percent": 170, "aoe_radius": 1.5, "range": 10, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.mage.NapalmBeatSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.mage.NapalmBeatSkillEffect"
 }

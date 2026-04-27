@@ -173,15 +173,22 @@ public final class MobConfigAccess {
                 config.playerLevel.variance.get(),
                 Map.copyOf(dimensions),
                 dimensions.get(Level.OVERWORLD.location()),
-                parseRuleMap(config.structures.get(), RuleScope.STRUCTURE),
-                parseRuleMap(config.specialMobs.get(), RuleScope.SPECIAL_MOB));
+                parseRuleList(config.structures.get(), RuleScope.STRUCTURE),
+                parseRuleList(config.specialMobs.get(), RuleScope.SPECIAL_MOB));
     }
 
-    private static Map<ResourceLocation, DifficultyRule> parseRuleMap(Map<String, String> raw, RuleScope scope) {
+    private static Map<ResourceLocation, DifficultyRule> parseRuleList(List<? extends String> raw, RuleScope scope) {
         Map<ResourceLocation, DifficultyRule> parsed = new HashMap<>();
-        for (Map.Entry<String, String> entry : raw.entrySet()) {
-            ResourceLocation id = new ResourceLocation(entry.getKey().trim());
-            DifficultyRule rule = DifficultyRule.parse(entry.getValue(), scope);
+        for (String entry : raw) {
+            if (entry == null || entry.isBlank()) {
+                continue;
+            }
+            int split = entry.indexOf('=');
+            if (split <= 0 || split >= entry.length() - 1) {
+                throw new IllegalArgumentException("Invalid difficulty rule: " + entry);
+            }
+            ResourceLocation id = ResourceLocation.parse(entry.substring(0, split).trim());
+            DifficultyRule rule = DifficultyRule.parse(entry.substring(split + 1).trim(), scope);
             parsed.put(id, rule);
         }
         return Map.copyOf(parsed);

@@ -11,7 +11,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 
 public class StormGustAoe extends AoeEntity {
-    private static final ResourceLocation SKILL_ID = new ResourceLocation("ragnarmmo", "storm_gust");
+    private static final ResourceLocation SKILL_ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "storm_gust");
 
     @Override
     public ResourceLocation getSkillId() {

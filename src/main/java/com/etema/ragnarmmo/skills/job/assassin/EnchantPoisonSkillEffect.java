@@ -16,7 +16,7 @@ import net.minecraft.world.effect.MobEffects;
 
 public class EnchantPoisonSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:enchant_poison");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:enchant_poison");
     public static final String ENCHANT_POISON_LEVEL_TAG = "ragnarmmo_enchant_poison_level";
     public static final String ENCHANT_POISON_UNTIL_TAG = "ragnarmmo_enchant_poison_until";
 

@@ -19,7 +19,7 @@ import java.util.List;
 
 public class SandAttackSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "sand_attack");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "sand_attack");
 
     @Override
     public ResourceLocation getSkillId() {

@@ -14,7 +14,7 @@ import java.util.List;
 
 public class VenomSplasherSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:venom_splasher");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:venom_splasher");
 
     @Override
     public ResourceLocation getSkillId() {

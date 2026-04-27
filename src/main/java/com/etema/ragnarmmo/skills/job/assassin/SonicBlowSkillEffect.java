@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class SonicBlowSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "sonic_blow");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "sonic_blow");
     private static final int HIT_COUNT = 8;
 
     @Override

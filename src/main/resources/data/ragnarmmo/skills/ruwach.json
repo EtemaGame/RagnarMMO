@@ -30,5 +30,5 @@
     "level_data": {
         "1": { "sp_cost": 10, "damage_percent": 145, "reveal_radius": 5, "glow_duration_ticks": 200, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.RuwachSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.acolyte.RuwachSkillEffect"
 }

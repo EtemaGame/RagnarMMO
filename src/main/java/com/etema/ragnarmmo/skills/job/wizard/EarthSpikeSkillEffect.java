@@ -17,7 +17,7 @@ import java.util.List;
 
 public class EarthSpikeSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "earth_spike");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "earth_spike");
 
     @Override
     public ResourceLocation getSkillId() {

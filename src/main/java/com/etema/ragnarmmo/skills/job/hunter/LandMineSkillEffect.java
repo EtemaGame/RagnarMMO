@@ -16,7 +16,7 @@ import net.minecraft.sounds.SoundSource;
  */
 public class LandMineSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "land_mine");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "land_mine");
     private final HunterTrapManager.TrapDefinition definition;
 
     public LandMineSkillEffect() {

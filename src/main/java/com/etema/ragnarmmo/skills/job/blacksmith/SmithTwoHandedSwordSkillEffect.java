@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
  *     a minor damage bonus via NBT affixes.
  */
 public class SmithTwoHandedSwordSkillEffect implements ISkillEffect {
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "smith_two_handed_sword");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "smith_two_handed_sword");
     @Override public ResourceLocation getSkillId() { return ID; }
     @Override
     public void execute(ServerPlayer player, int level) {

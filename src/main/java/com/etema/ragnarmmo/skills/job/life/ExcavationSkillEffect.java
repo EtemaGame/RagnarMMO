@@ -11,6 +11,6 @@ public class ExcavationSkillEffect implements ISkillEffect {
 
     @Override
     public ResourceLocation getSkillId() {
-        return new ResourceLocation("ragnarmmo", "excavation");
+        return ResourceLocation.fromNamespaceAndPath("ragnarmmo", "excavation");
     }
 }

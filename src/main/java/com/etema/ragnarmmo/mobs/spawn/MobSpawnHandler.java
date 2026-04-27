@@ -58,7 +58,7 @@ public class MobSpawnHandler {
         if (!(event.getEntity() instanceof LivingEntity living) || living instanceof Player) {
             return;
         }
-        ResourceLocation entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(living.getType());
+        ResourceLocation entityTypeId = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(living.getType());
         if (!MobConfigAccess.isEnabled() || MobConfigAccess.isExcluded(entityTypeId)) {
             return;
         }
@@ -89,7 +89,7 @@ public class MobSpawnHandler {
     }
 
     private DifficultyContext createDifficultyContext(LivingEntity living) {
-        ResourceLocation entityTypeId = BuiltInRegistries.ENTITY_TYPE.getKey(living.getType());
+        ResourceLocation entityTypeId = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(living.getType());
         ResourceLocation dimensionId = living.level().dimension().location();
         BlockPos worldSpawnPos = living.level() instanceof net.minecraft.server.level.ServerLevel serverLevel
                 ? serverLevel.getSharedSpawnPos()

@@ -18,7 +18,7 @@ import java.util.Random;
 
 public class StormGustSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "storm_gust");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "storm_gust");
     private static final Random RANDOM = new Random();
 
     @Override

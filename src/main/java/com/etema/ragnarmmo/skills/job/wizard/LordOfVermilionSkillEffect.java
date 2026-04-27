@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class LordOfVermilionSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "lord_of_vermillion");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "lord_of_vermillion");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

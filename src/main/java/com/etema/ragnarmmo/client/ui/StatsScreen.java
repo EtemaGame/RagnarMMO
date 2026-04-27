@@ -60,10 +60,10 @@ public class StatsScreen extends Screen {
 
         private static final int BTN_SIZE_SMALL = 14;
 
-        private static final ResourceLocation TEX_GEAR = new ResourceLocation("ragnarmmo", "textures/gui/gear.png");
-        private static final ResourceLocation ENLARGE_WEIGHT_LIMIT = new ResourceLocation("ragnarmmo",
+        private static final ResourceLocation TEX_GEAR = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "textures/gui/gear.png");
+        private static final ResourceLocation ENLARGE_WEIGHT_LIMIT = ResourceLocation.fromNamespaceAndPath("ragnarmmo",
                         "enlarge_weight_limit");
-        private static final ResourceLocation PUSHCART = new ResourceLocation("ragnarmmo", "pushcart");
+        private static final ResourceLocation PUSHCART = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "pushcart");
 
         // ===== Scaling placement =====
         private float uiScale = 1.0f;
@@ -341,7 +341,7 @@ public class StatsScreen extends Screen {
                                 int rightX = PANEL_WIDTH / 2 + 40;
 
                                 // Use server-synced derived stats if available. 
-                                // No local fallback to StatComputer.compute to maintain server authority.
+                                // Keep stat rendering tied to the server-synced cache to preserve authority.
                                 var d = DerivedStatsClientCache.get();
                                 boolean hasData = (d != null);
 

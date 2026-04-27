@@ -36,5 +36,5 @@
         "9": { "atk_bonus": 36 },
         "10": { "atk_bonus": 40 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.swordman.TwoHandMasterySkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.swordman.TwoHandMasterySkillEffect"
 }

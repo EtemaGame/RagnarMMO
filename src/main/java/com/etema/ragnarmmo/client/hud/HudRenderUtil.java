@@ -138,8 +138,6 @@ public final class HudRenderUtil {
         gg.drawString(font, text, rightX - w, y, color, true);
     }
 
-    // ── Icons (Unicode placeholders - kept for SCATTERED mode) ────────
-
     public static void drawIconHeart(GuiGraphics gg, Font font, int x, int y) {
         gg.drawString(font, "\u2764", x, y, 0xFFFF5555, true);
     }

@@ -15,7 +15,7 @@ import java.util.List;
 
 public class WaterBallSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:water_ball");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:water_ball");
 
     @Override
     public ResourceLocation getSkillId() {

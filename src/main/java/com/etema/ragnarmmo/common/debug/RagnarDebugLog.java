@@ -113,7 +113,7 @@ public final class RagnarDebugLog {
             return "null";
         }
 
-        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        ResourceLocation key = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
         String typeId = key == null ? "unknown" : key.toString();
         String name = entity.getName().getString();
         return name + "{" + typeId + "#" + entity.getId() + "}";

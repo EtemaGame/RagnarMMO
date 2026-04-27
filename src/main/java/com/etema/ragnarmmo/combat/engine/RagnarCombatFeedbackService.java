@@ -20,15 +20,6 @@ public class RagnarCombatFeedbackService {
             return;
         }
 
-        if (attacker != null) {
-            Network.sendToPlayer(attacker, new ClientboundRagnarCombatResultPacket(
-                    resolution.attackerId(),
-                    resolution.targetId(),
-                    resolution.resultType(),
-                    resolution.finalAmount(),
-                    resolution.critical()));
-        }
-
         Entity trackingBasis = target != null ? target : attacker;
         if (trackingBasis != null) {
             Network.sendTrackingEntityAndSelf(trackingBasis, new ClientboundRagnarCombatResultPacket(

@@ -30,6 +30,6 @@
                "grid_x":  5,
                "grid_y":  0
            },
-    "effect_class":  "com.etema.ragnarmmo.skill.job.life.ExcavationSkillEffect"
+    "effect_class":  "com.etema.ragnarmmo.skills.job.life.ExcavationSkillEffect"
 }
 

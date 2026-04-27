@@ -17,7 +17,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public class SanctuarySkillEffect extends GroundAoEPersistentEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "sanctuary");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "sanctuary");
 
     public SanctuarySkillEffect() {
         super(ID);

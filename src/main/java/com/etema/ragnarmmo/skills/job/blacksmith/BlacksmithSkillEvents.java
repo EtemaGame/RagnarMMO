@@ -18,6 +18,12 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = RagnarMMO.MODID)
 public class BlacksmithSkillEvents {
 
+    private static final String MOD_ID = "ragnarmmo";
+
+    private static ResourceLocation skillId(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+    }
+
     /**
      * Damage Bonuses Hook: Iron/Steel Tempering, Research Weaponry, Unfair Trick.
      */
@@ -29,22 +35,22 @@ public class BlacksmithSkillEvents {
             ItemStack held = player.getMainHandItem();
 
             // 1. Research Weaponry (+0.5 flat per level)
-            int researchLv = com.etema.ragnarmmo.skills.data.progression.SkillProgressManager.getProgress(player, new ResourceLocation("ragnarmmo", "research_weaponry")).getLevel();
+            int researchLv = com.etema.ragnarmmo.skills.data.progression.SkillProgressManager.getProgress(player, skillId("research_weaponry")).getLevel();
             flatBonus += (researchLv * 0.5f);
 
             // 2. Tempering
             if (held.getItem() instanceof TieredItem tiered) {
                 if (tiered.getTier() == Tiers.IRON || tiered.getTier() == Tiers.STONE) {
-                    int ironLv = com.etema.ragnarmmo.skills.data.progression.SkillProgressManager.getProgress(player, new ResourceLocation("ragnarmmo", "iron_tempering")).getLevel();
+                    int ironLv = com.etema.ragnarmmo.skills.data.progression.SkillProgressManager.getProgress(player, skillId("iron_tempering")).getLevel();
                     multiplier += (ironLv * 0.01f);
                 } else if (tiered.getTier() == Tiers.DIAMOND || tiered.getTier() == Tiers.NETHERITE) {
-                    int steelLv = com.etema.ragnarmmo.skills.data.progression.SkillProgressManager.getProgress(player, new ResourceLocation("ragnarmmo", "steel_tempering")).getLevel();
+                    int steelLv = com.etema.ragnarmmo.skills.data.progression.SkillProgressManager.getProgress(player, skillId("steel_tempering")).getLevel();
                     multiplier += (steelLv * 0.015f);
                 }
             }
 
             // 3. Unfair Trick (+level * 3% if target < 50% HP)
-            int unfairLv = com.etema.ragnarmmo.skills.data.progression.SkillProgressManager.getProgress(player, new ResourceLocation("ragnarmmo", "unfair_trick")).getLevel();
+            int unfairLv = com.etema.ragnarmmo.skills.data.progression.SkillProgressManager.getProgress(player, skillId("unfair_trick")).getLevel();
             if (unfairLv > 0 && event.getEntity().getHealth() < (event.getEntity().getMaxHealth() * 0.5f)) {
                 multiplier += (unfairLv * 0.03f);
             }
@@ -67,7 +73,7 @@ public class BlacksmithSkillEvents {
     @SubscribeEvent
     public static void onBlacksmithDefend(LivingDamageEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            int skinLv = com.etema.ragnarmmo.skills.data.progression.SkillProgressManager.getProgress(player, new ResourceLocation("ragnarmmo", "skin_tempering")).getLevel();
+            int skinLv = com.etema.ragnarmmo.skills.data.progression.SkillProgressManager.getProgress(player, skillId("skin_tempering")).getLevel();
             if (skinLv > 0) {
                 // Reduction: level * 5% for fire damage
                 if (event.getSource().is(DamageTypeTags.IS_FIRE)) {

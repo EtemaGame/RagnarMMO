@@ -23,7 +23,7 @@ import net.minecraft.world.effect.MobEffects;
  */
 public class PecoPecoRideSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "peco_peco_ride");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "peco_peco_ride");
 
     @Override
     public ResourceLocation getSkillId() {

@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class FrostNovaSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "frost_nova");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "frost_nova");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

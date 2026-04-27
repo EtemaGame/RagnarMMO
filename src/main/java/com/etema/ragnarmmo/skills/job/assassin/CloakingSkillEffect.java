@@ -12,7 +12,7 @@ import net.minecraft.world.effect.MobEffects;
 
 public class CloakingSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "cloaking");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "cloaking");
 
     @Override
     public ResourceLocation getSkillId() {

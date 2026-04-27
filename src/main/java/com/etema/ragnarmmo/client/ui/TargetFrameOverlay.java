@@ -2,7 +2,6 @@ package com.etema.ragnarmmo.client.ui;
 
 import com.etema.ragnarmmo.client.hud.HudConfigSerializer;
 import com.etema.ragnarmmo.client.hud.HudLayoutManager;
-import com.etema.ragnarmmo.client.hud.HudRenderUtil;
 import com.etema.ragnarmmo.client.hud.HudWidgetState;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -19,10 +18,10 @@ import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 public class TargetFrameOverlay implements IGuiOverlay {
     public static final TargetFrameOverlay INSTANCE = new TargetFrameOverlay();
 
-    private static final int WIDTH = 140;
-    private static final int BAR_HEIGHT = 8;
-    private static final int LABEL_GAP = 3;
-    private static final int PADDING = 3;
+    private static final int WIDTH = 118;
+    private static final int BAR_HEIGHT = 4;
+    private static final int LABEL_GAP = 2;
+    private static final int PADDING = 4;
 
     private TargetFrameOverlay() {
     }
@@ -70,17 +69,39 @@ public class TargetFrameOverlay implements IGuiOverlay {
     }
 
     private static void renderTarget(GuiGraphics graphics, Font font, Component name, float health, float maxHealth) {
-        String nameText = font.plainSubstrByWidth(name.getString(), WIDTH - PADDING * 2);
-        graphics.drawString(font, nameText, PADDING, PADDING, 0xFFFFFFFF, true);
-
         float progress = maxHealth <= 0.0F ? 0.0F : Mth.clamp(health / maxHealth, 0.0F, 1.0F);
-        int barY = PADDING + font.lineHeight + LABEL_GAP;
-        HudRenderUtil.drawGradientBar(graphics, PADDING, barY, WIDTH - PADDING * 2, BAR_HEIGHT, progress,
-                0xFFFF7777, 0xFFAA2222);
-
         String hpText = Math.max(0, Math.round(health)) + "/" + Math.max(1, Math.round(maxHealth));
-        int textWidth = font.width(hpText);
-        graphics.drawString(font, hpText, WIDTH - PADDING - textWidth, barY, 0xFFFFFFFF, true);
+        int hpWidth = font.width(hpText);
+        int nameWidth = WIDTH - PADDING * 2 - hpWidth - 6;
+        String nameText = trimToWidth(font, name.getString(), nameWidth);
+
+        graphics.fill(0, 0, WIDTH, getHeight(font), 0x76050608);
+        graphics.fill(0, getHeight(font) - 1, WIDTH, getHeight(font), 0x99000000);
+        graphics.drawString(font, nameText, PADDING, PADDING, 0xFFE8EDF5, true);
+        graphics.drawString(font, hpText, WIDTH - PADDING - hpWidth, PADDING, 0xFFD7DEE8, true);
+
+        int barY = PADDING + font.lineHeight + LABEL_GAP;
+        int barX = PADDING;
+        int barW = WIDTH - PADDING * 2;
+        graphics.fill(barX, barY, barX + barW, barY + BAR_HEIGHT, 0xCC111216);
+        graphics.fill(barX, barY, barX + Math.round(barW * progress), barY + BAR_HEIGHT, hpColor(progress));
+    }
+
+    private static String trimToWidth(Font font, String text, int maxWidth) {
+        if (font.width(text) <= maxWidth) {
+            return text;
+        }
+        return font.plainSubstrByWidth(text, Math.max(0, maxWidth - font.width("..."))) + "...";
+    }
+
+    private static int hpColor(float progress) {
+        if (progress > 0.55F) {
+            return 0xFF68D383;
+        }
+        if (progress > 0.25F) {
+            return 0xFFE6C55C;
+        }
+        return 0xFFE05C5C;
     }
 
     private static LivingEntity getCrosshairTarget(Minecraft mc) {

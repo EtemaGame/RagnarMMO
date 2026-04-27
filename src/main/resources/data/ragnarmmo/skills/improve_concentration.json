@@ -41,5 +41,5 @@
         "9": { "sp_cost": 65, "duration_ticks": 4400, "effect_amplifier": 8, "reveal_radius": 8, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
         "10": { "sp_cost": 70, "duration_ticks": 4800, "effect_amplifier": 9, "reveal_radius": 9, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.archer.ImproveConcentrationSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.archer.ImproveConcentrationSkillEffect"
 }

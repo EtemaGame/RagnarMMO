@@ -17,8 +17,7 @@ import com.mojang.logging.LogUtils;
 @Mod.EventBusSubscriber(modid = RagnarCore.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class PlayerAttributeHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
-    @SuppressWarnings("removal") // ResourceLocation constructor deprecated in 1.20.4+, valid for 1.20.1
-    private static final ResourceLocation PLAYER_ID = new ResourceLocation("minecraft", "player");
+    private static final ResourceLocation PLAYER_ID = ResourceLocation.fromNamespaceAndPath("minecraft", "player");
 
     private PlayerAttributeHandler() {
     }

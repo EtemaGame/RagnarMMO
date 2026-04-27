@@ -29,5 +29,5 @@
         "grid_x": 1,
         "grid_y": 5
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.PneumaSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.acolyte.PneumaSkillEffect"
 }

@@ -18,11 +18,16 @@ import java.util.concurrent.ConcurrentHashMap;
 @Mod.EventBusSubscriber(modid = com.etema.ragnarmmo.RagnarMMO.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class RagnarPopoffHandler {
 
+    private static final long LIFETIME_MS = 900L;
+    private static final float BASE_SCALE = -0.025F * 0.95F;
+    private static final int TEXT_BACKPLATE = 0x660B1118;
     private static final Map<Integer, List<Popoff>> popoffs = new ConcurrentHashMap<>();
 
     public static void addPopoff(int entityId, String text, int color) {
-        popoffs.computeIfAbsent(entityId, k -> new ArrayList<>())
-               .add(new Popoff(text, color, System.currentTimeMillis()));
+        List<Popoff> list = popoffs.computeIfAbsent(entityId, k -> new ArrayList<>());
+        int slot = list.size() % 5;
+        float xDrift = (slot - 2) * 3.0F;
+        list.add(new Popoff(text, color, System.currentTimeMillis(), xDrift));
     }
 
     @SubscribeEvent
@@ -39,55 +44,75 @@ public class RagnarPopoffHandler {
         
         PoseStack ps = e.getPoseStack();
         ps.pushPose();
-        ps.translate(0.0D, entity.getBbHeight() + 1.2D, 0.0D);
+        ps.translate(0.0D, Math.max(0.75D, entity.getBbHeight() * 0.72D), 0.0D);
         ps.mulPose(mc.getEntityRenderDispatcher().cameraOrientation());
         
-        // Scale appropriately for text
-        float scale = -0.025F * 0.82F;
-        ps.scale(scale, scale, -scale); // Inverse Z to avoid mirroring
+        float scale = BASE_SCALE;
+        ps.scale(scale, scale, -scale);
         
         Font font = mc.font;
         
+        int stackIndex = 0;
         Iterator<Popoff> it = entityPopoffs.iterator();
         while (it.hasNext()) {
             Popoff p = it.next();
             long age = now - p.startTime;
-            if (age > 1500) { // 1.5 second duration
+            if (age > LIFETIME_MS) {
                 it.remove();
                 continue;
             }
 
-            // Animate floating upwards
-            float yOffset = -((float)age / 1500.0f) * 20.0f;
-            
-            // Fade out
-            int alpha = 255;
-            if (age > 1000) {
-                alpha = (int)(255 * (1.0f - (age - 1000) / 500.0f));
-            }
-            int color = (p.color & 0x00FFFFFF) | (alpha << 24);
+            float progress = (float) age / (float) LIFETIME_MS;
+            float eased = 1.0F - (float) Math.pow(1.0F - progress, 3.0D);
+            float yOffset = -eased * 12.0F - stackIndex * 5.0F;
+            float xOffset = p.xDrift * (0.45F + progress * 0.5F);
+            float popScale = progress < 0.12F ? 0.72F + (progress / 0.12F) * 0.28F : 1.0F;
+            int alpha = computeAlpha(progress);
+            int color = withAlpha(p.color, alpha);
+            int backplate = withAlpha(TEXT_BACKPLATE, Math.min(120, alpha / 2));
             
             ps.pushPose();
-            ps.translate(0, yOffset, 0);
+            ps.translate(xOffset, yOffset, 0);
+            ps.scale(popScale, popScale, popScale);
             
-            font.drawInBatch(p.text, -font.width(p.text) / 2f, 0, color, false,
-                    ps.last().pose(), e.getMultiBufferSource(), Font.DisplayMode.NORMAL, 0, e.getPackedLight());
+            float x = -font.width(p.text) / 2.0F;
+            drawCleanText(font, p.text, x, 0.0F, color, backplate, ps, e);
             
             ps.popPose();
+            stackIndex++;
         }
         
         ps.popPose();
+    }
+
+    private static void drawCleanText(Font font, String text, float x, float y, int color, int backplate,
+            PoseStack ps, RenderLivingEvent.Post<LivingEntity, ?> e) {
+        font.drawInBatch(text, x, y, color, false, ps.last().pose(), e.getMultiBufferSource(),
+                Font.DisplayMode.SEE_THROUGH, backplate, e.getPackedLight());
+    }
+
+    private static int computeAlpha(float progress) {
+        if (progress < 0.68F) {
+            return 255;
+        }
+        return (int) (255.0F * Math.max(0.0F, 1.0F - ((progress - 0.68F) / 0.32F)));
+    }
+
+    private static int withAlpha(int rgb, int alpha) {
+        return (rgb & 0x00FFFFFF) | ((alpha & 0xFF) << 24);
     }
 
     private static class Popoff {
         String text;
         int color;
         long startTime;
+        float xDrift;
 
-        Popoff(String text, int color, long startTime) {
+        Popoff(String text, int color, long startTime, float xDrift) {
             this.text = text;
             this.color = color;
             this.startTime = startTime;
+            this.xDrift = xDrift;
         }
     }
 }

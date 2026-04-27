@@ -36,5 +36,5 @@
         "9": { "accuracy_bonus": 9, "projectile_velocity_mult": 1.09, "projectile_gravity_mult": 0.82, "projectile_spread_mult": 0.86 },
         "10": { "accuracy_bonus": 10, "projectile_velocity_mult": 1.10, "projectile_gravity_mult": 0.80, "projectile_spread_mult": 0.85 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.archer.VulturesEyeSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.archer.VulturesEyeSkillEffect"
 }

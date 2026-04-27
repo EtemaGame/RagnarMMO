@@ -100,14 +100,14 @@ public final class SkillMaterialVisualDataLoader extends SimpleJsonResourceReloa
         }
     }
 
-    private float[] parseTriplet(JsonObject json, String key, float fallbackX, float fallbackY, float fallbackZ) {
+    private float[] parseTriplet(JsonObject json, String key, float defaultX, float defaultY, float defaultZ) {
         if (!json.has(key) || !json.get(key).isJsonArray()) {
-            return new float[] { fallbackX, fallbackY, fallbackZ };
+            return new float[] { defaultX, defaultY, defaultZ };
         }
 
         JsonArray array = json.getAsJsonArray(key);
         if (array.size() < 3) {
-            return new float[] { fallbackX, fallbackY, fallbackZ };
+            return new float[] { defaultX, defaultY, defaultZ };
         }
 
         return new float[] {
@@ -117,12 +117,12 @@ public final class SkillMaterialVisualDataLoader extends SimpleJsonResourceReloa
         };
     }
 
-    private String getStringOrDefault(JsonObject json, String key, String fallback) {
-        return json.has(key) && json.get(key).isJsonPrimitive() ? json.get(key).getAsString() : fallback;
+    private String getStringOrDefault(JsonObject json, String key, String defaultValue) {
+        return json.has(key) && json.get(key).isJsonPrimitive() ? json.get(key).getAsString() : defaultValue;
     }
 
-    private double getDoubleOrDefault(JsonObject json, String key, double fallback) {
-        return json.has(key) && json.get(key).isJsonPrimitive() ? json.get(key).getAsDouble() : fallback;
+    private double getDoubleOrDefault(JsonObject json, String key, double defaultValue) {
+        return json.has(key) && json.get(key).isJsonPrimitive() ? json.get(key).getAsDouble() : defaultValue;
     }
 
     private ResourceLocation parseResourceLocation(String value) {

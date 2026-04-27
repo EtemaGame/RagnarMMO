@@ -394,7 +394,7 @@ public final class MobDefinitionDataLoader extends SimpleJsonResourceReloadListe
             throw new IllegalArgumentException("resource is outside " + rootFolder + ": " + fileLocation);
         }
         String dataPath = path.substring(prefix.length(), path.length() - ".json".length());
-        return new ResourceLocation(fileLocation.getNamespace(), dataPath);
+        return ResourceLocation.fromNamespaceAndPath(fileLocation.getNamespace(), dataPath);
     }
 
     private static MobDefinitionLoadIssue.Kind mapResolutionKind(MobDefinitionResolutionIssue.Kind kind) {

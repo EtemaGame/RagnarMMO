@@ -42,5 +42,5 @@
         "9": { "sp_cost": 17, "damage_percent": 190, "status_chance": 0.62, "duration_ticks": 540, "range": 12, "cast_time_ticks": 16, "cast_delay_ticks": 30, "cooldown_ticks": 0 },
         "10": { "sp_cost": 16, "damage_percent": 200, "status_chance": 0.65, "duration_ticks": 600, "range": 12, "cast_time_ticks": 16, "cast_delay_ticks": 30, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.mage.FrostDiverSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.mage.FrostDiverSkillEffect"
 }

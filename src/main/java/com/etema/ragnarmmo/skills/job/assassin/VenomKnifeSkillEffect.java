@@ -16,7 +16,7 @@ import java.util.List;
 
 public class VenomKnifeSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:venom_knife");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:venom_knife");
 
     @Override
     public ResourceLocation getSkillId() {

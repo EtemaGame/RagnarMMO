@@ -20,5 +20,5 @@
         "grid_x": 2,
         "grid_y": 2
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.priest.ImpositioManusSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.priest.ImpositioManusSkillEffect"
 }

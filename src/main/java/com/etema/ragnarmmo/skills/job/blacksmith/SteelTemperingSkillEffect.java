@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public class SteelTemperingSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "steel_tempering");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "steel_tempering");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

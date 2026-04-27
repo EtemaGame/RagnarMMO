@@ -25,9 +25,9 @@ import java.util.Set;
  */
 public class BasicSkillEffect implements ISkillEffect {
 
-    public static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "basic_skill");
-    public static final ResourceLocation FIRST_AID = new ResourceLocation("ragnarmmo", "first_aid");
-    public static final ResourceLocation PLAY_DEAD = new ResourceLocation("ragnarmmo", "play_dead");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "basic_skill");
+    public static final ResourceLocation FIRST_AID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "first_aid");
+    public static final ResourceLocation PLAY_DEAD = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "play_dead");
 
     @Override
     public ResourceLocation getSkillId() {

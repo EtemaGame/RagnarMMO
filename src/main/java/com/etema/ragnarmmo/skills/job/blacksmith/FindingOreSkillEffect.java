@@ -25,7 +25,7 @@ import java.util.Set;
  */
 public class FindingOreSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "finding_ore");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "finding_ore");
 
     private static final Set<Block> ORE_BLOCKS = Set.of(
             Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE,

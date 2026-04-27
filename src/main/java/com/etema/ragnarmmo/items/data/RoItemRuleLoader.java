@@ -152,7 +152,7 @@ public class RoItemRuleLoader extends SimpleJsonResourceReloadListener {
 
                 boolean isTag = key.startsWith("#");
                 String targetPath = isTag ? key.substring(1) : key;
-                ResourceLocation targetId = new ResourceLocation(targetPath);
+                ResourceLocation targetId = ResourceLocation.parse(targetPath);
                 RoItemRule rule = parseRule(entry.getValue().getAsJsonObject(), false);
 
                 if (isTag) {

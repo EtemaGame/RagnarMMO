@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public class SpearStabSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "spear_stab");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "spear_stab");
 
     @Override
     public ResourceLocation getSkillId() {

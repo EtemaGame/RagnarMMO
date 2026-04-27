@@ -7,10 +7,6 @@ import com.etema.ragnarmmo.combat.api.CombatHitResultType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
-/**
- * Client feedback packet placeholder. The first pass intentionally keeps the
- * handler empty until client-side combat feedback is migrated.
- */
 public class ClientboundRagnarCombatResultPacket {
     private final int attackerId;
     private final int targetId;

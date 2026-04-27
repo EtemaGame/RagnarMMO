@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class TwoHandMasterySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "two_hand_mastery");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "two_hand_mastery");
 
     @Override
     public Set<TriggerType> getSupportedTriggers() {
@@ -34,8 +34,7 @@ public class TwoHandMasterySkillEffect implements ISkillEffect {
         net.minecraft.world.item.ItemStack held = player.getMainHandItem();
         if (!(held.getItem() instanceof net.minecraft.world.item.SwordItem)) return;
 
-        // Check for the two_handed tag; if no tag system exists, the skill still gives
-        // a slight bonus to all swords as a default path.
+        // Check for the two_handed tag so the passive stays tied to actual two-handed weapons.
         boolean isTwoHanded = held.getTags()
                 .anyMatch(tag -> tag.location().toString().equals("ragnarmmo:two_handed"));
 

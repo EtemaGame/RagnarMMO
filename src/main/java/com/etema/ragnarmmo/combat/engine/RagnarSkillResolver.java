@@ -42,7 +42,9 @@ public class RagnarSkillResolver {
             return Collections.emptyList();
         }
 
-        ResourceLocation skillId = skillIdStr.contains(":") ? new ResourceLocation(skillIdStr) : new ResourceLocation(com.etema.ragnarmmo.RagnarMMO.MODID, skillIdStr);
+        ResourceLocation skillId = skillIdStr.contains(":")
+                ? ResourceLocation.parse(skillIdStr)
+                : ResourceLocation.fromNamespaceAndPath(com.etema.ragnarmmo.RagnarMMO.MODID, skillIdStr);
         
         Optional<SkillDefinition> defOpt = SkillRegistry.get(skillId);
         if (defOpt.isEmpty()) {

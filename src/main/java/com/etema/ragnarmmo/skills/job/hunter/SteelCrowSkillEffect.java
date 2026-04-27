@@ -13,7 +13,7 @@ import net.minecraft.resources.ResourceLocation;
  */
 public class SteelCrowSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "steel_crow");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "steel_crow");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

@@ -131,7 +131,7 @@ public final class RoItemRuleResolver {
 
         for (Map.Entry<ResourceLocation, RoItemRule> entry : ruleSet.getTagRules().entrySet()) {
             TagKey<Item> tagKey = TagKey.create(Registries.ITEM, entry.getKey());
-            if (item.builtInRegistryHolder().is(tagKey)) {
+            if (new ItemStack(item).is(tagKey)) {
                 resolved = RoItemRule.merge(resolved, entry.getValue());
                 break;
             }

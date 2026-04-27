@@ -32,7 +32,7 @@ import net.minecraft.world.level.block.Blocks;
  */
 public class StoneCurseSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "stone_curse");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "stone_curse");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

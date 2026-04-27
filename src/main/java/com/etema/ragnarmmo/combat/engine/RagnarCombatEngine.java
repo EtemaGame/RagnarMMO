@@ -124,7 +124,6 @@ public class RagnarCombatEngine {
             Entity target = attacker.serverLevel().getEntity(candidate.entityId());
             if (target instanceof LivingEntity livingTarget) {
                 applyResolution(attacker, resolution);
-                feedbackService.sendBasicAttackFeedback(attacker, livingTarget, resolution);
             }
             
             CombatDebugLog.logHitResolution(resolution);
@@ -284,8 +283,7 @@ public class RagnarCombatEngine {
             // Mark as processed to avoid CommonEvents double-calc
             DamageProcessingGuard.markProcessedPlayer(livingTarget);
 
-            // Use MobAttack source to represent authoritative damage
-            SkillDamageHelper.dealSkillDamage(livingTarget, attacker.damageSources().mobAttack(attacker), damage);
+            SkillDamageHelper.dealSkillDamage(livingTarget, attacker.damageSources().playerAttack(attacker), damage);
         }
 
         feedbackService.sendBasicAttackFeedback(attacker, livingTarget, resolution);

@@ -19,8 +19,8 @@ import net.minecraft.world.item.Item;
 @Mod.EventBusSubscriber(modid = "ragnarmmo")
 public class DoubleAttackSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "double_attack");
-    private static final TagKey<Item> DAGGER_TAG = ItemTags.create(new ResourceLocation("ragnarmmo", "daggers"));
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "double_attack");
+    private static final TagKey<Item> DAGGER_TAG = ItemTags.create(ResourceLocation.fromNamespaceAndPath("ragnarmmo", "daggers"));
 
     @Override
     public ResourceLocation getSkillId() {

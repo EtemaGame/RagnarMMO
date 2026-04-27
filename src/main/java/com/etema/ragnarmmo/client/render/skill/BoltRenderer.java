@@ -29,7 +29,7 @@ public class BoltRenderer extends EntityRenderer<AbstractMagicProjectile> {
     }
 
     private static ResourceLocation vanillaBlockTexture(String name) {
-        return new ResourceLocation("minecraft", "textures/block/" + name + ".png");
+        return ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/" + name + ".png");
     }
 
     @Override
@@ -119,7 +119,7 @@ public class BoltRenderer extends EntityRenderer<AbstractMagicProjectile> {
         poseStack.scale(layer.scaleX(), layer.scaleY(), layer.scaleZ());
         poseStack.translate(-0.5, -0.5, -0.5);
         Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, poseStack, buffer, packedLight,
-                OverlayTexture.NO_OVERLAY);
+                OverlayTexture.NO_OVERLAY, net.minecraftforge.client.model.data.ModelData.EMPTY, null);
         poseStack.popPose();
     }
 
@@ -132,7 +132,7 @@ public class BoltRenderer extends EntityRenderer<AbstractMagicProjectile> {
         poseStack.scale(scaleX, scaleY, scaleZ);
         poseStack.translate(-0.5, -0.5, -0.5);
         Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, poseStack, buffer, packedLight,
-                OverlayTexture.NO_OVERLAY);
+                OverlayTexture.NO_OVERLAY, net.minecraftforge.client.model.data.ModelData.EMPTY, null);
         poseStack.popPose();
     }
 

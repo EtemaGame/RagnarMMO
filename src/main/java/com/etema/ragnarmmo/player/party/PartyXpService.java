@@ -25,7 +25,7 @@ public class PartyXpService {
      * ShareXP = TotalXP / n
      */
     private static final double[] XP_FACTORS = {
-            1.00, // 0 (unused default)
+            1.00, // 0 (unused guard slot)
             1.00, // 1 member (solo)
             0.60, // 2 members (120% / 2)
             0.47, // 3 members (140% / 3)

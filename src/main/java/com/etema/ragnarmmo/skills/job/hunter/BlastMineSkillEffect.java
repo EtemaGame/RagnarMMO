@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class BlastMineSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "blast_mine");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "blast_mine");
     private final HunterTrapManager.TrapDefinition definition;
 
     public BlastMineSkillEffect() {

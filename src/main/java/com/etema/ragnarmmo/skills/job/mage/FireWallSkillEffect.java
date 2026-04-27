@@ -18,7 +18,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public class FireWallSkillEffect extends GroundAoEPersistentEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "fire_wall");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "fire_wall");
 
     public FireWallSkillEffect() {
         super(ID);

@@ -49,7 +49,6 @@ public class ClientModEvents {
             event.registerEntityRenderer(com.etema.ragnarmmo.common.init.RagnarEntities.SOUL_STRIKE_PROJECTILE.get(),
                     com.etema.ragnarmmo.client.render.skill.SoulStrikeRenderer::new);
             
-            // Shared Bolt Renderer (Keeping BoltRenderer for now as it might have specific logic, but can be migrated later)
             event.registerEntityRenderer(com.etema.ragnarmmo.common.init.RagnarEntities.FIRE_BOLT_PROJECTILE.get(),
                     com.etema.ragnarmmo.client.render.skill.BoltRenderer::new);
             event.registerEntityRenderer(com.etema.ragnarmmo.common.init.RagnarEntities.ICE_BOLT_PROJECTILE.get(),
@@ -57,7 +56,6 @@ public class ClientModEvents {
             event.registerEntityRenderer(com.etema.ragnarmmo.common.init.RagnarEntities.LIGHTNING_BOLT_PROJECTILE.get(),
                     com.etema.ragnarmmo.client.render.skill.BoltRenderer::new);
 
-            // AOE Entities (Now handled by UniversalSkillRenderer)
             event.registerEntityRenderer(com.etema.ragnarmmo.common.init.RagnarEntities.NAPALM_BEAT_AOE.get(),
                     com.etema.ragnarmmo.client.render.skill.UniversalSkillRenderer::new);
             event.registerEntityRenderer(com.etema.ragnarmmo.common.init.RagnarEntities.HEAVENS_DRIVE_AOE.get(),

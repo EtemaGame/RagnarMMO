@@ -17,7 +17,7 @@ import net.minecraft.sounds.SoundSource;
  */
 public class VendingSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "vending");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "vending");
 
     @Override
     public ResourceLocation getSkillId() {

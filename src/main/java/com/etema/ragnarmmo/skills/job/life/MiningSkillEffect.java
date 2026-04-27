@@ -11,6 +11,6 @@ public class MiningSkillEffect implements ISkillEffect {
 
     @Override
     public ResourceLocation getSkillId() {
-        return new ResourceLocation("ragnarmmo", "mining");
+        return ResourceLocation.fromNamespaceAndPath("ragnarmmo", "mining");
     }
 }

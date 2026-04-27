@@ -90,6 +90,4 @@ public class FishingEventHandler {
         });
     }
 
-    // getFishingSource and FishingPointSource have been migrated to data-driven
-    // LifePointsSourceConfig
 }

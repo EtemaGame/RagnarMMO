@@ -17,7 +17,7 @@ import java.util.List;
 
 public class DetoxifySkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "detoxify");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "detoxify");
 
     @Override
     public ResourceLocation getSkillId() {

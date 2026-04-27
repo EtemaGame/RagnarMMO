@@ -41,5 +41,5 @@
         "9": { "hit_count": 9, "sp_cost": 28, "cast_time_ticks": 126, "cast_delay_ticks": 52, "cooldown_ticks": 0 },
         "10": { "hit_count": 10, "sp_cost": 30, "cast_time_ticks": 140, "cast_delay_ticks": 56, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.mage.LightningBoltSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.mage.LightningBoltSkillEffect"
 }

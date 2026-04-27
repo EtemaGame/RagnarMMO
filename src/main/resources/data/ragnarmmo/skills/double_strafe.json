@@ -39,5 +39,5 @@
         "9": { "sp_cost": 12, "damage_percent": 190, "hit_count": 2, "hit_spacing_ticks": 3, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 },
         "10": { "sp_cost": 12, "damage_percent": 200, "hit_count": 2, "hit_spacing_ticks": 3, "cast_time_ticks": 0, "cast_delay_ticks": 10, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.archer.DoubleStrafeSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.archer.DoubleStrafeSkillEffect"
 }

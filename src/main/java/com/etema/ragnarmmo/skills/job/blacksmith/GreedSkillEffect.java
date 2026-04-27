@@ -13,7 +13,7 @@ import java.util.List;
 
 public class GreedSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "greed");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "greed");
 
     @Override
     public ResourceLocation getSkillId() {

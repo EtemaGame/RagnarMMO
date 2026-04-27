@@ -39,5 +39,5 @@
         "9": { "sp_cost": 12, "success_chance": 0.77, "duration_ticks": 600, "def_reduction_percent": 50, "attack_bonus_percent": 29, "aggro_bonus": 1.0, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
         "10": { "sp_cost": 13, "success_chance": 0.80, "duration_ticks": 600, "def_reduction_percent": 55, "attack_bonus_percent": 32, "aggro_bonus": 1.0, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.swordman.ProvokeSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.swordman.ProvokeSkillEffect"
 }

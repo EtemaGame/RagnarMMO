@@ -42,12 +42,12 @@ public class StatusOverlayRenderer extends EntityRenderer<StatusOverlayEntity> {
         poseStack.scale(scaleX, scaleY, scaleZ);
         poseStack.translate(-0.5, -0.5, -0.5);
         Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, poseStack, bufferSource, packedLight,
-                OverlayTexture.NO_OVERLAY);
+                OverlayTexture.NO_OVERLAY, net.minecraftforge.client.model.data.ModelData.EMPTY, null);
         poseStack.popPose();
     }
 
     @Override
     public ResourceLocation getTextureLocation(StatusOverlayEntity entity) {
-        return new ResourceLocation("minecraft", "textures/block/stone.png");
+        return ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/stone.png");
     }
 }

@@ -41,5 +41,5 @@
         "9": { "sp_cost": 60, "duration_ticks": 4400, "effect_amplifier": 8, "cast_time_ticks": 0, "cast_delay_ticks": 40, "cooldown_ticks": 0 },
         "10": { "sp_cost": 64, "duration_ticks": 4800, "effect_amplifier": 9, "cast_time_ticks": 0, "cast_delay_ticks": 40, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.BlessingSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.acolyte.BlessingSkillEffect"
 }

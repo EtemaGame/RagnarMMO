@@ -16,7 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class MemoCommands {
-    private static final ResourceLocation WARP_PORTAL_SKILL = new ResourceLocation("ragnarmmo", "warp_portal");
+    private static final ResourceLocation WARP_PORTAL_SKILL = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "warp_portal");
 
     private MemoCommands() {
     }

@@ -21,7 +21,7 @@ import net.minecraft.world.item.Items;
  */
 public class EnchantedStoneCraftSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "enchanted_stone_craft");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "enchanted_stone_craft");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

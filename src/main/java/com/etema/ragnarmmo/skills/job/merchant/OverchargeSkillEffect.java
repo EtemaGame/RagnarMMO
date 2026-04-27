@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public class OverchargeSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "overcharge");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "overcharge");
 
     @Override
     public ResourceLocation getSkillId() {

@@ -13,7 +13,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public class IceWallSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "ice_wall");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "ice_wall");
 
     @Override
     public ResourceLocation getSkillId() {

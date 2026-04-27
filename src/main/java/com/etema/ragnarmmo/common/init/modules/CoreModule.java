@@ -11,7 +11,7 @@ public final class CoreModule {
     private CoreModule() {
     }
 
-    @SuppressWarnings("removal") // ModLoadingContext.get() deprecated in 1.20.4+, valid for 1.20.1
+    @SuppressWarnings("removal")
     public static void init(IEventBus modBus) {
         RagnarAttributes.register(modBus);
         com.etema.ragnarmmo.common.init.RagnarEntities.register(modBus);
@@ -19,12 +19,10 @@ public final class CoreModule {
         com.etema.ragnarmmo.common.init.RagnarMobEffects.register(modBus);
         com.etema.ragnarmmo.common.init.RagnarParticles.register(modBus);
 
-        // Register RO item packets for rule syncing
         Network.registerRoItemPackets();
         Network.registerAchievementPackets();
         Network.registerSkillEffectPackets();
 
-        // Register unified configs
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, RagnarConfigs.CLIENT_SPEC,
                 "ragnarmmo-client.toml");
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, RagnarConfigs.SERVER_SPEC,

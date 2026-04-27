@@ -20,7 +20,7 @@ import java.util.List;
 
 public class ThrowStoneSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "throw_stone");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "throw_stone");
 
     @Override
     public ResourceLocation getSkillId() {

@@ -12,7 +12,7 @@ import net.minecraft.world.effect.MobEffects;
 
 public class MaximizePowerSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "maximize_power");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "maximize_power");
 
     @Override
     public ResourceLocation getSkillId() {

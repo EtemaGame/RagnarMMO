@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class NapalmBeatSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "napalm_beat");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "napalm_beat");
 
     @Override
     public ResourceLocation getSkillId() {

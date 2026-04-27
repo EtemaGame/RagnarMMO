@@ -73,15 +73,14 @@ public class UniversalSkillRenderer<T extends Entity> extends EntityRenderer<T> 
             poseStack.translate(-0.5, -0.5, -0.5); // Center block
             net.minecraft.client.Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
                 state, poseStack, bufferSource, light, 
-                net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY
+                net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
+                net.minecraftforge.client.model.data.ModelData.EMPTY,
+                null
             );
         });
     }
 
     private void renderModel(T entity, SkillVisuals visuals, PoseStack poseStack, MultiBufferSource bufferSource, int light) {
-        // Basic model rendering placeholder. 
-        // For now, models could be implemented via specific child renderers 
-        // or a more complex generic model loader.
     }
 
     @Override
@@ -89,8 +88,8 @@ public class UniversalSkillRenderer<T extends Entity> extends EntityRenderer<T> 
         if (entity instanceof IVisualSkillEntity visualEntity) {
             return SkillVisualsRegistry.get(visualEntity.getSkillId())
                     .map(SkillVisuals::texture)
-                    .orElse(new ResourceLocation("minecraft", "missingno"));
+                    .orElse(ResourceLocation.fromNamespaceAndPath("minecraft", "missingno"));
         }
-        return new ResourceLocation("minecraft", "missingno");
+        return ResourceLocation.fromNamespaceAndPath("minecraft", "missingno");
     }
 }

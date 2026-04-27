@@ -32,7 +32,7 @@ import java.util.Set;
 @Mod.EventBusSubscriber(modid = RagnarMMO.MODID)
 public class AutoCounterSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "auto_counter");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "auto_counter");
     private static final String COUNTER_GUARD = "ragnar_counter_guard"; // Prevent recursive counters
 
     @Override

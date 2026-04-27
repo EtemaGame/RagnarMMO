@@ -34,5 +34,5 @@
         "9": { "proc_chance": 0.45, "damage_multiplier": 2.0 },
         "10": { "proc_chance": 0.50, "damage_multiplier": 2.0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.thief.DoubleAttackSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.thief.DoubleAttackSkillEffect"
 }

@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class SlowPoisonSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "slow_poison");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "slow_poison");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

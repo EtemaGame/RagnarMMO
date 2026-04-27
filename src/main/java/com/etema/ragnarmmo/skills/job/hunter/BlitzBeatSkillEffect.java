@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public class BlitzBeatSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "blitz_beat");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "blitz_beat");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }
@@ -105,7 +105,7 @@ public class BlitzBeatSkillEffect implements ISkillEffect {
         
         // Retrieve Steel Crow level
         int steelCrowLvl = PlayerSkillsProvider.get(player)
-                .map(sm -> sm.getSkillLevel(new ResourceLocation("ragnarmmo", "steel_crow")))
+                .map(sm -> sm.getSkillLevel(ResourceLocation.fromNamespaceAndPath("ragnarmmo", "steel_crow")))
                 .orElse(0);
         
         // Steel Crow buff: +6 per level (RO standard for Job 50 equivalent)

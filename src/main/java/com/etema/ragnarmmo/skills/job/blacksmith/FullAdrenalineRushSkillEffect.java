@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public class FullAdrenalineRushSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "full_adrenaline_rush");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "full_adrenaline_rush");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

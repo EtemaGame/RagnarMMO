@@ -17,7 +17,7 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public class PacketChangeJob {
-    private static final ResourceLocation BASIC_SKILL = new ResourceLocation("ragnarmmo", "basic_skill");
+    private static final ResourceLocation BASIC_SKILL = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "basic_skill");
     private final String jobId;
 
     public PacketChangeJob(String jobId) {

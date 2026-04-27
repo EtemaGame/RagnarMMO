@@ -19,5 +19,5 @@
         "grid_x": 3,
         "grid_y": 2
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.blacksmith.ResearchWeaponrySkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.blacksmith.ResearchWeaponrySkillEffect"
 }

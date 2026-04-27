@@ -24,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public class MammoniteSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "mammonite");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "mammonite");
 
     @Override
     public ResourceLocation getSkillId() {

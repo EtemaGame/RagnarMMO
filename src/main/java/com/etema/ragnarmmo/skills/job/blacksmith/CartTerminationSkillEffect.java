@@ -14,7 +14,7 @@ import java.util.List;
 
 public class CartTerminationSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "cart_termination");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "cart_termination");
 
     @Override
     public ResourceLocation getSkillId() {

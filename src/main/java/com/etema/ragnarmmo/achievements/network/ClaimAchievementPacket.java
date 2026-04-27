@@ -41,7 +41,7 @@ public class ClaimAchievementPacket {
 
                             // Try generating items
                             def.rewards().forEach((itemRegId, count) -> {
-                                Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemRegId));
+                                Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(itemRegId));
                                 if (item != null) {
                                     ItemStack stack = new ItemStack(item, count);
                                     if (!player.getInventory().add(stack)) {

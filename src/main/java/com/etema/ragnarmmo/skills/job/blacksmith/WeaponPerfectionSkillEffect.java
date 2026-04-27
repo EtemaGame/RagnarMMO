@@ -16,7 +16,7 @@ import net.minecraft.world.phys.AABB;
 
 public class WeaponPerfectionSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "weapon_perfection");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "weapon_perfection");
 
     @Override
     public ResourceLocation getSkillId() {

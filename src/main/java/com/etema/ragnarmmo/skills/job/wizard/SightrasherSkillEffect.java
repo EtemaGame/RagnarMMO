@@ -14,7 +14,7 @@ import java.util.List;
 
 public class SightrasherSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:sightrasher");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:sightrasher");
 
     @Override
     public ResourceLocation getSkillId() {

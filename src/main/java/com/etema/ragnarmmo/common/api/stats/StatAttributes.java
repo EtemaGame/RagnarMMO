@@ -85,12 +85,6 @@ public final class StatAttributes {
             return;
         }
 
-        // Always sync vanilla attributes (hardcoded enabled)
-        if (false) { // Disabled - always sync
-            clearVanillaAttributes(player);
-            return;
-        }
-
         for (Map.Entry<StatKeys, VanillaBinding> entry : VANILLA_BINDINGS.entrySet()) {
             applyBinding(player, entry.getKey(), entry.getValue());
         }

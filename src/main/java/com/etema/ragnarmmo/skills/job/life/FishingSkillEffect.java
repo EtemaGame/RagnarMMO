@@ -21,7 +21,7 @@ public class FishingSkillEffect implements ISkillEffect {
 
     @Override
     public ResourceLocation getSkillId() {
-        return new ResourceLocation("ragnarmmo", "fishing");
+        return ResourceLocation.fromNamespaceAndPath("ragnarmmo", "fishing");
     }
 
     @Override

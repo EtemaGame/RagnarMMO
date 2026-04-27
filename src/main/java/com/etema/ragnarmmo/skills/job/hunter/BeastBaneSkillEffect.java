@@ -42,7 +42,7 @@ public class BeastBaneSkillEffect implements ISkillEffect {
         }
 
         int level = player.getCapability(PlayerSkillsProvider.CAP)
-                .map(skills -> skills.getSkillLevel(new ResourceLocation(SKILL_ID)))
+                .map(skills -> skills.getSkillLevel(ResourceLocation.parse(SKILL_ID)))
                 .orElse(0);
         if (level > 0) {
             // Flat + percentage damage increase against Beasts/Insects

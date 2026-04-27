@@ -63,7 +63,6 @@ public class LifePointsSourceConfig extends SimpleJsonResourceReloadListener {
         return INSTANCE;
     }
 
-    @SuppressWarnings("removal") // ResourceLocation constructor deprecated in 1.20.4+, valid for 1.20.1
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> data, ResourceManager manager, ProfilerFiller profiler) {
         blockSources.clear();
@@ -91,13 +90,13 @@ public class LifePointsSourceConfig extends SimpleJsonResourceReloadListener {
                     if (key.startsWith("#")) {
                         // Tag-based source
                         String tagName = key.substring(1);
-                        ResourceLocation tagId = new ResourceLocation(tagName);
+                        ResourceLocation tagId = ResourceLocation.parse(tagName);
                         TagKey<Block> tag = BlockTags.create(tagId);
                         tagSources.put(tag, source);
                         tagCount++;
                     } else {
                         // Direct block ID
-                        ResourceLocation blockId = new ResourceLocation(key);
+                        ResourceLocation blockId = ResourceLocation.parse(key);
                         blockSources.put(blockId, source);
                         blockCount++;
                     }

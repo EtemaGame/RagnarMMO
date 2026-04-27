@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.Blocks;
  */
 public class FrostDiverSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "frost_diver");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "frost_diver");
 
     @Override
     public ResourceLocation getSkillId() {

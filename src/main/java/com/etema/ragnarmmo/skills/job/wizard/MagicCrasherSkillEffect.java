@@ -14,7 +14,7 @@ import java.util.List;
 
 public class MagicCrasherSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:magic_crasher");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:magic_crasher");
 
     @Override
     public ResourceLocation getSkillId() {

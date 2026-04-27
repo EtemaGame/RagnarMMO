@@ -42,7 +42,7 @@ public class AchievementTriggerHandler {
     @SubscribeEvent
     public static void onAttachCapabilitiesPlayer(net.minecraftforge.event.AttachCapabilitiesEvent<net.minecraft.world.entity.Entity> event) {
         if (event.getObject() instanceof Player) {
-            ResourceLocation loc = new ResourceLocation(RagnarMMO.MODID, "player_achievements");
+            ResourceLocation loc = ResourceLocation.fromNamespaceAndPath(RagnarMMO.MODID, "player_achievements");
             if (!event.getCapabilities().containsKey(loc)) {
                 event.addCapability(loc, new com.etema.ragnarmmo.achievements.capability.PlayerAchievementsProvider());
             }

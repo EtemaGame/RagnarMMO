@@ -16,7 +16,7 @@ import java.util.List;
 
 public class LexDivinaSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:lex_divina");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:lex_divina");
 
     @Override
     public ResourceLocation getSkillId() {

@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.mobs.util;
 
+import com.etema.ragnarmmo.RagnarMMO;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
@@ -54,11 +55,9 @@ public final class AttributeLimitHelper {
                 field.setAccessible(true);
                 field.set(ranged, newMax);
 
-                System.out.println("[RagnarMMO] Lifted cap for " + attribute.getDescriptionId() +
-                        " to " + newMax);
+                RagnarMMO.LOGGER.debug("Lifted cap for {} to {}", attribute.getDescriptionId(), newMax);
             } catch (Exception e) {
-                System.err.println("[RagnarMMO] Failed to lift cap for " +
-                        attribute.getDescriptionId() + ": " + e.getMessage());
+                RagnarMMO.LOGGER.warn("Failed to lift cap for {}", attribute.getDescriptionId(), e);
             }
         }
     }

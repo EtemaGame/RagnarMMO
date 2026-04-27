@@ -31,5 +31,5 @@
     "level_data": {
         "1": { "damage_percent": 125, "sp_cost": 15, "range": 15, "cast_time_ticks": 0, "cast_delay_ticks": 40, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.HolyLightSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.acolyte.HolyLightSkillEffect"
 }

@@ -15,7 +15,7 @@ import net.minecraft.world.level.Level;
  * Sanctuary AoE — Heals allies and damages Undead/Demons.
  */
 public class SanctuaryAoe extends AoeEntity {
-    private static final ResourceLocation SKILL_ID = new ResourceLocation("ragnarmmo", "sanctuary");
+    private static final ResourceLocation SKILL_ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "sanctuary");
 
     private float healAmount;
 

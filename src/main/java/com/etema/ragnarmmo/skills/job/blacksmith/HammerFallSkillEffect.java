@@ -16,7 +16,7 @@ import java.util.List;
 
 public class HammerFallSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "hammer_fall");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "hammer_fall");
 
     @Override
     public ResourceLocation getSkillId() {

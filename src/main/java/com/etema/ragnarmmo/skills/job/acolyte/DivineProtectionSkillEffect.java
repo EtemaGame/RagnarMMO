@@ -16,11 +16,11 @@ import java.util.Set;
 
 public class DivineProtectionSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "divine_protection");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "divine_protection");
     private static final TagKey<EntityType<?>> UNDEAD_TAG = TagKey.create(Registries.ENTITY_TYPE,
-            new ResourceLocation("minecraft", "undead"));
+            ResourceLocation.fromNamespaceAndPath("minecraft", "undead"));
     private static final TagKey<EntityType<?>> RAIDER_TAG = TagKey.create(Registries.ENTITY_TYPE,
-            new ResourceLocation("minecraft", "raider"));
+            ResourceLocation.fromNamespaceAndPath("minecraft", "raider"));
 
     @Override
     public ResourceLocation getSkillId() {

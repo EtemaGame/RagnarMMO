@@ -19,11 +19,11 @@ import net.minecraft.world.effect.MobEffects;
  *  - Grants MOVEMENT_SPEED + ATTACK_SPEED attribute boost.
  *  - We use Haste (speeds up attack cooldown recovery) as the closest analog.
  *  - Duration: 30s + 30s per level (600-6600 ticks).
- *  - Only gives Haste (not DIG_SPEED — that was a bug in the old code).
+ *  - Uses Haste as the closest Minecraft analogue for faster attack cadence.
  */
 public class TwoHandQuickenSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "two_hand_quicken");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "two_hand_quicken");
 
     @Override
     public ResourceLocation getSkillId() {

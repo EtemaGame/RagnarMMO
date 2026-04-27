@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public class SonicAccelerationSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "sonic_acceleration");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "sonic_acceleration");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

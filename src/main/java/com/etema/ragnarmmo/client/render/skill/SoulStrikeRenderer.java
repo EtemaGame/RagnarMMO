@@ -17,7 +17,7 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 public class SoulStrikeRenderer extends EntityRenderer<SoulStrikeProjectile> {
-    private static final ResourceLocation TEXTURE = new ResourceLocation("minecraft", "textures/block/soul_sand.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/soul_sand.png");
 
     public SoulStrikeRenderer(EntityRendererProvider.Context context) {
         super(context);

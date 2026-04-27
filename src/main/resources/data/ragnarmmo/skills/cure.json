@@ -33,5 +33,5 @@
     "level_data": {
         "1": { "sp_cost": 15, "range": 5, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.CureSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.acolyte.CureSkillEffect"
 }

@@ -14,7 +14,7 @@ import java.util.List;
 
 public class ShatteringStrikeSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "shattering_strike");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "shattering_strike");
 
     @Override
     public ResourceLocation getSkillId() {

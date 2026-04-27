@@ -86,7 +86,6 @@ public abstract class MerchantOfferMixin {
 
     private static ItemStack replaceEmerald(ItemStack stack) {
         if (stack != null && !stack.isEmpty() && stack.getItem() == Items.EMERALD) {
-            System.out.println("[RagnarMMO] Replacing Emerald trade with Gold Zeny!");
             return new ItemStack(ZenyItems.GOLD_ZENY.get(), stack.getCount());
         }
         return stack;

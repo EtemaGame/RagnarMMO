@@ -16,7 +16,7 @@ import java.util.Random;
 
 public class TurnUndeadSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:turn_undead");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:turn_undead");
     private static final Random RANDOM = new Random();
 
     @Override

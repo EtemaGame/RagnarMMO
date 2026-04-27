@@ -20,7 +20,7 @@ import java.util.List;
  */
 public class AdrenalineRushSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "adrenaline_rush");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "adrenaline_rush");
 
     @Override
     public ResourceLocation getSkillId() {

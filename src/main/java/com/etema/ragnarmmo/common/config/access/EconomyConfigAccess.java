@@ -77,7 +77,7 @@ public final class EconomyConfigAccess {
                 String[] parts = entry.split("=");
                 if (parts.length == 2) {
                     try {
-                        dimensionMultipliers.put(new ResourceLocation(parts[0].trim()), Double.parseDouble(parts[1].trim()));
+                        dimensionMultipliers.put(ResourceLocation.parse(parts[0].trim()), Double.parseDouble(parts[1].trim()));
                     } catch (Exception ignored) {}
                 }
             }

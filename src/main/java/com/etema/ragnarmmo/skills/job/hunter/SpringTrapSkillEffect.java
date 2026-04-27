@@ -17,7 +17,7 @@ import net.minecraft.world.effect.MobEffects;
  */
 public class SpringTrapSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "spring_trap");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "spring_trap");
     private final HunterTrapManager.TrapDefinition definition;
 
     public SpringTrapSkillEffect() {

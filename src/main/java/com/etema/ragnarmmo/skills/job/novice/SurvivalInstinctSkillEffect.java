@@ -14,7 +14,7 @@ public class SurvivalInstinctSkillEffect implements ISkillEffect {
 
     @Override
     public ResourceLocation getSkillId() {
-        return new ResourceLocation("ragnarmmo", "survival_instinct");
+        return ResourceLocation.fromNamespaceAndPath("ragnarmmo", "survival_instinct");
     }
 
     @Override

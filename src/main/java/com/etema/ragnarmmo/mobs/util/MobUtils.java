@@ -15,7 +15,7 @@ public class MobUtils {
         var readView = MobConsumerReadViewResolver.resolve(mob);
 
         if (readView.isPresent()) {
-            return readView.get().isBossLikeForCompatibility();
+            return readView.get().bossLike();
         }
 
         if (MobSpawnOverrides.isForcedBoss(mob)) {
@@ -25,7 +25,4 @@ public class MobUtils {
         return mob instanceof WitherBoss || mob instanceof EnderDragon;
     }
 
-    public static boolean isBossLikeForCompatibility(LivingEntity mob) {
-        return isBossLike(mob);
-    }
 }

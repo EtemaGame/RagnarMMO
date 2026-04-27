@@ -36,5 +36,5 @@
         "9": { "damage_bonus_percent": 36 },
         "10": { "damage_bonus_percent": 40 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.acolyte.DemonBaneSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.acolyte.DemonBaneSkillEffect"
 }

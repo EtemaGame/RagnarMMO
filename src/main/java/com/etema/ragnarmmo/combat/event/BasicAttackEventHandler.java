@@ -1,6 +1,10 @@
 package com.etema.ragnarmmo.combat.event;
 
 import com.etema.ragnarmmo.RagnarMMO;
+import com.etema.ragnarmmo.combat.api.RagnarAttackRequest;
+import com.etema.ragnarmmo.combat.api.RagnarTargetCandidate;
+import com.etema.ragnarmmo.combat.api.RagnarTargetSource;
+import com.etema.ragnarmmo.combat.engine.RagnarCombatEngine;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -30,7 +34,12 @@ public final class BasicAttackEventHandler {
             return;
         }
 
-        // RagnarMMO must be the combat authority for this slice.
         event.setCanceled(true);
+        RagnarCombatEngine.get().processBasicAttackRequest(attacker, new RagnarAttackRequest(
+                attacker.tickCount,
+                0,
+                false,
+                attacker.getInventory().selected,
+                java.util.List.of(RagnarTargetCandidate.from(target.getId(), RagnarTargetSource.SERVER_RESOLVED))));
     }
 }

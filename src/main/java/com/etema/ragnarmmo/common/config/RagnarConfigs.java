@@ -5,7 +5,6 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Unified configuration for RagnarMMO.
@@ -216,8 +215,8 @@ public final class RagnarConfigs {
             public final DimensionConfig overworld;
             public final DimensionConfig nether;
             public final DimensionConfig end;
-            public final ForgeConfigSpec.ConfigValue<Map<String, String>> structures;
-            public final ForgeConfigSpec.ConfigValue<Map<String, String>> specialMobs;
+            public final ForgeConfigSpec.ConfigValue<List<? extends String>> structures;
+            public final ForgeConfigSpec.ConfigValue<List<? extends String>> specialMobs;
 
             Difficulty(ForgeConfigSpec.Builder builder) {
                 builder.comment("V2 mob difficulty configuration").push("difficulty");
@@ -229,21 +228,30 @@ public final class RagnarConfigs {
 
                 builder.push("dimensions");
                 overworld = new DimensionConfig(builder, "overworld", 1, 160,
-                        () -> List.of("0-999=1-5", "1000-2499=5-10", "2500+=10-15"));
+                        () -> List.of(
+                                "0-999=1-5",
+                                "1000-1999=5-10",
+                                "2000-3499=10-18",
+                                "3500-5999=18-30",
+                                "6000-8999=30-45",
+                                "9000-12999=45-65",
+                                "13000-19999=65-90",
+                                "20000-29999=90-120",
+                                "30000+=120-160"));
                 nether = new DimensionConfig(builder, "nether", 30, 320,
                         () -> List.of("0-999=30-38", "1000+=38-48"));
                 end = new DimensionConfig(builder, "end", 60, 420,
                         () -> List.of("0-999=60-70", "1000+=70-82"));
                 builder.pop();
 
-                structures = builder.comment("Structure difficulty rules keyed by structure id. Format: min_level=70,min_rank=ELITE")
-                        .define("structures", new java.util.LinkedHashMap<String, String>());
-                java.util.LinkedHashMap<String, String> defaultSpecialMobs = new java.util.LinkedHashMap<>();
-                defaultSpecialMobs.put("minecraft:wither", "rank=MINI_BOSS,min_level=80");
-                defaultSpecialMobs.put("minecraft:warden", "rank=BOSS,min_level=90");
-                defaultSpecialMobs.put("minecraft:ender_dragon", "rank=BOSS,min_level=99");
-                specialMobs = builder.comment("Special mob rules keyed by entity type id. Format: rank=BOSS,min_level=99")
-                        .define("special_mobs", defaultSpecialMobs);
+                structures = builder.comment("Structure difficulty rules. Format: structure_id=min_level=70,min_rank=ELITE")
+                        .defineList("structures", List.of(), value -> value instanceof String);
+                specialMobs = builder.comment("Special mob rules. Format: entity_type_id=rank=BOSS,min_level=99")
+                        .defineList("special_mobs", List.of(
+                                "minecraft:wither=rank=MINI_BOSS,min_level=80",
+                                "minecraft:warden=rank=BOSS,min_level=90",
+                                "minecraft:ender_dragon=rank=BOSS,min_level=99"),
+                                value -> value instanceof String);
                 builder.pop();
             }
 

@@ -24,7 +24,7 @@ import net.minecraft.nbt.CompoundTag;
  */
 public class AquaBenedictaSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "aqua_benedicta");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "aqua_benedicta");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

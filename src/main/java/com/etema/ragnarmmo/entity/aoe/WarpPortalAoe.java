@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public class WarpPortalAoe extends AoeEntity {
-    private static final ResourceLocation SKILL_ID = new ResourceLocation("ragnarmmo", "warp_portal");
+    private static final ResourceLocation SKILL_ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "warp_portal");
 
     private ResourceLocation destinationDimensionId = Level.OVERWORLD.location();
     private int destinationX;

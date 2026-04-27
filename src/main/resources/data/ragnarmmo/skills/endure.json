@@ -41,5 +41,5 @@
         "9": { "sp_cost": 10, "duration_ticks": 680, "max_hits": 7, "mdef_bonus": 9, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 },
         "10": { "sp_cost": 10, "duration_ticks": 740, "max_hits": 7, "mdef_bonus": 10, "cast_time_ticks": 0, "cast_delay_ticks": 20, "cooldown_ticks": 0 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.swordman.EndureSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.swordman.EndureSkillEffect"
 }

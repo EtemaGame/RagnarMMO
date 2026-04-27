@@ -22,5 +22,5 @@
         "grid_x": 2,
         "grid_y": 0
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.assassin.VenomKnifeSkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.assassin.VenomKnifeSkillEffect"
 }

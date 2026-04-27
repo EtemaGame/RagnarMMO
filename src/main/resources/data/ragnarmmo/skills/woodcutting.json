@@ -30,6 +30,6 @@
                "grid_x":  3,
                "grid_y":  0
            },
-    "effect_class":  "com.etema.ragnarmmo.skill.job.life.WoodcuttingSkillEffect"
+    "effect_class":  "com.etema.ragnarmmo.skills.job.life.WoodcuttingSkillEffect"
 }
 

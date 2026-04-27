@@ -39,7 +39,7 @@ public final class RoStrAdapter {
                 }
 
                 ResourceLocation texture = layer.textures().isEmpty()
-                        ? new ResourceLocation("minecraft", "textures/block/missingno.png")
+                        ? ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/missingno.png")
                         : toTextureLocation(textureNamespace, textureBasePath, layer.textures().get(texIndex));
 
                 float[] xy = keyFrame.xy();

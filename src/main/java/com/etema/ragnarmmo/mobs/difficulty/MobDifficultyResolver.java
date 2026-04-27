@@ -63,7 +63,7 @@ public final class MobDifficultyResolver {
             case PLAYER_LEVEL -> context.nearestPlayerLevel().orElse(1);
             case STATIC -> 1;
             case REGION -> Math.max(1, (Math.abs(context.mobPos().getX()) + Math.abs(context.mobPos().getZ())) / 256);
-            case DISTANCE -> distanceLevel(context, dimension);
+            case DISTANCE -> distanceLevel(context, dimension, random);
         };
 
         if (rules.mode() == DifficultyMode.PLAYER_LEVEL && rules.playerLevelVariance() > 0) {
@@ -73,10 +73,12 @@ public final class MobDifficultyResolver {
         return base;
     }
 
-    private static int distanceLevel(DifficultyContext context, DimensionRules dimension) {
+    private static int distanceLevel(DifficultyContext context, DimensionRules dimension, RandomSource random) {
         int distance = (int) Math.floor(Math.sqrt(context.mobPos().distSqr(context.worldSpawnPos())));
         return dimension.rangeForDistance(distance)
-                .map(range -> range.min() == range.max() ? range.min() : range.min() + (distance % (range.max() - range.min() + 1)))
+                .map(range -> range.min() == range.max()
+                        ? range.min()
+                        : range.min() + random.nextInt(range.max() - range.min() + 1))
                 .orElse(Math.max(1, (distance / 125) + 1));
     }
 

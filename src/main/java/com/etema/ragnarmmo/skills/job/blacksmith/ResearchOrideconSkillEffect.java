@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public class ResearchOrideconSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo", "research_oridecon");
+    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "research_oridecon");
 
     @Override
     public ResourceLocation getSkillId() { return ID; }

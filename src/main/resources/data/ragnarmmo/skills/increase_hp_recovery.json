@@ -34,5 +34,5 @@
         "9": { "hp_recovery_flat": 45, "hp_recovery_max_hp_ratio": 0.018, "item_heal_bonus_ratio": 0.90, "interval_ticks": 200 },
         "10": { "hp_recovery_flat": 50, "hp_recovery_max_hp_ratio": 0.020, "item_heal_bonus_ratio": 1.00, "interval_ticks": 200 }
     },
-    "effect_class": "com.etema.ragnarmmo.skill.job.swordman.IncreaseHpRecoverySkillEffect"
+    "effect_class": "com.etema.ragnarmmo.skills.job.swordman.IncreaseHpRecoverySkillEffect"
 }

@@ -11,7 +11,7 @@ import java.util.List;
 
 public class SenseSkillEffect implements ISkillEffect {
 
-    private static final ResourceLocation ID = new ResourceLocation("ragnarmmo:sense");
+    private static final ResourceLocation ID = ResourceLocation.parse("ragnarmmo:sense");
 
     @Override
     public ResourceLocation getSkillId() {

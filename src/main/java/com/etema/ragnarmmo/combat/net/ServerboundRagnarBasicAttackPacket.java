@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import com.etema.ragnarmmo.combat.api.RagnarAttackRequest;
 import com.etema.ragnarmmo.combat.api.RagnarTargetCandidate;
 import com.etema.ragnarmmo.combat.api.RagnarTargetSource;
+import com.etema.ragnarmmo.combat.api.BasicAttackSource;
 import com.etema.ragnarmmo.combat.engine.RagnarCombatEngine;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -70,7 +71,7 @@ public class ServerboundRagnarBasicAttackPacket {
                     msg.selectedSlot,
                     candidates);
 
-            RagnarCombatEngine.get().processBasicAttackRequest(player, request);
+            RagnarCombatEngine.get().processBasicAttackRequest(player, request, BasicAttackSource.CLIENT_PACKET);
         });
         ctx.setPacketHandled(true);
     }

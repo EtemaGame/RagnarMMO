@@ -2,8 +2,8 @@ package com.etema.ragnarmmo.combat.targeting;
 
 import java.util.List;
 import com.etema.ragnarmmo.combat.api.RagnarTargetCandidate;
+import com.etema.ragnarmmo.combat.api.ResolvedTargetCandidate;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.LivingEntity;
 
 /**
  * RagnarTargetResolver - The authoritative boundary that resolves client-suggested
@@ -12,11 +12,11 @@ import net.minecraft.world.entity.LivingEntity;
 public interface RagnarTargetResolver {
 
     /**
-     * Resolves and filters a list of candidates into a collection of validated entities.
+     * Resolves candidates into per-target results, preserving rejection reasons.
      * 
      * @param player The attacker.
      * @param candidates Suggested targets from the request.
-     * @return List of validated LivingEntity targets.
+     * @return List of per-candidate resolution results.
      */
-    List<LivingEntity> resolveCandidates(ServerPlayer player, List<RagnarTargetCandidate> candidates);
+    List<ResolvedTargetCandidate> resolveCandidates(ServerPlayer player, List<RagnarTargetCandidate> candidates);
 }

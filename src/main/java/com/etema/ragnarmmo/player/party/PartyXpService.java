@@ -3,6 +3,7 @@ package com.etema.ragnarmmo.player.party;
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.common.api.RagnarCoreAPI;
 import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncService;
+import com.etema.ragnarmmo.mobs.companion.CompanionProfileService;
 import com.etema.ragnarmmo.player.progression.PlayerProgressionService;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -112,6 +113,9 @@ public class PartyXpService {
             }
 
             PlayerStatsSyncService.sync(member, stats);
+            if (levelsGained > 0) {
+                CompanionProfileService.refreshOwnedCompanions(member);
+            }
 
             // Send party member update to all party members for HUD
             updatePartyMemberHud(member);

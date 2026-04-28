@@ -1,6 +1,8 @@
 package com.etema.ragnarmmo.combat.event;
 
 import com.etema.ragnarmmo.RagnarMMO;
+import com.etema.ragnarmmo.combat.api.BasicAttackOutcome;
+import com.etema.ragnarmmo.combat.api.BasicAttackSource;
 import com.etema.ragnarmmo.combat.api.RagnarAttackRequest;
 import com.etema.ragnarmmo.combat.api.RagnarTargetCandidate;
 import com.etema.ragnarmmo.combat.api.RagnarTargetSource;
@@ -35,11 +37,13 @@ public final class BasicAttackEventHandler {
         }
 
         event.setCanceled(true);
-        RagnarCombatEngine.get().processBasicAttackRequest(attacker, new RagnarAttackRequest(
+        BasicAttackOutcome outcome = RagnarCombatEngine.get().processBasicAttackRequest(attacker, new RagnarAttackRequest(
                 attacker.tickCount,
                 0,
                 false,
                 attacker.getInventory().selected,
-                java.util.List.of(RagnarTargetCandidate.from(target.getId(), RagnarTargetSource.SERVER_RESOLVED))));
+                java.util.List.of(RagnarTargetCandidate.from(target.getId(), RagnarTargetSource.SERVER_RESOLVED))),
+                BasicAttackSource.SERVER_ATTACK_EVENT);
+        event.setCanceled(outcome.shouldCancelVanilla());
     }
 }

@@ -192,6 +192,18 @@ public final class ClientPacketHandler {
         MobProfileProvider.get(living).ifPresent(state -> state.setProfile(profile));
     }
 
+    public static void handleMobProfileClear(int entityId) {
+        var mc = Minecraft.getInstance();
+        if (mc.level == null) {
+            return;
+        }
+        Entity e = mc.level.getEntity(entityId);
+        if (!(e instanceof LivingEntity living)) {
+            return;
+        }
+        MobProfileProvider.get(living).ifPresent(state -> state.clearProfile());
+    }
+
     // ═══════════════════════════════════════════════
     // Wallet Sync Packet
 

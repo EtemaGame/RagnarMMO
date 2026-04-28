@@ -16,6 +16,10 @@ public record CombatResolution(
         return new CombatResolution(attackerId, targetId, CombatHitResultType.MISS, 0.0D, 0.0D, false, true);
     }
 
+    public static CombatResolution dodge(int attackerId, int targetId) {
+        return new CombatResolution(attackerId, targetId, CombatHitResultType.DODGE, 0.0D, 0.0D, false, true);
+    }
+
     public static CombatResolution hit(int attackerId, int targetId, double baseAmount, double finalAmount,
             boolean critical) {
         return new CombatResolution(attackerId, targetId,

@@ -7,6 +7,7 @@ import com.etema.ragnarmmo.common.debug.RagnarDebugLog;
 import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.mobs.capability.MobProfileProvider;
 import com.etema.ragnarmmo.mobs.capability.MobProfileState;
+import com.etema.ragnarmmo.mobs.companion.CompanionProfileService;
 import com.etema.ragnarmmo.mobs.difficulty.DifficultyContext;
 import com.etema.ragnarmmo.mobs.difficulty.MobDifficultyResolver;
 import com.etema.ragnarmmo.mobs.network.SyncMobProfilePacket;
@@ -14,9 +15,10 @@ import com.etema.ragnarmmo.mobs.profile.MobProfile;
 import com.etema.ragnarmmo.mobs.profile.MobProfileFactory;
 import com.etema.ragnarmmo.mobs.world.BossWorldRegistrationBridge;
 import com.etema.ragnarmmo.mobs.util.MobAttributeHelper;
+import com.etema.ragnarmmo.mobs.util.MobProfileEligibility;
+import com.etema.ragnarmmo.mobs.util.MobProfileEligibility.Classification;
 import com.etema.ragnarmmo.player.stats.util.AntiFarmManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -55,25 +57,41 @@ public class MobSpawnHandler {
         if (event.getLevel().isClientSide()) {
             return;
         }
-        if (!(event.getEntity() instanceof LivingEntity living) || living instanceof Player) {
+        if (!(event.getEntity() instanceof LivingEntity living)) {
             return;
         }
-        ResourceLocation entityTypeId = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(living.getType());
-        if (!MobConfigAccess.isEnabled() || MobConfigAccess.isExcluded(entityTypeId)) {
+        if (!MobConfigAccess.isEnabled()) {
             return;
         }
 
         MobProfileProvider.get(living).ifPresent(state -> {
-            MobProfile profile = initializeCanonicalProfile(living, state);
-            MobAttributeHelper.applyAttributes(living, profile);
-            BossWorldRegistrationBridge.handleRegistration(living, profile.rank());
-            RagnarDebugLog.mobSpawns(
-                    "CANONICAL SPAWN mob={} pos={} rank={} level={}",
-                    RagnarDebugLog.entityLabel(living),
-                    RagnarDebugLog.blockPos(living.blockPosition()),
-                    profile.rank(),
-                    profile.level());
+            Classification classification = MobProfileEligibility.classify(living);
+            switch (classification) {
+                case INELIGIBLE -> clearLegacyProfile(living, state);
+                case STANDARD_MOB -> initializeStandardMob(living, state);
+                case COMPANION -> CompanionProfileService.refreshOnJoin(living, state);
+            }
         });
+    }
+
+    private void clearLegacyProfile(LivingEntity living, MobProfileState state) {
+        if (!state.isInitialized()) {
+            return;
+        }
+        state.clearProfile();
+        Network.sendTrackingEntityAndSelf(living, SyncMobProfilePacket.clear(living));
+    }
+
+    private void initializeStandardMob(LivingEntity living, MobProfileState state) {
+        MobProfile profile = initializeCanonicalProfile(living, state);
+        MobAttributeHelper.applyAttributes(living, profile, MobAttributeHelper.HealthPreservationMode.SPAWN_FULL_HEAL);
+        BossWorldRegistrationBridge.handleRegistration(living, profile.rank());
+        RagnarDebugLog.mobSpawns(
+                "CANONICAL SPAWN mob={} pos={} rank={} level={}",
+                RagnarDebugLog.entityLabel(living),
+                RagnarDebugLog.blockPos(living.blockPosition()),
+                profile.rank(),
+                profile.level());
     }
 
     private MobProfile initializeCanonicalProfile(LivingEntity living, MobProfileState state) {

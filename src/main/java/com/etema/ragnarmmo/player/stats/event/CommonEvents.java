@@ -25,6 +25,7 @@ import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.player.stats.network.DerivedStatsSyncPacket;
 import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncPacket;
 import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncService;
+import com.etema.ragnarmmo.mobs.companion.CompanionProfileService;
 import com.etema.ragnarmmo.player.progression.PlayerProgressionService;
 import com.etema.ragnarmmo.player.stats.progression.JobBonusService;
 import com.etema.ragnarmmo.player.party.PartyXpService;
@@ -500,6 +501,9 @@ public class CommonEvents {
                 finalSp.sendSystemMessage(Component.translatable("message.ragnarmmo.job_level_up", jobGained));
             }
             PlayerStatsSyncService.sync(finalSp, s);
+            if (gained > 0) {
+                CompanionProfileService.refreshOwnedCompanions(finalSp);
+            }
 
             // Update party HUD for killer
             PartyXpService.updatePartyMemberHud(finalSp);

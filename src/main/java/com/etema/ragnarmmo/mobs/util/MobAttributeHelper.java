@@ -11,15 +11,42 @@ public final class MobAttributeHelper {
 
     private MobAttributeHelper() {}
 
+    public enum HealthPreservationMode {
+        SPAWN_FULL_HEAL,
+        PRESERVE_RATIO,
+        CLAMP_ONLY
+    }
+
     public static void applyAttributes(LivingEntity mob, MobProfile profile) {
+        applyAttributes(mob, profile, HealthPreservationMode.SPAWN_FULL_HEAL);
+    }
+
+    public static void applyAttributes(LivingEntity mob, MobProfile profile, HealthPreservationMode healthMode) {
         AttributeInstance maxHealth = getInstance(mob, Attributes.MAX_HEALTH);
         if (maxHealth != null) {
             double hp = Math.max(1.0D, profile.maxHp());
+            double oldMax = Math.max(1.0D, maxHealth.getBaseValue());
+            float oldHealth = mob.getHealth();
+            boolean wasFull = oldHealth >= (float) oldMax - 0.01F;
+            double oldRatio = oldMax > 0.0D ? oldHealth / oldMax : 1.0D;
             maxHealth.setBaseValue(hp);
-            if (mob.tickCount < 10 || mob.getHealth() >= (float) maxHealth.getBaseValue()) {
-                mob.setHealth((float) hp);
-            } else {
-                mob.setHealth(Math.min(mob.getHealth(), (float) hp));
+            HealthPreservationMode mode = healthMode == null ? HealthPreservationMode.SPAWN_FULL_HEAL : healthMode;
+            switch (mode) {
+                case SPAWN_FULL_HEAL -> {
+                    if (mob.tickCount < 10 || wasFull) {
+                        mob.setHealth((float) hp);
+                    } else {
+                        mob.setHealth(Math.min(oldHealth, (float) hp));
+                    }
+                }
+                case PRESERVE_RATIO -> {
+                    if (mob.tickCount < 10 || wasFull) {
+                        mob.setHealth((float) hp);
+                    } else {
+                        mob.setHealth((float) Math.max(1.0D, Math.min(hp, hp * oldRatio)));
+                    }
+                }
+                case CLAMP_ONLY -> mob.setHealth(Math.min(oldHealth, (float) hp));
             }
         }
 

@@ -30,8 +30,11 @@ public class RagnarCombatFeedbackService {
                     resolution.critical()));
         }
 
-        if (attacker != null && (resolution.resultType() == CombatHitResultType.MISS || resolution.resultType() == CombatHitResultType.DODGE)) {
-            attacker.sendSystemMessage(Component.literal("§7Miss"));
+        if (attacker != null
+                && (resolution.resultType() == CombatHitResultType.MISS
+                        || resolution.resultType() == CombatHitResultType.DODGE)) {
+            String label = resolution.resultType() == CombatHitResultType.DODGE ? "Dodge" : "Miss";
+            attacker.sendSystemMessage(Component.literal("\u00A77" + label));
         }
     }
 }

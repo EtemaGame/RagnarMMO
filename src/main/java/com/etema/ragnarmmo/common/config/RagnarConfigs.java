@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.common.config;
 
 import com.etema.ragnarmmo.mobs.difficulty.DifficultyMode;
+import com.etema.ragnarmmo.mobs.companion.CompanionRankMode;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -324,6 +325,7 @@ public final class RagnarConfigs {
             public final ForgeConfigSpec.BooleanValue renderNumericHealth;
             public final DefaultProfile defaultProfile;
             public final Attributes attributes;
+            public final Companions companions;
             public final ForgeConfigSpec.DoubleValue partyScalingRadius;
             public final ForgeConfigSpec.DoubleValue partyHpMultiplier;
             public final ForgeConfigSpec.DoubleValue partyAtkMultiplier;
@@ -335,6 +337,7 @@ public final class RagnarConfigs {
                 renderNumericHealth = builder.define("render_numeric_health", true);
                 defaultProfile = new DefaultProfile(builder);
                 attributes = new Attributes(builder);
+                companions = new Companions(builder);
 
                 builder.push("multiplayer_scaling");
                 partyScalingRadius = builder.defineInRange("radius", 32.0, 1.0, 256.0);
@@ -402,6 +405,20 @@ public final class RagnarConfigs {
                     aspdPerLevel = builder.defineInRange("aspd_per_level", 0.5D, 0.0D, 1.0E6D);
                     moveSpeedPerLevel = builder.defineInRange("move_speed_per_level", 0.002D, 0.0D, 1.0D);
                     moveSpeedCap = builder.defineInRange("move_speed_cap", 0.36D, 0.0001D, 10.0D);
+                    builder.pop();
+                }
+            }
+
+            public static final class Companions {
+                public final ForgeConfigSpec.EnumValue<CompanionRankMode> rankMode;
+                public final ForgeConfigSpec.DoubleValue syncRadius;
+                public final ForgeConfigSpec.BooleanValue deferUntilOwnerOnline;
+
+                Companions(ForgeConfigSpec.Builder builder) {
+                    builder.push("companions");
+                    rankMode = builder.defineEnum("rank_mode", CompanionRankMode.NORMAL_ONLY);
+                    syncRadius = builder.defineInRange("sync_radius", 64.0D, 1.0D, 256.0D);
+                    deferUntilOwnerOnline = builder.define("defer_until_owner_online", true);
                     builder.pop();
                 }
             }

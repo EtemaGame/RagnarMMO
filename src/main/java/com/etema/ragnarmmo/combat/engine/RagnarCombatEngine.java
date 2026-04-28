@@ -7,13 +7,16 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.etema.ragnarmmo.combat.api.BasicAttackFailureReason;
+import com.etema.ragnarmmo.combat.api.BasicAttackOutcome;
+import com.etema.ragnarmmo.combat.api.BasicAttackSource;
 import com.etema.ragnarmmo.combat.api.CombatHitResultType;
 import com.etema.ragnarmmo.combat.api.CombatRejectReason;
 import com.etema.ragnarmmo.combat.api.CombatRequestContext;
 import com.etema.ragnarmmo.combat.api.CombatResolution;
 import com.etema.ragnarmmo.combat.api.CombatTargetCandidate;
 import com.etema.ragnarmmo.combat.api.RagnarAttackRequest;
-import com.etema.ragnarmmo.combat.api.RagnarTargetCandidate;
+import com.etema.ragnarmmo.combat.api.ResolvedTargetCandidate;
 import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.combat.hand.AttackHandResolver;
 import com.etema.ragnarmmo.combat.profile.HandAttackProfile;
@@ -63,16 +66,22 @@ public class RagnarCombatEngine {
         return actorStates.computeIfAbsent(player.getUUID(), ignored -> new CombatActorState());
     }
 
-    public void processBasicAttackRequest(ServerPlayer player, RagnarAttackRequest request) {
+    public BasicAttackOutcome processBasicAttackRequest(ServerPlayer player, RagnarAttackRequest request) {
+        return processBasicAttackRequest(player, request, BasicAttackSource.SERVER_ATTACK_EVENT);
+    }
+
+    public BasicAttackOutcome processBasicAttackRequest(ServerPlayer player, RagnarAttackRequest request,
+            BasicAttackSource source) {
         CombatActorState state = state(player);
         long now = player.serverLevel().getGameTime();
 
         // 1. Initial Authoritative Target Resolution
-        List<LivingEntity> targets = targetResolver.resolveCandidates(player, request.candidates());
+        List<ResolvedTargetCandidate> targetResults = targetResolver.resolveCandidates(player, request.candidates());
 
         // 2. Normalized Request Context
-        List<CombatTargetCandidate> candidates = targets.stream()
-                .map(t -> new CombatTargetCandidate(t.getId(), "domain", 0, false))
+        List<CombatTargetCandidate> candidates = targetResults.stream()
+                .filter(ResolvedTargetCandidate::accepted)
+                .map(t -> new CombatTargetCandidate(t.entityId(), "domain", 0, false))
                 .toList();
 
         CombatRequestContext ctx = new CombatRequestContext(
@@ -89,13 +98,18 @@ public class RagnarCombatEngine {
         CombatRejectReason reject = validationService.validateBasicAttack(ctx, state, now, cooldownService);
         if (reject != null) {
             CombatDebugLog.logValidationReject(ctx, "REJECTED_" + reject.name());
-            return;
+            BasicAttackOutcome outcome = BasicAttackOutcome.rejected(source, reject, true, targetResults);
+            CombatDebugLog.logBasicAttackOutcome(outcome);
+            return outcome;
         }
 
-        handleBasicAttackRequest(ctx);
+        BasicAttackOutcome outcome = handleBasicAttackRequest(ctx, source, targetResults);
+        CombatDebugLog.logBasicAttackOutcome(outcome);
+        return outcome;
     }
 
-    public List<CombatResolution> handleBasicAttackRequest(CombatRequestContext ctx) {
+    public BasicAttackOutcome handleBasicAttackRequest(CombatRequestContext ctx, BasicAttackSource source,
+            List<ResolvedTargetCandidate> targetResults) {
         CombatDebugLog.logAttackRequest(ctx);
         ServerPlayer attacker = ctx.actor();
         long nowTick = attacker.serverLevel().getGameTime();
@@ -103,32 +117,49 @@ public class RagnarCombatEngine {
 
         actorState.setLastAcceptedSequenceId(ctx.sequenceId());
 
-        // Attacker Data (Authoritative)
-        var attackerStats = RagnarCoreAPI.get(attacker).orElse(null);
-        if (attackerStats == null) return Collections.emptyList();
-
-        HandAttackProfile attackProfile = HandAttackProfileResolver.resolve(attacker, ctx.offHand()).orElse(null);
-        if (attackProfile == null) return Collections.emptyList();
-
         int cooldownTicks = AttackCadenceCalculator.computeIntervalTicks(attacker, ctx.offHand());
-        CombatDebugLog.logAttackPacing(ctx, AttackHandResolver.isDualWielding(attacker),
-                attackProfile.aps(), cooldownTicks);
         cooldownService.markBasicAttackUsed(actorState.getCooldowns(), nowTick, cooldownTicks);
 
-        List<CombatResolution> results = new ArrayList<>();
-        for (CombatTargetCandidate candidate : ctx.candidates()) {
-            CombatResolution resolution = resolveSingleBasicHit(attacker, attackProfile, candidate,
-                    attackerStats.getLevel());
-            results.add(resolution);
-            
-            Entity target = attacker.serverLevel().getEntity(candidate.entityId());
-            if (target instanceof LivingEntity livingTarget) {
-                applyResolution(attacker, resolution);
+        try {
+            // Attacker Data (Authoritative)
+            var attackerStats = RagnarCoreAPI.get(attacker).orElse(null);
+            if (attackerStats == null) {
+                return infrastructureFallback(source, targetResults, attacker, BasicAttackFailureReason.MISSING_ATTACKER_STATS);
             }
-            
-            CombatDebugLog.logHitResolution(resolution);
+
+            HandAttackProfile attackProfile = HandAttackProfileResolver.resolve(attacker, ctx.offHand()).orElse(null);
+            if (attackProfile == null) {
+                return infrastructureFallback(source, targetResults, attacker, BasicAttackFailureReason.MISSING_ATTACK_PROFILE);
+            }
+
+            CombatDebugLog.logAttackPacing(ctx, AttackHandResolver.isDualWielding(attacker),
+                    attackProfile.aps(), cooldownTicks);
+
+            List<CombatResolution> results = new ArrayList<>();
+            BasicAttackFailureReason applyFailure = BasicAttackFailureReason.NONE;
+            for (CombatTargetCandidate candidate : ctx.candidates()) {
+                CombatResolution resolution = resolveSingleBasicHit(attacker, attackProfile, candidate,
+                        attackerStats.getLevel());
+                results.add(resolution);
+
+                BasicAttackFailureReason failure = applyResolution(attacker, resolution);
+                if (failure != BasicAttackFailureReason.NONE && applyFailure == BasicAttackFailureReason.NONE) {
+                    applyFailure = failure;
+                }
+
+                CombatDebugLog.logHitResolution(resolution);
+            }
+
+            if (results.isEmpty()) {
+                return infrastructureFallback(source, targetResults, attacker, BasicAttackFailureReason.NO_RESOLUTION_PRODUCED);
+            }
+
+            BasicAttackOutcome outcome = BasicAttackOutcome.resolved(source, results, targetResults, false);
+            return applyFailure == BasicAttackFailureReason.NONE ? outcome : outcome.withFailure(applyFailure);
+        } catch (RuntimeException ex) {
+            CombatDebugLog.logInfrastructureFailure(source, BasicAttackFailureReason.INTERNAL_ERROR, ex);
+            return infrastructureFallback(source, targetResults, attacker, BasicAttackFailureReason.INTERNAL_ERROR);
         }
-        return results;
     }
 
     private CombatResolution resolveSingleBasicHit(ServerPlayer attacker, HandAttackProfile attackProfile,
@@ -151,7 +182,7 @@ public class RagnarCombatEngine {
 
         // 1. Perfect Dodge check
         if (hitCalculator.rollPerfectDodge(def.perfectDodge(), attacker.getRandom())) {
-            return CombatResolution.miss(attacker.getId(), target.getId());
+            return CombatResolution.dodge(attacker.getId(), target.getId());
         }
 
         // 2. Hit/Crit check
@@ -180,12 +211,44 @@ public class RagnarCombatEngine {
         // DEFENSE
         dmg = damageCalculator.applyPhysicalDefense(dmg, def.vit(), def.agi(), lvl, def.armorEff());
 
+        double finalDamage = Math.max(1.0D, dmg);
+
         return CombatResolution.hit(
                 attacker.getId(),
                 target.getId(),
                 dmg,
-                dmg,
+                finalDamage,
                 hitResult == CombatHitResultType.CRIT);
+    }
+
+    private BasicAttackOutcome infrastructureFallback(BasicAttackSource source,
+            List<ResolvedTargetCandidate> targetResults,
+            ServerPlayer attacker,
+            BasicAttackFailureReason reason) {
+        LivingEntity target = firstValidTarget(targetResults);
+        CombatResolution fallback = target == null ? null : createMinimumFallbackHit(attacker, target);
+        if (fallback != null) {
+            CombatDebugLog.logHitResolution(fallback);
+            BasicAttackFailureReason applyFailure = applyResolution(attacker, fallback);
+            BasicAttackOutcome outcome = BasicAttackOutcome.infrastructureFallback(source, reason, fallback, targetResults);
+            return applyFailure == BasicAttackFailureReason.NONE ? outcome : outcome.withFailure(applyFailure);
+        }
+        return new BasicAttackOutcome(source, true, true, null, reason, List.of(), targetResults, false);
+    }
+
+    private static LivingEntity firstValidTarget(List<ResolvedTargetCandidate> targetResults) {
+        if (targetResults == null) {
+            return null;
+        }
+        return targetResults.stream()
+                .filter(ResolvedTargetCandidate::accepted)
+                .map(ResolvedTargetCandidate::target)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private static CombatResolution createMinimumFallbackHit(ServerPlayer attacker, LivingEntity target) {
+        return CombatResolution.hit(attacker.getId(), target.getId(), 1.0D, 1.0D, false);
     }
 
     private record DefenderStats(double flee, double critShield, double perfectDodge,
@@ -271,10 +334,10 @@ public class RagnarCombatEngine {
         return resolutions;
     }
 
-    private void applyResolution(ServerPlayer attacker, CombatResolution resolution) {
+    private BasicAttackFailureReason applyResolution(ServerPlayer attacker, CombatResolution resolution) {
         net.minecraft.world.entity.Entity target = attacker.serverLevel().getEntity(resolution.targetId());
         if (!(target instanceof LivingEntity livingTarget)) {
-            return;
+            return BasicAttackFailureReason.TARGET_DAMAGE_REJECTED;
         }
 
         if (resolution.resultType() == CombatHitResultType.HIT || resolution.resultType() == CombatHitResultType.CRIT) {
@@ -283,10 +346,16 @@ public class RagnarCombatEngine {
             // Mark as processed to avoid CommonEvents double-calc
             DamageProcessingGuard.markProcessedPlayer(livingTarget);
 
-            SkillDamageHelper.dealSkillDamage(livingTarget, attacker.damageSources().playerAttack(attacker), damage);
+            boolean applied = SkillDamageHelper.dealSkillDamage(livingTarget, attacker.damageSources().playerAttack(attacker), damage);
+            if (!applied) {
+                CombatDebugLog.logDamageApplyFailure(attacker, livingTarget, resolution);
+                feedbackService.sendBasicAttackFeedback(attacker, livingTarget, resolution);
+                return BasicAttackFailureReason.TARGET_DAMAGE_REJECTED;
+            }
         }
 
         feedbackService.sendBasicAttackFeedback(attacker, livingTarget, resolution);
+        return BasicAttackFailureReason.NONE;
     }
 
     @net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "ragnarmmo")

@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.common.config.access;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
+import com.etema.ragnarmmo.mobs.companion.CompanionRankMode;
 import com.etema.ragnarmmo.mobs.difficulty.DifficultyMode;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -63,6 +64,10 @@ public final class MobConfigAccess {
         return snapshot().difficultyRules;
     }
 
+    public static CompanionRules getCompanionRules() {
+        return snapshot().companionRules;
+    }
+
     public static double getMaxMovementSpeed() {
         return snapshot().formulaRules.moveSpeedCap();
     }
@@ -112,6 +117,7 @@ public final class MobConfigAccess {
         final DefaultProfile defaultProfile;
         final FormulaRules formulaRules;
         final DifficultyRules difficultyRules;
+        final CompanionRules companionRules;
 
         Snapshot() {
             var mobs = RagnarConfigs.SERVER.mobs;
@@ -122,6 +128,7 @@ public final class MobConfigAccess {
             defaultProfile = readDefaultProfile(mobs.defaultProfile);
             formulaRules = readFormulaRules(mobs.attributes);
             difficultyRules = readDifficultyRules(difficulty);
+            companionRules = readCompanionRules(mobs.companions);
         }
     }
 
@@ -154,6 +161,13 @@ public final class MobConfigAccess {
                 config.aspdPerLevel.get(),
                 config.moveSpeedPerLevel.get(),
                 config.moveSpeedCap.get());
+    }
+
+    private static CompanionRules readCompanionRules(RagnarConfigs.Server.Mobs.Companions config) {
+        return new CompanionRules(
+                config.rankMode.get(),
+                config.syncRadius.get(),
+                config.deferUntilOwnerOnline.get());
     }
 
     private static DifficultyRules readDifficultyRules(RagnarConfigs.Server.Difficulty config) {
@@ -237,6 +251,20 @@ public final class MobConfigAccess {
             double moveSpeedCap) {
         public FormulaRules {
             if (moveSpeedCap <= 0.0D) throw new IllegalArgumentException("moveSpeedCap must be > 0");
+        }
+    }
+
+    public record CompanionRules(
+            CompanionRankMode rankMode,
+            double syncRadius,
+            boolean deferUntilOwnerOnline) {
+        public CompanionRules {
+            if (rankMode == null) {
+                throw new IllegalArgumentException("companion rankMode must not be null");
+            }
+            if (syncRadius <= 0.0D) {
+                throw new IllegalArgumentException("companion syncRadius must be > 0");
+            }
         }
     }
 

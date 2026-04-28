@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.player.command;
 
 import com.etema.ragnarmmo.common.command.CommandUtil;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
+import com.etema.ragnarmmo.mobs.companion.CompanionProfileService;
 import com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider;
 import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncService;
 import com.etema.ragnarmmo.player.progression.PlayerProgressionService;
@@ -68,6 +69,7 @@ public final class ExpCommands {
                     progressionService::baseExpToNext);
             sync(player, stats);
             if (stats.getLevel() > lvBefore) {
+                CompanionProfileService.refreshOwnedCompanions(player);
                 sendOk(player, "✦ +" + amount + " base XP  →  Level " + stats.getLevel()
                         + " (+" + (stats.getLevel() - lvBefore) + " levels)");
             } else {
@@ -106,9 +108,13 @@ public final class ExpCommands {
         ServerPlayer player = CommandUtil.requirePlayer(ctx);
         int[] result = {0};
         player.getCapability(PlayerStatsProvider.CAP).ifPresent(stats -> {
+            int lvBefore = stats.getLevel();
             stats.setLevel(level);
             stats.setExp(0);
             sync(player, stats);
+            if (stats.getLevel() != lvBefore) {
+                CompanionProfileService.refreshOwnedCompanions(player);
+            }
             sendOk(player, "✦ Base level set to " + stats.getLevel());
             result[0] = 1;
         });

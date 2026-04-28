@@ -13,11 +13,39 @@ import net.minecraftforge.network.NetworkEvent;
 
 public final class SyncMobProfilePacket {
     private final int entityId;
+    private final boolean initialized;
     private final MobProfile profile;
 
     public SyncMobProfilePacket(int entityId, MobProfile profile) {
         this.entityId = entityId;
+        this.initialized = profile != null;
         this.profile = profile;
+    }
+
+    private SyncMobProfilePacket(int entityId, boolean initialized, MobProfile profile) {
+        this.entityId = entityId;
+        this.initialized = initialized;
+        this.profile = profile;
+    }
+
+    public static SyncMobProfilePacket clear(int entityId) {
+        return new SyncMobProfilePacket(entityId, false, null);
+    }
+
+    public static SyncMobProfilePacket clear(LivingEntity entity) {
+        return clear(entity.getId());
+    }
+
+    public int entityId() {
+        return entityId;
+    }
+
+    public boolean initialized() {
+        return initialized;
+    }
+
+    public Optional<MobProfile> profile() {
+        return Optional.ofNullable(profile);
     }
 
     public static Optional<SyncMobProfilePacket> fromEntity(LivingEntity entity) {
@@ -33,6 +61,10 @@ public final class SyncMobProfilePacket {
 
     public static void encode(SyncMobProfilePacket msg, FriendlyByteBuf buf) {
         buf.writeInt(msg.entityId);
+        buf.writeBoolean(msg.initialized);
+        if (!msg.initialized) {
+            return;
+        }
         buf.writeInt(msg.profile.level());
         buf.writeEnum(msg.profile.rank());
         buf.writeInt(msg.profile.maxHp());
@@ -51,8 +83,13 @@ public final class SyncMobProfilePacket {
     }
 
     public static SyncMobProfilePacket decode(FriendlyByteBuf buf) {
+        int entityId = buf.readInt();
+        boolean initialized = buf.readBoolean();
+        if (!initialized) {
+            return clear(entityId);
+        }
         return new SyncMobProfilePacket(
-                buf.readInt(),
+                entityId,
                 new MobProfile(
                         buf.readInt(),
                         buf.readEnum(com.etema.ragnarmmo.common.api.mobs.MobRank.class),
@@ -74,8 +111,14 @@ public final class SyncMobProfilePacket {
     public static void handle(SyncMobProfilePacket msg, Supplier<NetworkEvent.Context> ctxSup) {
         var ctx = ctxSup.get();
         ctx.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> () -> com.etema.ragnarmmo.client.ClientPacketHandler.handleMobProfileSync(msg.entityId,
-                        msg.profile)));
+                () -> () -> {
+                    if (msg.initialized) {
+                        com.etema.ragnarmmo.client.ClientPacketHandler.handleMobProfileSync(msg.entityId,
+                                msg.profile);
+                    } else {
+                        com.etema.ragnarmmo.client.ClientPacketHandler.handleMobProfileClear(msg.entityId);
+                    }
+                }));
         ctx.setPacketHandled(true);
     }
 }

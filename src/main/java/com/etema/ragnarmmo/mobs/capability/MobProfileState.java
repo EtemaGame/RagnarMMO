@@ -21,6 +21,11 @@ public final class MobProfileState {
         this.initialized = profile != null;
     }
 
+    public void clearProfile() {
+        this.profile = defaultProfile();
+        this.initialized = false;
+    }
+
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putBoolean("Initialized", initialized);

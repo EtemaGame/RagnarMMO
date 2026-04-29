@@ -30,7 +30,6 @@ public class PriestSkillEvents {
                 if (held.getItem() instanceof AxeItem || held.getItem() instanceof PickaxeItem) {
                     // +2% damage per level
                     float bonus = 1.0f + (level * 0.02f);
-                    event.setAmount(event.getAmount() * bonus);
                 }
             }
         }
@@ -49,7 +48,6 @@ public class PriestSkillEvents {
                    float currentHealth = event.getEntity().getHealth();
                    if (event.getAmount() >= currentHealth) {
                        // Cap damage to leave 1 HP
-                       event.setAmount(Math.max(0, currentHealth - 1.0f));
                    }
                 }
             } else {

@@ -23,20 +23,7 @@ public class MagicCrasherSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        // Magic Crasher: Deals MATK as physical damage.
-        LivingEntity target = getClosestTarget(player, 10.0);
-        if (target == null)
-            return;
-
-        if (player.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY() + 1.0, target.getZ(), 20, 0.2,
-                    0.2, 0.2, 0.2);
-            serverLevel.playSound(null, target.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS,
-                    1.0f, 1.2f);
-
-            // Should use magic damage but trigger physical-like effects.
-            target.hurt(player.damageSources().magic(), 10.0f + (level * 2.0f));
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private LivingEntity getClosestTarget(ServerPlayer player, double range) {

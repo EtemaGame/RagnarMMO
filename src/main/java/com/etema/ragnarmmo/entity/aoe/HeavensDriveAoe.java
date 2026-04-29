@@ -30,8 +30,7 @@ public class HeavensDriveAoe extends AoeEntity {
 
     @Override
     public void applyEffect(LivingEntity target) {
-        SkillDamageHelper.dealSkillDamage(target, this.damageSources().magic(), this.damage);
-        target.push(0, 0.1, 0);
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     @Override

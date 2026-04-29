@@ -145,6 +145,7 @@ public class RagnarBarRenderHandler {
         label = trimToWidth(font, label, MAX_PANEL_WIDTH - PANEL_PAD_X * 2);
 
         boolean showDetails = player.isShiftKeyDown();
+        // Show secondary label when shift is held, even if health bar is not visible
         boolean hasSecondaryLabel = showDetails && secondaryLabel != null && !secondaryLabel.isEmpty();
         if (hasSecondaryLabel) {
             secondaryLabel = trimToWidth(font, secondaryLabel, MAX_PANEL_WIDTH - PANEL_PAD_X * 2);
@@ -160,9 +161,19 @@ public class RagnarBarRenderHandler {
         boolean recentlyHit = lastHit != null && (System.currentTimeMillis() - lastHit < DISPLAY_TIME_MS);
         boolean representedByTargetFrame = isRepresentedByTargetFrame(mc, entity);
         boolean showHealth = recentlyHit || representedByTargetFrame;
-        int panelHeight = showHealth
-                ? (MobConfigAccess.renderNumericHealth() ? 27 : 19)
-                : (hasSecondaryLabel ? 18 : 12);
+
+        // Panel height: health takes priority, then secondary label, then compact
+        int panelHeight;
+        if (showHealth && hasSecondaryLabel) {
+            panelHeight = MobConfigAccess.renderNumericHealth() ? 35 : 27;
+        } else if (showHealth) {
+            panelHeight = MobConfigAccess.renderNumericHealth() ? 27 : 19;
+        } else if (hasSecondaryLabel) {
+            panelHeight = 20;
+        } else {
+            panelHeight = 12;
+        }
+
         int panelWidth = Math.max(MIN_PANEL_WIDTH, font.width(label) + PANEL_PAD_X * 2);
         if (hasSecondaryLabel) {
             panelWidth = Math.max(panelWidth, font.width(secondaryLabel) + PANEL_PAD_X * 2);
@@ -171,19 +182,21 @@ public class RagnarBarRenderHandler {
             panelWidth = Math.max(panelWidth, 68);
         }
         panelWidth = Math.min(panelWidth, MAX_PANEL_WIDTH);
-
         drawPanel(ps, panelWidth, panelHeight);
 
-        font.drawInBatch(label, -font.width(label) / 2f, LABEL_Y, labelColor, true,
-                ps.last().pose(), e.getMultiBufferSource(), Font.DisplayMode.NORMAL, 0, e.getPackedLight());
+        font.drawInBatch(label, -font.width(label) / 2f, LABEL_Y, labelColor, false,
+                ps.last().pose(), e.getMultiBufferSource(), Font.DisplayMode.SEE_THROUGH, 0, e.getPackedLight());
 
-        if (hasSecondaryLabel && !showHealth) {
+        // Secondary label is always shown when shift is held (health bar may or may not be visible)
+        if (hasSecondaryLabel) {
             ps.pushPose();
             float secondaryScale = 0.66F;
-            ps.translate(0.0D, 8.0D, 0.0D);
+            // Push down below the health bar if it is shown, otherwise just below the title
+            float secondaryOffsetY = showHealth ? BAR_Y + BAR_HEIGHT + 4 : 9.0f;
+            ps.translate(0.0D, secondaryOffsetY, 0.0D);
             ps.scale(secondaryScale, secondaryScale, secondaryScale);
-            font.drawInBatch(secondaryLabel, -font.width(secondaryLabel) / 2f, 0, secondaryLabelColor, true,
-                    ps.last().pose(), e.getMultiBufferSource(), Font.DisplayMode.NORMAL, 0, e.getPackedLight());
+            font.drawInBatch(secondaryLabel, -font.width(secondaryLabel) / 2f, 0, secondaryLabelColor, false,
+                    ps.last().pose(), e.getMultiBufferSource(), Font.DisplayMode.SEE_THROUGH, 0, e.getPackedLight());
             ps.popPose();
         }
 
@@ -201,8 +214,8 @@ public class RagnarBarRenderHandler {
                     ps.translate(0, HP_TEXT_Y, 0);
                     ps.scale(textScale, textScale, textScale);
 
-                    font.drawInBatch(hpText, -font.width(hpText) / 2f, 0, 0xFFFFFFFF, true,
-                            ps.last().pose(), e.getMultiBufferSource(), Font.DisplayMode.NORMAL, 0, e.getPackedLight());
+                    font.drawInBatch(hpText, -font.width(hpText) / 2f, 0, 0xFFFFFFFF, false,
+                            ps.last().pose(), e.getMultiBufferSource(), Font.DisplayMode.SEE_THROUGH, 0, e.getPackedLight());
                     ps.popPose();
                 }
             }
@@ -222,8 +235,12 @@ public class RagnarBarRenderHandler {
         Tesselator tess = Tesselator.getInstance();
         BufferBuilder buffer = tess.getBuilder();
         buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        fillRect(mat, buffer, x1, y1, x1 + width, y1 + height, 0x7A050608);
-        fillRect(mat, buffer, x1, y1 + height - 1, x1 + width, y1 + height, 0x9A000000);
+        // Increased alpha from 0x7A to 0xA8 for better text contrast
+        fillRect(mat, buffer, x1, y1, x1 + width, y1 + height, 0xA8040507);
+        // Darker bottom border for a clean edge
+        fillRect(mat, buffer, x1, y1 + height - 1, x1 + width, y1 + height, 0xBB000000);
+        // Subtle top highlight line
+        fillRect(mat, buffer, x1, y1, x1 + width, y1 + 1, 0x33FFFFFF);
         BufferUploader.drawWithShader(buffer.end());
         RenderSystem.disableBlend();
     }

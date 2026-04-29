@@ -41,63 +41,7 @@ public class SonicBlowSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        LivingEntity target = getClosestTarget(player, 2.5);
-        if (target == null) return;
-
-        if (!(player.level() instanceof ServerLevel serverLevel)) return;
-
-        // RO: total damage = (300 + 50 × level)% ATK, split evenly across 8 hits.
-        float totalPct = 300.0f + (50.0f * level);       // e.g. Lv1 = 350%, Lv10 = 800%
-        float pctPerHit = totalPct / HIT_COUNT;
-        float damagePerHit = Math.max(SkillDamageHelper.MIN_ATK,
-                SkillDamageHelper.scaleByATK(player, pctPerHit));
-
-        float stunChance = 0.12f + (0.02f * level);
-
-        for (int i = 0; i < HIT_COUNT; i++) {
-            final int hitIndex = i;
-            // 2-tick spacing for visual blur (each hit MUST use dealSkillDamage to bypass hurtTime)
-            SkillSequencer.schedule(i * 2, () -> {
-                if (!target.isAlive()) return;
-
-                // Bypass hurtTime so all 8 hits register
-                SkillDamageHelper.dealSkillDamage(target,
-                        player.damageSources().playerAttack(player), damagePerHit);
-
-                // Visual and audio feedback
-                serverLevel.playSound(null, target.getX(), target.getY(), target.getZ(),
-                        SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS,
-                        0.8f, 1.1f + hitIndex * 0.08f);
-
-                double ox = (player.getRandom().nextDouble() - 0.5) * 0.5;
-                double oy = (player.getRandom().nextDouble()) * 0.6;
-                double oz = (player.getRandom().nextDouble() - 0.5) * 0.5;
-                serverLevel.sendParticles(ParticleTypes.CRIT,
-                        target.getX(), target.getY() + 1.0, target.getZ(),
-                        2, 0.15, 0.2, 0.15, 0.08);
-
-                // Final hit: stun chance + big impact effect
-                if (hitIndex == HIT_COUNT - 1) {
-                    serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
-                            target.getX(), target.getY() + 1.2, target.getZ(),
-                            15, 0.3, 0.3, 0.3, 0.12);
-                    serverLevel.playSound(null, target.getX(), target.getY(), target.getZ(),
-                            SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.4f);
-
-                    float finalStunChance = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeStunChance(stunChance, target);
-                    int finalStunDuration = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeStunDuration(60, target);
-
-                    if (finalStunDuration > 0 && player.level().random.nextFloat() < finalStunChance) {
-                        long until = player.level().getGameTime() + finalStunDuration;
-                        target.getPersistentData().putLong("ragnarmmo_stunned_until", until);
-                        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, finalStunDuration, 10, false, false));
-                        target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, Math.max(1, finalStunDuration - 20), 1, false, true, false));
-                        serverLevel.playSound(null, target.getX(), target.getY(), target.getZ(),
-                                SoundEvents.ANVIL_PLACE, SoundSource.PLAYERS, 0.5f, 1.8f);
-                    }
-                }
-            });
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private LivingEntity getClosestTarget(ServerPlayer player, double range) {

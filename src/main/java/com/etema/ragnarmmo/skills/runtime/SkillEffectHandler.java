@@ -1,6 +1,11 @@
 package com.etema.ragnarmmo.skills.runtime;
 
 import com.etema.ragnarmmo.RagnarMMO;
+import com.etema.ragnarmmo.combat.api.CombatActionType;
+import com.etema.ragnarmmo.combat.api.CombatRequestContext;
+import com.etema.ragnarmmo.combat.api.CombatTargetCandidate;
+import com.etema.ragnarmmo.combat.contract.SkillCombatSpecResolver;
+import com.etema.ragnarmmo.combat.engine.RagnarCombatEngine;
 import com.etema.ragnarmmo.common.api.player.RoPlayerDataAccess;
 import com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain;
 import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
@@ -11,6 +16,7 @@ import com.etema.ragnarmmo.skills.api.ISkillEffect;
 import com.etema.ragnarmmo.skills.data.SkillDefinition;
 import com.etema.ragnarmmo.skills.data.SkillRegistry;
 import com.etema.ragnarmmo.skills.registry.SkillTriggerRegistry;
+import com.etema.ragnarmmo.skills.targeting.SkillTargeting;
 import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncService;
 import net.minecraft.ChatFormatting;
@@ -27,6 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
@@ -116,6 +124,11 @@ public class SkillEffectHandler {
         if (defOpt.isPresent()) {
             SkillDefinition def = defOpt.get();
             ResourceLocation id = def.getId();
+
+            if (SkillCombatSpecResolver.resolve(def, level).isPresent()) {
+                forwardCombatSkillToEngine(player, def, level);
+                return;
+            }
 
             RoPlayerDataAccess.get(player).ifPresent(data -> {
                 IPlayerStats stats = data.getStats();
@@ -211,6 +224,10 @@ public class SkillEffectHandler {
 
         if (defOpt.isPresent() && playerDataOpt.isPresent()) {
             SkillDefinition def = defOpt.get();
+            if (SkillCombatSpecResolver.resolve(def, level).isPresent()) {
+                forwardCombatSkillToEngine(player, def, level);
+                return;
+            }
             var data = playerDataOpt.get();
             IPlayerStats stats = data.getStats();
             SkillManager skills = (SkillManager) data.getSkills();
@@ -249,6 +266,26 @@ public class SkillEffectHandler {
             LOGGER.warn("No skill effect implementation found for {}", skillId);
         }
         return false;
+    }
+
+    private static void forwardCombatSkillToEngine(ServerPlayer player, SkillDefinition def, int level) {
+        double range = def.getLevelDouble("range", level, 15.0D);
+        net.minecraft.world.entity.LivingEntity target = SkillTargeting.findEntityInSight(player, range);
+        List<CombatTargetCandidate> candidates = target == null
+                ? List.of()
+                : List.of(new CombatTargetCandidate(target.getId(), "legacy_skill_handler", 0.0D, false));
+        int sequence = (int) Math.min(Integer.MAX_VALUE,
+                player.serverLevel().getGameTime() + player.tickCount + def.getId().hashCode());
+        RagnarCombatEngine.get().handleSkillUseRequest(new CombatRequestContext(
+                player,
+                CombatActionType.SKILL,
+                sequence,
+                0,
+                false,
+                player.getInventory().selected,
+                def.getId().toString(),
+                candidates,
+                Map.of("level", level)));
     }
 
     public static void refreshPassiveEffects(ServerPlayer player) {

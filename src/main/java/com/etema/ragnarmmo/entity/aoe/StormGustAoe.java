@@ -28,8 +28,7 @@ public class StormGustAoe extends AoeEntity {
 
     @Override
     public void applyEffect(LivingEntity target) {
-        SkillDamageHelper.dealSkillDamage(target, this.damageSources().magic(), this.damage);
-        target.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 40, 1));
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     @Override

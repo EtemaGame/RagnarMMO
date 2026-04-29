@@ -28,33 +28,7 @@ public class SandAttackSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0)
-            return;
-
-        // Sand Attack: Deals 130% ATK damage (Earth element) and has a 15% chance to
-        // Blind.
-
-        LivingEntity target = getMeleeTarget(player);
-        if (target == null)
-            return;
-
-        float damage = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByATK(player, 125.0f); // 125% ATK Earth
-        target.hurt(player.damageSources().mobAttack(player), damage);
-
-        if (player.getRandom().nextFloat() <= 0.15f) {
-            target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 200, 0, false, true, true)); // 10 seconds
-                                                                                                      // blind
-        }
-
-        player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-                SoundEvents.SAND_BREAK, SoundSource.PLAYERS, 1.0f, 0.8f);
-
-        if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-            serverLevel.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.SAND.defaultBlockState()),
-                    target.getX(), target.getY() + 1.2, target.getZ(), 25, 0.4, 0.4, 0.4, 0.1);
-            serverLevel.sendParticles(ParticleTypes.SMOKE,
-                    target.getX(), target.getY() + 1.2, target.getZ(), 10, 0.3, 0.3, 0.3, 0.05);
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     // (Helper duplicated for clarity across active melee skills)

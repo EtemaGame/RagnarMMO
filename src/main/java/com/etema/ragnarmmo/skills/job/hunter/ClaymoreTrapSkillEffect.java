@@ -28,24 +28,7 @@ public class ClaymoreTrapSkillEffect implements ISkillEffect {
                             explosiveBounds,
                             e -> e.isAlive() && e != trap.owner && !e.isAlliedTo(trap.owner));
 
-                    // RO-accurate scaling for trap damage
-                    // Formula: [DEX * (3 + 4 * INT / 100) * (SkillLevel / 5)]
-                    float trapDamage = 0F;
-                    if (trap.owner instanceof ServerPlayer player) {
-                        double dex = player.getCapability(PlayerStatsProvider.CAP)
-                                .map(s -> (double) s.getDEX()).orElse(0.0);
-                        double intel = player.getCapability(PlayerStatsProvider.CAP)
-                                .map(s -> (double) s.getINT()).orElse(0.0);
-                        
-                        trapDamage = (float) (dex * (3 + 4 * intel / 100.0) * (trap.skillLevel / 5.0));
-                    }
-                    if (trapDamage < 10) trapDamage = 10; // Minimum floor
-
-                    // Apply Fire Damage type if possible, utilizing generic damage source for now
-                    DamageSource source = trap.level.damageSources().inFire();
-
                     for (net.minecraft.world.entity.LivingEntity entity : entities) {
-                        entity.hurt(source, trapDamage);
                         entity.setSecondsOnFire(5);
                     }
                 });
@@ -53,15 +36,7 @@ public class ClaymoreTrapSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int currentLevel) {
-        BlockPos pos = getTargetBlock(player);
-        if (pos == null) {
-            player.sendSystemMessage(
-                    net.minecraft.network.chat.Component.translatable("message.ragnarmmo.skill_no_target_block"));
-            return;
-        }
-
-        HunterTrapManager.placeTrap(player, (net.minecraft.server.level.ServerLevel) player.level(), pos.above(),
-                definition, currentLevel);
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private BlockPos getTargetBlock(ServerPlayer player) {

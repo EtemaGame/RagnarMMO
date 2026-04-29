@@ -41,7 +41,10 @@ public final class MobDefinitionResolver {
         ResolvedMobDefinition resolved = new ResolvedMobDefinition(
                 definition.entity(),
                 preferPrimary(definition.rank(), template != null ? template.rank() : null),
+                preferPrimary(definition.tier(), template != null ? template.tier() : null),
                 preferPrimary(definition.level(), template != null ? template.level() : null),
+                preferPrimary(definition.baseExp(), template != null ? template.baseExp() : null),
+                preferPrimary(definition.jobExp(), template != null ? template.jobExp() : null),
                 mergeRoStats(template != null ? template.roStats() : null, definition.roStats()),
                 mergeDirectStats(template != null ? template.directStats() : null, definition.directStats()),
                 preferPrimary(definition.race(), template != null ? template.race() : null),
@@ -76,6 +79,8 @@ public final class MobDefinitionResolver {
         if (definition.rank() == null) {
             issues.add(incomplete("rank", "rank is unresolved after declarative merge"));
         }
+        validateNonNegative(definition.baseExp(), "baseExp", issues);
+        validateNonNegative(definition.jobExp(), "jobExp", issues);
     }
 
     private static void validateRoStats(

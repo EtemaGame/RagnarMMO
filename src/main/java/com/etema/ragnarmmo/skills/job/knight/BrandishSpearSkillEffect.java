@@ -36,46 +36,6 @@ public class BrandishSpearSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0) return;
-
-        // Base radius: grows with level. Mounted = extra range.
-        double radius = 3.0 + (level * 0.3);
-        boolean isMounted = player.isPassenger(); // Riding any vehicle = mounted equivalent
-        if (isMounted) radius *= 1.5;
-
-        // RO: (100 + 40×level)% ATK per target in the AOE sweep
-        float damage = Math.max(com.etema.ragnarmmo.combat.damage.SkillDamageHelper.MIN_ATK,
-                com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByATK(player, 100f + 40f * level));
-
-        AABB area = player.getBoundingBox().inflate(radius);
-        List<LivingEntity> targets = player.level().getEntitiesOfClass(LivingEntity.class, area,
-                e -> e != player && e.isAlive());
-
-        for (LivingEntity target : targets) {
-            com.etema.ragnarmmo.combat.damage.SkillDamageHelper.dealSkillDamage(
-                    target, player.damageSources().playerAttack(player), damage);
-
-            // Minor knockback outward (spear swing pushes away)
-            Vec3 knockDir = target.position().subtract(player.position()).normalize();
-            target.knockback(0.6f, -knockDir.x, -knockDir.z);
-        }
-
-        // --- Particles: circular sweep arc around the player ---
-        if (player.level() instanceof ServerLevel serverLevel) {
-            for (double angle = 0; angle < Math.PI * 2; angle += Math.PI / 8) {
-                double px = player.getX() + Math.cos(angle) * radius;
-                double pz = player.getZ() + Math.sin(angle) * radius;
-                serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK,
-                        px, player.getY() + 1.2, pz, 1, 0, 0, 0, 0);
-                serverLevel.sendParticles(ParticleTypes.CRIT,
-                        px, player.getY() + 1.0, pz, 2, 0.1, 0.1, 0.1, 0.05);
-            }
-        }
-
-        // Sounds
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 0.9f);
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 0.6f, 1.3f);
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 }

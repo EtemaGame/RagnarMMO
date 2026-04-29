@@ -8,9 +8,12 @@ import java.util.OptionalInt;
 
 public record AuthoredMobDefinition(
         ResourceLocation entityType,
+        Optional<MobTier> tier,
         Optional<String> race,
         Optional<String> element,
         Optional<String> size,
+        OptionalInt baseExp,
+        OptionalInt jobExp,
         OptionalInt baseHp,
         OptionalInt atkMin,
         OptionalInt atkMax,
@@ -25,9 +28,12 @@ public record AuthoredMobDefinition(
         if (entityType == null) {
             throw new IllegalArgumentException("entityType must not be null");
         }
+        tier = tier == null ? Optional.empty() : tier;
         race = race == null ? Optional.empty() : race;
         element = element == null ? Optional.empty() : element;
         size = size == null ? Optional.empty() : size;
+        baseExp = baseExp == null ? OptionalInt.empty() : baseExp;
+        jobExp = jobExp == null ? OptionalInt.empty() : jobExp;
         baseHp = baseHp == null ? OptionalInt.empty() : baseHp;
         atkMin = atkMin == null ? OptionalInt.empty() : atkMin;
         atkMax = atkMax == null ? OptionalInt.empty() : atkMax;

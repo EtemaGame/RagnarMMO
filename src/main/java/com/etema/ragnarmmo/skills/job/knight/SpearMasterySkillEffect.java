@@ -29,16 +29,6 @@ public class SpearMasterySkillEffect implements ISkillEffect {
 
     @Override
     public void onOffensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
-        if (level <= 0) return;
-
-        net.minecraft.world.item.ItemStack held = player.getMainHandItem();
-        boolean isSpear = held.getItem() instanceof TridentItem
-                || held.getTags().anyMatch(t -> t.location().toString().contains("ragnarmmo:spear"));
-
-        if (!isSpear) return;
-
-        // +3% damage per level (higher than sword since spears have lower ASPD in RO)
-        float bonus = event.getAmount() * (0.03f * level);
-        event.setAmount(event.getAmount() + bonus);
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 }

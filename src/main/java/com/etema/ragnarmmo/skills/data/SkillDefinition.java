@@ -195,6 +195,27 @@ public final class SkillDefinition implements ISkillDefinition {
                 "cast_time_ticks", "cast_time");
     }
 
+    public int getVariableCastTicks(int level) {
+        return getAliasedLevelInt(level, castTimeTicks,
+                "variable_cast_ticks", "variable_cast", "cast_time_ticks", "cast_time");
+    }
+
+    public int getFixedCastTicks(int level) {
+        return getAliasedLevelInt(level, 0,
+                "fixed_cast_ticks", "fixed_cast");
+    }
+
+    public int getAfterCastDelayTicks(int level) {
+        return getAliasedLevelInt(level, castDelayTicks,
+                "after_cast_delay_ticks", "after_cast_delay", "cast_delay_ticks", "skill_delay_ticks",
+                "cast_delay", "skill_delay");
+    }
+
+    public int getGlobalDelayTicks(int level) {
+        return getAliasedLevelInt(level, 0,
+                "global_delay_ticks", "global_delay");
+    }
+
     @Override
     public boolean isInterruptible() {
         return interruptible;

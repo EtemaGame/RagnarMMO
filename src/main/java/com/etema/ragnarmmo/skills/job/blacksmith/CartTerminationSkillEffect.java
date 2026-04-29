@@ -23,24 +23,7 @@ public class CartTerminationSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        // Cart Termination: High damage strike using the pushcart.
-        // In this mod, "Pushcart" is often checked via MerchantSkillEvents or
-        // capabilities.
-        // For now, we'll deal high damage if the player has the Cart capability.
-
-        LivingEntity target = getClosestTarget(player, 4.0);
-        if (target == null)
-            return;
-
-        if (player.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE, target.getX(), target.getY() + 1.0, target.getZ(), 20,
-                    0.5, 0.5, 0.5, 0.1);
-            serverLevel.playSound(null, target.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0f,
-                    1.2f);
-
-            float damage = 50.0f + (level * 15.0f);
-            target.hurt(player.damageSources().playerAttack(player), damage);
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private LivingEntity getClosestTarget(ServerPlayer player, double range) {

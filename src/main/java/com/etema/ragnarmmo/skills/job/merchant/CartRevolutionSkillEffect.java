@@ -27,41 +27,6 @@ public class CartRevolutionSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0)
-            return;
-
-        float damage = SkillDamageHelper.scaleByATK(player, 150.0f);
-        double radius = 3.5;
-
-        // Introduce a heavy delay for the "cart revolution" swing
-        SkillSequencer.schedule(4, () -> {
-            boolean hitAny = false;
-            AABB area = player.getBoundingBox().inflate(radius);
-            List<Entity> nearbyEntities = player.level().getEntities(player, area,
-                    e -> e instanceof LivingEntity && e != player && e.isAlive());
-
-            for (Entity e : nearbyEntities) {
-                if (e instanceof LivingEntity target && target.isAlive()) {
-                    target.hurt(player.damageSources().mobAttack(player), damage);
-
-                    // Knockback logic
-                    Vec3 knockbackDir = target.position().subtract(player.position()).normalize();
-                    target.knockback(1.5f, -knockbackDir.x, -knockbackDir.z);
-                    hitAny = true;
-                }
-            }
-
-            if (hitAny) {
-                player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                        SoundEvents.IRON_GOLEM_ATTACK, SoundSource.PLAYERS, 1.2f, 0.9f);
-
-                if (player.level() instanceof ServerLevel serverLevel) {
-                    serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK, player.getX(), player.getY() + 1.0, player.getZ(), 10,
-                            radius / 2, 0.2, radius / 2, 0.1);
-                    serverLevel.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, player.getX(), player.getY() + 0.1, player.getZ(), 
-                            15, radius / 1.5, 0.1, radius / 1.5, 0.05);
-                }
-            }
-        });
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 }

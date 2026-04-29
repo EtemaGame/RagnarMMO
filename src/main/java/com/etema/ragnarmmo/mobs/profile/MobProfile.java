@@ -5,6 +5,7 @@ import com.etema.ragnarmmo.common.api.mobs.MobRank;
 public record MobProfile(
         int level,
         MobRank rank,
+        MobTier tier,
         int maxHp,
         int atkMin,
         int atkMax,
@@ -15,6 +16,8 @@ public record MobProfile(
         int crit,
         int aspd,
         double moveSpeed,
+        int baseExp,
+        int jobExp,
         String race,
         String element,
         String size) {
@@ -24,6 +27,9 @@ public record MobProfile(
         }
         if (rank == null) {
             throw new IllegalArgumentException("rank must not be null");
+        }
+        if (tier == null) {
+            throw new IllegalArgumentException("tier must not be null");
         }
         if (maxHp <= 0) {
             throw new IllegalArgumentException("maxHp must be > 0");
@@ -42,6 +48,9 @@ public record MobProfile(
         }
         if (moveSpeed <= 0.0D) {
             throw new IllegalArgumentException("moveSpeed must be > 0");
+        }
+        if (baseExp < 0 || jobExp < 0) {
+            throw new IllegalArgumentException("baseExp and jobExp must be >= 0");
         }
         race = requireToken(race, "race");
         element = requireToken(element, "element");

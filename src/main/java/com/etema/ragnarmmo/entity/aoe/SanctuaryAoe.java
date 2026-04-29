@@ -36,14 +36,7 @@ public class SanctuaryAoe extends AoeEntity {
 
     @Override
     public void applyEffect(LivingEntity target) {
-        if (target.getMobType() == MobType.UNDEAD) {
-            SkillDamageHelper.dealSkillDamage(target, this.damageSources().indirectMagic(this, getOwner()), this.damage);
-        } else {
-            target.heal(this.healAmount);
-            if (level() instanceof ServerLevel sl) {
-                sl.sendParticles(ParticleTypes.HEART, target.getX(), target.getY() + 1.0, target.getZ(), 1, 0, 0.2, 0, 0.0);
-            }
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     @Override

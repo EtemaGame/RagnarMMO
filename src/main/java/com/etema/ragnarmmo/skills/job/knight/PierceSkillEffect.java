@@ -36,59 +36,7 @@ public class PierceSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0) {
-            return;
-        }
-
-        LivingEntity target = getClosestTarget(player, 4.5);
-        if (target == null) {
-            return;
-        }
-
-        if (!(player.level() instanceof ServerLevel serverLevel)) {
-            return;
-        }
-
-        int hits = switch (CombatPropertyResolver.getEntitySize(target)) {
-            case SMALL -> 1;
-            case MEDIUM -> 2;
-            case LARGE -> 3;
-        };
-
-        float pctPerHit = 100.0f + (10.0f * level);
-        float damagePerHit = Math.max(SkillDamageHelper.MIN_ATK,
-                SkillDamageHelper.scaleByATK(player, pctPerHit));
-
-        for (int i = 0; i < hits; i++) {
-            final int hitIndex = i;
-            SkillSequencer.schedule(i * 3, () -> {
-                if (!target.isAlive()) {
-                    return;
-                }
-
-                SkillDamageHelper.dealSkillDamage(target,
-                        player.damageSources().playerAttack(player), damagePerHit);
-
-                serverLevel.playSound(null, target.getX(), target.getY(), target.getZ(),
-                        SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS,
-                        0.9f, 1.1f + hitIndex * 0.15f);
-
-                serverLevel.sendParticles(ParticleTypes.CRIT,
-                        target.getX(), target.getY() + target.getBbHeight() * 0.6, target.getZ(),
-                        6, 0.2, 0.2, 0.2, 0.08);
-                serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
-                        target.getX(), target.getY() + 1.0, target.getZ(),
-                        4, 0.1, 0.15, 0.1, 0.05);
-
-                if (hitIndex == hits - 1 && hits > 1) {
-                    serverLevel.playSound(null, target.getX(), target.getY(), target.getZ(),
-                            SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 0.8f, 1.2f);
-                    serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK,
-                            target.getX(), target.getY() + 1.3, target.getZ(),
-                            1, 0, 0, 0, 0);
-                }
-            });
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     static LivingEntity getClosestTarget(Player player, double range) {

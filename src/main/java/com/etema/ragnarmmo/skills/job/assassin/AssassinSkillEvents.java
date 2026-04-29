@@ -54,7 +54,6 @@ public class AssassinSkillEvents {
             }
 
             if (multiplier > 1.0f) {
-                event.setAmount(event.getAmount() * multiplier);
             }
         }
     }

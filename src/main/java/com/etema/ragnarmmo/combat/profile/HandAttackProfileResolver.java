@@ -14,15 +14,10 @@ import com.etema.ragnarmmo.items.runtime.WeaponStatHelper;
 import com.etema.ragnarmmo.skills.data.SkillRegistry;
 import com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.player.stats.compute.CombatMath;
-import com.google.common.collect.Multimap;
 
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BowItem;
@@ -153,26 +148,12 @@ public final class HandAttackProfileResolver {
                     + RoRefineMath.getAttackBonus(weapon);
         }
 
-        double base = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
-        Multimap<Attribute, AttributeModifier> modifiers = weapon.getAttributeModifiers(EquipmentSlot.MAINHAND);
-        double add = 0.0D;
-        double multBase = 0.0D;
-        double multTotal = 0.0D;
-        for (var entry : modifiers.entries()) {
-            if (entry.getKey() != Attributes.ATTACK_DAMAGE) {
-                continue;
-            }
-            AttributeModifier modifier = entry.getValue();
-            switch (modifier.getOperation()) {
-                case ADDITION -> add += modifier.getAmount();
-                case MULTIPLY_BASE -> multBase += modifier.getAmount();
-                case MULTIPLY_TOTAL -> multTotal += modifier.getAmount();
-            }
-        }
-
-        return (base * (1.0D + multBase) + add) * (1.0D + multTotal)
-                + EnchantmentHelper.getDamageBonus(weapon, MobType.UNDEFINED)
-                + RoRefineMath.getAttackBonus(weapon);
+        // P0 combat must not read vanilla attack attributes as balance input.
+        // Unauthored weapons keep only refinement/enchantment compatibility until
+        // they receive an RO item rule.
+        return Math.max(1.0D,
+                1.0D + EnchantmentHelper.getDamageBonus(weapon, MobType.UNDEFINED)
+                        + RoRefineMath.getAttackBonus(weapon));
     }
 
     private static int resolveWeaponBaseAspd(ItemStack weapon, boolean ranged) {

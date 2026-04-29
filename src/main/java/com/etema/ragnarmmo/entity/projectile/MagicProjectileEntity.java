@@ -205,46 +205,7 @@ public class MagicProjectileEntity extends ThrowableProjectile implements IVisua
 
     @Override
     protected void onHitEntity(EntityHitResult result) {
-        if (!this.level().isClientSide && result.getEntity() instanceof LivingEntity victim) {
-            LivingEntity attacker = (LivingEntity) this.getOwner();
-            if (attacker != null) {
-                boolean isMagic = "fireball".equals(getProjectileType()) || "bolt".equals(getProjectileType());
-                
-                if (!isMagic) {
-                    double hit = getEntityHit(attacker);
-                    double flee = getEntityFlee(victim);
-                    double hitRate = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeHitRate(hit, flee);
-                    
-                    if (!com.etema.ragnarmmo.player.stats.compute.CombatMath.rollHit(hitRate, this.random)) {
-                        this.level().playSound(null, this.getX(), this.getY(), this.getZ(), 
-                            net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_NODAMAGE, net.minecraft.sounds.SoundSource.NEUTRAL, 1.0f, 1.5f);
-                        if (this.level() instanceof net.minecraft.server.level.ServerLevel sl) {
-                            sl.sendParticles(net.minecraft.core.particles.ParticleTypes.SMOKE, victim.getX(), victim.getY() + 1, victim.getZ(), 5, 0.2, 0.2, 0.2, 0.05);
-                        }
-                        
-                        if (this.onHitEffect != null) {
-                            this.onHitEffect.accept(result);
-                        }
-                        
-                        this.discard();
-                        return;
-                    }
-                }
-            }
-            
-            Entity owner = this.getOwner();
-            if (owner instanceof ServerPlayer player) {
-                victim.hurt(player.damageSources().indirectMagic(this, player), damage);
-            } else {
-                victim.hurt(this.damageSources().indirectMagic(this, owner), damage);
-            }
-            
-            if (this.onHitEffect != null) {
-                this.onHitEffect.accept(result);
-            }
-            SkillEffectsNetwork.sendImpact(this, getSkillId(), result);
-        }
-        this.discard();
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private double getEntityHit(LivingEntity entity) {

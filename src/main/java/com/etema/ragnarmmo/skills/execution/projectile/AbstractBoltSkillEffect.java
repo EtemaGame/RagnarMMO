@@ -1,7 +1,6 @@
 package com.etema.ragnarmmo.skills.execution.projectile;
 
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skills.runtime.SkillSequencer;
 import com.etema.ragnarmmo.combat.element.ElementType;
 import com.etema.ragnarmmo.skills.execution.projectile.ProjectileFactory;
@@ -52,14 +51,14 @@ public abstract class AbstractBoltSkillEffect implements ISkillEffect {
         int hitSpacingTicks = SkillRegistry.get(id)
                 .map(def -> def.getLevelInt("hit_spacing_ticks", level, 4))
                 .orElse(4);
-        float damagePerHit = SkillDamageHelper.scaleByMATK(user, damagePercent);
+        float visualOnlyDamage = 0.0f;
 
         playCastVisual(serverLevel, user);
 
         for (int i = 0; i < hits; i++) {
             // SkillEffectHandler already handled the cast bar, so release bolts immediately.
             int delay = i * hitSpacingTicks;
-            SkillSequencer.schedule(delay, () -> spawnHit(user, damagePerHit, level));
+            SkillSequencer.schedule(delay, () -> spawnHit(user, visualOnlyDamage, level));
         }
     }
 

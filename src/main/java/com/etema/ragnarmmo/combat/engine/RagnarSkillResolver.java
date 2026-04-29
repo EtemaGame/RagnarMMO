@@ -2,12 +2,22 @@ package com.etema.ragnarmmo.combat.engine;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.etema.ragnarmmo.combat.api.CombatHitResultType;
 import com.etema.ragnarmmo.combat.api.CombatRequestContext;
 import com.etema.ragnarmmo.combat.api.CombatResolution;
+import com.etema.ragnarmmo.combat.contract.ActionIntent;
+import com.etema.ragnarmmo.combat.contract.CombatContract;
+import com.etema.ragnarmmo.combat.contract.CombatStrictMode;
+import com.etema.ragnarmmo.combat.contract.CombatantProfile;
+import com.etema.ragnarmmo.combat.contract.CombatantProfileResolver;
+import com.etema.ragnarmmo.combat.contract.SkillCombatSpec;
+import com.etema.ragnarmmo.combat.contract.SkillCombatSpecResolver;
+import com.etema.ragnarmmo.combat.profile.HandAttackProfileResolver;
 import com.etema.ragnarmmo.combat.state.CombatActorState;
 import com.etema.ragnarmmo.combat.util.CombatDebugLog;
 import com.etema.ragnarmmo.common.api.player.RoPlayerDataAccess;
@@ -15,12 +25,10 @@ import com.etema.ragnarmmo.common.api.stats.IPlayerStats;
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
 import com.etema.ragnarmmo.skills.data.SkillDefinition;
 import com.etema.ragnarmmo.skills.data.SkillRegistry;
-import com.etema.ragnarmmo.skills.runtime.SkillManager;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 
 /**
  * Resolves active skill usage within the authoritative combat pipeline.
@@ -29,10 +37,13 @@ public class RagnarSkillResolver {
 
     private final RagnarHitCalculator hitCalculator;
     private final RagnarDamageCalculator damageCalculator;
+    private final CombatContract combatContract;
 
-    public RagnarSkillResolver(RagnarHitCalculator hitCalculator, RagnarDamageCalculator damageCalculator) {
+    public RagnarSkillResolver(RagnarHitCalculator hitCalculator, RagnarDamageCalculator damageCalculator,
+            CombatContract combatContract) {
         this.hitCalculator = hitCalculator;
         this.damageCalculator = damageCalculator;
+        this.combatContract = combatContract;
     }
 
     public List<CombatResolution> resolveSkill(CombatRequestContext ctx, CombatActorState actorState, long nowTick) {
@@ -62,50 +73,74 @@ public class RagnarSkillResolver {
 
         final int finalLevel = level;
 
-        // 2. Resolve Targets and Hits
-        return RoPlayerDataAccess.get(player).map(data -> {
-            IPlayerStats stats = data.getStats();
+        Optional<SkillCombatSpec> specOpt = SkillCombatSpecResolver.resolve(def, finalLevel);
+        if (specOpt.isPresent()) {
+            SkillCombatSpec spec = specOpt.get();
             List<CombatResolution> results = new ArrayList<>();
-            
-            for (var candidate : ctx.candidates()) {
-                net.minecraft.world.entity.Entity targetEntity = player.serverLevel().getEntity(candidate.entityId());
-                if (!(targetEntity instanceof net.minecraft.world.entity.LivingEntity target)) continue;
 
-                // Base stats for skill calculation
-                int dex = stats.getDEX();
-                int luk = stats.getLUK();
-                int str = stats.getSTR();
-                int intel = stats.getINT();
-                int lvl = stats.getLevel();
+            Map<Integer, LivingEntity> targets = resolveSkillTargets(ctx, spec);
+            Integer primaryTargetId = ctx.candidates().isEmpty() ? null : ctx.candidates().get(0).entityId();
+            for (LivingEntity target : targets.values()) {
+                if (isSkillTargetBlocked(skillId, target)) {
+                    CombatDebugLog.logValidationReject(ctx, "SKILL_TARGET_BLOCKED");
+                    continue;
+                }
 
-                // Temporary skill multiplier logic until per-skill authored formulas are wired in.
-                double damageMultiplier = 1.0 + (finalLevel * 0.2);
-                
-                // Fetch Defender Stats (Ideally reuse the logic from RagnarCombatEngine)
-                // For simplicity in this step, I will assume a base hit until fully refactored
-                double attackerHit = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeHIT(stats.getDEX(), stats.getLUK(), stats.getLevel(), 0);
-                
-                // Temporary simplified resolution - to be expanded with full defender stats
-                double weaponBaseAtk = com.etema.ragnarmmo.player.stats.event.CommonEvents.getWeaponDamage(player);
-                boolean isRanged = com.etema.ragnarmmo.player.stats.compute.CombatMath.isRangedWeapon(player.getMainHandItem());
-                double baseDamage = com.etema.ragnarmmo.player.stats.compute.CombatMath.computeTotalATK(stats.getSTR(), stats.getDEX(), stats.getLUK(), stats.getLevel(), weaponBaseAtk, 0, isRanged);
-                double skillDmg = damageCalculator.computePhysicalDamage(baseDamage, dex, luk, new java.util.Random(player.getRandom().nextLong()));
-                skillDmg *= damageMultiplier;
+                CombatantProfile attackerProfile = CombatantProfileResolver
+                        .resolvePlayer(player, HandAttackProfileResolver.resolve(player, ctx.offHand()).orElse(null))
+                        .orElse(null);
+                CombatantProfile defenderProfile = target instanceof ServerPlayer defenderPlayer
+                        ? CombatantProfileResolver.resolvePlayer(defenderPlayer, null).orElse(null)
+                        : target instanceof net.minecraft.world.entity.Mob mob
+                                ? CombatantProfileResolver.resolveMob(mob, CombatStrictMode.current()).orElse(null)
+                                : null;
 
-                results.add(CombatResolution.hit(player.getId(), target.getId(), 1.0, skillDmg, false));
+                SkillCombatSpec effectiveSpec = spec;
+                if (primaryTargetId != null && target.getId() != primaryTargetId && spec.aoeRadius() > 0.0D) {
+                    effectiveSpec = new SkillCombatSpec(
+                            spec.damageType(),
+                            spec.element(),
+                            spec.hitPolicy(),
+                            spec.damagePercent() * spec.splashRatio(),
+                            spec.hitCount(),
+                            0.0D,
+                            1.0D);
+                }
+
+                var contractResult = combatContract.resolveSkill(
+                        attackerProfile,
+                        defenderProfile,
+                        new ActionIntent.SkillIntent(skillId, finalLevel, target.getId()),
+                        effectiveSpec,
+                        deterministicRandom(player, target, ctx.sequenceId() + finalLevel));
+                if (contractResult.rejected() || contractResult.resolution() == null) {
+                    CombatDebugLog.logValidationReject(ctx, "SKILL_CONTRACT_REJECTED_" + contractResult.rejectReason());
+                    continue;
+                }
+                results.add(contractResult.resolution());
             }
 
-            // 3. Trigger actual effect logic if available
-            effectOpt.ifPresent(effect -> {
-                try {
-                    effect.execute(player, finalLevel);
-                } catch (Exception e) {
-                    CombatDebugLog.logValidationReject(ctx, "Effect Execution Error: " + e.getMessage());
-                }
-            });
+            if (SkillCombatSpecResolver.shouldExecuteLegacyEffectAfterContract(skillId)) {
+                effectOpt.ifPresent(effect -> {
+                    try {
+                        effect.execute(player, finalLevel);
+                    } catch (Exception e) {
+                        CombatDebugLog.logValidationReject(ctx, "Effect Execution Error: " + e.getMessage());
+                    }
+                });
+            }
 
             return results;
-        }).orElse(Collections.emptyList());
+        }
+
+        effectOpt.ifPresent(effect -> {
+            try {
+                effect.execute(player, finalLevel);
+            } catch (Exception e) {
+                CombatDebugLog.logValidationReject(ctx, "Effect Execution Error: " + e.getMessage());
+            }
+        });
+        return Collections.emptyList();
     }
 
     /**
@@ -142,6 +177,51 @@ public class RagnarSkillResolver {
             }
             return results;
         }).orElse(Collections.emptyList());
+    }
+
+    private static java.util.Random deterministicRandom(ServerPlayer attacker, LivingEntity target, int sequenceSalt) {
+        long seed = 37L * attacker.serverLevel().getGameTime()
+                + 19L * attacker.getId()
+                + 11L * target.getId()
+                + sequenceSalt;
+        return new java.util.Random(seed);
+    }
+
+    private static boolean isSkillTargetBlocked(ResourceLocation skillId, LivingEntity target) {
+        if (skillId == null) {
+            return false;
+        }
+        return switch (skillId.getPath()) {
+            case "frost_diver" -> target.getMobType() == net.minecraft.world.entity.MobType.UNDEAD
+                    || com.etema.ragnarmmo.mobs.util.MobUtils.isBossLike(target);
+            default -> false;
+        };
+    }
+
+    private static Map<Integer, LivingEntity> resolveSkillTargets(CombatRequestContext ctx, SkillCombatSpec spec) {
+        ServerPlayer player = ctx.actor();
+        Map<Integer, LivingEntity> targets = new LinkedHashMap<>();
+        LivingEntity primary = null;
+        for (var candidate : ctx.candidates()) {
+            net.minecraft.world.entity.Entity entity = player.serverLevel().getEntity(candidate.entityId());
+            if (entity instanceof LivingEntity living && living.isAlive() && living != player) {
+                targets.put(living.getId(), living);
+                if (primary == null) {
+                    primary = living;
+                }
+            }
+        }
+
+        if (spec.aoeRadius() > 0.0D) {
+            var area = primary != null
+                    ? primary.getBoundingBox().inflate(spec.aoeRadius())
+                    : player.getBoundingBox().inflate(spec.aoeRadius());
+            for (LivingEntity living : player.serverLevel().getEntitiesOfClass(LivingEntity.class, area,
+                    entity -> entity.isAlive() && entity != player)) {
+                targets.putIfAbsent(living.getId(), living);
+            }
+        }
+        return targets;
     }
 }
 

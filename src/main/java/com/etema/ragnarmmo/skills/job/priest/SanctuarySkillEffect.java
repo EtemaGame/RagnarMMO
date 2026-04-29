@@ -47,10 +47,9 @@ public class SanctuarySkillEffect extends GroundAoEPersistentEffect {
 
         int duration = (4 + level) * 20; // roughly level + 4 seconds
         float healAmount = 2.0f + (level * 0.5f);
-        float damage = SkillDamageHelper.scaleByMATK(user, 50.0f + level);
         float radius = 4.0f;
 
-        SanctuaryAoe aoe = new SanctuaryAoe(sl, user, radius, damage, healAmount, duration);
+        SanctuaryAoe aoe = new SanctuaryAoe(sl, user, radius, 0.0f, healAmount, duration);
         aoe.setPos(pos.x, pos.y, pos.z);
         sl.addFreshEntity(aoe);
     }

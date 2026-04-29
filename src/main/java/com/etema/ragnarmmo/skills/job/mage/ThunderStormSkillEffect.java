@@ -31,43 +31,7 @@ public class ThunderStormSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0) return;
-
-        var definition = SkillRegistry.require(ID);
-        double radius = definition.getLevelDouble("aoe_radius", level, 2.5D);
-        float damagePercent = (float) definition.getLevelDouble("damage_percent", level, 80.0D);
-        float damage = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByMATK(player, damagePercent);
-        Vec3 center = resolveTargetSpot(player, definition.getLevelDouble("range", level, 15.0D));
-
-        if (player.level() instanceof ServerLevel sl) {
-            sl.playSound(null, player.blockPosition(), SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 1.0f, 1.0f);
-
-            int strikeCount = definition.getLevelInt("hit_count", level, Math.min(level, 10));
-            int hitSpacingTicks = definition.getLevelInt("hit_spacing_ticks", level, 5);
-            for (int i = 0; i < strikeCount; i++) {
-                int delay = i * hitSpacingTicks;
-                
-                com.etema.ragnarmmo.skills.runtime.SkillSequencer.schedule(delay, () -> {
-                    double ox = (player.getRandom().nextDouble() - 0.5) * radius * 2;
-                    double oz = (player.getRandom().nextDouble() - 0.5) * radius * 2;
-                    Vec3 strikePos = center.add(ox, 0, oz);
-                    Vec3 startPos = strikePos.add(0, 10, 0);
-
-                    com.etema.ragnarmmo.entity.projectile.LightningBoltProjectile projectile = 
-                        new com.etema.ragnarmmo.entity.projectile.LightningBoltProjectile(player.level(), player, damage);
-                    
-                    projectile.setPos(startPos.x, startPos.y, startPos.z);
-                    projectile.shoot(0, -1, 0, 1.5f, 0.0f);
-                    
-                    player.level().addFreshEntity(projectile);
-                    
-                    // Flash effect for each strike
-                    if (player.level() instanceof ServerLevel serverLevel) {
-                        serverLevel.sendParticles(ParticleTypes.FLASH, strikePos.x, strikePos.y + 0.1, strikePos.z, 1, 0, 0, 0, 0);
-                    }
-                });
-            }
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private Vec3 resolveTargetSpot(ServerPlayer player, double range) {

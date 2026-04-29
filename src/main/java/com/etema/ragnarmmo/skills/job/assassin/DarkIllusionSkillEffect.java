@@ -24,28 +24,7 @@ public class DarkIllusionSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        // Dark Illusion: Rapidly closes the distance to a target and attacks.
-        LivingEntity target = getClosestTarget(player, 15.0);
-        if (target == null)
-            return;
-
-        if (player.level() instanceof ServerLevel serverLevel) {
-            // Teleport behind or next to target
-            Vec3 targetPos = target.position();
-            Vec3 dir = player.position().subtract(targetPos).normalize();
-            Vec3 finalPos = targetPos.add(dir.scale(1.5));
-
-            serverLevel.sendParticles(ParticleTypes.SOUL, player.getX(), player.getY() + 1.0, player.getZ(), 20, 0.5,
-                    0.5, 0.5, 0.1);
-            player.teleportTo(finalPos.x, finalPos.y, finalPos.z);
-            serverLevel.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS,
-                    1.0f, 1.2f);
-
-            // Strike
-            target.hurt(player.damageSources().playerAttack(player), 10.0f + (level * 5.0f));
-            serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK, target.getX(), target.getY() + 1.0, target.getZ(), 1,
-                    0.1, 0.1, 0.1, 0.1);
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private LivingEntity getClosestTarget(ServerPlayer player, double range) {

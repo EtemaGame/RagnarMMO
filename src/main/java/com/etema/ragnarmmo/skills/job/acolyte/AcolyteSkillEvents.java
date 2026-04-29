@@ -33,9 +33,6 @@ public class AcolyteSkillEvents {
 
         float bonusRate = 0.05f * (angelus.getAmplifier() + 1);
         float reduction = Math.min(0.25f, vit * bonusRate * 0.0035f);
-        if (reduction > 0.0f) {
-            event.setAmount(event.getAmount() * (1.0f - reduction));
-        }
     }
 
     /**
@@ -53,7 +50,6 @@ public class AcolyteSkillEvents {
                 .isEmpty();
         if (protectedByPneuma) {
             event.setCanceled(true);
-            event.setAmount(0.0f);
             projectile.discard();
         }
     }

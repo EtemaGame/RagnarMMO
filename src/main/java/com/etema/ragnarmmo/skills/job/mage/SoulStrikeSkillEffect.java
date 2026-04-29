@@ -52,14 +52,6 @@ public class SoulStrikeSkillEffect implements ISkillEffect {
         // Allow shooting even if target is null
 
         int hits = definition.getLevelInt("hit_count", level, (level + 1) / 2);
-        float damagePercent = (float) definition.getLevelDouble("damage_percent", level, 100.0D);
-        float rawDamage = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByMATK(player, damagePercent);
-
-        if (target != null && target.getMobType() == net.minecraft.world.entity.MobType.UNDEAD) {
-            rawDamage *= (float) definition.getLevelDouble("undead_multiplier", level, 1.0D + (level * 0.05D));
-        }
-
-        final float finalDamage = rawDamage;
         Vec3 start = player.getEyePosition().subtract(0, 0.3, 0);
         
         // Initial Casting Phase (10 ticks of particles)
@@ -95,7 +87,7 @@ public class SoulStrikeSkillEffect implements ISkillEffect {
                 }
 
                 com.etema.ragnarmmo.entity.projectile.SoulStrikeProjectile projectile = 
-                    new com.etema.ragnarmmo.entity.projectile.SoulStrikeProjectile(player.level(), player, finalDamage);
+                    new com.etema.ragnarmmo.entity.projectile.SoulStrikeProjectile(player.level(), player, 0.0f);
                 
                 projectile.setPos(currentStart.x, currentStart.y, currentStart.z);
                 projectile.shoot(dir);

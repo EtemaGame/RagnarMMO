@@ -53,32 +53,23 @@ public class FrostDiverSkillEffect implements ISkillEffect {
             return;
         }
 
-        float matkPercent = (float) definition.getLevelDouble("damage_percent", level,
-                110.0D + (level - 1) * 10.0D);
-        float damage = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByMATK(player, matkPercent);
-        
-        boolean hit = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.dealSkillDamage(target, 
-                player.level().damageSources().magic(), damage);
+        float freezeChance = (float) definition.getLevelDouble("status_chance", level,
+                0.38D + (level - 1) * 0.03D);
+        if (player.getRandom().nextFloat() <= freezeChance) {
+            int durationTicks = definition.getLevelInt("duration_ticks", level, level * 3 * 20);
+            target.addEffect(new MobEffectInstance(com.etema.ragnarmmo.common.init.RagnarMobEffects.FROZEN.get(), durationTicks));
 
-        if (hit) {
-            float freezeChance = (float) definition.getLevelDouble("status_chance", level,
-                    0.38D + (level - 1) * 0.03D);
-            if (player.getRandom().nextFloat() <= freezeChance) {
-                int durationTicks = definition.getLevelInt("duration_ticks", level, level * 3 * 20);
-                target.addEffect(new MobEffectInstance(com.etema.ragnarmmo.common.init.RagnarMobEffects.FROZEN.get(), durationTicks));
-                
-                // Visual freeze overlay/ticks
-                target.setTicksFrozen(durationTicks);
-                if (player.level() instanceof ServerLevel frozenLevel) {
-                    StatusOverlayEntity.spawnOrRefresh(frozenLevel, target, StatusOverlayEntity.Variant.FROZEN, durationTicks);
-                    SkillVisualFx.spawnBlockBurst(frozenLevel, target, Blocks.BLUE_ICE.defaultBlockState(), 26, 0.35, 0.55, 0.04);
-                    frozenLevel.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.PACKED_ICE.defaultBlockState()),
-                            target.getX(), target.getY() + 1.0, target.getZ(), 18, 0.22, 0.45, 0.22, 0.02);
-                }
-                
-                player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-                        SoundEvents.GLASS_BREAK, net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 0.6f);
+            // Visual freeze overlay/ticks
+            target.setTicksFrozen(durationTicks);
+            if (player.level() instanceof ServerLevel frozenLevel) {
+                StatusOverlayEntity.spawnOrRefresh(frozenLevel, target, StatusOverlayEntity.Variant.FROZEN, durationTicks);
+                SkillVisualFx.spawnBlockBurst(frozenLevel, target, Blocks.BLUE_ICE.defaultBlockState(), 26, 0.35, 0.55, 0.04);
+                frozenLevel.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.PACKED_ICE.defaultBlockState()),
+                        target.getX(), target.getY() + 1.0, target.getZ(), 18, 0.22, 0.45, 0.22, 0.02);
             }
+
+            player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                    SoundEvents.GLASS_BREAK, net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 0.6f);
         }
 
         // Skill Visuals

@@ -37,20 +37,7 @@ public class BlastMineSkillEffect implements ISkillEffect {
                     List<LivingEntity> entities = trap.level.getEntitiesOfClass(LivingEntity.class, blastArea,
                             e -> e.isAlive() && e != trap.owner && !e.isAlliedTo(trap.owner));
 
-                    float baseDamage = 0.0f;
-                    if (trap.owner instanceof ServerPlayer player) {
-                        double dex = player.getCapability(PlayerStatsProvider.CAP)
-                                .map(s -> (double) s.getDEX()).orElse(0.0);
-                        double intel = player.getCapability(PlayerStatsProvider.CAP)
-                                .map(s -> (double) s.getINT()).orElse(0.0);
-                        
-                        // RO: [DEX * (3 + 4 * INT / 100) * (SkillLevel / 5)]
-                        baseDamage = (float) (dex * (3 + 4 * intel / 100.0) * (trap.skillLevel / 5.0));
-                    }
-                    if (baseDamage < 10) baseDamage = 10;
-
                     for (LivingEntity entity : entities) {
-                        entity.hurt(trap.level.damageSources().magic(), baseDamage);
                         entity.knockback(1.5,
                                 entity.getX() - trap.position.getX(),
                                 entity.getZ() - trap.position.getZ());
@@ -77,14 +64,7 @@ public class BlastMineSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        BlockPos pos = getTargetBlock(player);
-        if (pos == null) {
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§cNo block target found."));
-            return;
-        }
-        HunterTrapManager.placeTrap(player, (ServerLevel) player.level(), pos.above(), definition, level);
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.TRIPWIRE_ATTACH, SoundSource.PLAYERS, 0.8f, 1.2f);
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private BlockPos getTargetBlock(ServerPlayer player) {

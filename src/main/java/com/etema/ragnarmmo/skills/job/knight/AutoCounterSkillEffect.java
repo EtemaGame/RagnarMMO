@@ -61,9 +61,6 @@ public class AutoCounterSkillEffect implements ISkillEffect {
         // Perform the counter
         player.getPersistentData().putBoolean(COUNTER_GUARD, true);
 
-        float counterDamage = 4.0f + (level * 0.8f); // scales with level
-        attacker.hurt(player.damageSources().playerAttack(player), counterDamage);
-
         // Critical sound + bright flash
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.2f);

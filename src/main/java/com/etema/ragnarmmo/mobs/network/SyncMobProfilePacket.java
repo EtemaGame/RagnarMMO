@@ -3,6 +3,7 @@ package com.etema.ragnarmmo.mobs.network;
 import com.etema.ragnarmmo.mobs.capability.MobProfileProvider;
 import com.etema.ragnarmmo.mobs.capability.MobProfileState;
 import com.etema.ragnarmmo.mobs.profile.MobProfile;
+import com.etema.ragnarmmo.mobs.profile.MobTier;
 import java.util.Optional;
 import java.util.function.Supplier;
 import net.minecraft.network.FriendlyByteBuf;
@@ -67,6 +68,7 @@ public final class SyncMobProfilePacket {
         }
         buf.writeInt(msg.profile.level());
         buf.writeEnum(msg.profile.rank());
+        buf.writeEnum(msg.profile.tier());
         buf.writeInt(msg.profile.maxHp());
         buf.writeInt(msg.profile.atkMin());
         buf.writeInt(msg.profile.atkMax());
@@ -77,6 +79,8 @@ public final class SyncMobProfilePacket {
         buf.writeInt(msg.profile.crit());
         buf.writeInt(msg.profile.aspd());
         buf.writeDouble(msg.profile.moveSpeed());
+        buf.writeInt(msg.profile.baseExp());
+        buf.writeInt(msg.profile.jobExp());
         buf.writeUtf(msg.profile.race());
         buf.writeUtf(msg.profile.element());
         buf.writeUtf(msg.profile.size());
@@ -93,6 +97,7 @@ public final class SyncMobProfilePacket {
                 new MobProfile(
                         buf.readInt(),
                         buf.readEnum(com.etema.ragnarmmo.common.api.mobs.MobRank.class),
+                        buf.readEnum(MobTier.class),
                         buf.readInt(),
                         buf.readInt(),
                         buf.readInt(),
@@ -103,6 +108,8 @@ public final class SyncMobProfilePacket {
                         buf.readInt(),
                         buf.readInt(),
                         buf.readDouble(),
+                        buf.readInt(),
+                        buf.readInt(),
                         buf.readUtf(),
                         buf.readUtf(),
                         buf.readUtf()));

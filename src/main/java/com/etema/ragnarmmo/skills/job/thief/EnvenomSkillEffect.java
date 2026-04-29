@@ -27,49 +27,7 @@ public class EnvenomSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0)
-            return;
-
-        var definition = SkillRegistry.require(ID);
-        LivingEntity target = getMeleeTarget(player, definition.getLevelDouble("range", level, 3.5D));
-        
-        final Vec3 lookPos = player.getEyePosition().add(player.getLookAngle().scale(2.0));
-
-        // Introduce a slight delay for the "slash" feel
-        com.etema.ragnarmmo.skills.runtime.SkillSequencer.schedule(2, () -> {
-            double px = target != null ? target.getX() : lookPos.x;
-            double py = target != null ? target.getY() : lookPos.y;
-            double pz = target != null ? target.getZ() : lookPos.z;
-
-            player.level().playSound(null, px, py, pz,
-                    SoundEvents.SPIDER_STEP, SoundSource.PLAYERS, 1.0f, 0.8f);
-
-            if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-                // Purple toxic burst with RO "splash" feel
-                serverLevel.sendParticles(ParticleTypes.DRAGON_BREATH, px, py + 1.0, pz, 
-                        20, 0.2, 0.2, 0.2, 0.05);
-                serverLevel.sendParticles(ParticleTypes.ENTITY_EFFECT, px, py + 1.0, pz, 
-                        15, 0.3, 0.5, 0.3, 0.1);
-            }
-
-            if (target != null && target.isAlive()) {
-                float damagePercent = (float) definition.getLevelDouble("damage_percent", level, 30.0D + 20.0D * level);
-                float damage = Math.max(com.etema.ragnarmmo.combat.damage.SkillDamageHelper.MIN_ATK,
-                        com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByATK(player, damagePercent));
-                com.etema.ragnarmmo.combat.damage.SkillDamageHelper.dealSkillDamage(
-                        target, player.damageSources().playerAttack(player), damage);
-
-                float basePoisonChance = (float) definition.getLevelDouble("status_chance", level,
-                        0.10D + (level * 0.04D));
-                float finalPoisonChance = com.etema.ragnarmmo.player.stats.compute.CombatMath.computePoisonChance(basePoisonChance, target);
-                int poisonDuration = definition.getLevelInt("duration_ticks", level, 200 + (level * 20));
-                int finalPoisonDuration = com.etema.ragnarmmo.player.stats.compute.CombatMath.computePoisonDuration(poisonDuration, target);
-
-                if (finalPoisonDuration > 0 && player.getRandom().nextFloat() < finalPoisonChance) {
-                    target.addEffect(new MobEffectInstance(MobEffects.POISON, finalPoisonDuration, 0, false, true, true));
-                }
-            }
-        });
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     // (Helper duplicated for clarity across active melee skills)

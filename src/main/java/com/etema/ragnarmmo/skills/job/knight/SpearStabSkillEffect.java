@@ -31,36 +31,6 @@ public class SpearStabSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0) return;
-
-        LivingEntity target = PierceSkillEffect.getClosestTarget(player, 4.5);
-        if (target == null) return;
-
-        // RO: (200 + 50×level)% ATK — a powerful spear thrust
-        float damage = Math.max(com.etema.ragnarmmo.combat.damage.SkillDamageHelper.MIN_ATK,
-                com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByATK(player, 200f + 50f * level));
-        com.etema.ragnarmmo.combat.damage.SkillDamageHelper.dealSkillDamage(
-                target, player.damageSources().playerAttack(player), damage);
-
-        // Strong knockback in the look direction
-        Vec3 dir = player.getLookAngle().normalize();
-        target.knockback(2.5f, -dir.x, -dir.z);
-
-        // Sounds
-        player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-                SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 1.0f, 0.8f);
-        player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-                SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.PLAYERS, 0.8f, 1.0f);
-
-        // Particles: spear thrust effect
-        if (player.level() instanceof ServerLevel serverLevel) {
-            Vec3 midPoint = player.position().add(dir.scale(2.0)).add(0, 1.0, 0);
-            serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK,
-                    midPoint.x, midPoint.y, midPoint.z,
-                    3, 0.1, 0.1, 0.1, 0.0);
-            serverLevel.sendParticles(ParticleTypes.CRIT,
-                    target.getX(), target.getY() + 1, target.getZ(),
-                    10, 0.3, 0.3, 0.3, 0.1);
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 }

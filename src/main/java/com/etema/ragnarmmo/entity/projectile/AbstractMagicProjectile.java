@@ -176,9 +176,7 @@ public class AbstractMagicProjectile extends Projectile {
     }
 
     protected void applyEffect(LivingEntity target) {
-        // Default damage application
-        com.etema.ragnarmmo.combat.damage.SkillDamageHelper.dealSkillDamage(target, 
-            target.level().damageSources().magic(), damage);
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     @Override

@@ -50,7 +50,6 @@ public class DoubleAttackSkillEffect implements ISkillEffect {
                 float damageMultiplier = SkillRegistry.get(ID)
                         .map(def -> (float) def.getLevelDouble("damage_multiplier", progress.getLevel(), 2.0D))
                         .orElse(2.0f);
-                event.setAmount(event.getAmount() * damageMultiplier);
 
                 // Visual / Audio feedback
                 player.level().playSound(null, player.getX(), player.getY(), player.getZ(),

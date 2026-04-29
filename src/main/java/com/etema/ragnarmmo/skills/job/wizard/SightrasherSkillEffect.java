@@ -23,24 +23,6 @@ public class SightrasherSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        // Sightrasher: Shoots fireballs in 8 directions.
-        // For Minecraft, we'll do an outward burst of fire damage.
-
-        AABB area = player.getBoundingBox().inflate(4.0);
-        if (player.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE, player.getX(), player.getY() + 1.0, player.getZ(), 40,
-                    1.0, 0.2, 1.0, 0.1);
-            serverLevel.sendParticles(ParticleTypes.FLAME, player.getX(), player.getY() + 1.0, player.getZ(), 60, 2.0,
-                    0.5, 2.0, 0.2);
-            serverLevel.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.8f,
-                    1.5f);
-
-            List<LivingEntity> targets = serverLevel.getEntitiesOfClass(LivingEntity.class, area,
-                    e -> e != player && e.isAlive());
-            for (LivingEntity target : targets) {
-                target.hurt(player.damageSources().magic(), 6.0f + (level * 2.0f));
-                target.knockback(0.5, player.getX() - target.getX(), player.getZ() - target.getZ());
-            }
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 }

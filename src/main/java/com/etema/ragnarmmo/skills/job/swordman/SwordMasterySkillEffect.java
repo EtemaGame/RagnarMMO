@@ -29,17 +29,6 @@ public class SwordMasterySkillEffect implements ISkillEffect {
 
     @Override
     public void onOffensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
-        if (level <= 0) return;
-
-        net.minecraft.world.item.ItemStack held = player.getMainHandItem();
-        if (!(held.getItem() instanceof net.minecraft.world.item.SwordItem)) return;
-        boolean isTwoHanded = held.getTags()
-                .anyMatch(tag -> tag.location().toString().equals("ragnarmmo:two_handed"));
-        if (isTwoHanded) return;
-
-        float atkBonus = SkillRegistry.get(ID)
-                .map(def -> (float) def.getLevelDouble("atk_bonus", level, 4.0D * level))
-                .orElse(4.0f * level);
-        event.setAmount(event.getAmount() + atkBonus);
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 }

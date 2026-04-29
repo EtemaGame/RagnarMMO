@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.mobs.capability;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import com.etema.ragnarmmo.mobs.profile.MobProfile;
+import com.etema.ragnarmmo.mobs.profile.MobTier;
 import net.minecraft.nbt.CompoundTag;
 
 public final class MobProfileState {
@@ -31,6 +32,7 @@ public final class MobProfileState {
         tag.putBoolean("Initialized", initialized);
         tag.putInt("Level", profile.level());
         tag.putString("Rank", profile.rank().name());
+        tag.putString("Tier", profile.tier().name());
         tag.putInt("MaxHp", profile.maxHp());
         tag.putInt("AtkMin", profile.atkMin());
         tag.putInt("AtkMax", profile.atkMax());
@@ -41,6 +43,8 @@ public final class MobProfileState {
         tag.putInt("Crit", profile.crit());
         tag.putInt("Aspd", profile.aspd());
         tag.putDouble("MoveSpeed", profile.moveSpeed());
+        tag.putInt("BaseExp", profile.baseExp());
+        tag.putInt("JobExp", profile.jobExp());
         tag.putString("Race", profile.race());
         tag.putString("Element", profile.element());
         tag.putString("Size", profile.size());
@@ -54,12 +58,19 @@ public final class MobProfileState {
         } catch (IllegalArgumentException ex) {
             rank = MobRank.NORMAL;
         }
+        MobTier tier;
+        try {
+            tier = MobTier.valueOf(nbt.getString("Tier"));
+        } catch (IllegalArgumentException ex) {
+            tier = MobTier.fromRank(rank);
+        }
         initialized = nbt.getBoolean("Initialized");
         int atkMin = Math.max(0, nbt.getInt("AtkMin"));
         int atkMax = Math.max(atkMin, nbt.getInt("AtkMax"));
         profile = new MobProfile(
                 Math.max(1, nbt.getInt("Level")),
                 rank,
+                tier,
                 Math.max(1, nbt.getInt("MaxHp")),
                 atkMin,
                 atkMax,
@@ -70,6 +81,8 @@ public final class MobProfileState {
                 Math.max(0, nbt.getInt("Crit")),
                 Math.max(1, nbt.getInt("Aspd")),
                 Math.max(0.0001D, nbt.getDouble("MoveSpeed")),
+                Math.max(0, nbt.getInt("BaseExp")),
+                Math.max(0, nbt.getInt("JobExp")),
                 readTokenOrDefault(nbt, "Race", "unknown"),
                 readTokenOrDefault(nbt, "Element", "neutral"),
                 readTokenOrDefault(nbt, "Size", "medium"));
@@ -81,7 +94,7 @@ public final class MobProfileState {
     }
 
     public static MobProfile defaultProfile() {
-        return new MobProfile(1, MobRank.NORMAL, 20, 2, 4, 0, 0, 10, 5, 1, 150, 0.2D, "unknown", "neutral",
-                "medium");
+        return new MobProfile(1, MobRank.NORMAL, MobTier.NORMAL, 20, 2, 4, 0, 0, 10, 5, 1, 150, 0.2D,
+                1, 1, "unknown", "neutral", "medium");
     }
 }

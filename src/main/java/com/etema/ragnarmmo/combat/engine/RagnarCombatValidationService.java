@@ -32,6 +32,9 @@ public class RagnarCombatValidationService {
         if (actorState == null) {
             return CombatRejectReason.MISSING_ACTOR_STATE;
         }
+        if (actorState.getCastState().isCasting(nowTick)) {
+            return CombatRejectReason.BASIC_ATTACK_COOLDOWN;
+        }
         
         // Anti-spam payload limits
         if (ctx.candidates() == null || ctx.candidates().isEmpty()) {
@@ -79,6 +82,9 @@ public class RagnarCombatValidationService {
         }
         if (actorState == null) {
             return CombatRejectReason.MISSING_ACTOR_STATE;
+        }
+        if (actorState.getCastState().isCasting(nowTick)) {
+            return CombatRejectReason.SKILL_COOLDOWN;
         }
         if (ctx.sequenceId() <= actorState.getLastAcceptedSequenceId()) {
             return CombatRejectReason.STALE_SEQUENCE;

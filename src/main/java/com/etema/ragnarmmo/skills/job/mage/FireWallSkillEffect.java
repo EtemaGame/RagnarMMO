@@ -56,8 +56,6 @@ public class FireWallSkillEffect extends GroundAoEPersistentEffect {
         Vec3 right = new Vec3(-forward.z, 0, forward.x);
         
         var definition = SkillRegistry.require(ID);
-        float damagePercent = (float) definition.getLevelDouble("damage_percent", level, 50.0D);
-        float damage = SkillDamageHelper.scaleByMATK(user, damagePercent);
         int duration = definition.getLevelInt("duration_ticks", level, (5 + (level - 1)) * 20);
         int maxHits = definition.getLevelInt("max_hits", level, 3 + (level - 1));
         int segmentCount = Math.max(1, definition.getLevelInt("segment_count", level, 3));
@@ -67,7 +65,7 @@ public class FireWallSkillEffect extends GroundAoEPersistentEffect {
         int rightLimit = left + segmentCount;
         for (int i = left; i < rightLimit; i++) {
             Vec3 segmentPos = pos.add(right.scale(i));
-            FireWallAoe aoe = new FireWallAoe(sl, user, 0.7f, damage, duration, maxHits);
+            FireWallAoe aoe = new FireWallAoe(sl, user, 0.7f, 0.0f, duration, maxHits);
             aoe.setPos(segmentPos.x, segmentPos.y, segmentPos.z);
             sl.addFreshEntity(aoe);
         }

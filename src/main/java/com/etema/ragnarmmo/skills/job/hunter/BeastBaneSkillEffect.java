@@ -49,7 +49,6 @@ public class BeastBaneSkillEffect implements ISkillEffect {
             float baseBoost = level * 4.0F;
             float percentBoost = 1.0F + (level * 0.05F); // Up to 50% extra at level 10
 
-            event.setAmount((event.getAmount() + baseBoost) * percentBoost);
         }
     }
 }

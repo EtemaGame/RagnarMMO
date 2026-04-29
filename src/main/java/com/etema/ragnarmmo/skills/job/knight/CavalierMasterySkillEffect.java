@@ -41,12 +41,6 @@ public class CavalierMasterySkillEffect implements ISkillEffect {
 
     @Override
     public void onOffensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
-        if (level <= 0) return;
-        if (!player.isPassenger()) return; // Only triggers while mounted
-
-        // While mounted, provide a damage bonus proportional to mastery level
-        // Level 1: +5%, Level 5: +25%
-        float mountedBonus = 0.05f * level;
-        event.setAmount(event.getAmount() * (1.0f + mountedBonus));
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 }

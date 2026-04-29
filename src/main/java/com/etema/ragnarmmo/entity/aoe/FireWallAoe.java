@@ -33,27 +33,7 @@ public class FireWallAoe extends AoeEntity {
 
     @Override
     public void applyEffect(LivingEntity target) {
-        // "All monsters except Undead take 50% damage... and are knocked back"
-        if (target.getMobType() == net.minecraft.world.entity.MobType.UNDEAD) {
-            return;
-        }
-
-        if (hitsLeft > 0) {
-            SkillDamageHelper.dealSkillDamage(target, this.damageSources().inFire(), this.damage);
-            
-            // Knockback away from the pillar center
-            Vec3 knockback = target.position().subtract(this.position()).normalize().scale(0.5);
-            target.push(knockback.x, 0.1, knockback.z);
-            
-            hitsLeft--;
-            if (hitsLeft <= 0) {
-                discard();
-            }
-            
-            if (level() instanceof ServerLevel sl) {
-                sl.playSound(null, getX(), getY(), getZ(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 0.5f, 1.2f);
-            }
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.etema.ragnarmmo.skills.job.mage;
 
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skills.job.mage.MageTargetUtil;
 import com.etema.ragnarmmo.skills.data.SkillRegistry;
 import net.minecraft.core.particles.ParticleTypes;
@@ -9,7 +8,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 
@@ -52,9 +50,6 @@ public class NapalmBeatSkillEffect implements ISkillEffect {
         LivingEntity mainTarget = MageTargetUtil.raycast(player, range);
         if (mainTarget == null) return;
 
-        float matkPercent = (float) definition.getLevelDouble("damage_percent", level, 80.0D + (level - 1) * 10.0D);
-        float damage = SkillDamageHelper.scaleByMATK(player, matkPercent);
-
         // Visuals on primary target
         if (player.level() instanceof ServerLevel sl) {
             sl.sendParticles(ParticleTypes.WITCH, mainTarget.getX(), mainTarget.getY() + 1.0, mainTarget.getZ(), 20, 0.2, 0.4, 0.2, 0.05);
@@ -63,19 +58,16 @@ public class NapalmBeatSkillEffect implements ISkillEffect {
                     SoundEvents.GENERIC_EXPLODE, net.minecraft.sounds.SoundSource.PLAYERS, 0.6f, 1.5f);
         }
 
-        // Area Damage (~1.5 block radius = approx 3x3 cells)
+        // Area visuals (~1.5 block radius = approx 3x3 cells). Damage is resolved by CombatContract.
         double radius = definition.getLevelDouble("aoe_radius", level, 1.5D);
         AABB area = mainTarget.getBoundingBox().inflate(radius);
-        List<Entity> targets = player.level().getEntities(player, area, e -> e instanceof LivingEntity && e.isAlive());
+        List<LivingEntity> targets = player.level().getEntitiesOfClass(LivingEntity.class, area,
+                e -> e != player && e.isAlive());
 
-        for (Entity target : targets) {
-            if (target instanceof LivingEntity living) {
-                SkillDamageHelper.dealSkillDamage(living, player.level().damageSources().magic(), damage);
-                
-                // Small splash visual for extra targets
-                if (player.level() instanceof ServerLevel sl && living != mainTarget) {
-                    sl.sendParticles(ParticleTypes.WITCH, living.getX(), living.getY() + 1.0, living.getZ(), 8, 0.1, 0.2, 0.1, 0.01);
-                }
+        for (LivingEntity living : targets) {
+            // Small splash visual for extra targets
+            if (player.level() instanceof ServerLevel sl && living != mainTarget) {
+                sl.sendParticles(ParticleTypes.WITCH, living.getX(), living.getY() + 1.0, living.getZ(), 8, 0.1, 0.2, 0.1, 0.01);
             }
         }
     }

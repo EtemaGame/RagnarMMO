@@ -44,63 +44,7 @@ public class ElementalBoltSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(LivingEntity user, int level) {
-        if (level <= 0)
-            return;
-
-        // Mobs might use the target they are already tracking
-        LivingEntity target = (user instanceof Mob mob) ? mob.getTarget() : getTarget(user);
-        // Allow shooting even if target is null
-
-        // Visual and Sound metadata
-        final ParticleOptions mainParticle = getParticle();
-        final SoundEvent finalSound = getSound();
-        // RO: Bolts deal 100% MATK each
-        final float finalDamage = SkillDamageHelper.scaleByMATK(user, 100.0f);
-        final int maxHits = Math.min(level, 10);
-
-        // Initial Casting Phase (10 ticks)
-        for (int t = 0; t < 10; t++) {
-            SkillSequencer.schedule(t, () -> {
-                if (user.level() instanceof ServerLevel sl) {
-                    sl.sendParticles(ParticleTypes.ENCHANT, user.getX(), user.getY() + 0.1, user.getZ(), 5, 0.4, 0.1, 0.4, 0.05);
-                    sl.sendParticles(mainParticle, user.getX(), user.getY() + 1.2, user.getZ(), 2, 0.3, 0.3, 0.3, 0.02);
-                }
-            });
-        }
-
-        for (int i = 0; i < maxHits; i++) {
-            int delay = 10 + (i * 4); // Start after 10 ticks casting
-            
-            SkillSequencer.schedule(delay, () -> {
-                if (!user.isAlive()) return;
-
-                // RO Style: Bolts fall from the sky above the target
-                LivingEntity currentTarget = (user instanceof Mob mob) ? mob.getTarget() : getTarget(user);
-                Vec3 strikePos;
-                if (currentTarget != null && currentTarget.isAlive()) {
-                    strikePos = currentTarget.position();
-                } else {
-                    // If no target, strike where the player is looking
-                    HitResult ray = user.pick(15.0, 0.0f, false);
-                    strikePos = ray.getLocation();
-                }
-
-                // Spawn 10 blocks above the strike point
-                Vec3 startPos = strikePos.add(0, 10, 0);
-                
-                AbstractMagicProjectile projectile = switch (elementType) {
-                    case FIRE -> new FireBoltProjectile(user.level(), user, finalDamage);
-                    case WATER -> new IceBoltProjectile(user.level(), user, finalDamage);
-                    case WIND -> new LightningBoltProjectile(user.level(), user, finalDamage);
-                };
-                
-                projectile.setPos(startPos.x, startPos.y, startPos.z);
-                // Shoot downwards
-                projectile.shoot(0, -1, 0, 1.5f, 0.0f); 
-                
-                user.level().addFreshEntity(projectile);
-            });
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private ParticleOptions getParticle() {

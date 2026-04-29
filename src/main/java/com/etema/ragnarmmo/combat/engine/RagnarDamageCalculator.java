@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.combat.engine;
 
 import com.etema.ragnarmmo.combat.element.ElementType;
 import com.etema.ragnarmmo.combat.element.CombatPropertyResolver;
+import com.etema.ragnarmmo.combat.contract.CombatModifiers;
 import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -35,17 +36,23 @@ public class RagnarDamageCalculator {
     }
 
     public double applyModifiers(double damage, ItemStack weapon, LivingEntity target, ElementType attackElement, boolean isMagic) {
+        return applyModifiers(damage, weapon, new CombatModifiers(
+                CombatPropertyResolver.getRaceId(target),
+                CombatPropertyResolver.getDefensiveElement(target),
+                CombatPropertyResolver.getEntitySize(target)), attackElement, isMagic);
+    }
+
+    public double applyModifiers(double damage, ItemStack weapon, CombatModifiers defenderModifiers,
+            ElementType attackElement, boolean isMagic) {
         double modifier = 1.0;
         
         // Size Penalty (Physical only)
         if (!isMagic) {
-            CombatMath.MobSize size = CombatPropertyResolver.getEntitySize(target);
-            modifier *= CombatMath.getWeaponSizePenalty(weapon, size);
+            modifier *= CombatMath.getWeaponSizePenalty(weapon, defenderModifiers.size());
         }
 
         // Elemental Modifier
-        ElementType defenseElement = CombatPropertyResolver.getDefensiveElement(target);
-        modifier *= CombatPropertyResolver.getElementalModifier(attackElement, defenseElement);
+        modifier *= CombatPropertyResolver.getElementalModifier(attackElement, defenderModifiers.element());
 
         return damage * modifier;
     }

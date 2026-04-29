@@ -44,32 +44,7 @@ public class BlitzBeatSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0 || !hasFalcon(player)) return;
-
-        // Manual targeting logic as getTargetEntity is undefined
-        net.minecraft.world.phys.Vec3 eyePos = player.getEyePosition();
-        net.minecraft.world.phys.Vec3 viewVec = player.getViewVector(1.0F);
-        net.minecraft.world.phys.Vec3 reachVec = eyePos.add(viewVec.x * 15.0, viewVec.y * 15.0, viewVec.z * 15.0);
-        AABB searchBox = player.getBoundingBox().expandTowards(viewVec.scale(15.0)).inflate(1.0, 1.0, 1.0);
-        
-        LivingEntity target = null;
-        double minDist = 15.0 * 15.0;
-        
-        for (LivingEntity e : player.level().getEntitiesOfClass(LivingEntity.class, searchBox, entity -> entity != player && entity.isAlive())) {
-            net.minecraft.world.phys.AABB aabb = e.getBoundingBox().inflate(e.getPickRadius());
-            java.util.Optional<net.minecraft.world.phys.Vec3> clip = aabb.clip(eyePos, reachVec);
-            if (clip.isPresent()) {
-                double dist = eyePos.distanceToSqr(clip.get());
-                if (dist < minDist) {
-                    target = e;
-                    minDist = dist;
-                }
-            }
-        }
-        
-        if (target == null) return;
-
-        performBlitz(player, target, level, false);
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     @Override
@@ -118,9 +93,6 @@ public class BlitzBeatSkillEffect implements ISkillEffect {
             SkillSequencer.schedule(i * 2, () -> {
                 if (!primary.isAlive()) return;
                 
-                // Blitz Beat is Neutral property but ignores DEF in RO
-                SkillDamageHelper.dealSkillDamage(primary, player.damageSources().playerAttack(player), baseDmg);
-                
                 // Falcon sound/particles at target
                 serverLevel.playSound(null, primary.getX(), primary.getY(), primary.getZ(),
                         SoundEvents.PARROT_FLY, SoundSource.PLAYERS, 1.0f, 1.5f);
@@ -134,9 +106,10 @@ public class BlitzBeatSkillEffect implements ISkillEffect {
                 List<LivingEntity> splashTargets = serverLevel.getEntitiesOfClass(LivingEntity.class, splashArea,
                         e -> e != player && e != primary && e.isAlive());
                 
-                float splashDmg = isAuto ? (baseDmg / Math.max(1, splashTargets.size() + 1)) : baseDmg;
                 for (LivingEntity s : splashTargets) {
-                    SkillDamageHelper.dealSkillDamage(s, player.damageSources().playerAttack(player), splashDmg);
+                    serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK,
+                            s.getX(), s.getY() + 1, s.getZ(),
+                            1, 0.1, 0.1, 0.1, 0.05);
                 }
             });
         }

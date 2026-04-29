@@ -33,67 +33,7 @@ public class MammoniteSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        if (level <= 0) {
-            return;
-        }
-
-        SkillDefinition definition = SkillRegistry.get(ID).orElse(null);
-        int cost = EconomicSkillHelper.zenyCost(definition, level, level * ZenyWalletHelper.GOLD_VALUE);
-        int found = ZenyWalletHelper.getTotalZeny(player);
-        if (found < cost) {
-            player.sendSystemMessage(Component.literal(
-                    "Mammonite needs " + ZenyWalletHelper.formatZeny(cost) + " (you have "
-                            + ZenyWalletHelper.formatZeny(found) + ")"));
-            return;
-        }
-
-        double range = definition != null ? definition.getLevelDouble("range", level, 3.5D) : 3.5D;
-        LivingEntity target = getMeleeTarget(player, range);
-        if (target == null) {
-            player.sendSystemMessage(Component.literal("No target in range."));
-            return;
-        }
-
-        if (!ZenyWalletHelper.tryConsume(player, cost)) {
-            player.sendSystemMessage(Component.literal("Mammonite could not consume the required Zeny."));
-            return;
-        }
-
-        float damagePercent = definition != null
-                ? (float) definition.getLevelDouble("damage_percent", level, 100.0D + 50.0D * level)
-                : 100.0f + 50.0f * level;
-        float damage = Math.max(com.etema.ragnarmmo.combat.damage.SkillDamageHelper.MIN_ATK,
-                com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByATK(player, damagePercent));
-
-        com.etema.ragnarmmo.skills.runtime.SkillSequencer.schedule(3, () -> {
-            if (!target.isAlive()) {
-                return;
-            }
-
-            target.hurt(player.damageSources().mobAttack(player), damage);
-            player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-                    SoundEvents.ANVIL_PLACE, SoundSource.PLAYERS, 1.0f, 1.4f);
-            player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-                    SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.8f, 0.6f);
-
-            if (player.level() instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(
-                        new net.minecraft.core.particles.ItemParticleOption(
-                                net.minecraft.core.particles.ParticleTypes.ITEM,
-                                new ItemStack(ZenyItems.GOLD_ZENY.get())),
-                        target.getX(), target.getY() + 1.2, target.getZ(),
-                        30, 0.3, 0.3, 0.3, 0.15);
-                serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.ENCHANTED_HIT,
-                        target.getX(), target.getY() + 1.0, target.getZ(),
-                        10, 0.2, 0.4, 0.2, 0.1);
-                serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.WAX_OFF,
-                        target.getX(), target.getY() + 1.0, target.getZ(),
-                        10, 0.2, 0.4, 0.2, 0.05);
-            }
-
-            player.displayClientMessage(Component.literal("-" + ZenyWalletHelper.formatZeny(cost) + " Mammonite!"),
-                    true);
-        });
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private LivingEntity getMeleeTarget(ServerPlayer player, double range) {

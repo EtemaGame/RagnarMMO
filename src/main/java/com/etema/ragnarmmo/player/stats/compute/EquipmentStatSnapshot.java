@@ -5,14 +5,10 @@ import com.etema.ragnarmmo.items.runtime.RangedWeaponStatsHelper;
 import com.etema.ragnarmmo.items.runtime.RoItemNbtHelper;
 import com.etema.ragnarmmo.items.runtime.RoRefineMath;
 import com.etema.ragnarmmo.items.runtime.WeaponStatHelper;
-import com.google.common.collect.Multimap;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -70,7 +66,7 @@ public record EquipmentStatSnapshot(
     }
 
     public static double computeArmorHardDef(LivingEntity entity) {
-        double armorEff = entity.getArmorValue();
+        double armorEff = 0.0D;
 
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemStack stack = entity.getItemBySlot(slot);
@@ -110,26 +106,9 @@ public record EquipmentStatSnapshot(
             return configuredAttack + enchantDamage + RoRefineMath.getAttackBonus(main);
         }
 
-        double base = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
-        Multimap<Attribute, AttributeModifier> mods = main.getAttributeModifiers(EquipmentSlot.MAINHAND);
-
-        double add = 0.0D;
-        double multBase = 0.0D;
-        double multTotal = 0.0D;
-        for (var entry : mods.entries()) {
-            if (entry.getKey() != Attributes.ATTACK_DAMAGE) {
-                continue;
-            }
-            AttributeModifier modifier = entry.getValue();
-            switch (modifier.getOperation()) {
-                case ADDITION -> add += modifier.getAmount();
-                case MULTIPLY_BASE -> multBase += modifier.getAmount();
-                case MULTIPLY_TOTAL -> multTotal += modifier.getAmount();
-            }
-        }
-
-        double withItem = (base * (1.0D + multBase) + add) * (1.0D + multTotal);
+        // P0 RO combat does not read vanilla attack attributes as balance input.
+        // Unauthored weapons get a neutral base until covered by RO item rules.
         float enchantDamage = EnchantmentHelper.getDamageBonus(main, MobType.UNDEFINED);
-        return withItem + enchantDamage + RoRefineMath.getAttackBonus(main);
+        return Math.max(1.0D, 1.0D + enchantDamage + RoRefineMath.getAttackBonus(main));
     }
 }

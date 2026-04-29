@@ -34,25 +34,6 @@ public class DemonBaneSkillEffect implements ISkillEffect {
 
     @Override
     public void onOffensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
-        if (level <= 0)
-            return;
-
-        // Demon Bane: Increases attack power against Undead and Demon monsters.
-        // RO formula: (3 + (Level * 0.05 * BaseLv)) flat damage increase.
-        // For Minecraft, we'll use a percentage increase: 4% per level (up to 40% at
-        // lvl 10) against Undead/Demon.
-
-        if (event.getEntity() instanceof Enemy enemy) {
-            boolean isUndeadOrDemon = event.getEntity().getType().is(UNDEAD_TAG)
-                    || event.getEntity().getType().is(RAIDER_TAG);
-
-            if (isUndeadOrDemon) {
-                float damageBonusPercent = SkillRegistry.get(ID)
-                        .map(def -> (float) def.getLevelDouble("damage_bonus_percent", level, 4.0D * level))
-                        .orElse(4.0f * level);
-                float damageMultiplier = 1.0f + (damageBonusPercent / 100.0f);
-                event.setAmount(event.getAmount() * damageMultiplier);
-            }
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 }

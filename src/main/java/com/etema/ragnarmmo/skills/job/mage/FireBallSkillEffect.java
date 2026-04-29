@@ -32,19 +32,12 @@ public class FireBallSkillEffect implements ISkillEffect {
 
         var defOpt = SkillRegistry.get(ID);
         LivingEntity primaryTarget = getTarget(player);
-        final float damagePercent = defOpt
-                .map(def -> (float) def.getLevelDouble("damage_percent", level, 70.0 + (level * 10.0)))
-                .orElse(70.0f + (level * 10.0f));
-        final float splashRatio = defOpt
-                .map(def -> (float) def.getLevelDouble("splash_ratio", level, 0.75))
-                .orElse(0.75f);
         final double radius = defOpt
                 .map(def -> def.getLevelDouble("splash_radius", level, 2.5))
                 .orElse(2.5);
         final int burnSeconds = defOpt
                 .map(def -> def.getLevelInt("burn_seconds", level, 3))
                 .orElse(3);
-        final float baseDamage = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByMATK(player, damagePercent);
 
         // Particles for launch
         if (player.level() instanceof net.minecraft.server.level.ServerLevel sl) {
@@ -65,7 +58,7 @@ public class FireBallSkillEffect implements ISkillEffect {
         }
 
         com.etema.ragnarmmo.entity.projectile.MagicProjectileEntity projectile =
-            new com.etema.ragnarmmo.entity.projectile.MagicProjectileEntity(player.level(), player, baseDamage, ParticleTypes.FLAME);
+            new com.etema.ragnarmmo.entity.projectile.MagicProjectileEntity(player.level(), player, 0.0f, ParticleTypes.FLAME);
 
         projectile.setSkillId(ID);
         projectile.setSecondaryParticle(ParticleTypes.SMOKE);
@@ -81,18 +74,11 @@ public class FireBallSkillEffect implements ISkillEffect {
             AABB area = new AABB(hitLoc.x - radius, hitLoc.y - radius, hitLoc.z - radius,
                                  hitLoc.x + radius, hitLoc.y + radius, hitLoc.z + radius);
             
-            Entity primaryHit = result != null ? result.getEntity() : null;
-            
             List<net.minecraft.world.entity.Entity> nearby = player.level().getEntities(player, area,
                     e -> e instanceof LivingEntity && e != player);
 
             for (net.minecraft.world.entity.Entity e : nearby) {
                 LivingEntity target = (LivingEntity) e;
-                float finalDamage = (e == primaryHit) ? baseDamage : (baseDamage * splashRatio);
-                
-                com.etema.ragnarmmo.combat.damage.SkillDamageHelper.dealSkillDamage(target, 
-                    player.damageSources().indirectMagic(projectile, player), finalDamage);
-                
                 target.setSecondsOnFire(burnSeconds);
             }
 

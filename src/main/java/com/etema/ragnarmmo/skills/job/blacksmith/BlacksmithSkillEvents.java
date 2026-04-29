@@ -63,7 +63,6 @@ public class BlacksmithSkillEvents {
                 }
             }
 
-            event.setAmount((event.getAmount() + flatBonus) * multiplier);
         }
     }
 
@@ -77,7 +76,6 @@ public class BlacksmithSkillEvents {
             if (skinLv > 0) {
                 // Reduction: level * 5% for fire damage
                 if (event.getSource().is(DamageTypeTags.IS_FIRE)) {
-                    event.setAmount(event.getAmount() * (1.0f - (skinLv * 0.05f)));
                 }
             }
         }

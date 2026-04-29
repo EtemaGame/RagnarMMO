@@ -27,18 +27,6 @@ public class LandMineSkillEffect implements ISkillEffect {
                 ParticleTypes.FLAME,
                 ParticleTypes.EXPLOSION,
                 (trap, target) -> {
-                    float damage = 0.0f;
-                    if (trap.owner instanceof ServerPlayer player) {
-                        double dex = player.getCapability(PlayerStatsProvider.CAP)
-                                .map(s -> (double) s.getDEX()).orElse(0.0);
-                        double intel = player.getCapability(PlayerStatsProvider.CAP)
-                                .map(s -> (double) s.getINT()).orElse(0.0);
-                        
-                        // RO: [DEX * (3 + 4 * INT / 100) * (SkillLevel / 5)]
-                        damage = (float) (dex * (3 + 4 * intel / 100.0) * (trap.skillLevel / 5.0));
-                    }
-                    if (damage < 10) damage = 10;
-                    target.hurt(trap.level.damageSources().explosion(null), damage);
                     target.setSecondsOnFire(4);
                     // Explosion sound at trap site
                     trap.level.playSound(null, target.blockPosition(),
@@ -51,14 +39,7 @@ public class LandMineSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        BlockPos pos = getTargetBlock(player);
-        if (pos == null) {
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§cNo block target found."));
-            return;
-        }
-        HunterTrapManager.placeTrap(player, (net.minecraft.server.level.ServerLevel) player.level(), pos.above(), definition, level);
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.TRIPWIRE_ATTACH, SoundSource.PLAYERS, 0.8f, 0.8f);
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private BlockPos getTargetBlock(ServerPlayer player) {

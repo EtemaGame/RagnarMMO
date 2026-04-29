@@ -31,11 +31,6 @@ public class HolyLightSkillEffect implements ISkillEffect {
         LivingEntity target = getTarget(player, defOpt
                 .map(def -> def.getLevelDouble("range", level, 15.0D))
                 .orElse(15.0D));
-        final float damagePercent = defOpt
-                .map(def -> (float) def.getLevelDouble("damage_percent", level, 125.0))
-                .orElse(125.0f);
-        final float baseDamage = com.etema.ragnarmmo.combat.damage.SkillDamageHelper.scaleByMATK(player, damagePercent);
-
         // Initial Casting Phase (8 ticks of particles)
         for (int t = 0; t < 8; t++) {
             final int tick = t;
@@ -60,7 +55,7 @@ public class HolyLightSkillEffect implements ISkillEffect {
             }
 
             com.etema.ragnarmmo.entity.projectile.MagicProjectileEntity projectile =
-                new com.etema.ragnarmmo.entity.projectile.MagicProjectileEntity(player.level(), player, baseDamage, ParticleTypes.END_ROD);
+                new com.etema.ragnarmmo.entity.projectile.MagicProjectileEntity(player.level(), player, 0.0f, ParticleTypes.END_ROD);
             
             projectile.setSkillId(ID);
             projectile.setSecondaryParticle(ParticleTypes.INSTANT_EFFECT);

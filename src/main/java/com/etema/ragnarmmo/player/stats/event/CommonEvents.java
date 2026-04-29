@@ -25,6 +25,8 @@ import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.player.stats.network.DerivedStatsSyncPacket;
 import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncPacket;
 import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncService;
+import com.etema.ragnarmmo.mobs.capability.MobProfileProvider;
+import com.etema.ragnarmmo.mobs.capability.MobProfileState;
 import com.etema.ragnarmmo.mobs.companion.CompanionProfileService;
 import com.etema.ragnarmmo.player.progression.PlayerProgressionService;
 import com.etema.ragnarmmo.player.stats.progression.JobBonusService;
@@ -65,10 +67,6 @@ public class CommonEvents {
 
     // Hardcoded balance constants (previously in BalanceConfig)
     // removed constants BASE_STAT_POINTS/POINTS_PER_LEVEL in favor of config
-    private static final double MOB_EXP_HP_MULTIPLIER = 1.2; // Increased from 0.8
-    private static final double MOB_EXP_ARMOR_BONUS = 2.5;  // Increased from 1.5
-    private static final int MOB_EXP_MINIMUM = 5;
-    private static final int MOB_EXP_MAXIMUM = 10000;
     private static final boolean MOB_EXP_SCALE_WITH_PLAYER_LEVEL = true;
 
     @SubscribeEvent
@@ -282,7 +280,8 @@ public class CommonEvents {
         double armorEff = getArmorEff(target);
 
         double dmg = CombatMath.computeDamageVariance(atk, dex, luk, rng);
-        if (rng.nextDouble() < critChance) {
+        boolean isCrit = rng.nextDouble() < critChance;
+        if (isCrit) {
             dmg *= Math.max(1.0D, critMult);
         }
 
@@ -291,11 +290,22 @@ public class CommonEvents {
         double hardDef = CombatMath.computeHardDEF(armorEff, ts.vit);
         double softDef = CombatMath.computeSoftDEF(ts.vit, ts.agi, 0);
         dmg = CombatMath.applyPhysicalDefense(dmg, softDef, hardDef, CombatMath.computePhysDR(hardDef));
-        
+
         dmg *= CombatPropertyResolver.getElementalModifier(element, CombatPropertyResolver.getDefensiveElement(target));
-        
-        e.setAmount((float) Math.max(1.0, dmg));
+
+        float finalDmg = (float) Math.max(1.0, dmg);
+        e.setAmount(finalDmg);
         DamageProcessingGuard.markProcessedPlayer(target);
+
+        // Send popoff packet so floating damage numbers appear for bow hits
+        if (shooter instanceof net.minecraft.server.level.ServerPlayer sp) {
+            com.etema.ragnarmmo.combat.api.CombatHitResultType resultType =
+                    isCrit ? com.etema.ragnarmmo.combat.api.CombatHitResultType.CRIT
+                           : com.etema.ragnarmmo.combat.api.CombatHitResultType.HIT;
+            Network.sendTrackingEntityAndSelf(target,
+                    new com.etema.ragnarmmo.combat.net.ClientboundRagnarCombatResultPacket(
+                            sp.getId(), target.getId(), resultType, finalDmg, isCrit));
+        }
     }
 
     private static boolean isValidBowSnapshot(net.minecraft.world.entity.projectile.AbstractArrow arrow,
@@ -450,24 +460,30 @@ public class CommonEvents {
         final boolean shouldWarnFarm = antiFarmPenalty < 1.0 && sp.tickCount % 600 == 0;
 
         RagnarCoreAPI.get(sp).ifPresent(s -> {
-            int baseExp = computeKillExp(killed);
+            KillExp killExp = computeKillExp(killed);
+            int baseExp = killExp.base();
+            int jobExp = killExp.job();
             
             // Apply expanded anti-farm penalty
             if (antiFarmPenalty < 1.0) {
                 baseExp = (int)(baseExp * antiFarmPenalty);
+                jobExp = (int)(jobExp * antiFarmPenalty);
                 if (shouldWarnFarm) {
                     finalSp.sendSystemMessage(Component.translatable("message.ragnarmmo.anti_farm_warning").withStyle(net.minecraft.ChatFormatting.YELLOW));
                 }
             }
 
-
             int finalExp = baseExp;
+            int finalJobExp = jobExp;
             if (MOB_EXP_SCALE_WITH_PLAYER_LEVEL) {
                 finalExp = applyLevelPenalty(baseExp, finalSp, killed, s.getLevel());
+                finalJobExp = applyLevelPenalty(jobExp, finalSp, killed, s.getLevel());
             }
 
             // Apply party XP sharing - distributes to party members and returns killer's share
+            double jobRatio = finalExp > 0 ? (double) finalJobExp / (double) finalExp : 1.0D;
             finalExp = PartyXpService.distributeKillXp(finalSp, finalExp, finalSp.getServer());
+            finalJobExp = Math.max(1, (int) Math.round(finalExp * jobRatio));
 
             if (s instanceof PlayerStats internal) {
                 internal.ensureBaseStatBaseline(RagnarConfigs.SERVER.progression.baseStatPoints.get());
@@ -475,7 +491,7 @@ public class CommonEvents {
             PlayerProgressionService progressionService = PlayerProgressionService
                     .forJobId(net.minecraft.resources.ResourceLocation.tryParse(s.getJobId()));
             int baseAward = progressionService.applyBaseExpRate(finalExp);
-            int jobAward = progressionService.applyJobExpRate(finalExp);
+            int jobAward = progressionService.applyJobExpRate(finalJobExp);
 
             int gained = s.addExpAndProcessLevelUps(baseAward, RagnarConfigs.SERVER.progression.pointsPerLevel.get(),
                     progressionService::baseExpToNext);
@@ -541,16 +557,13 @@ public class CommonEvents {
         return false;
     }
 
-    private static int computeKillExp(LivingEntity ent) {
-        double hp = ent.getMaxHealth();
-        double baseExp = hp * MOB_EXP_HP_MULTIPLIER;
-
-        double armor = ent.getArmorValue();
-        double armorBonus = armor * MOB_EXP_ARMOR_BONUS;
-
-        int totalExp = (int) Math.round(baseExp + armorBonus);
-
-        return Math.max(MOB_EXP_MINIMUM, Math.min(MOB_EXP_MAXIMUM, totalExp));
+    private static KillExp computeKillExp(LivingEntity ent) {
+        return MobProfileProvider.get(ent)
+                .resolve()
+                .filter(MobProfileState::isInitialized)
+                .map(MobProfileState::profile)
+                .map(profile -> new KillExp(Math.max(1, profile.baseExp()), Math.max(1, profile.jobExp())))
+                .orElse(new KillExp(1, 1));
     }
 
     /**
@@ -617,9 +630,10 @@ public class CommonEvents {
             return normalizedLevel;
         }
 
-        // If no resolved level exists yet, estimate from HP.
-        double hp = mob.getMaxHealth();
-        return Math.max(1, (int) (hp / 10.0));
+        return 1;
+    }
+
+    private record KillExp(int base, int job) {
     }
 
     public static double getWeaponDamage(Player p) {

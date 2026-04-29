@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.common.api.mobs.data;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
+import com.etema.ragnarmmo.mobs.profile.MobTier;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,7 +15,10 @@ public record MobDefinition(
         ResourceLocation entity,
         @Nullable ResourceLocation template,
         @Nullable MobRank rank,
+        @Nullable MobTier tier,
         @Nullable Integer level,
+        @Nullable Integer baseExp,
+        @Nullable Integer jobExp,
         @Nullable MobRoStatsBlock roStats,
         @Nullable MobDirectStatsBlock directStats,
         @Nullable String race,

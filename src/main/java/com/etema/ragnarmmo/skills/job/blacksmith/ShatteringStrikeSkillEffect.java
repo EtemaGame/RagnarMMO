@@ -23,24 +23,7 @@ public class ShatteringStrikeSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        LivingEntity target = getClosestTarget(player, 4.0);
-        if (target == null)
-            return;
-
-        if (player.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY() + 1.0, target.getZ(), 30, 0.2,
-                    0.2, 0.2, 0.2);
-            serverLevel.playSound(null, target.blockPosition(), SoundEvents.ANVIL_BREAK, SoundSource.PLAYERS, 1.0f,
-                    1.0f);
-
-            target.hurt(player.damageSources().playerAttack(player), 15.0f + (level * 5.0f));
-
-            // Chance to "break" (apply weakness/slowness)
-            if (serverLevel.random.nextFloat() < 0.05 + (level * 0.05)) {
-                target.addEffect(new net.minecraft.world.effect.MobEffectInstance(
-                        net.minecraft.world.effect.MobEffects.WEAKNESS, 100, 2));
-            }
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private LivingEntity getClosestTarget(ServerPlayer player, double range) {

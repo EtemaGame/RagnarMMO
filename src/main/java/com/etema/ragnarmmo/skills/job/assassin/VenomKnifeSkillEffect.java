@@ -25,22 +25,7 @@ public class VenomKnifeSkillEffect implements ISkillEffect {
 
     @Override
     public void execute(ServerPlayer player, int level) {
-        // Venom Knife: Throws a poisoned knife.
-        LivingEntity target = getClosestTarget(player, 10.0);
-        if (target == null)
-            return;
-
-        if (player.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY() + 1.0, target.getZ(), 10, 0.2,
-                    0.2, 0.2, 0.1);
-            serverLevel.playSound(null, target.blockPosition(), SoundEvents.ARROW_HIT, SoundSource.PLAYERS, 1.0f, 1.0f);
-
-            target.hurt(player.damageSources().playerAttack(player), 5.0f + level);
-            int duration = com.etema.ragnarmmo.player.stats.compute.CombatMath.computePoisonDuration(100, target);
-            if (duration > 0) {
-                target.addEffect(new MobEffectInstance(MobEffects.POISON, duration, 1));
-            }
-        }
+        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
     }
 
     private LivingEntity getClosestTarget(ServerPlayer player, double range) {

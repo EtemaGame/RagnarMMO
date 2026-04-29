@@ -71,6 +71,7 @@ public final class AuthoredMobProfileResolver {
 
         Integer level = resolveLevel(resolvedDefinition, issues);
         MobRank rank = resolveRank(resolvedDefinition, issues);
+        MobTier tier = resolvedDefinition.tier() != null ? resolvedDefinition.tier() : MobTier.fromRank(rank);
         String race = requireResolvedText("race", resolvedDefinition.race(), issues);
         String element = requireResolvedText("element", resolvedDefinition.element(), issues);
         String size = requireResolvedText("size", resolvedDefinition.size(), issues);
@@ -92,6 +93,8 @@ public final class AuthoredMobProfileResolver {
                 directStats != null ? directStats.moveSpeed() : null,
                 roStats,
                 issues);
+        Integer baseExp = resolveExp("base_exp", resolvedDefinition.baseExp(), level, tier, issues);
+        Integer jobExp = resolveExp("job_exp", resolvedDefinition.jobExp(), level, tier, issues);
 
         if (!issues.isEmpty()) {
             return new AuthoredMobProfileResolutionResult(null, issues);
@@ -102,6 +105,7 @@ public final class AuthoredMobProfileResolver {
                     new MobProfile(
                             level,
                             rank,
+                            tier,
                             maxHp,
                             atkMin,
                             atkMax,
@@ -112,6 +116,8 @@ public final class AuthoredMobProfileResolver {
                             crit,
                             aspd,
                             moveSpeed,
+                            baseExp,
+                            jobExp,
                             race,
                             element,
                             size),
@@ -145,9 +151,12 @@ public final class AuthoredMobProfileResolver {
         MobDirectStatsBlock directStats = resolved.directStats();
         return Optional.of(new AuthoredMobDefinition(
                 entityTypeId,
+                Optional.ofNullable(resolved.tier()),
                 optionalText(resolved.race()),
                 optionalText(resolved.element()),
                 optionalText(resolved.size()),
+                optionalInt(resolved.baseExp()),
+                optionalInt(resolved.jobExp()),
                 optionalInt(directStats != null ? directStats.maxHp() : null),
                 optionalInt(directStats != null ? directStats.atkMin() : null),
                 optionalInt(directStats != null ? directStats.atkMax() : null),
@@ -176,6 +185,27 @@ public final class AuthoredMobProfileResolver {
             issues.add(incomplete("rank", "rank is unresolved for the authored mob profile"));
         }
         return definition.rank();
+    }
+
+    private static @Nullable Integer resolveExp(
+            String field,
+            @Nullable Integer authoredValue,
+            @Nullable Integer level,
+            MobTier tier,
+            List<AuthoredMobProfileIssue> issues) {
+        if (authoredValue != null) {
+            if (authoredValue < 0) {
+                issues.add(invalid(field, field + " must be >= 0"));
+            }
+            return authoredValue;
+        }
+        if (level == null) {
+            issues.add(incomplete(field, field + " requires a resolved level when not authored explicitly"));
+            return null;
+        }
+        return "base_exp".equals(field)
+                ? MobRewardFormula.baseExp(level, tier)
+                : MobRewardFormula.jobExp(level, tier);
     }
 
     private static @Nullable String requireResolvedText(

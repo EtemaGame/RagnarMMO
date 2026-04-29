@@ -9,6 +9,7 @@ import com.etema.ragnarmmo.common.api.mobs.data.MobTemplate;
 import com.etema.ragnarmmo.common.api.mobs.data.resolve.MobDefinitionResolutionIssue;
 import com.etema.ragnarmmo.common.api.mobs.data.resolve.MobDefinitionResolutionResult;
 import com.etema.ragnarmmo.common.api.mobs.data.resolve.MobDefinitionResolver;
+import com.etema.ragnarmmo.mobs.profile.MobTier;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -50,9 +51,9 @@ public final class MobDefinitionDataLoader extends SimpleJsonResourceReloadListe
     private static final String TEMPLATES_FOLDER = "mob_templates";
 
     private static final Set<String> DEFINITION_FIELDS = Set.of(
-            "entity", "template", "rank", "level", "ro_stats", "direct_stats", "race", "element", "size");
+            "entity", "template", "rank", "tier", "level", "base_exp", "job_exp", "ro_stats", "direct_stats", "race", "element", "size");
     private static final Set<String> TEMPLATE_FIELDS = Set.of(
-            "rank", "level", "ro_stats", "direct_stats", "race", "element", "size");
+            "rank", "tier", "level", "base_exp", "job_exp", "ro_stats", "direct_stats", "race", "element", "size");
     private static final Set<String> RO_STATS_FIELDS = Set.of("str", "agi", "vit", "int", "dex", "luk");
     private static final Set<String> DIRECT_STATS_FIELDS = Set.of(
             "max_hp", "atk_min", "atk_max", "def", "mdef", "hit", "flee", "crit", "aspd", "move_speed");
@@ -221,7 +222,10 @@ public final class MobDefinitionDataLoader extends SimpleJsonResourceReloadListe
 
         return new MobTemplate(
                 parseOptionalRank(sourceId, json, "rank"),
+                parseOptionalTier(sourceId, json, "tier"),
                 parseOptionalInteger(sourceId, json, "level"),
+                parseOptionalInteger(sourceId, json, "base_exp"),
+                parseOptionalInteger(sourceId, json, "job_exp"),
                 parseRoStatsBlock(sourceId, json),
                 parseDirectStatsBlock(sourceId, json),
                 parseOptionalString(sourceId, json, "race"),
@@ -239,7 +243,10 @@ public final class MobDefinitionDataLoader extends SimpleJsonResourceReloadListe
                 entity,
                 template,
                 parseOptionalRank(sourceId, json, "rank"),
+                parseOptionalTier(sourceId, json, "tier"),
                 parseOptionalInteger(sourceId, json, "level"),
+                parseOptionalInteger(sourceId, json, "base_exp"),
+                parseOptionalInteger(sourceId, json, "job_exp"),
                 parseRoStatsBlock(sourceId, json),
                 parseDirectStatsBlock(sourceId, json),
                 parseOptionalString(sourceId, json, "race"),
@@ -384,6 +391,21 @@ public final class MobDefinitionDataLoader extends SimpleJsonResourceReloadListe
             return MobRank.valueOf(raw);
         } catch (IllegalArgumentException ex) {
             throw new IllegalArgumentException(field + " must be one of NORMAL, ELITE, MINI_BOSS, BOSS in " + sourceId);
+        }
+    }
+
+    private static @Nullable MobTier parseOptionalTier(
+            ResourceLocation sourceId,
+            JsonObject json,
+            String field) {
+        String raw = parseOptionalString(sourceId, json, field);
+        if (raw == null) {
+            return null;
+        }
+        try {
+            return MobTier.valueOf(raw);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException(field + " must be one of WEAK, NORMAL, ELITE, BOSS in " + sourceId);
         }
     }
 

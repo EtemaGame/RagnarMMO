@@ -86,13 +86,7 @@ public class HealSkillEffect extends InstantTargetSkillEffect {
         } else {
             healAmount = SkillDamageHelper.getHealAmount(user, level);
         }
-        float undeadDamageRatio = defOpt
-                .map(def -> (float) def.getLevelDouble("undead_damage_ratio", level, 0.5))
-                .orElse(0.5f);
-
         if (target.getMobType() == MobType.UNDEAD) {
-            // Damage undead
-            target.hurt(user.damageSources().magic(), healAmount * undeadDamageRatio);
             user.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                     net.minecraft.sounds.SoundEvents.ZOMBIE_HURT, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.5F);
             if (user.level() instanceof net.minecraft.server.level.ServerLevel sl) {

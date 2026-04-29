@@ -16,13 +16,22 @@ public final class MobDifficultyResolver {
         DimensionRules dimension = rules.dimensions().getOrDefault(context.dimension(), rules.defaultDimension());
         if (!rules.enabled()) {
             return new DifficultyResult(1, MobRank.NORMAL, dimension.floor(), dimension.cap(),
-                    context.structureId(), Optional.empty(), rules.mode());
+                    context.biomeId(), context.structureId(), Optional.empty(), rules.mode());
         }
 
         RandomSource random = DeterministicMobRandom.from(context);
         int level = baseLevel(context, rules, dimension, random);
 
         level = clamp(level, dimension.floor(), dimension.cap());
+
+        Optional<ResourceLocation> matchedBiome = context.biomeId()
+                .filter(id -> rules.biomes().containsKey(id));
+        if (matchedBiome.isPresent()) {
+            DifficultyRule biomeRule = rules.biomes().get(matchedBiome.get());
+            if (biomeRule.minLevel().isPresent()) {
+                level = Math.max(level, biomeRule.minLevel().getAsInt());
+            }
+        }
 
         Optional<ResourceLocation> matchedStructure = context.structureId()
                 .filter(id -> rules.structures().containsKey(id));
@@ -46,15 +55,18 @@ public final class MobDifficultyResolver {
         level = Math.max(1, level);
 
         MobRank rank = rules.rankChances().roll(random.nextDouble());
+        if (matchedBiome.isPresent()) {
+            rank = applyRankRule(rank, rules.biomes().get(matchedBiome.get()));
+        }
         if (matchedStructure.isPresent()) {
-            rank = applyStructureRankRule(rank, rules.structures().get(matchedStructure.get()));
+            rank = applyRankRule(rank, rules.structures().get(matchedStructure.get()));
         }
         if (matchedSpecialMob.isPresent()) {
             rank = rules.specialMobs().get(matchedSpecialMob.get()).fixedRank().orElse(rank);
         }
 
-        return new DifficultyResult(level, rank, dimension.floor(), dimension.cap(), matchedStructure, matchedSpecialMob,
-                rules.mode());
+        return new DifficultyResult(level, rank, dimension.floor(), dimension.cap(), matchedBiome, matchedStructure,
+                matchedSpecialMob, rules.mode());
     }
 
     private static int baseLevel(DifficultyContext context, DifficultyRules rules, DimensionRules dimension,
@@ -82,7 +94,7 @@ public final class MobDifficultyResolver {
                 .orElse(Math.max(1, (distance / 125) + 1));
     }
 
-    private static MobRank applyStructureRankRule(MobRank current, DifficultyRule rule) {
+    private static MobRank applyRankRule(MobRank current, DifficultyRule rule) {
         if (rule.minRank().isPresent()) {
             return MobConfigAccess.maxSeverity(current, rule.minRank().get());
         }

@@ -11,7 +11,13 @@ public record DifficultyContext(
         ResourceLocation dimension,
         BlockPos mobPos,
         BlockPos worldSpawnPos,
+        Optional<ResourceLocation> biomeId,
         Optional<ResourceLocation> structureId,
         OptionalInt nearestPlayerLevel,
         long worldSeed) {
+    public DifficultyContext {
+        biomeId = biomeId == null ? Optional.empty() : biomeId;
+        structureId = structureId == null ? Optional.empty() : structureId;
+        nearestPlayerLevel = nearestPlayerLevel == null ? OptionalInt.empty() : nearestPlayerLevel;
+    }
 }

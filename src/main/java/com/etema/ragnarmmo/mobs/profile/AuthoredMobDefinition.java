@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.mobs.profile;
 
+import com.etema.ragnarmmo.common.api.mobs.MobRank;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Optional;
@@ -8,7 +9,9 @@ import java.util.OptionalInt;
 
 public record AuthoredMobDefinition(
         ResourceLocation entityType,
+        Optional<MobRank> baselineRank,
         Optional<MobTier> tier,
+        OptionalInt baseLevel,
         Optional<String> race,
         Optional<String> element,
         Optional<String> size,
@@ -17,6 +20,8 @@ public record AuthoredMobDefinition(
         OptionalInt baseHp,
         OptionalInt atkMin,
         OptionalInt atkMax,
+        OptionalInt matkMin,
+        OptionalInt matkMax,
         OptionalInt def,
         OptionalInt mdef,
         OptionalInt hit,
@@ -28,7 +33,9 @@ public record AuthoredMobDefinition(
         if (entityType == null) {
             throw new IllegalArgumentException("entityType must not be null");
         }
+        baselineRank = baselineRank == null ? Optional.empty() : baselineRank;
         tier = tier == null ? Optional.empty() : tier;
+        baseLevel = baseLevel == null ? OptionalInt.empty() : baseLevel;
         race = race == null ? Optional.empty() : race;
         element = element == null ? Optional.empty() : element;
         size = size == null ? Optional.empty() : size;
@@ -37,6 +44,8 @@ public record AuthoredMobDefinition(
         baseHp = baseHp == null ? OptionalInt.empty() : baseHp;
         atkMin = atkMin == null ? OptionalInt.empty() : atkMin;
         atkMax = atkMax == null ? OptionalInt.empty() : atkMax;
+        matkMin = matkMin == null ? OptionalInt.empty() : matkMin;
+        matkMax = matkMax == null ? OptionalInt.empty() : matkMax;
         def = def == null ? OptionalInt.empty() : def;
         mdef = mdef == null ? OptionalInt.empty() : mdef;
         hit = hit == null ? OptionalInt.empty() : hit;

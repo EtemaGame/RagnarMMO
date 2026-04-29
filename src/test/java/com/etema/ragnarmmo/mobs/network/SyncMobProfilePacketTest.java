@@ -27,7 +27,7 @@ class SyncMobProfilePacketTest {
 
     @Test
     void profilePacketRoundTripsTierAndRewards() {
-        MobProfile profile = new MobProfile(12, MobRank.ELITE, MobTier.ELITE, 240, 18, 27, 8, 5, 42, 33,
+        MobProfile profile = new MobProfile(12, MobRank.ELITE, MobTier.ELITE, 240, 18, 27, 14, 21, 8, 5, 42, 33,
                 4, 155, 0.25D, 120, 78, "brute", "fire", "large");
         FriendlyByteBuf encoded = new FriendlyByteBuf(Unpooled.buffer());
 
@@ -37,6 +37,8 @@ class SyncMobProfilePacketTest {
         assertTrue(decoded.initialized());
         MobProfile decodedProfile = decoded.profile().orElseThrow();
         assertEquals(MobTier.ELITE, decodedProfile.tier());
+        assertEquals(14, decodedProfile.matkMin());
+        assertEquals(21, decodedProfile.matkMax());
         assertEquals(120, decodedProfile.baseExp());
         assertEquals(78, decodedProfile.jobExp());
     }

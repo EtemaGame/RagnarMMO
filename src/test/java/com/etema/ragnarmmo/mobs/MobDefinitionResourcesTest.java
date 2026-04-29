@@ -26,7 +26,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("Resources directory 'mob_definitions' is missing in this environment")
+@Disabled("Full vanilla authored mob coverage is intentionally deferred until P4 content work")
 class MobDefinitionResourcesTest {
     private static final Path DEFINITIONS_DIR =
             Path.of("src/main/resources/data/ragnarmmo/mob_definitions/vanilla");
@@ -70,11 +70,11 @@ class MobDefinitionResourcesTest {
             "minecraft:zombified_piglin");
 
     private static final Set<String> TOP_LEVEL_FIELDS = Set.of(
-            "entity", "rank", "level", "ro_stats", "direct_stats", "race", "element", "size");
+            "entity", "rank", "tier", "level", "base_exp", "job_exp", "ro_stats", "direct_stats", "race", "element", "size");
     private static final Set<String> RANKS = Set.of("NORMAL", "ELITE", "MINI_BOSS", "BOSS");
     private static final Set<String> RO_STATS_FIELDS = Set.of("str", "agi", "vit", "int", "dex", "luk");
     private static final Set<String> DIRECT_STATS_FIELDS = Set.of(
-            "max_hp", "atk_min", "atk_max", "def", "mdef", "aspd", "move_speed");
+            "max_hp", "atk_min", "atk_max", "matk_min", "matk_max", "def", "mdef", "hit", "flee", "crit", "aspd", "move_speed");
     private static final Set<String> RACES = Set.of(
             "demihuman", "brute", "insect", "fish", "demon", "undead", "formless", "plant", "angel", "dragon");
     private static final Set<String> ELEMENTS = Set.of(
@@ -120,6 +120,9 @@ class MobDefinitionResourcesTest {
             assertTrue(directStats.get("atk_min").getAsInt() >= 0, file + " atk_min must be >= 0");
             assertTrue(directStats.get("atk_max").getAsInt() >= directStats.get("atk_min").getAsInt(),
                     file + " atk_max must be >= atk_min");
+            assertTrue(directStats.get("matk_min").getAsInt() >= 0, file + " matk_min must be >= 0");
+            assertTrue(directStats.get("matk_max").getAsInt() >= directStats.get("matk_min").getAsInt(),
+                    file + " matk_max must be >= matk_min");
             assertTrue(directStats.get("def").getAsInt() >= 0, file + " def must be >= 0");
             assertTrue(directStats.get("mdef").getAsInt() >= 0, file + " mdef must be >= 0");
             assertTrue(directStats.get("aspd").getAsInt() > 0, file + " aspd must be > 0");
@@ -141,7 +144,7 @@ class MobDefinitionResourcesTest {
                 55,
                 36,
                 new MobRoStatsBlock(22, 18, 16, 10, 22, 7),
-                new MobDirectStatsBlock(16, 4, 5, 0, 3, null, null, null, 155, 0.35D),
+                new MobDirectStatsBlock(16, 4, 5, 2, 4, 0, 3, null, null, null, 155, 0.35D),
                 "demihuman",
                 "neutral",
                 "medium");

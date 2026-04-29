@@ -36,6 +36,8 @@ public final class MobProfileState {
         tag.putInt("MaxHp", profile.maxHp());
         tag.putInt("AtkMin", profile.atkMin());
         tag.putInt("AtkMax", profile.atkMax());
+        tag.putInt("MatkMin", profile.matkMin());
+        tag.putInt("MatkMax", profile.matkMax());
         tag.putInt("Def", profile.def());
         tag.putInt("MDef", profile.mdef());
         tag.putInt("Hit", profile.hit());
@@ -67,6 +69,8 @@ public final class MobProfileState {
         initialized = nbt.getBoolean("Initialized");
         int atkMin = Math.max(0, nbt.getInt("AtkMin"));
         int atkMax = Math.max(atkMin, nbt.getInt("AtkMax"));
+        int matkMin = Math.max(0, nbt.getInt("MatkMin"));
+        int matkMax = Math.max(matkMin, nbt.getInt("MatkMax"));
         profile = new MobProfile(
                 Math.max(1, nbt.getInt("Level")),
                 rank,
@@ -74,6 +78,8 @@ public final class MobProfileState {
                 Math.max(1, nbt.getInt("MaxHp")),
                 atkMin,
                 atkMax,
+                matkMin,
+                matkMax,
                 Math.max(0, nbt.getInt("Def")),
                 Math.max(0, nbt.getInt("MDef")),
                 Math.max(0, nbt.getInt("Hit")),
@@ -94,7 +100,7 @@ public final class MobProfileState {
     }
 
     public static MobProfile defaultProfile() {
-        return new MobProfile(1, MobRank.NORMAL, MobTier.NORMAL, 20, 2, 4, 0, 0, 10, 5, 1, 150, 0.2D,
+        return new MobProfile(1, MobRank.NORMAL, MobTier.NORMAL, 20, 2, 4, 0, 0, 0, 0, 10, 5, 1, 150, 0.2D,
                 1, 1, "unknown", "neutral", "medium");
     }
 }

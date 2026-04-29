@@ -25,33 +25,42 @@ public final class MobProfileFactory {
         FormulaRules formulas = formulaRulesOverride != null ? formulaRulesOverride : MobConfigAccess.getFormulaRules();
         AuthoredMobDefinition authored = authoredDefinition.orElse(null);
         int level = difficulty.level();
-        MobTier tier = authored == null
-                ? MobTier.fromRank(difficulty.rank())
-                : authored.tier().orElse(MobTier.fromRank(difficulty.rank()));
+        MobTier proceduralTier = MobTier.fromRank(difficulty.rank());
+        MobTier tier = authored == null ? proceduralTier : maxTier(proceduralTier, authored.tier().orElse(proceduralTier));
         TierModifiers modifiers = TierModifiers.forTier(tier);
 
-        int maxHp = authoredInt(authored, AuthoredMobDefinition::baseHp,
+        int baseLevel = authored == null ? level : authored.baseLevel().orElse(level);
+        boolean authoredBaseline = authored != null && authored.baseLevel().isPresent();
+        int maxHp = authoredScaledInt(authored, AuthoredMobDefinition::baseHp, level, baseLevel, 1.45D, modifiers.hp(),
                 modifiers.applyInt(defaults.maxHp() + scaled(level, formulas.hpPerLevel()), TierStat.HP));
-        int atkMin = authoredInt(authored, AuthoredMobDefinition::atkMin,
+        int atkMin = authoredScaledInt(authored, AuthoredMobDefinition::atkMin, level, baseLevel, 1.15D, modifiers.atk(),
                 modifiers.applyInt(defaults.atkMin() + scaled(level, formulas.atkMinPerLevel()), TierStat.ATK));
-        int atkMax = Math.max(atkMin, authoredInt(authored, AuthoredMobDefinition::atkMax,
+        int atkMax = Math.max(atkMin, authoredScaledInt(authored, AuthoredMobDefinition::atkMax, level, baseLevel, 1.15D, modifiers.atk(),
                 Math.max(atkMin, modifiers.applyInt(defaults.atkMax() + scaled(level, formulas.atkMinPerLevel() + formulas.atkMaxExtraPerLevel()), TierStat.ATK))));
-        int def = authoredInt(authored, AuthoredMobDefinition::def, modifiers.applyInt(defaults.def() + scaled(level, formulas.defPerLevel()), TierStat.DEF));
-        int mdef = authoredInt(authored, AuthoredMobDefinition::mdef, modifiers.applyInt(defaults.mdef() + scaled(level, formulas.mdefPerLevel()), TierStat.DEF));
-        int hit = authoredInt(authored, AuthoredMobDefinition::hit, modifiers.applyInt(defaults.hit() + scaled(level, formulas.hitPerLevel()), TierStat.ACCURACY));
-        int flee = authoredInt(authored, AuthoredMobDefinition::flee, modifiers.applyInt(defaults.flee() + scaled(level, formulas.fleePerLevel()), TierStat.ACCURACY));
-        int crit = authoredInt(authored, AuthoredMobDefinition::crit, modifiers.applyInt(defaults.crit(), TierStat.CRIT));
-        int aspd = authoredInt(authored, AuthoredMobDefinition::aspd, modifiers.applyInt(defaults.aspd() + scaled(level, formulas.aspdPerLevel()), TierStat.ASPD));
+        int matkMin = authoredScaledInt(authored, AuthoredMobDefinition::matkMin, level, baseLevel, 1.15D, modifiers.atk(),
+                Math.max(0, (int) Math.round((defaults.atkMin() + scaled(level, formulas.atkMinPerLevel())) * 0.75D)));
+        int matkMax = Math.max(matkMin, authoredScaledInt(authored, AuthoredMobDefinition::matkMax, level, baseLevel, 1.15D, modifiers.atk(),
+                Math.max(matkMin, (int) Math.round((defaults.atkMax() + scaled(level, formulas.atkMinPerLevel() + formulas.atkMaxExtraPerLevel())) * 0.85D))));
+        int def = authoredScaledInt(authored, AuthoredMobDefinition::def, level, baseLevel, 1.10D, modifiers.def(), modifiers.applyInt(defaults.def() + scaled(level, formulas.defPerLevel()), TierStat.DEF));
+        int mdef = authoredScaledInt(authored, AuthoredMobDefinition::mdef, level, baseLevel, 1.10D, modifiers.def(), modifiers.applyInt(defaults.mdef() + scaled(level, formulas.mdefPerLevel()), TierStat.DEF));
+        int hit = authoredLinearInt(authored, AuthoredMobDefinition::hit, level, baseLevel, formulas.hitPerLevel(), modifiers.accuracy(), modifiers.applyInt(defaults.hit() + scaled(level, formulas.hitPerLevel()), TierStat.ACCURACY));
+        int flee = authoredLinearInt(authored, AuthoredMobDefinition::flee, level, baseLevel, formulas.fleePerLevel(), modifiers.accuracy(), modifiers.applyInt(defaults.flee() + scaled(level, formulas.fleePerLevel()), TierStat.ACCURACY));
+        int crit = authoredLinearInt(authored, AuthoredMobDefinition::crit, level, baseLevel, 0.05D, modifiers.crit(), modifiers.applyInt(defaults.crit(), TierStat.CRIT));
+        int aspd = authoredLinearInt(authored, AuthoredMobDefinition::aspd, level, baseLevel, formulas.aspdPerLevel(), modifiers.aspd(), modifiers.applyInt(defaults.aspd() + scaled(level, formulas.aspdPerLevel()), TierStat.ASPD));
         double moveSpeed = authoredDouble(authored, AuthoredMobDefinition::moveSpeed,
                 Math.min(formulas.moveSpeedCap(), defaults.moveSpeed() + (level * formulas.moveSpeedPerLevel())));
-        int baseExp = authoredInt(authored, AuthoredMobDefinition::baseExp, MobRewardFormula.baseExp(level, tier));
-        int jobExp = authoredInt(authored, AuthoredMobDefinition::jobExp, MobRewardFormula.jobExp(level, tier));
+        int baseExp = authoredBaseline && authored.baseExp().isPresent() && level == baseLevel
+                ? authored.baseExp().getAsInt()
+                : MobRewardFormula.baseExp(level, tier);
+        int jobExp = authoredBaseline && authored.jobExp().isPresent() && level == baseLevel
+                ? authored.jobExp().getAsInt()
+                : MobRewardFormula.jobExp(level, tier);
 
         String race = authoredString(authored, AuthoredMobDefinition::race, defaults.race());
         String element = authoredString(authored, AuthoredMobDefinition::element, defaults.element());
         String size = authoredString(authored, AuthoredMobDefinition::size, defaults.size());
 
-        return new MobProfile(level, difficulty.rank(), tier, maxHp, atkMin, atkMax, def, mdef, hit, flee, crit, aspd,
+        return new MobProfile(level, difficulty.rank(), tier, maxHp, atkMin, atkMax, matkMin, matkMax, def, mdef, hit, flee, crit, aspd,
                 moveSpeed, baseExp, jobExp, race, element, size);
     }
 
@@ -67,6 +76,61 @@ public final class MobProfileFactory {
         }
         java.util.OptionalInt value = getter.apply(authored);
         return value.isPresent() ? value.getAsInt() : defaultValue;
+    }
+
+    private static int authoredScaledInt(AuthoredMobDefinition authored,
+            java.util.function.Function<AuthoredMobDefinition, java.util.OptionalInt> getter,
+            int runtimeLevel,
+            int baseLevel,
+            double exponent,
+            double tierMultiplier,
+            int defaultValue) {
+        if (authored == null) {
+            return defaultValue;
+        }
+        java.util.OptionalInt value = getter.apply(authored);
+        if (value.isEmpty()) {
+            return defaultValue;
+        }
+        if (runtimeLevel == baseLevel) {
+            return value.getAsInt();
+        }
+        double ratio = Math.max(1.0D, runtimeLevel) / (double) Math.max(1, baseLevel);
+        return Math.max(0, (int) Math.round(value.getAsInt() * Math.pow(ratio, exponent) * tierMultiplier));
+    }
+
+    private static int authoredLinearInt(AuthoredMobDefinition authored,
+            java.util.function.Function<AuthoredMobDefinition, java.util.OptionalInt> getter,
+            int runtimeLevel,
+            int baseLevel,
+            double perLevel,
+            double tierMultiplier,
+            int defaultValue) {
+        if (authored == null) {
+            return defaultValue;
+        }
+        java.util.OptionalInt value = getter.apply(authored);
+        if (value.isEmpty()) {
+            return defaultValue;
+        }
+        if (runtimeLevel == baseLevel) {
+            return value.getAsInt();
+        }
+        int delta = runtimeLevel - baseLevel;
+        return Math.max(0, (int) Math.round(value.getAsInt() + (delta * perLevel * tierMultiplier)));
+    }
+
+    private static MobTier maxTier(MobTier first, MobTier second) {
+        return severity(first) >= severity(second) ? first : second;
+    }
+
+    private static int severity(MobTier tier) {
+        return switch (tier == null ? MobTier.NORMAL : tier) {
+            case WEAK -> 0;
+            case NORMAL -> 1;
+            case ELITE -> 2;
+            case BOSS -> 3;
+        };
     }
 
     private static double authoredDouble(AuthoredMobDefinition authored,

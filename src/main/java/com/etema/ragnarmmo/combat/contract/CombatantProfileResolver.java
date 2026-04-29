@@ -120,7 +120,7 @@ public final class CombatantProfileResolver {
                         CombatMath.computeCritDamageMultiplier(lukEstimate, 1),
                         profile.aspd(),
                         ItemStack.EMPTY),
-                new MagicAttackProfile(0.0D, 0.0D),
+                new MagicAttackProfile(profile.matkMin(), profile.matkMax()),
                 new DefenseProfile(
                         profile.flee(),
                         CombatMath.computePerfectDodge(lukEstimate),

@@ -96,6 +96,7 @@ public final class CompanionProfileService {
                 Math.max(1, level),
                 Optional.empty(),
                 Optional.empty(),
+                Optional.empty(),
                 DifficultyMode.PLAYER_LEVEL);
         return PROFILE_FACTORY.create(difficulty, AuthoredMobProfileResolver.resolvePartialDefinition(entityTypeId));
     }

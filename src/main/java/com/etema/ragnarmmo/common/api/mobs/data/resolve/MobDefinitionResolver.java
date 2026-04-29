@@ -23,6 +23,8 @@ public final class MobDefinitionResolver {
             "maxHp",
             "atkMin",
             "atkMax",
+            "matkMin",
+            "matkMax",
             "def",
             "mdef",
             "hit",
@@ -106,6 +108,8 @@ public final class MobDefinitionResolver {
         validatePositive(directStats.maxHp(), "directStats.maxHp", issues);
         validateNonNegative(directStats.atkMin(), "directStats.atkMin", issues);
         validateNonNegative(directStats.atkMax(), "directStats.atkMax", issues);
+        validateNonNegative(directStats.matkMin(), "directStats.matkMin", issues);
+        validateNonNegative(directStats.matkMax(), "directStats.matkMax", issues);
         validateNonNegative(directStats.def(), "directStats.def", issues);
         validateNonNegative(directStats.mdef(), "directStats.mdef", issues);
         validateNonNegative(directStats.hit(), "directStats.hit", issues);
@@ -116,6 +120,9 @@ public final class MobDefinitionResolver {
 
         if (directStats.atkMin() != null && directStats.atkMax() != null && directStats.atkMax() < directStats.atkMin()) {
             issues.add(invalid("directStats.atkMax", "atkMax must be >= atkMin"));
+        }
+        if (directStats.matkMin() != null && directStats.matkMax() != null && directStats.matkMax() < directStats.matkMin()) {
+            issues.add(invalid("directStats.matkMax", "matkMax must be >= matkMin"));
         }
     }
 
@@ -177,6 +184,8 @@ public final class MobDefinitionResolver {
                 preferPrimary(definitionBlock.maxHp(), templateBlock.maxHp()),
                 preferPrimary(definitionBlock.atkMin(), templateBlock.atkMin()),
                 preferPrimary(definitionBlock.atkMax(), templateBlock.atkMax()),
+                preferPrimary(definitionBlock.matkMin(), templateBlock.matkMin()),
+                preferPrimary(definitionBlock.matkMax(), templateBlock.matkMax()),
                 preferPrimary(definitionBlock.def(), templateBlock.def()),
                 preferPrimary(definitionBlock.mdef(), templateBlock.mdef()),
                 preferPrimary(definitionBlock.hit(), templateBlock.hit()),
@@ -223,6 +232,8 @@ public final class MobDefinitionResolver {
             case "maxHp" -> directStats.maxHp() != null;
             case "atkMin" -> directStats.atkMin() != null;
             case "atkMax" -> directStats.atkMax() != null;
+            case "matkMin" -> directStats.matkMin() != null;
+            case "matkMax" -> directStats.matkMax() != null;
             case "def" -> directStats.def() != null;
             case "mdef" -> directStats.mdef() != null;
             case "hit" -> directStats.hit() != null;

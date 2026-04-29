@@ -56,7 +56,7 @@ public final class MobDefinitionDataLoader extends SimpleJsonResourceReloadListe
             "rank", "tier", "level", "base_exp", "job_exp", "ro_stats", "direct_stats", "race", "element", "size");
     private static final Set<String> RO_STATS_FIELDS = Set.of("str", "agi", "vit", "int", "dex", "luk");
     private static final Set<String> DIRECT_STATS_FIELDS = Set.of(
-            "max_hp", "atk_min", "atk_max", "def", "mdef", "hit", "flee", "crit", "aspd", "move_speed");
+            "max_hp", "atk_min", "atk_max", "matk_min", "matk_max", "def", "mdef", "hit", "flee", "crit", "aspd", "move_speed");
 
     public static final MobDefinitionDataLoader INSTANCE = new MobDefinitionDataLoader();
 
@@ -289,6 +289,8 @@ public final class MobDefinitionDataLoader extends SimpleJsonResourceReloadListe
                 parseOptionalInteger(sourceId, block, "max_hp"),
                 parseOptionalInteger(sourceId, block, "atk_min"),
                 parseOptionalInteger(sourceId, block, "atk_max"),
+                parseOptionalInteger(sourceId, block, "matk_min"),
+                parseOptionalInteger(sourceId, block, "matk_max"),
                 parseOptionalInteger(sourceId, block, "def"),
                 parseOptionalInteger(sourceId, block, "mdef"),
                 parseOptionalInteger(sourceId, block, "hit"),

@@ -216,6 +216,7 @@ public final class RagnarConfigs {
             public final DimensionConfig overworld;
             public final DimensionConfig nether;
             public final DimensionConfig end;
+            public final ForgeConfigSpec.ConfigValue<List<? extends String>> biomes;
             public final ForgeConfigSpec.ConfigValue<List<? extends String>> structures;
             public final ForgeConfigSpec.ConfigValue<List<? extends String>> specialMobs;
 
@@ -245,6 +246,11 @@ public final class RagnarConfigs {
                         () -> List.of("0-999=60-70", "1000+=70-82"));
                 builder.pop();
 
+                biomes = builder.comment("Biome difficulty rules. Format: biome_id=min_level=20,min_rank=ELITE")
+                        .defineList("biomes", List.of(
+                                "minecraft:deep_dark=min_level=80,min_rank=ELITE",
+                                "minecraft:basalt_deltas=min_level=42,min_rank=ELITE"),
+                                value -> value instanceof String);
                 structures = builder.comment("Structure difficulty rules. Format: structure_id=min_level=70,min_rank=ELITE")
                         .defineList("structures", List.of(), value -> value instanceof String);
                 specialMobs = builder.comment("Special mob rules. Format: entity_type_id=rank=BOSS,min_level=99")

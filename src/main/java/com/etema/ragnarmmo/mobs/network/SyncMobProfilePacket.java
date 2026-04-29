@@ -72,6 +72,8 @@ public final class SyncMobProfilePacket {
         buf.writeInt(msg.profile.maxHp());
         buf.writeInt(msg.profile.atkMin());
         buf.writeInt(msg.profile.atkMax());
+        buf.writeInt(msg.profile.matkMin());
+        buf.writeInt(msg.profile.matkMax());
         buf.writeInt(msg.profile.def());
         buf.writeInt(msg.profile.mdef());
         buf.writeInt(msg.profile.hit());
@@ -98,6 +100,8 @@ public final class SyncMobProfilePacket {
                         buf.readInt(),
                         buf.readEnum(com.etema.ragnarmmo.common.api.mobs.MobRank.class),
                         buf.readEnum(MobTier.class),
+                        buf.readInt(),
+                        buf.readInt(),
                         buf.readInt(),
                         buf.readInt(),
                         buf.readInt(),

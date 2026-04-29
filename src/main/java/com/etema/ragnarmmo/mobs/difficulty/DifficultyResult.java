@@ -10,6 +10,7 @@ public record DifficultyResult(
         MobRank rank,
         int dimensionFloor,
         int dimensionCap,
+        Optional<ResourceLocation> matchedBiome,
         Optional<ResourceLocation> matchedStructure,
         Optional<ResourceLocation> matchedBossRule,
         DifficultyMode mode) {
@@ -20,6 +21,7 @@ public record DifficultyResult(
         if (rank == null) {
             throw new IllegalArgumentException("rank must not be null");
         }
+        matchedBiome = matchedBiome == null ? Optional.empty() : matchedBiome;
         matchedStructure = matchedStructure == null ? Optional.empty() : matchedStructure;
         matchedBossRule = matchedBossRule == null ? Optional.empty() : matchedBossRule;
         if (mode == null) {

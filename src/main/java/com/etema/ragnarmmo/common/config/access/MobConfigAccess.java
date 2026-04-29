@@ -187,6 +187,7 @@ public final class MobConfigAccess {
                 config.playerLevel.variance.get(),
                 Map.copyOf(dimensions),
                 dimensions.get(Level.OVERWORLD.location()),
+                parseRuleList(config.biomes.get(), RuleScope.BIOME),
                 parseRuleList(config.structures.get(), RuleScope.STRUCTURE),
                 parseRuleList(config.specialMobs.get(), RuleScope.SPECIAL_MOB));
     }
@@ -277,6 +278,7 @@ public final class MobConfigAccess {
             int playerLevelVariance,
             Map<ResourceLocation, DimensionRules> dimensions,
             DimensionRules defaultDimension,
+            Map<ResourceLocation, DifficultyRule> biomes,
             Map<ResourceLocation, DifficultyRule> structures,
             Map<ResourceLocation, DifficultyRule> specialMobs) {
     }
@@ -331,6 +333,7 @@ public final class MobConfigAccess {
     }
 
     public enum RuleScope {
+        BIOME,
         STRUCTURE,
         SPECIAL_MOB
     }
@@ -357,12 +360,12 @@ public final class MobConfigAccess {
                     default -> throw new IllegalArgumentException("unknown difficulty rule key: " + key);
                 }
             }
-            if (scope == RuleScope.STRUCTURE) {
+            if (scope == RuleScope.BIOME || scope == RuleScope.STRUCTURE) {
                 if (fixedRank.isPresent()) {
-                    throw new IllegalArgumentException("structure rules must use min_rank, not rank");
+                    throw new IllegalArgumentException(scope.name().toLowerCase(Locale.ROOT) + " rules must use min_rank, not rank");
                 }
                 if (minRank.isPresent() && minRank.get() != MobRank.NORMAL && minRank.get() != MobRank.ELITE) {
-                    throw new IllegalArgumentException("structure min_rank must be NORMAL or ELITE");
+                    throw new IllegalArgumentException(scope.name().toLowerCase(Locale.ROOT) + " min_rank must be NORMAL or ELITE");
                 }
             } else if (scope == RuleScope.SPECIAL_MOB) {
                 if (minRank.isPresent()) {

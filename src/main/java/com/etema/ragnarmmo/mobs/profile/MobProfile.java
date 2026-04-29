@@ -9,6 +9,8 @@ public record MobProfile(
         int maxHp,
         int atkMin,
         int atkMax,
+        int matkMin,
+        int matkMax,
         int def,
         int mdef,
         int hit,
@@ -39,6 +41,12 @@ public record MobProfile(
         }
         if (atkMax < atkMin) {
             throw new IllegalArgumentException("atkMax must be >= atkMin");
+        }
+        if (matkMin < 0) {
+            throw new IllegalArgumentException("matkMin must be >= 0");
+        }
+        if (matkMax < matkMin) {
+            throw new IllegalArgumentException("matkMax must be >= matkMin");
         }
         if (def < 0 || mdef < 0 || hit < 0 || flee < 0 || crit < 0) {
             throw new IllegalArgumentException("def, mdef, hit, flee, and crit must be >= 0");

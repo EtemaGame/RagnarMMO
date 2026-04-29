@@ -36,8 +36,29 @@ class MobProfileRewardSourceTest {
 
         assertTrue(source.contains("case REGION"));
         assertTrue(source.contains("case DISTANCE"));
+        assertTrue(source.contains("context.biomeId()"));
+        assertTrue(source.contains("rules.biomes()"));
         assertTrue(source.contains("context.structureId()"));
         assertTrue(source.contains("context.dimension()"));
+    }
+
+    @Test
+    void authoredMobDefinitionsScaleFromBaselineInsteadOfFreezingRuntimeStats() throws IOException {
+        String source = Files.readString(ROOT.resolve("mobs/profile/MobProfileFactory.java"));
+
+        assertTrue(source.contains("authoredScaledInt"));
+        assertTrue(source.contains("Math.pow(ratio, exponent)"));
+        assertTrue(source.contains("runtimeLevel == baseLevel"));
+        assertFalse(source.contains("authoredInt(authored, AuthoredMobDefinition::baseHp"),
+                "authored HP must not bypass runtime scaling as an absolute value");
+    }
+
+    @Test
+    void mobMagicProfileUsesCanonicalMobMatk() throws IOException {
+        String source = Files.readString(ROOT.resolve("combat/contract/CombatantProfileResolver.java"));
+
+        assertTrue(source.contains("new MagicAttackProfile(profile.matkMin(), profile.matkMax())"));
+        assertFalse(source.contains("new MagicAttackProfile(0.0D, 0.0D)"));
     }
 
     private static String methodBody(String source, String signature) {

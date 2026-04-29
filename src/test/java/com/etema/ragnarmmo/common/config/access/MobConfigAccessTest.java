@@ -49,6 +49,12 @@ class MobConfigAccessTest {
         assertEquals(70, rule.minLevel().orElseThrow());
         assertEquals(MobRank.ELITE, rule.minRank().orElseThrow());
 
+        MobConfigAccess.DifficultyRule biomeRule = MobConfigAccess.DifficultyRule.parse(
+                "min_level=35,min_rank=NORMAL",
+                MobConfigAccess.RuleScope.BIOME);
+        assertEquals(35, biomeRule.minLevel().orElseThrow());
+        assertEquals(MobRank.NORMAL, biomeRule.minRank().orElseThrow());
+
         assertThrows(IllegalArgumentException.class,
                 () -> MobConfigAccess.DifficultyRule.parse("min_level=70,min_rank=NOPE",
                         MobConfigAccess.RuleScope.STRUCTURE));
@@ -63,6 +69,9 @@ class MobConfigAccessTest {
         assertThrows(IllegalArgumentException.class,
                 () -> MobConfigAccess.DifficultyRule.parse("min_rank=BOSS",
                         MobConfigAccess.RuleScope.SPECIAL_MOB));
+        assertThrows(IllegalArgumentException.class,
+                () -> MobConfigAccess.DifficultyRule.parse("rank=ELITE",
+                        MobConfigAccess.RuleScope.BIOME));
 
         MobConfigAccess.DifficultyRule specialRule = MobConfigAccess.DifficultyRule.parse(
                 "rank=MINI_BOSS,min_level=80",

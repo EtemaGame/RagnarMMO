@@ -12,6 +12,8 @@ public record MobDirectStatsBlock(
         @Nullable Integer maxHp,
         @Nullable Integer atkMin,
         @Nullable Integer atkMax,
+        @Nullable Integer matkMin,
+        @Nullable Integer matkMax,
         @Nullable Integer def,
         @Nullable Integer mdef,
         @Nullable Integer hit,

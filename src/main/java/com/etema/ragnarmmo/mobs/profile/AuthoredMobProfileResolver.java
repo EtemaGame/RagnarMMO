@@ -82,6 +82,8 @@ public final class AuthoredMobProfileResolver {
         Integer maxHp = resolveFinalIntStat("max_hp", directStats != null ? directStats.maxHp() : null, level, roStats, issues);
         Integer atkMin = resolveFinalIntStat("atk_min", directStats != null ? directStats.atkMin() : null, level, roStats, issues);
         Integer atkMax = resolveFinalIntStat("atk_max", directStats != null ? directStats.atkMax() : null, level, roStats, issues);
+        Integer matkMin = resolveFinalIntStat("matk_min", directStats != null ? directStats.matkMin() : null, level, roStats, issues);
+        Integer matkMax = resolveFinalIntStat("matk_max", directStats != null ? directStats.matkMax() : null, level, roStats, issues);
         Integer def = resolveFinalIntStat("def", directStats != null ? directStats.def() : null, level, roStats, issues);
         Integer mdef = resolveFinalIntStat("mdef", directStats != null ? directStats.mdef() : null, level, roStats, issues);
         Integer hit = resolveFinalIntStat("hit", directStats != null ? directStats.hit() : null, level, roStats, issues);
@@ -109,6 +111,8 @@ public final class AuthoredMobProfileResolver {
                             maxHp,
                             atkMin,
                             atkMax,
+                            matkMin,
+                            matkMax,
                             def,
                             mdef,
                             hit,
@@ -151,7 +155,9 @@ public final class AuthoredMobProfileResolver {
         MobDirectStatsBlock directStats = resolved.directStats();
         return Optional.of(new AuthoredMobDefinition(
                 entityTypeId,
+                Optional.ofNullable(resolved.rank()),
                 Optional.ofNullable(resolved.tier()),
+                optionalInt(resolved.level()),
                 optionalText(resolved.race()),
                 optionalText(resolved.element()),
                 optionalText(resolved.size()),
@@ -160,6 +166,8 @@ public final class AuthoredMobProfileResolver {
                 optionalInt(directStats != null ? directStats.maxHp() : null),
                 optionalInt(directStats != null ? directStats.atkMin() : null),
                 optionalInt(directStats != null ? directStats.atkMax() : null),
+                optionalInt(directStats != null ? directStats.matkMin() : null),
+                optionalInt(directStats != null ? directStats.matkMax() : null),
                 optionalInt(directStats != null ? directStats.def() : null),
                 optionalInt(directStats != null ? directStats.mdef() : null),
                 optionalInt(directStats != null ? directStats.hit() : null),
@@ -264,6 +272,8 @@ public final class AuthoredMobProfileResolver {
             case "hit" -> level == null ? null : Math.max(0, level + roStats.dex());
             case "flee" -> level == null ? null : Math.max(0, level + roStats.agi());
             case "crit" -> 0;
+            case "matk_min" -> Math.max(0, roStats.int_());
+            case "matk_max" -> Math.max(0, roStats.int_() + roStats.dex() / 2);
             default -> null;
         };
     }

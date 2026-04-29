@@ -21,31 +21,17 @@ class MobProfileFactoryTest {
 
     @Test
     void authoredMobProfileUsesAuthoredRewardValues() {
-        AuthoredMobDefinition authored = new AuthoredMobDefinition(
-                ResourceLocation.fromNamespaceAndPath("minecraft", "zombie"),
-                Optional.of(MobTier.WEAK),
-                Optional.of("undead"),
-                Optional.of("undead"),
-                Optional.of("medium"),
-                OptionalInt.of(37),
-                OptionalInt.of(24),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalDouble.empty());
+        AuthoredMobDefinition authored = authoredBaseline();
 
-        MobProfile profile = factory.create(difficulty(7, MobRank.NORMAL), Optional.of(authored));
+        MobProfile profile = factory.create(difficulty(8, MobRank.NORMAL), Optional.of(authored));
 
-        assertEquals(MobTier.WEAK, profile.tier());
+        assertEquals(MobTier.NORMAL, profile.tier());
         assertEquals(37, profile.baseExp());
         assertEquals(24, profile.jobExp());
         assertEquals("undead", profile.race());
+        assertEquals(180, profile.maxHp());
+        assertEquals(9, profile.atkMin());
+        assertEquals(6, profile.matkMin());
     }
 
     @Test
@@ -57,6 +43,7 @@ class MobProfileFactoryTest {
         assertEquals(MobTier.ELITE, elite.tier());
         assertTrue(elite.maxHp() > normal.maxHp());
         assertTrue(elite.atkMin() > normal.atkMin());
+        assertTrue(elite.matkMin() >= normal.matkMin());
         assertTrue(elite.def() >= normal.def());
         assertTrue(elite.mdef() >= normal.mdef());
         assertTrue(elite.hit() >= normal.hit());
@@ -69,33 +56,125 @@ class MobProfileFactoryTest {
 
     @Test
     void proceduralRewardDerivesFromLevelTierAndExpectedTtk() {
-        MobProfile weak = factory.create(difficulty(10, MobRank.NORMAL), Optional.of(new AuthoredMobDefinition(
-                ResourceLocation.fromNamespaceAndPath("minecraft", "slime"),
-                Optional.of(MobTier.WEAK),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalInt.empty(),
-                OptionalDouble.empty())));
+        MobProfile weak = factory.create(difficulty(10, MobRank.NORMAL), Optional.of(weakIdentityOnly()));
         MobProfile boss = factory.create(difficulty(10, MobRank.BOSS), Optional.empty());
 
-        assertEquals(MobRewardFormula.baseExp(10, MobTier.WEAK), weak.baseExp());
-        assertEquals(MobRewardFormula.jobExp(10, MobTier.WEAK), weak.jobExp());
+        assertEquals(MobRewardFormula.baseExp(10, MobTier.NORMAL), weak.baseExp());
+        assertEquals(MobRewardFormula.jobExp(10, MobTier.NORMAL), weak.jobExp());
         assertTrue(boss.baseExp() > weak.baseExp());
         assertTrue(MobRewardFormula.expectedHits(MobTier.BOSS) > MobRewardFormula.expectedHits(MobTier.NORMAL));
     }
 
+    @Test
+    void authoredBaselineScalesFromBaseLevelToRuntimeLevel() {
+        AuthoredMobDefinition authored = authoredBaseline();
+        MobProfile baseline = factory.create(difficulty(8, MobRank.NORMAL), Optional.of(authored));
+        MobProfile scaled = factory.create(difficulty(80, MobRank.NORMAL), Optional.of(authored));
+
+        assertEquals(8, authored.baseLevel().orElseThrow());
+        assertEquals(80, scaled.level());
+        assertTrue(scaled.maxHp() > baseline.maxHp());
+        assertTrue(scaled.atkMin() > baseline.atkMin());
+        assertTrue(scaled.matkMin() > baseline.matkMin());
+        assertTrue(scaled.def() > baseline.def());
+        assertTrue(scaled.mdef() > baseline.mdef());
+        assertTrue(scaled.hit() > baseline.hit());
+        assertTrue(scaled.flee() > baseline.flee());
+        assertTrue(scaled.baseExp() > baseline.baseExp());
+        assertTrue(scaled.jobExp() > baseline.jobExp());
+    }
+
+    @Test
+    void authoredBaselineDoesNotFreezeRewardsAboveBaseLevel() {
+        AuthoredMobDefinition authored = authoredBaseline();
+        MobProfile scaled = factory.create(difficulty(80, MobRank.NORMAL), Optional.of(authored));
+
+        assertEquals(MobRewardFormula.baseExp(80, MobTier.NORMAL), scaled.baseExp());
+        assertEquals(MobRewardFormula.jobExp(80, MobTier.NORMAL), scaled.jobExp());
+    }
+
+    @Test
+    void authoredTierOnlyOverridesWhenStrongerThanProceduralTier() {
+        AuthoredMobDefinition authored = new AuthoredMobDefinition(
+                ResourceLocation.fromNamespaceAndPath("minecraft", "elite_zombie"),
+                Optional.of(MobRank.NORMAL),
+                Optional.of(MobTier.ELITE),
+                OptionalInt.of(8),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalInt.of(180),
+                OptionalInt.of(9),
+                OptionalInt.of(14),
+                OptionalInt.of(6),
+                OptionalInt.of(11),
+                OptionalInt.of(3),
+                OptionalInt.of(1),
+                OptionalInt.of(18),
+                OptionalInt.of(16),
+                OptionalInt.of(1),
+                OptionalInt.of(145),
+                OptionalDouble.of(0.21D));
+
+        MobProfile profile = factory.create(difficulty(8, MobRank.NORMAL), Optional.of(authored));
+
+        assertEquals(MobTier.ELITE, profile.tier());
+    }
+
     private static DifficultyResult difficulty(int level, MobRank rank) {
-        return new DifficultyResult(level, rank, 1, 99, Optional.empty(), Optional.empty(), DifficultyMode.STATIC);
+        return new DifficultyResult(level, rank, 1, 99, Optional.empty(), Optional.empty(), Optional.empty(),
+                DifficultyMode.STATIC);
+    }
+
+    private static AuthoredMobDefinition authoredBaseline() {
+        return new AuthoredMobDefinition(
+                ResourceLocation.fromNamespaceAndPath("minecraft", "zombie"),
+                Optional.of(MobRank.NORMAL),
+                Optional.of(MobTier.WEAK),
+                OptionalInt.of(8),
+                Optional.of("undead"),
+                Optional.of("undead"),
+                Optional.of("medium"),
+                OptionalInt.of(37),
+                OptionalInt.of(24),
+                OptionalInt.of(180),
+                OptionalInt.of(9),
+                OptionalInt.of(14),
+                OptionalInt.of(6),
+                OptionalInt.of(11),
+                OptionalInt.of(3),
+                OptionalInt.of(1),
+                OptionalInt.of(18),
+                OptionalInt.of(16),
+                OptionalInt.of(1),
+                OptionalInt.of(145),
+                OptionalDouble.of(0.21D));
+    }
+
+    private static AuthoredMobDefinition weakIdentityOnly() {
+        return new AuthoredMobDefinition(
+                ResourceLocation.fromNamespaceAndPath("minecraft", "slime"),
+                Optional.empty(),
+                Optional.of(MobTier.WEAK),
+                OptionalInt.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalInt.empty(),
+                OptionalDouble.empty());
     }
 }

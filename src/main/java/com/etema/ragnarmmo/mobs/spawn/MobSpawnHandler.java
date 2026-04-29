@@ -120,12 +120,17 @@ public class MobSpawnHandler {
         long worldSeed = living.level() instanceof net.minecraft.server.level.ServerLevel serverLevel
                 ? serverLevel.getSeed()
                 : 0L;
+        Optional<ResourceLocation> biomeId = living.level()
+                .getBiome(living.blockPosition())
+                .unwrapKey()
+                .map(key -> key.location());
 
         return new DifficultyContext(
                 entityTypeId,
                 dimensionId,
                 living.blockPosition(),
                 worldSpawnPos,
+                biomeId,
                 Optional.empty(),
                 nearestPlayerLevel,
                 worldSeed);

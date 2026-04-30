@@ -71,12 +71,17 @@ public final class CombatContract {
                 defender.modifiers(),
                 attacker.modifiers().element(),
                 false);
-        damage = damageCalculator.applyPhysicalDefense(
-                damage,
-                defender.defense().vit(),
-                defender.defense().agi(),
-                attacker.stats().level(),
-                defender.defense().hardDef());
+        if (!critical) {
+            damage = damageCalculator.applyPhysicalDefense(
+                    damage,
+                    defender.defense().vit(),
+                    defender.defense().agi(),
+                    attacker.stats().level(),
+                    defender.defense().hardDef());
+        }
+        damage = PassiveCombatModifierService.applyOutgoingPhysicalDamage(attacker, defender, damage);
+        damage = PassiveCombatModifierService.applyIncomingPhysicalDamage(attacker, defender, damage);
+        damage = CombatProcService.applyBasicAttackDamageMultiplier(attacker, damage, rng);
 
         double finalDamage = Math.max(1.0D, damage);
         return new CombatContractResult(
@@ -147,6 +152,8 @@ public final class CombatContract {
                     defender.defense().agi(),
                     attacker.stats().level(),
                     defender.defense().hardDef());
+            damage = PassiveCombatModifierService.applyOutgoingPhysicalDamage(attacker, defender, damage);
+            damage = PassiveCombatModifierService.applyIncomingPhysicalDamage(attacker, defender, damage);
         } else if (spec.damageType() == RagnarDamageType.MAGICAL) {
             damage = damageCalculator.applyModifiers(
                     damage,

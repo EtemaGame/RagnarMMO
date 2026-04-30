@@ -1,8 +1,9 @@
 package com.etema.ragnarmmo.skills.job.acolyte;
 
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
+import com.etema.ragnarmmo.combat.status.RoCombatStatusService;
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
 import com.etema.ragnarmmo.skills.data.SkillRegistry;
+import com.etema.ragnarmmo.skills.execution.RoSkillStatHelper;
 import com.etema.ragnarmmo.mobs.util.MobUtils;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -54,10 +55,10 @@ public class DecreaseAgiSkillEffect implements ISkillEffect {
                 .map(def -> def.getLevelDouble("success_rate", level, 40.0 + (level * 2.0)))
                 .orElse(40.0 + (level * 2.0))
                 .floatValue();
-        float intBonus = Math.min(15.0f, SkillDamageHelper.getINT(player) * 0.15f);
-        float armorPenalty = (float) Math.min(12.0, (target.getArmorValue() * 0.8) +
-                (target.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR_TOUGHNESS) * 1.5));
-        float finalChance = Math.max(5.0f, Math.min(95.0f, baseChance + intBonus - armorPenalty));
+        float intBonus = Math.min(15.0f, RoSkillStatHelper.intel(player) * 0.15f);
+        int levelDiff = RoSkillStatHelper.baseLevel(player) - RoSkillStatHelper.baseLevel(target);
+        float agiResistance = Math.min(12.0f, RoSkillStatHelper.agi(target) * 0.20f);
+        float finalChance = Math.max(5.0f, Math.min(95.0f, baseChance + intBonus + levelDiff - agiResistance));
 
         if ((player.getRandom().nextFloat() * 100.0f) > finalChance) {
             if (player.level() instanceof ServerLevel serverLevel) {
@@ -71,6 +72,7 @@ public class DecreaseAgiSkillEffect implements ISkillEffect {
 
         int slownessAmplifier = Math.max(0, Math.min(2, (agiReduction - 1) / 4));
         int fatigueAmplifier = agiReduction >= 8 ? 1 : 0;
+        RoCombatStatusService.applyDecreaseAgi(target, durationTicks, agiReduction);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, durationTicks, slownessAmplifier));
         target.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, durationTicks, fatigueAmplifier));
 

@@ -2,12 +2,6 @@ package com.etema.ragnarmmo.skills.job.knight;
 
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-
-import java.util.Set;
 
 /**
  * Cavalier Mastery — Passive
@@ -34,13 +28,4 @@ public class CavalierMasterySkillEffect implements ISkillEffect {
         return ID;
     }
 
-    @Override
-    public Set<TriggerType> getSupportedTriggers() {
-        return Set.of(TriggerType.OFFENSIVE_HURT);
-    }
-
-    @Override
-    public void onOffensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
-        // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
-    }
 }

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
+import com.etema.ragnarmmo.common.api.stats.RoBaseStats;
 import com.etema.ragnarmmo.common.config.access.MobConfigAccess.DefaultProfile;
 import com.etema.ragnarmmo.common.config.access.MobConfigAccess.FormulaRules;
 import com.etema.ragnarmmo.mobs.difficulty.DifficultyMode;
@@ -29,6 +30,7 @@ class MobProfileFactoryTest {
         assertEquals(37, profile.baseExp());
         assertEquals(24, profile.jobExp());
         assertEquals("undead", profile.race());
+        assertEquals(new RoBaseStats(6, 5, 8, 2, 7, 1), profile.baseStats());
         assertEquals(180, profile.maxHp());
         assertEquals(9, profile.atkMin());
         assertEquals(6, profile.matkMin());
@@ -52,6 +54,8 @@ class MobProfileFactoryTest {
         assertTrue(elite.aspd() >= normal.aspd());
         assertTrue(elite.baseExp() > normal.baseExp());
         assertTrue(elite.jobExp() > normal.jobExp());
+        assertTrue(normal.baseStats().dex() > 1);
+        assertTrue(elite.baseStats().dex() > normal.baseStats().dex());
     }
 
     @Test
@@ -82,6 +86,7 @@ class MobProfileFactoryTest {
         assertTrue(scaled.flee() > baseline.flee());
         assertTrue(scaled.baseExp() > baseline.baseExp());
         assertTrue(scaled.jobExp() > baseline.jobExp());
+        assertTrue(scaled.baseStats().dex() > baseline.baseStats().dex());
     }
 
     @Test
@@ -134,6 +139,7 @@ class MobProfileFactoryTest {
                 Optional.of(MobRank.NORMAL),
                 Optional.of(MobTier.WEAK),
                 OptionalInt.of(8),
+                Optional.of(new RoBaseStats(6, 5, 8, 2, 7, 1)),
                 Optional.of("undead"),
                 Optional.of("undead"),
                 Optional.of("medium"),

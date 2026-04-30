@@ -2,7 +2,6 @@ package com.etema.ragnarmmo.skills.job.wizard;
 
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
 import com.etema.ragnarmmo.skills.job.mage.MageTargetUtil;
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skills.runtime.SkillSequencer;
 import com.etema.ragnarmmo.entity.projectile.AbstractMagicProjectile;
 import com.etema.ragnarmmo.entity.projectile.LightningBoltProjectile;

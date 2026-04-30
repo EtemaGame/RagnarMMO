@@ -1,7 +1,6 @@
 package com.etema.ragnarmmo.skills.job.mage;
 
 import com.etema.ragnarmmo.skills.execution.aoe.GroundAoEPersistentEffect;
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.entity.aoe.FireWallAoe;
 import com.etema.ragnarmmo.skills.data.SkillRegistry;
 import net.minecraft.resources.ResourceLocation;

@@ -40,7 +40,7 @@ public final class MobAttributeHelper {
                     }
                 }
                 case PRESERVE_RATIO -> {
-                    if (mob.tickCount < 10 || wasFull) {
+                    if (wasFull) {
                         mob.setHealth((float) hp);
                     } else {
                         mob.setHealth((float) Math.max(1.0D, Math.min(hp, hp * oldRatio)));

@@ -3,7 +3,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
 import java.util.Collections;
 import java.util.Set;
@@ -14,8 +13,6 @@ import java.util.Set;
 public interface ISkillEffect {
 
     enum TriggerType {
-        OFFENSIVE_HURT,
-        DEFENSIVE_HURT,
         PERIODIC_TICK,
         ITEM_USE_FINISH
     }
@@ -30,18 +27,6 @@ public interface ISkillEffect {
 
     default ResourceLocation getSkillId() {
         return null;
-    }
-
-    /**
-     * Handle offensive effects (when the player is the attacker).
-     */
-    default void onOffensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
-    }
-
-    /**
-     * Handle defensive effects (when the player is being hurt).
-     */
-    default void onDefensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
     }
 
     /**

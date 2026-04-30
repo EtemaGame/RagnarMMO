@@ -9,8 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
  * Research Weaponry — Passive (Blacksmith)
  * RO: Increases ATK with all weapon types.
  * MC: Flat +damage per level with ANY weapon (sword/axe/pickaxe/etc).
- *     BlacksmithSkillEvents adds (research_weaponry_level * 0.5) flat damage
- *     to all melee hits.
+ *     HandAttackProfileResolver feeds this into the RO attack profile.
  */
 public class ResearchWeaponrySkillEffect implements ISkillEffect {
 

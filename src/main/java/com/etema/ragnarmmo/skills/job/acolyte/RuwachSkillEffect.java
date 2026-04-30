@@ -1,6 +1,5 @@
 package com.etema.ragnarmmo.skills.job.acolyte;
 
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
 import com.etema.ragnarmmo.skills.data.SkillRegistry;
 import com.etema.ragnarmmo.skills.job.mage.SightMobEffect;

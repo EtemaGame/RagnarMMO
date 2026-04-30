@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
+import com.etema.ragnarmmo.common.api.stats.RoBaseStats;
 import com.etema.ragnarmmo.mobs.profile.MobProfile;
 import com.etema.ragnarmmo.mobs.profile.MobTier;
 import io.netty.buffer.Unpooled;
@@ -27,8 +28,9 @@ class SyncMobProfilePacketTest {
 
     @Test
     void profilePacketRoundTripsTierAndRewards() {
-        MobProfile profile = new MobProfile(12, MobRank.ELITE, MobTier.ELITE, 240, 18, 27, 14, 21, 8, 5, 42, 33,
-                4, 155, 0.25D, 120, 78, "brute", "fire", "large");
+        RoBaseStats baseStats = new RoBaseStats(11, 12, 13, 14, 15, 16);
+        MobProfile profile = new MobProfile(12, MobRank.ELITE, MobTier.ELITE, baseStats, 240, 18, 27, 14, 21, 8,
+                5, 42, 33, 4, 155, 0.25D, 120, 78, "brute", "fire", "large");
         FriendlyByteBuf encoded = new FriendlyByteBuf(Unpooled.buffer());
 
         SyncMobProfilePacket.encode(new SyncMobProfilePacket(7, profile), encoded);
@@ -37,6 +39,7 @@ class SyncMobProfilePacketTest {
         assertTrue(decoded.initialized());
         MobProfile decodedProfile = decoded.profile().orElseThrow();
         assertEquals(MobTier.ELITE, decodedProfile.tier());
+        assertEquals(baseStats, decodedProfile.baseStats());
         assertEquals(14, decodedProfile.matkMin());
         assertEquals(21, decodedProfile.matkMax());
         assertEquals(120, decodedProfile.baseExp());

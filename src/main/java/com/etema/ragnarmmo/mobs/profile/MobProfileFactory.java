@@ -3,7 +3,9 @@ package com.etema.ragnarmmo.mobs.profile;
 import com.etema.ragnarmmo.common.config.access.MobConfigAccess;
 import com.etema.ragnarmmo.common.config.access.MobConfigAccess.DefaultProfile;
 import com.etema.ragnarmmo.common.config.access.MobConfigAccess.FormulaRules;
+import com.etema.ragnarmmo.common.api.stats.RoBaseStats;
 import com.etema.ragnarmmo.mobs.difficulty.DifficultyResult;
+import com.etema.ragnarmmo.player.stats.compute.RoPreRenewalFormulaService;
 
 import java.util.Optional;
 
@@ -31,6 +33,7 @@ public final class MobProfileFactory {
 
         int baseLevel = authored == null ? level : authored.baseLevel().orElse(level);
         boolean authoredBaseline = authored != null && authored.baseLevel().isPresent();
+        RoBaseStats baseStats = resolveBaseStats(authored, level, baseLevel, tier);
         int maxHp = authoredScaledInt(authored, AuthoredMobDefinition::baseHp, level, baseLevel, 1.45D, modifiers.hp(),
                 modifiers.applyInt(defaults.maxHp() + scaled(level, formulas.hpPerLevel()), TierStat.HP));
         int atkMin = authoredScaledInt(authored, AuthoredMobDefinition::atkMin, level, baseLevel, 1.15D, modifiers.atk(),
@@ -43,9 +46,12 @@ public final class MobProfileFactory {
                 Math.max(matkMin, (int) Math.round((defaults.atkMax() + scaled(level, formulas.atkMinPerLevel() + formulas.atkMaxExtraPerLevel())) * 0.85D))));
         int def = authoredScaledInt(authored, AuthoredMobDefinition::def, level, baseLevel, 1.10D, modifiers.def(), modifiers.applyInt(defaults.def() + scaled(level, formulas.defPerLevel()), TierStat.DEF));
         int mdef = authoredScaledInt(authored, AuthoredMobDefinition::mdef, level, baseLevel, 1.10D, modifiers.def(), modifiers.applyInt(defaults.mdef() + scaled(level, formulas.mdefPerLevel()), TierStat.DEF));
-        int hit = authoredLinearInt(authored, AuthoredMobDefinition::hit, level, baseLevel, formulas.hitPerLevel(), modifiers.accuracy(), modifiers.applyInt(defaults.hit() + scaled(level, formulas.hitPerLevel()), TierStat.ACCURACY));
-        int flee = authoredLinearInt(authored, AuthoredMobDefinition::flee, level, baseLevel, formulas.fleePerLevel(), modifiers.accuracy(), modifiers.applyInt(defaults.flee() + scaled(level, formulas.fleePerLevel()), TierStat.ACCURACY));
-        int crit = authoredLinearInt(authored, AuthoredMobDefinition::crit, level, baseLevel, 0.05D, modifiers.crit(), modifiers.applyInt(defaults.crit(), TierStat.CRIT));
+        int derivedHit = modifiers.applyInt((int) Math.round(RoPreRenewalFormulaService.hit(baseStats.dex(), level, defaults.hit())), TierStat.ACCURACY);
+        int derivedFlee = modifiers.applyInt((int) Math.round(RoPreRenewalFormulaService.flee(baseStats.agi(), level, defaults.flee())), TierStat.ACCURACY);
+        int derivedCrit = modifiers.applyInt((int) Math.round(RoPreRenewalFormulaService.criticalChance(baseStats.luk(), defaults.crit() / 100.0D) * 100.0D), TierStat.CRIT);
+        int hit = authoredLinearInt(authored, AuthoredMobDefinition::hit, level, baseLevel, formulas.hitPerLevel(), modifiers.accuracy(), derivedHit);
+        int flee = authoredLinearInt(authored, AuthoredMobDefinition::flee, level, baseLevel, formulas.fleePerLevel(), modifiers.accuracy(), derivedFlee);
+        int crit = authoredLinearInt(authored, AuthoredMobDefinition::crit, level, baseLevel, 0.05D, modifiers.crit(), derivedCrit);
         int aspd = authoredLinearInt(authored, AuthoredMobDefinition::aspd, level, baseLevel, formulas.aspdPerLevel(), modifiers.aspd(), modifiers.applyInt(defaults.aspd() + scaled(level, formulas.aspdPerLevel()), TierStat.ASPD));
         double moveSpeed = authoredDouble(authored, AuthoredMobDefinition::moveSpeed,
                 Math.min(formulas.moveSpeedCap(), defaults.moveSpeed() + (level * formulas.moveSpeedPerLevel())));
@@ -60,8 +66,58 @@ public final class MobProfileFactory {
         String element = authoredString(authored, AuthoredMobDefinition::element, defaults.element());
         String size = authoredString(authored, AuthoredMobDefinition::size, defaults.size());
 
-        return new MobProfile(level, difficulty.rank(), tier, maxHp, atkMin, atkMax, matkMin, matkMax, def, mdef, hit, flee, crit, aspd,
+        return new MobProfile(level, difficulty.rank(), tier, baseStats, maxHp, atkMin, atkMax, matkMin, matkMax, def, mdef, hit, flee, crit, aspd,
                 moveSpeed, baseExp, jobExp, race, element, size);
+    }
+
+    private static RoBaseStats resolveBaseStats(AuthoredMobDefinition authored, int runtimeLevel, int baseLevel, MobTier tier) {
+        if (authored != null && authored.baseStats().isPresent()) {
+            return scaleBaseStats(authored.baseStats().get(), runtimeLevel, baseLevel, tier);
+        }
+        return proceduralBaseStats(runtimeLevel, tier);
+    }
+
+    private static RoBaseStats scaleBaseStats(RoBaseStats baseStats, int runtimeLevel, int baseLevel, MobTier tier) {
+        if (runtimeLevel == baseLevel) {
+            return baseStats;
+        }
+        double ratio = Math.max(1.0D, runtimeLevel) / (double) Math.max(1, baseLevel);
+        double tierMultiplier = baseStatTierMultiplier(tier);
+        return new RoBaseStats(
+                scaledBaseStat(baseStats.str(), ratio, tierMultiplier),
+                scaledBaseStat(baseStats.agi(), ratio, tierMultiplier),
+                scaledBaseStat(baseStats.vit(), ratio, tierMultiplier),
+                scaledBaseStat(baseStats.intel(), ratio, tierMultiplier),
+                scaledBaseStat(baseStats.dex(), ratio, tierMultiplier),
+                scaledBaseStat(baseStats.luk(), ratio, tierMultiplier));
+    }
+
+    private static int scaledBaseStat(int value, double ratio, double tierMultiplier) {
+        return Math.max(1, (int) Math.round(value * ratio * tierMultiplier));
+    }
+
+    private static RoBaseStats proceduralBaseStats(int level, MobTier tier) {
+        double multiplier = baseStatTierMultiplier(tier);
+        return new RoBaseStats(
+                proceduralBaseStat(level, 0.80D, multiplier),
+                proceduralBaseStat(level, 0.70D, multiplier),
+                proceduralBaseStat(level, 0.80D, multiplier),
+                proceduralBaseStat(level, 0.50D, multiplier),
+                proceduralBaseStat(level, 0.75D, multiplier),
+                proceduralBaseStat(level, 0.20D, multiplier));
+    }
+
+    private static int proceduralBaseStat(int level, double perLevel, double tierMultiplier) {
+        return Math.max(1, (int) Math.round(Math.max(1, level) * perLevel * tierMultiplier));
+    }
+
+    private static double baseStatTierMultiplier(MobTier tier) {
+        return switch (tier == null ? MobTier.NORMAL : tier) {
+            case WEAK -> 0.80D;
+            case NORMAL -> 1.0D;
+            case ELITE -> 1.20D;
+            case BOSS -> 1.50D;
+        };
     }
 
     private static int scaled(int level, double perLevel) {

@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
  * Iron Tempering — Passive (Blacksmith)
  * RO: Increases physical damage when using Iron weapons.
  * MC: +1% damage per level with Iron/Stone-tier weapons.
- *     Stored in PersistentData; BlacksmithSkillEvents reads it in LivingHurtEvent.
+ *     PassiveCombatModifierService resolves it inside the RO combat contract.
  */
 public class IronTemperingSkillEffect implements ISkillEffect {
 

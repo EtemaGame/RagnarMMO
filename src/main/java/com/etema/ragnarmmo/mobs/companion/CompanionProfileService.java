@@ -125,6 +125,14 @@ public final class CompanionProfileService {
         return server == null ? null : server.getPlayerList().getPlayer(ownerId);
     }
 
+    public static Optional<ServerPlayer> resolveOnlineOwner(LivingEntity companion) {
+        if (companion == null || companion.level().isClientSide()) {
+            return Optional.empty();
+        }
+        return MobProfileEligibility.ownerUuid(companion)
+                .map(ownerId -> resolveOnlineOwner(companion, ownerId));
+    }
+
     private static long mix(long seed, UUID value) {
         if (value == null) {
             return seed;

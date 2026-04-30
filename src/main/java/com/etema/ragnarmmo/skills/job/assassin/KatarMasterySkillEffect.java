@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
  * Katar Mastery — Passive (Assassin)
  * RO: Increases ATK with Katar weapons.
  * MC: +3% damage per level with single-handed swords (Katar equivalent).
- *     Stored in PersistentData. AssassinSkillEvents reads it in LivingHurtEvent.
+ *     HandAttackProfileResolver reads it into the RO attack profile.
  */
 public class KatarMasterySkillEffect implements ISkillEffect {
 

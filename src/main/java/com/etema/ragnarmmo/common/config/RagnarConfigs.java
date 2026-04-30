@@ -287,6 +287,7 @@ public final class RagnarConfigs {
 
         public static final class Combat {
             public final ForgeConfigSpec.BooleanValue enabled;
+            public final ForgeConfigSpec.BooleanValue serverEventFallbackEnabled;
             public final ForgeConfigSpec.DoubleValue mobDamagePerStr;
             public final ForgeConfigSpec.DoubleValue mobDamagePerDex;
             public final ForgeConfigSpec.DoubleValue mobReductionPerVit;
@@ -294,6 +295,9 @@ public final class RagnarConfigs {
             Combat(ForgeConfigSpec.Builder builder) {
                 builder.comment("V2 combat configuration").push("combat");
                 enabled = builder.define("enabled", true);
+                serverEventFallbackEnabled = builder.comment(
+                        "Legacy compatibility only. When false, AttackEntityEvent only cancels vanilla melee and never resolves RagnarMMO basic attack damage.")
+                        .define("basic_attack_server_event_fallback_enabled", false);
                 builder.push("mob_damage");
                 mobDamagePerStr = builder.defineInRange("damage_per_str", 0.01, 0.0, 100.0);
                 mobDamagePerDex = builder.defineInRange("damage_per_dex", 0.005, 0.0, 100.0);

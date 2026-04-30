@@ -10,17 +10,23 @@ import com.etema.ragnarmmo.common.api.stats.StatAttributes;
 import com.etema.ragnarmmo.common.api.stats.StatKeys;
 import com.etema.ragnarmmo.items.runtime.RangedWeaponStatsHelper;
 import com.etema.ragnarmmo.items.runtime.RoRefineMath;
+import com.etema.ragnarmmo.items.runtime.RoRequirementChecker;
+import com.etema.ragnarmmo.items.runtime.RoItemRuleResolver;
 import com.etema.ragnarmmo.items.runtime.WeaponStatHelper;
+import com.etema.ragnarmmo.common.config.access.RoItemsConfigAccess;
 import com.etema.ragnarmmo.skills.data.SkillRegistry;
 import com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.player.stats.compute.CombatMath;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.SwordItem;
@@ -32,6 +38,8 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 public final class HandAttackProfileResolver {
     private static final ResourceLocation SWORD_MASTERY =
             ResourceLocation.fromNamespaceAndPath("ragnarmmo", "sword_mastery");
+    private static final ResourceLocation TWO_HAND_MASTERY =
+            ResourceLocation.fromNamespaceAndPath("ragnarmmo", "two_hand_mastery");
     private static final ResourceLocation DAGGER_MASTERY =
             ResourceLocation.fromNamespaceAndPath("ragnarmmo", "dagger_mastery");
     private static final ResourceLocation MACE_MASTERY =
@@ -58,6 +66,8 @@ public final class HandAttackProfileResolver {
             ResourceLocation.fromNamespaceAndPath("ragnarmmo", "accuracy_training");
     private static final ResourceLocation VULTURES_EYE =
             ResourceLocation.fromNamespaceAndPath("ragnarmmo", "vultures_eye");
+    private static final TagKey<Item> TWO_HANDED_TAG =
+            ItemTags.create(ResourceLocation.fromNamespaceAndPath("ragnarmmo", "two_handed"));
 
     private HandAttackProfileResolver() {
     }
@@ -81,7 +91,7 @@ public final class HandAttackProfileResolver {
         int level = statsOpt.get().getLevel();
         boolean ranged = CombatMath.isRangedWeapon(weapon);
 
-        double weaponBaseAttack = resolveWeaponBaseAttack(weapon, player, ranged);
+        double weaponBaseAttack = applyRequirementPenalty(player, weapon, resolveWeaponBaseAttack(weapon, player, ranged));
         double statusAtk = CombatMath.computeStatusATK(str, dex, luk, level, ranged);
         double skillAtk = computeSkillAttack(player, weapon, offHand, skills);
         double physicalAttack = CombatMath.computeWeaponATK(weaponBaseAttack, str, dex, ranged) + statusAtk + skillAtk;
@@ -118,6 +128,7 @@ public final class HandAttackProfileResolver {
         var skills = skillsOpt.get();
         return new SkillContext(
                 skills.getSkillLevel(SWORD_MASTERY),
+                skills.getSkillLevel(TWO_HAND_MASTERY),
                 skills.getSkillLevel(DAGGER_MASTERY),
                 skills.getSkillLevel(MACE_MASTERY),
                 skills.getSkillLevel(BOW_MASTERY),
@@ -156,6 +167,26 @@ public final class HandAttackProfileResolver {
                         + RoRefineMath.getAttackBonus(weapon));
     }
 
+    private static double applyRequirementPenalty(Player player, ItemStack weapon, double attack) {
+        if (weapon.isEmpty()
+                || !RoItemsConfigAccess.isEnabled()
+                || !RoItemsConfigAccess.reduceDamageOnRestriction()) {
+            return attack;
+        }
+
+        var rule = RoItemRuleResolver.resolve(weapon);
+        if (!rule.hasRequirements()) {
+            return attack;
+        }
+
+        var result = RoRequirementChecker.check(player, rule);
+        if (result == RoRequirementChecker.CheckResult.OK
+                || result == RoRequirementChecker.CheckResult.NO_STATS_DATA) {
+            return attack;
+        }
+        return Math.max(0.0D, RoItemsConfigAccess.getPenaltyDamage());
+    }
+
     private static int resolveWeaponBaseAspd(ItemStack weapon, boolean ranged) {
         if (ranged) {
             var rangedStats = RangedWeaponStatsHelper.resolve(weapon);
@@ -168,7 +199,8 @@ public final class HandAttackProfileResolver {
 
     private static double computeSkillAttack(Player player, ItemStack weapon, boolean offHand, SkillContext ctx) {
         double masteryBonus = 0.0D;
-        if (isSword(weapon)) masteryBonus += ctx.sword() * 4.0D;
+        if (isTwoHandedSword(weapon)) masteryBonus += ctx.twoHand() * 4.0D;
+        else if (isSword(weapon)) masteryBonus += ctx.sword() * 4.0D;
         else if (isDagger(weapon)) masteryBonus += ctx.dagger() * 4.0D;
         else if (isMace(weapon)) masteryBonus += ctx.mace() * 4.0D;
         else if (isBow(weapon)) masteryBonus += ctx.bow() * 4.0D;
@@ -257,6 +289,7 @@ public final class HandAttackProfileResolver {
 
     private record SkillContext(
             int sword,
+            int twoHand,
             int dagger,
             int mace,
             int bow,
@@ -272,7 +305,11 @@ public final class HandAttackProfileResolver {
             int vulturesEye) {
 
         private static SkillContext empty() {
-            return new SkillContext(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            return new SkillContext(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
+    }
+
+    private static boolean isTwoHandedSword(ItemStack stack) {
+        return isSword(stack) && stack.is(TWO_HANDED_TAG);
     }
 }

@@ -12,11 +12,5 @@ public class ImproveDodgeSkillEffect implements ISkillEffect {
         return ID;
     }
 
-    // Improve Dodge: Passively increases Flee (+3 to +30) and Movement Speed for Assassins.
-    // Hooked in CommonEvents/CombatMath usually, but we can use an event here too.
-    
-    @net.minecraftforge.eventbus.api.SubscribeEvent
-    public static void onHurt(net.minecraftforge.event.entity.living.LivingHurtEvent event) {
-        // This is handled in CommonEvents.onHurt / onPlayerHurt by checking skill levels
-    }
+    // Improve Dodge is a stat-derived passive; FLEE must come from the RO stat/profile pipeline.
 }

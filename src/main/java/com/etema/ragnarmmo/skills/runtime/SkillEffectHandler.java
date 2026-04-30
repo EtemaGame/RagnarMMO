@@ -25,7 +25,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -80,28 +79,6 @@ public class SkillEffectHandler {
 
         dispatchTriggeredSkills(player, ISkillEffect.TriggerType.PERIODIC_TICK,
                 (effect, level) -> effect.onPeriodicTick(event, player, level));
-    }
-
-    @SubscribeEvent
-    public static void onOffensiveHurt(LivingHurtEvent event) {
-        if (!(event.getSource().getEntity() instanceof ServerPlayer player))
-            return;
-        if (player.level().isClientSide())
-            return;
-
-        dispatchTriggeredSkills(player, ISkillEffect.TriggerType.OFFENSIVE_HURT,
-                (effect, level) -> effect.onOffensiveHurt(event, player, level));
-    }
-
-    @SubscribeEvent
-    public static void onDefensiveHurt(LivingHurtEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player))
-            return;
-        if (player.level().isClientSide())
-            return;
-
-        dispatchTriggeredSkills(player, ISkillEffect.TriggerType.DEFENSIVE_HURT,
-                (effect, level) -> effect.onDefensiveHurt(event, player, level));
     }
 
     @SubscribeEvent

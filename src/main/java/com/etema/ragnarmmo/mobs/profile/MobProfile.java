@@ -1,11 +1,13 @@
 package com.etema.ragnarmmo.mobs.profile;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
+import com.etema.ragnarmmo.common.api.stats.RoBaseStats;
 
 public record MobProfile(
         int level,
         MobRank rank,
         MobTier tier,
+        RoBaseStats baseStats,
         int maxHp,
         int atkMin,
         int atkMax,
@@ -23,6 +25,13 @@ public record MobProfile(
         String race,
         String element,
         String size) {
+    public MobProfile(int level, MobRank rank, MobTier tier, int maxHp, int atkMin, int atkMax, int matkMin,
+            int matkMax, int def, int mdef, int hit, int flee, int crit, int aspd, double moveSpeed, int baseExp,
+            int jobExp, String race, String element, String size) {
+        this(level, rank, tier, RoBaseStats.novice(), maxHp, atkMin, atkMax, matkMin, matkMax, def, mdef, hit, flee,
+                crit, aspd, moveSpeed, baseExp, jobExp, race, element, size);
+    }
+
     public MobProfile {
         if (level < 1) {
             throw new IllegalArgumentException("level must be >= 1");
@@ -32,6 +41,9 @@ public record MobProfile(
         }
         if (tier == null) {
             throw new IllegalArgumentException("tier must not be null");
+        }
+        if (baseStats == null) {
+            baseStats = RoBaseStats.novice();
         }
         if (maxHp <= 0) {
             throw new IllegalArgumentException("maxHp must be > 0");

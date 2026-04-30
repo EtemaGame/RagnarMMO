@@ -1,9 +1,9 @@
 package com.etema.ragnarmmo.skills.job.acolyte;
 
 import com.etema.ragnarmmo.skills.execution.instant.InstantTargetSkillEffect;
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.common.init.RagnarSounds;
 import com.etema.ragnarmmo.skills.data.SkillRegistry;
+import com.etema.ragnarmmo.skills.execution.RoSkillStatHelper;
 import com.etema.ragnarmmo.skills.runtime.SkillSequencer;
 import com.etema.ragnarmmo.skills.runtime.SkillVisualFx;
 import net.minecraft.resources.ResourceLocation;
@@ -81,10 +81,10 @@ public class HealSkillEffect extends InstantTargetSkillEffect {
         float healAmount = healBase;
         if (user instanceof net.minecraft.world.entity.player.Player player) {
             double healMultiplier = Math.max(1.0D,
-                    Math.floor((SkillDamageHelper.getBaseLevel(player) + SkillDamageHelper.getINT(player)) / 8.0D));
+                    Math.floor((RoSkillStatHelper.baseLevel(player) + RoSkillStatHelper.intel(player)) / 8.0D));
             healAmount = (float) (healBase * healMultiplier);
         } else {
-            healAmount = SkillDamageHelper.getHealAmount(user, level);
+            healAmount = RoSkillStatHelper.healAmount(user, level);
         }
         if (target.getMobType() == MobType.UNDEAD) {
             user.level().playSound(null, target.getX(), target.getY(), target.getZ(),

@@ -1,8 +1,6 @@
 package com.etema.ragnarmmo.skills.job.hunter;
 
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
-import com.etema.ragnarmmo.skills.runtime.SkillManager;
 import com.etema.ragnarmmo.skills.runtime.SkillSequencer;
 import com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider;
@@ -14,10 +12,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Blitz Beat — Active / Passive Proc
@@ -38,30 +34,8 @@ public class BlitzBeatSkillEffect implements ISkillEffect {
     public ResourceLocation getSkillId() { return ID; }
 
     @Override
-    public Set<TriggerType> getSupportedTriggers() {
-        return Set.of(TriggerType.OFFENSIVE_HURT);
-    }
-
-    @Override
     public void execute(ServerPlayer player, int level) {
         // Combat damage is resolved by RagnarCombatEngine via SkillCombatSpec.
-    }
-
-    @Override
-    public void onOffensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
-        if (level <= 0 || !hasFalcon(player)) return;
-        
-        // Auto-Blitz only procs on ranged (arrow) hits in RO
-        if (!(event.getSource().getDirectEntity() instanceof net.minecraft.world.entity.projectile.AbstractArrow)) return;
-
-        // Auto-Blitz Chance: (LUK * 0.3 + 1)%
-        double luk = player.getCapability(PlayerStatsProvider.CAP)
-                .map(s -> (double) s.getLUK()).orElse(0.0);
-        
-        double chance = (luk * 0.3 + 1.0) / 100.0;
-        if (player.getRandom().nextDouble() < chance) {
-            performBlitz(player, event.getEntity(), level, true);
-        }
     }
 
     private void performBlitz(ServerPlayer player, LivingEntity primary, int level, boolean isAuto) {

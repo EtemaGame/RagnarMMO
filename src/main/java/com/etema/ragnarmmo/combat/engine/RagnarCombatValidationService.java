@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.combat.engine;
 
 import com.etema.ragnarmmo.combat.api.CombatRejectReason;
 import com.etema.ragnarmmo.combat.api.CombatRequestContext;
+import com.etema.ragnarmmo.combat.api.BasicAttackSource;
 import com.etema.ragnarmmo.combat.hand.AttackHandResolver;
 import com.etema.ragnarmmo.combat.state.CombatActorState;
 
@@ -17,6 +18,11 @@ public class RagnarCombatValidationService {
      */
     public CombatRejectReason validateBasicAttack(CombatRequestContext ctx, CombatActorState actorState, long nowTick,
             RagnarCombatCooldownService cooldownService) {
+        return validateBasicAttack(ctx, actorState, nowTick, cooldownService, BasicAttackSource.CLIENT_PACKET);
+    }
+
+    public CombatRejectReason validateBasicAttack(CombatRequestContext ctx, CombatActorState actorState, long nowTick,
+            RagnarCombatCooldownService cooldownService, BasicAttackSource source) {
         if (ctx == null || ctx.actor() == null) {
             return CombatRejectReason.MISSING_ACTOR;
         }
@@ -45,7 +51,11 @@ public class RagnarCombatValidationService {
         }
 
         // Domain validation
-        if (ctx.sequenceId() <= actorState.getLastAcceptedSequenceId()) {
+        if (source == BasicAttackSource.SERVER_ATTACK_EVENT) {
+            if (nowTick <= actorState.getLastServerFallbackTick()) {
+                return CombatRejectReason.STALE_SEQUENCE;
+            }
+        } else if (ctx.sequenceId() <= actorState.getLastClientPacketSequenceId()) {
             return CombatRejectReason.STALE_SEQUENCE;
         }
         if (ctx.comboIndex() < 0 || ctx.comboIndex() > 8) {

@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
  * Unfair Trick — Passive (Blacksmith)
  * RO: Increases damage against targets with low HP.
  * MC: +level*3% damage bonus when the target has less than 50% of max HP.
- *     BlacksmithSkillEvents applies this in LivingHurtEvent.
+ *     PassiveCombatModifierService applies this inside the RO combat contract.
  */
 public class UnfairTrickSkillEffect implements ISkillEffect {
 

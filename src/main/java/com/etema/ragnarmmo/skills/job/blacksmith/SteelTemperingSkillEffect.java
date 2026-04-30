@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
  * Steel Tempering — Passive (Blacksmith)
  * RO: Increases weapon ATK when using Steel (Oridecon-refined) weapons.
  * MC: +1.5% damage (as 1 per 2 levels, rounded) with Diamond/Netherite weapons.
- *     BlacksmithSkillEvents reads steel_tempering_level in LivingHurtEvent.
+ *     PassiveCombatModifierService resolves it inside the RO combat contract.
  */
 public class SteelTemperingSkillEffect implements ISkillEffect {
 

@@ -2,7 +2,6 @@ package com.etema.ragnarmmo.skills.job.archer;
 
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
 import com.etema.ragnarmmo.skills.data.SkillRegistry;
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skills.execution.projectile.ProjectileSkillHelper;
 import com.etema.ragnarmmo.skills.execution.projectile.RagnarArrowSpawnHelper;
 import com.etema.ragnarmmo.skills.runtime.SkillSequencer;

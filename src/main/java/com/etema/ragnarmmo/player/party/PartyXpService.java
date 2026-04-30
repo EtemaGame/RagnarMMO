@@ -44,8 +44,15 @@ public class PartyXpService {
      * @return The XP actually given to the killer (after party modifier)
      */
     public static int distributeKillXp(ServerPlayer killer, int baseExp, MinecraftServer server) {
+        return distributeKillXp(killer, baseExp, baseExp, server).baseExp();
+    }
+
+    /**
+     * Distributes RO base/job EXP from a mob kill to eligible party members.
+     */
+    public static PartyXpAward distributeKillXp(ServerPlayer killer, int baseExp, int jobExp, MinecraftServer server) {
         if (killer == null || baseExp <= 0 || server == null) {
-            return baseExp;
+            return new PartyXpAward(baseExp, jobExp);
         }
 
         PartySavedData data = PartySavedData.get(server);
@@ -53,7 +60,7 @@ public class PartyXpService {
 
         // No party or XP sharing disabled - return full XP to killer
         if (party == null || !party.getSettings().isXpShareEnabled()) {
-            return baseExp;
+            return new PartyXpAward(baseExp, jobExp);
         }
 
         // Get eligible members (online, in range, same dimension)
@@ -62,13 +69,13 @@ public class PartyXpService {
 
         // Solo in party or only killer eligible - return full XP
         if (memberCount <= 1) {
-            return baseExp;
+            return new PartyXpAward(baseExp, jobExp);
         }
 
         // Calculate shared XP
         double factor = getXpFactor(memberCount);
-        int sharedXp = (int) Math.round(baseExp * factor);
-        sharedXp = Math.max(1, sharedXp); // At least 1 XP
+        int sharedBaseXp = Math.max(1, (int) Math.round(baseExp * factor));
+        int sharedJobXp = Math.max(1, (int) Math.round(jobExp * factor));
 
         // Distribute to all eligible members
         for (ServerPlayer member : eligibleMembers) {
@@ -78,26 +85,26 @@ public class PartyXpService {
             }
 
             // Give XP to party member
-            giveXpToMember(member, sharedXp, killer.getName().getString());
+            giveXpToMember(member, sharedBaseXp, sharedJobXp, killer.getName().getString());
         }
 
-        RagnarMMO.LOGGER.debug("Party XP: {} base -> {} shared to {} members (factor {})",
-                baseExp, sharedXp, memberCount, factor);
+        RagnarMMO.LOGGER.debug("Party XP: base {} -> {}, job {} -> {} shared to {} members (factor {})",
+                baseExp, sharedBaseXp, jobExp, sharedJobXp, memberCount, factor);
 
         // Return the modified XP for the killer
-        return sharedXp;
+        return new PartyXpAward(sharedBaseXp, sharedJobXp);
     }
 
     /**
      * Gives XP to a party member (not the killer).
      */
-    private static void giveXpToMember(ServerPlayer member, int xp, String killerName) {
+    private static void giveXpToMember(ServerPlayer member, int baseXp, int jobXp, String killerName) {
         RagnarCoreAPI.get(member).ifPresent(stats -> {
             int pointsPerLevel = RagnarConfigs.SERVER.progression.pointsPerLevel.get();
             PlayerProgressionService progressionService = PlayerProgressionService
                     .forJobId(net.minecraft.resources.ResourceLocation.tryParse(stats.getJobId()));
-            int baseAward = progressionService.applyBaseExpRate(xp);
-            int jobAward = progressionService.applyJobExpRate(xp);
+            int baseAward = progressionService.applyBaseExpRate(baseXp);
+            int jobAward = progressionService.applyJobExpRate(jobXp);
 
             int levelsGained = stats.addExpAndProcessLevelUps(baseAward, pointsPerLevel, progressionService::baseExpToNext);
             int jobLevelsGained = stats.addJobExpAndProcessLevelUps(jobAward, progressionService::jobExpToNext);
@@ -169,5 +176,8 @@ public class PartyXpService {
      */
     public static void clearPlayerThrottle(java.util.UUID uuid) {
         lastHealthUpdateTime.remove(uuid);
+    }
+
+    public record PartyXpAward(int baseExp, int jobExp) {
     }
 }

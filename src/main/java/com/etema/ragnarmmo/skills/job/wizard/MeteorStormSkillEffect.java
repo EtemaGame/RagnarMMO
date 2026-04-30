@@ -1,7 +1,6 @@
 package com.etema.ragnarmmo.skills.job.wizard;
 
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skills.runtime.SkillSequencer;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;

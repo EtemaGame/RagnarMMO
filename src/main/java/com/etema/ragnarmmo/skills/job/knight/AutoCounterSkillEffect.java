@@ -2,20 +2,8 @@ package com.etema.ragnarmmo.skills.job.knight;
 
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
-import com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-
-import java.util.Set;
 
 /**
  * Auto Counter — Passive (Counter-attack on being hit)
@@ -33,48 +21,8 @@ import java.util.Set;
 public class AutoCounterSkillEffect implements ISkillEffect {
 
     private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("ragnarmmo", "auto_counter");
-    private static final String COUNTER_GUARD = "ragnar_counter_guard"; // Prevent recursive counters
-
     @Override
     public ResourceLocation getSkillId() {
         return ID;
-    }
-
-    @Override
-    public Set<TriggerType> getSupportedTriggers() {
-        return Set.of(TriggerType.DEFENSIVE_HURT);
-    }
-
-    @Override
-    public void onDefensiveHurt(LivingHurtEvent event, ServerPlayer player, int level) {
-        if (level <= 0) return;
-        if (player.getPersistentData().getBoolean(COUNTER_GUARD)) return; // Guard against recursion
-
-        // Only counter melee attacks
-        if (!(event.getSource().getDirectEntity() instanceof LivingEntity attacker)) return;
-        if (attacker.distanceToSqr(player) > 16) return; // Must be within 4 blocks = melee
-
-        // Counter chance: 10% per level (50% at level 5, 100% at level 10)
-        float counterChance = 0.10f * level;
-        if (player.getRandom().nextFloat() > counterChance) return;
-
-        // Perform the counter
-        player.getPersistentData().putBoolean(COUNTER_GUARD, true);
-
-        // Critical sound + bright flash
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.2f);
-
-        if (player.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.CRIT,
-                    attacker.getX(), attacker.getY() + 1, attacker.getZ(),
-                    12, 0.3, 0.3, 0.3, 0.15);
-            serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
-                    attacker.getX(), attacker.getY() + 1, attacker.getZ(),
-                    8, 0.2, 0.3, 0.2, 0.1);
-        }
-
-        // Schedule removal of guard on next tick
-        player.getPersistentData().remove(COUNTER_GUARD);
     }
 }

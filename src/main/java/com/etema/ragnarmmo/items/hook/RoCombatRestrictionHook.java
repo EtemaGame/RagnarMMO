@@ -19,8 +19,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Reduces weapon damage when player doesn't meet weapon requirements.
- * Acts as a "last line of defense" if a restricted weapon is somehow equipped.
+ * Warns when player doesn't meet weapon requirements.
+ * Damage penalties are applied while building the RO hand attack profile, not
+ * by mutating LivingHurtEvent after combat resolution.
  */
 @Mod.EventBusSubscriber(modid = RagnarMMO.MODID)
 public final class RoCombatRestrictionHook {
@@ -34,8 +35,7 @@ public final class RoCombatRestrictionHook {
     private static final Map<UUID, Long> COMBAT_MSG_COOLDOWNS = new ConcurrentHashMap<>();
 
     /**
-     * Reduce damage to configured penalty if weapon requirements are not met.
-     * Uses HIGH priority to run before main damage calculations.
+     * Emits the compatibility warning only; damage is owned by HandAttackProfileResolver.
      */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onLivingHurt(LivingHurtEvent event) {
@@ -63,10 +63,6 @@ public final class RoCombatRestrictionHook {
         if (result != RoRequirementChecker.CheckResult.OK
                 && result != RoRequirementChecker.CheckResult.NO_STATS_DATA) {
 
-            // Reduce damage to configured penalty (default: 0)
-            event.setAmount((float) RoItemsConfigAccess.getPenaltyDamage());
-
-            // Send rate-limited warning with specific reason
             sendCombatWarning(player, result, rule);
         }
     }

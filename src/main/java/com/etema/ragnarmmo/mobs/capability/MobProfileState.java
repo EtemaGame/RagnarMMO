@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.mobs.capability;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
+import com.etema.ragnarmmo.common.api.stats.RoBaseStats;
 import com.etema.ragnarmmo.mobs.profile.MobProfile;
 import com.etema.ragnarmmo.mobs.profile.MobTier;
 import net.minecraft.nbt.CompoundTag;
@@ -33,6 +34,12 @@ public final class MobProfileState {
         tag.putInt("Level", profile.level());
         tag.putString("Rank", profile.rank().name());
         tag.putString("Tier", profile.tier().name());
+        tag.putInt("BaseStr", profile.baseStats().str());
+        tag.putInt("BaseAgi", profile.baseStats().agi());
+        tag.putInt("BaseVit", profile.baseStats().vit());
+        tag.putInt("BaseInt", profile.baseStats().intel());
+        tag.putInt("BaseDex", profile.baseStats().dex());
+        tag.putInt("BaseLuk", profile.baseStats().luk());
         tag.putInt("MaxHp", profile.maxHp());
         tag.putInt("AtkMin", profile.atkMin());
         tag.putInt("AtkMax", profile.atkMax());
@@ -75,6 +82,7 @@ public final class MobProfileState {
                 Math.max(1, nbt.getInt("Level")),
                 rank,
                 tier,
+                readBaseStats(nbt),
                 Math.max(1, nbt.getInt("MaxHp")),
                 atkMin,
                 atkMax,
@@ -92,6 +100,24 @@ public final class MobProfileState {
                 readTokenOrDefault(nbt, "Race", "unknown"),
                 readTokenOrDefault(nbt, "Element", "neutral"),
                 readTokenOrDefault(nbt, "Size", "medium"));
+    }
+
+    private static RoBaseStats readBaseStats(CompoundTag nbt) {
+        if (!nbt.contains("BaseStr")
+                && !nbt.contains("BaseAgi")
+                && !nbt.contains("BaseVit")
+                && !nbt.contains("BaseInt")
+                && !nbt.contains("BaseDex")
+                && !nbt.contains("BaseLuk")) {
+            return RoBaseStats.novice();
+        }
+        return new RoBaseStats(
+                nbt.getInt("BaseStr"),
+                nbt.getInt("BaseAgi"),
+                nbt.getInt("BaseVit"),
+                nbt.getInt("BaseInt"),
+                nbt.getInt("BaseDex"),
+                nbt.getInt("BaseLuk"));
     }
 
     private static String readTokenOrDefault(CompoundTag nbt, String key, String defaultValue) {

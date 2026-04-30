@@ -1,5 +1,6 @@
 package com.etema.ragnarmmo.mobs.network;
 
+import com.etema.ragnarmmo.common.api.stats.RoBaseStats;
 import com.etema.ragnarmmo.mobs.capability.MobProfileProvider;
 import com.etema.ragnarmmo.mobs.capability.MobProfileState;
 import com.etema.ragnarmmo.mobs.profile.MobProfile;
@@ -69,6 +70,12 @@ public final class SyncMobProfilePacket {
         buf.writeInt(msg.profile.level());
         buf.writeEnum(msg.profile.rank());
         buf.writeEnum(msg.profile.tier());
+        buf.writeInt(msg.profile.baseStats().str());
+        buf.writeInt(msg.profile.baseStats().agi());
+        buf.writeInt(msg.profile.baseStats().vit());
+        buf.writeInt(msg.profile.baseStats().intel());
+        buf.writeInt(msg.profile.baseStats().dex());
+        buf.writeInt(msg.profile.baseStats().luk());
         buf.writeInt(msg.profile.maxHp());
         buf.writeInt(msg.profile.atkMin());
         buf.writeInt(msg.profile.atkMax());
@@ -100,6 +107,13 @@ public final class SyncMobProfilePacket {
                         buf.readInt(),
                         buf.readEnum(com.etema.ragnarmmo.common.api.mobs.MobRank.class),
                         buf.readEnum(MobTier.class),
+                        new RoBaseStats(
+                                buf.readInt(),
+                                buf.readInt(),
+                                buf.readInt(),
+                                buf.readInt(),
+                                buf.readInt(),
+                                buf.readInt()),
                         buf.readInt(),
                         buf.readInt(),
                         buf.readInt(),

@@ -12,8 +12,8 @@ import net.minecraft.world.item.AxeItem;
  * Dual Wield — Passive (Assassin)
  * RO: Allows equipping weapons in both hands.
  * MC: When a weapon is in BOTH main hand and offhand, stores the offhand
- *     weapon info in PersistentData. AssassinSkillEvents hooks LivingHurtEvent
- *     to add an extra hit from the offhand at (20 + level * 10)% base damage.
+ *     weapon info in PersistentData. HandAttackProfileResolver feeds the skill
+ *     state into the RO attack profile.
  */
 public class DualWieldSkillEffect implements ISkillEffect {
 

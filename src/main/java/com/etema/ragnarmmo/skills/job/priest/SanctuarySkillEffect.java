@@ -1,7 +1,6 @@
 package com.etema.ragnarmmo.skills.job.priest;
 
 import com.etema.ragnarmmo.skills.execution.aoe.GroundAoEPersistentEffect;
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.entity.aoe.SanctuaryAoe;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;

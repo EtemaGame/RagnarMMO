@@ -1,5 +1,7 @@
 package com.etema.ragnarmmo.skills.job.wizard;
 
+import com.etema.ragnarmmo.combat.contract.CombatStrictMode;
+import com.etema.ragnarmmo.combat.contract.CombatantProfileResolver;
 import com.etema.ragnarmmo.combat.element.CombatPropertyResolver;
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
 import com.etema.ragnarmmo.skills.job.mage.MageTargetUtil;
@@ -12,7 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.Mob;
 
 public class MonsterPropertySkillEffect implements ISkillEffect {
 
@@ -34,7 +36,7 @@ public class MonsterPropertySkillEffect implements ISkillEffect {
             return;
         }
 
-        double armor = target.getAttributeValue(Attributes.ARMOR);
+        double defense = resolveRoDefense(player, target);
         String race = describeRace(target);
         String element = CombatPropertyResolver.getElementId(CombatPropertyResolver.getDefensiveElement(target)).toUpperCase();
         String size = CombatPropertyResolver.getSizeId(target).toUpperCase();
@@ -44,7 +46,7 @@ public class MonsterPropertySkillEffect implements ISkillEffect {
         player.sendSystemMessage(Component.literal("Name: " + target.getName().getString()));
         player.sendSystemMessage(
                 Component.literal("HP: " + (int) target.getHealth() + "/" + (int) target.getMaxHealth()));
-        player.sendSystemMessage(Component.literal("DEF: " + (int) armor));
+        player.sendSystemMessage(Component.literal("DEF: " + (int) defense));
         player.sendSystemMessage(Component.literal("Race: " + race));
         player.sendSystemMessage(Component.literal("Element: " + element));
         player.sendSystemMessage(Component.literal("Size: " + size));
@@ -69,6 +71,22 @@ public class MonsterPropertySkillEffect implements ISkillEffect {
             return "DEMI-HUMAN";
         }
         return raceId.toUpperCase();
+    }
+
+    private double resolveRoDefense(ServerPlayer caster, LivingEntity target) {
+        if (target instanceof ServerPlayer player) {
+            return CombatantProfileResolver.resolvePlayer(player, null)
+                    .map(profile -> profile.defense().hardDef())
+                    .orElse(0.0D);
+        }
+        if (target instanceof Mob mob) {
+            return CombatantProfileResolver.resolveMob(mob, CombatStrictMode.current())
+                    .map(profile -> profile.defense().hardDef())
+                    .orElse(0.0D);
+        }
+        return target == caster ? CombatantProfileResolver.resolvePlayer(caster, null)
+                .map(profile -> profile.defense().hardDef())
+                .orElse(0.0D) : 0.0D;
     }
 
     private String describeWeakness(LivingEntity target) {

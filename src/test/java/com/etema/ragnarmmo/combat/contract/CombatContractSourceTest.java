@@ -47,6 +47,16 @@ class CombatContractSourceTest {
                 "Combat contract must guarantee minimum damage unless immunity is added explicitly");
     }
 
+    @Test
+    void physicalCritBypassesPhysicalDefenseButKeepsModifiers() throws IOException {
+        String contract = read("combat/contract/CombatContract.java");
+        int modifiers = contract.indexOf("damage = damageCalculator.applyModifiers(");
+        int defense = contract.indexOf("if (!critical) {\n            damage = damageCalculator.applyPhysicalDefense(");
+
+        assertTrue(modifiers >= 0, "Physical damage must still apply size/element/race modifiers");
+        assertTrue(defense > modifiers, "Physical DEF must be skipped only after modifiers when critical");
+    }
+
     private static String read(String relative) throws IOException {
         return Files.readString(ROOT.resolve(relative));
     }

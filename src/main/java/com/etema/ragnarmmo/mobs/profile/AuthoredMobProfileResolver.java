@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.mobs.profile;
 
 import com.etema.ragnarmmo.common.api.mobs.MobRank;
+import com.etema.ragnarmmo.common.api.stats.RoBaseStats;
 import com.etema.ragnarmmo.common.api.mobs.data.MobDefinition;
 import com.etema.ragnarmmo.common.api.mobs.data.MobDirectStatsBlock;
 import com.etema.ragnarmmo.common.api.mobs.data.MobRoStatsBlock;
@@ -78,6 +79,7 @@ public final class AuthoredMobProfileResolver {
 
         MobDirectStatsBlock directStats = resolvedDefinition.directStats();
         MobRoStatsBlock roStats = resolvedDefinition.roStats();
+        RoBaseStats baseStats = resolveBaseStats(roStats);
 
         Integer maxHp = resolveFinalIntStat("max_hp", directStats != null ? directStats.maxHp() : null, level, roStats, issues);
         Integer atkMin = resolveFinalIntStat("atk_min", directStats != null ? directStats.atkMin() : null, level, roStats, issues);
@@ -108,6 +110,7 @@ public final class AuthoredMobProfileResolver {
                             level,
                             rank,
                             tier,
+                            baseStats,
                             maxHp,
                             atkMin,
                             atkMax,
@@ -153,11 +156,13 @@ public final class AuthoredMobProfileResolver {
 
         ResolvedMobDefinition resolved = result.definition();
         MobDirectStatsBlock directStats = resolved.directStats();
+        MobRoStatsBlock roStats = resolved.roStats();
         return Optional.of(new AuthoredMobDefinition(
                 entityTypeId,
                 Optional.ofNullable(resolved.rank()),
                 Optional.ofNullable(resolved.tier()),
                 optionalInt(resolved.level()),
+                Optional.ofNullable(resolveBaseStats(roStats)),
                 optionalText(resolved.race()),
                 optionalText(resolved.element()),
                 optionalText(resolved.size()),
@@ -304,6 +309,13 @@ public final class AuthoredMobProfileResolver {
                 && roStats.int_() != null
                 && roStats.dex() != null
                 && roStats.luk() != null;
+    }
+
+    private static @Nullable RoBaseStats resolveBaseStats(@Nullable MobRoStatsBlock roStats) {
+        if (!hasCompleteRoStats(roStats)) {
+            return null;
+        }
+        return new RoBaseStats(roStats.str(), roStats.agi(), roStats.vit(), roStats.int_(), roStats.dex(), roStats.luk());
     }
 
     private static List<AuthoredMobProfileIssue> mapDeclarativeIssues(List<MobDefinitionResolutionIssue> issues) {

@@ -1,7 +1,7 @@
 package com.etema.ragnarmmo.skills.job.acolyte;
 
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.common.init.RagnarMobEffects;
+import com.etema.ragnarmmo.skills.execution.RoSkillStatHelper;
 import com.etema.ragnarmmo.skills.runtime.SkillVisualFx;
 import com.etema.ragnarmmo.skills.api.ISkillEffect;
 import com.etema.ragnarmmo.skills.data.SkillRegistry;
@@ -56,7 +56,7 @@ public class SignumCrucisSkillEffect implements ISkillEffect {
         for (LivingEntity e : targets) {
             int targetLevel = CombatMath.tryGetTargetLevel(e).orElse(1);
             float levelBonus = Math.max(-15.0f,
-                    Math.min(20.0f, (SkillDamageHelper.getBaseLevel(player) - targetLevel) * 2.0f));
+                    Math.min(20.0f, (RoSkillStatHelper.baseLevel(player) - targetLevel) * 2.0f));
             float chance = Math.max(5.0f, Math.min(95.0f, baseChance + levelBonus));
 
             if ((player.getRandom().nextFloat() * 100.0f) > chance) {

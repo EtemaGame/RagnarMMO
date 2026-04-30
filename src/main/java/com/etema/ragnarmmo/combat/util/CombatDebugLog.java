@@ -82,6 +82,28 @@ public final class CombatDebugLog {
                 resolution != null ? resolution.finalAmount() : 0.0D);
     }
 
+    public static void logBasicAttackDedupe(String decision, BasicAttackSource source, ServerPlayer actor,
+            int sequenceId, int targetId, long tick) {
+        LOGGER.debug("BASIC_ATTACK_DEDUPE decision={} source={} actor={} seq={} target={} tick={}",
+                decision,
+                source,
+                actor != null && actor.getGameProfile() != null ? actor.getGameProfile().getName() : "unknown",
+                sequenceId,
+                targetId,
+                tick);
+    }
+
+    public static void logBasicAttackPreparation(CombatRequestContext ctx, BasicAttackSource source,
+            BasicAttackFailureReason reason, int targetId, String contractRejectCause) {
+        LOGGER.debug("BASIC_ATTACK_PREP source={} actor={} seq={} target={} reason={} contractRejectCause={}",
+                source,
+                actorName(ctx),
+                ctx != null ? ctx.sequenceId() : -1,
+                targetId,
+                reason,
+                contractRejectCause);
+    }
+
     private static String actorName(CombatRequestContext ctx) {
         if (ctx == null || ctx.actor() == null || ctx.actor().getGameProfile() == null) {
             return "unknown";

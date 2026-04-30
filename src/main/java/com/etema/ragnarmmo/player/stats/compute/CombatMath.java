@@ -35,11 +35,11 @@ public final class CombatMath {
     private static final double LUK_VARIANCE_BONUS = 300.0;
 
     // HIT/FLEE
-    public static final double HIT_BASE = 175.0;
+    public static final double HIT_BASE = RoPreRenewalFormulaService.HIT_BASE;
     public static final double DEX_TO_HIT_MULT = 1.0;
     public static final double LUK_TO_HIT_DIVISOR = 3.0;
     public static final double LEVEL_TO_HIT_MULT = 1.0;
-    public static final double FLEE_BASE = 100.0;
+    public static final double FLEE_BASE = RoPreRenewalFormulaService.FLEE_BASE;
     public static final double AGI_TO_FLEE_MULT = 1.0;
     public static final double LUK_TO_FLEE_DIVISOR = 5.0;
     public static final double LEVEL_TO_FLEE_MULT = 1.0;
@@ -266,29 +266,19 @@ public final class CombatMath {
     // ========================================
 
     public static double computeHIT(int DEX, int LUK, int level, double bonus) {
-        return HIT_BASE
-                + DEX * DEX_TO_HIT_MULT
-                + Math.floor(LUK / LUK_TO_HIT_DIVISOR)
-                + level * LEVEL_TO_HIT_MULT
-                + bonus;
+        return RoPreRenewalFormulaService.hit(DEX, level, bonus);
     }
 
     public static double computeFLEE(int AGI, int LUK, int level, double bonus) {
-        return FLEE_BASE
-                + AGI * AGI_TO_FLEE_MULT
-                + Math.floor(LUK / LUK_TO_FLEE_DIVISOR)
-                + level * LEVEL_TO_FLEE_MULT
-                + bonus;
+        return RoPreRenewalFormulaService.flee(AGI, level, bonus);
     }
 
     public static double computeHitRate(double attackerHIT, double defenderFLEE) {
-        double hitRate = HIT_FLEE_FORMULA_CONSTANT + attackerHIT - defenderFLEE;
-        return clamp(0.05, 0.95, hitRate / 100.0);
+        return RoPreRenewalFormulaService.hitRate(attackerHIT, defenderFLEE);
     }
 
     public static double computePerfectDodge(int LUK) {
-        double pd = (1.0 + Math.floor(LUK / PERFECT_DODGE_DIVISOR)) / 100.0;
-        return clamp(0.0, PERFECT_DODGE_MAX, pd);
+        return RoPreRenewalFormulaService.perfectDodge(LUK);
     }
 
     // ========================================
@@ -296,14 +286,7 @@ public final class CombatMath {
     // ========================================
 
     public static double computeCritChance(int LUK, int DEX, double bonus) {
-        double crit = (1.0 + Math.floor(LUK / LUK_TO_CRIT_DIVISOR)) / 100.0;
-
-        if (DEX_TO_CRIT_DIVISOR > 0) {
-            crit += DEX / DEX_TO_CRIT_DIVISOR / 100.0;
-        }
-
-        crit += bonus;
-        return clamp(0.0, CRIT_MAX, crit);
+        return RoPreRenewalFormulaService.criticalChance(LUK, bonus);
     }
 
     public static double computeCritDamageMultiplier(int LUK, int STR) {
@@ -370,26 +353,11 @@ public final class CombatMath {
     }
 
     public static int computeASPD_RO(int baseWeaponASPD, boolean hasShield, int AGI, int DEX, double bonus) {
-        double aspd = baseWeaponASPD
-                + AGI * AGI_TO_ASPD
-                + DEX * DEX_TO_ASPD
-                + bonus;
-
-        if (hasShield) {
-            aspd -= SHIELD_ASPD_PENALTY;
-        }
-
-        return (int) clamp(ASPD_RO_MIN, ASPD_RO_MAX, aspd);
+        return RoPreRenewalFormulaService.aspdRo(baseWeaponASPD, hasShield, AGI, DEX, bonus);
     }
 
     public static double convertASPD_ToAPS(int aspdRO) {
-        if (aspdRO >= ASPD_RO_MAX)
-            return APS_MAX;
-        if (aspdRO <= 0)
-            return ASPD_MIN;
-
-        double aps = 50.0 / (200.0 - aspdRO);
-        return clamp(ASPD_MIN, APS_MAX, aps);
+        return RoPreRenewalFormulaService.aspdToAttacksPerSecond(aspdRO);
     }
 
     /**
@@ -470,8 +438,7 @@ public final class CombatMath {
 
     public static double computeCastTime(double baseCast, int DEX, int INT,
             boolean useRenewalFormula) {
-        double reductionFactor = 1.0 - Math.min(1.0, DEX / 150.0);
-        return Math.max(CAST_MIN, baseCast * reductionFactor);
+        return RoPreRenewalFormulaService.variableCastSeconds(baseCast, DEX, 0.0D);
     }
 
     public static int computeCastDelay(int baseDelayTicks, net.minecraft.world.entity.player.Player player) {

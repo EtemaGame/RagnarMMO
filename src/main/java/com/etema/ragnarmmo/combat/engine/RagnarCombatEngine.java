@@ -22,6 +22,7 @@ import com.etema.ragnarmmo.combat.contract.CombatContract;
 import com.etema.ragnarmmo.combat.contract.CombatStrictMode;
 import com.etema.ragnarmmo.combat.contract.CombatantProfile;
 import com.etema.ragnarmmo.combat.contract.CombatantProfileResolver;
+import com.etema.ragnarmmo.combat.credit.RoKillCreditService;
 import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.combat.hand.AttackHandResolver;
 import com.etema.ragnarmmo.combat.profile.HandAttackProfile;
@@ -39,11 +40,14 @@ import com.etema.ragnarmmo.common.net.Network;
 import com.etema.ragnarmmo.common.util.DamageProcessingGuard;
 import com.etema.ragnarmmo.skills.data.SkillDefinition;
 import com.etema.ragnarmmo.skills.data.SkillRegistry;
+import com.etema.ragnarmmo.skills.runtime.PlayerSkillsProvider;
 import com.etema.ragnarmmo.skills.runtime.SkillManager;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
 
 /**
  * Server-authoritative combat entry point.
@@ -60,12 +64,22 @@ public class RagnarCombatEngine {
     private final RagnarCombatFeedbackService feedbackService = new RagnarCombatFeedbackService();
     private final RagnarTargetResolver targetResolver = new ServerAuthoritativeTargetResolver();
     private final Map<UUID, CombatActorState> actorStates = new ConcurrentHashMap<>();
+    private static final ResourceLocation AUTO_COUNTER =
+            ResourceLocation.fromNamespaceAndPath("ragnarmmo", "auto_counter");
+    private static final ResourceLocation BLITZ_BEAT =
+            ResourceLocation.fromNamespaceAndPath("ragnarmmo", "blitz_beat");
+    private static final ResourceLocation STEEL_CROW =
+            ResourceLocation.fromNamespaceAndPath("ragnarmmo", "steel_crow");
 
     private RagnarCombatEngine() {
     }
 
     public static RagnarCombatEngine get() {
         return INSTANCE;
+    }
+
+    public CombatContract contract() {
+        return combatContract;
     }
 
     public CombatActorState state(ServerPlayer player) {
@@ -80,6 +94,14 @@ public class RagnarCombatEngine {
             BasicAttackSource source) {
         CombatActorState state = state(player);
         long now = player.serverLevel().getGameTime();
+        if (source == BasicAttackSource.CLIENT_PACKET && request != null && !request.candidates().isEmpty()) {
+            state.setLastObservedPacketIntent(new CombatActorState.RecentBasicAttackIntent(
+                    now,
+                    request.candidates().get(0).entityId(),
+                    request.sequenceId()));
+            CombatDebugLog.logBasicAttackDedupe("packet_observed", source, player, request.sequenceId(),
+                    request.candidates().get(0).entityId(), now);
+        }
 
         // 1. Initial Authoritative Target Resolution
         List<ResolvedTargetCandidate> targetResults = targetResolver.resolveCandidates(player, request.candidates());
@@ -101,7 +123,7 @@ public class RagnarCombatEngine {
                 candidates);
 
         // 3. Complete Server Validation
-        CombatRejectReason reject = validationService.validateBasicAttack(ctx, state, now, cooldownService);
+        CombatRejectReason reject = validationService.validateBasicAttack(ctx, state, now, cooldownService, source);
         if (reject != null) {
             CombatDebugLog.logValidationReject(ctx, "REJECTED_" + reject.name());
             BasicAttackOutcome outcome = BasicAttackOutcome.rejected(source, reject, true, targetResults);
@@ -114,6 +136,20 @@ public class RagnarCombatEngine {
         return outcome;
     }
 
+    public boolean hasRecentClientPacketAttack(ServerPlayer player, int targetId) {
+        if (player == null) {
+            return false;
+        }
+        CombatActorState actorState = state(player);
+        long now = player.serverLevel().getGameTime();
+        boolean recent = actorState.getLastObservedPacketIntent().matchesRecent(now, targetId);
+        if (recent) {
+            CombatDebugLog.logBasicAttackDedupe("server_event_ignored_recent_packet", BasicAttackSource.SERVER_ATTACK_EVENT,
+                    player, actorState.getLastObservedPacketIntent().sequenceId(), targetId, now);
+        }
+        return recent;
+    }
+
     public BasicAttackOutcome handleBasicAttackRequest(CombatRequestContext ctx, BasicAttackSource source,
             List<ResolvedTargetCandidate> targetResults) {
         CombatDebugLog.logAttackRequest(ctx);
@@ -121,10 +157,7 @@ public class RagnarCombatEngine {
         long nowTick = attacker.serverLevel().getGameTime();
         CombatActorState actorState = state(attacker);
 
-        actorState.setLastAcceptedSequenceId(ctx.sequenceId());
-
         int cooldownTicks = AttackCadenceCalculator.computeIntervalTicks(attacker, ctx.offHand());
-        cooldownService.markBasicAttackUsed(actorState.getCooldowns(), nowTick, cooldownTicks);
 
         try {
             // Attacker Data (Authoritative)
@@ -141,25 +174,53 @@ public class RagnarCombatEngine {
             CombatDebugLog.logAttackPacing(ctx, AttackHandResolver.isDualWielding(attacker),
                     attackProfile.aps(), cooldownTicks);
 
+            CombatantProfile attackerProfile = CombatantProfileResolver.resolvePlayer(attacker, attackProfile).orElse(null);
+            if (attackerProfile == null) {
+                return infrastructureFailure(source, targetResults, BasicAttackFailureReason.MISSING_ATTACKER_STATS);
+            }
+
             List<CombatResolution> results = new ArrayList<>();
+            BasicHitPreparation.InfrastructureFailure firstInfrastructureFailure = null;
             BasicAttackFailureReason applyFailure = BasicAttackFailureReason.NONE;
             for (CombatTargetCandidate candidate : ctx.candidates()) {
-                CombatResolution resolution = resolveSingleBasicHit(attacker, attackProfile, candidate,
-                        attackerStats.getLevel());
+                BasicHitPreparation preparation = prepareSingleBasicHit(attacker, attackerProfile, attackProfile,
+                        candidate, attackerStats.getLevel());
+                if (preparation instanceof BasicHitPreparation.SkippedInvalidTarget skipped) {
+                    CombatDebugLog.logBasicAttackPreparation(ctx, source, skipped.reason(), skipped.targetId(), null);
+                    continue;
+                }
+                if (preparation instanceof BasicHitPreparation.InfrastructureFailure failure) {
+                    CombatDebugLog.logBasicAttackPreparation(ctx, source, failure.failureReason(), candidate.entityId(),
+                            failure.contractRejectReason());
+                    if (firstInfrastructureFailure == null) {
+                        firstInfrastructureFailure = failure;
+                    }
+                    continue;
+                }
+
+                CombatResolution resolution = ((BasicHitPreparation.Resolved) preparation).resolution();
                 results.add(resolution);
 
-                BasicAttackFailureReason failure = applyResolution(attacker, resolution);
+                BasicAttackFailureReason failure = applyResolution(attacker, resolution, false);
                 if (failure != BasicAttackFailureReason.NONE && applyFailure == BasicAttackFailureReason.NONE) {
                     applyFailure = failure;
+                }
+                if (failure == BasicAttackFailureReason.NONE) {
+                    triggerSecondaryActionsAfterPlayerBasicAttack(attacker, resolution);
                 }
 
                 CombatDebugLog.logHitResolution(resolution);
             }
 
             if (results.isEmpty()) {
-                return infrastructureFailure(source, targetResults, BasicAttackFailureReason.NO_RESOLUTION_PRODUCED);
+                BasicAttackFailureReason reason = firstInfrastructureFailure != null
+                        ? firstInfrastructureFailure.failureReason()
+                        : BasicAttackFailureReason.NO_RESOLUTION_PRODUCED;
+                return infrastructureFailure(source, targetResults, reason);
             }
 
+            commitAcceptedBasicAttack(actorState, source, ctx.sequenceId(), nowTick, cooldownTicks, attacker,
+                    results.get(0).targetId());
             BasicAttackOutcome outcome = BasicAttackOutcome.resolved(source, results, targetResults, false);
             return applyFailure == BasicAttackFailureReason.NONE ? outcome : outcome.withFailure(applyFailure);
         } catch (RuntimeException ex) {
@@ -171,15 +232,19 @@ public class RagnarCombatEngine {
         }
     }
 
-    private CombatResolution resolveSingleBasicHit(ServerPlayer attacker, HandAttackProfile attackProfile,
-                                                   CombatTargetCandidate candidate, int attackerLevel) {
+    private BasicHitPreparation prepareSingleBasicHit(ServerPlayer attacker, CombatantProfile attackerProfile,
+                                                   HandAttackProfile attackProfile, CombatTargetCandidate candidate,
+                                                   int attackerLevel) {
         net.minecraft.world.entity.Entity targetEntity = attacker.serverLevel().getEntity(candidate.entityId());
         if (!(targetEntity instanceof LivingEntity target)) {
-            return CombatResolution.miss(attacker.getId(), candidate.entityId());
+            return new BasicHitPreparation.SkippedInvalidTarget(candidate.entityId(), BasicAttackFailureReason.TARGET_NOT_FOUND);
         }
 
-        CombatantProfile attackerProfile = CombatantProfileResolver.resolvePlayer(attacker, attackProfile).orElse(null);
         CombatantProfile defenderProfile = resolveTargetProfile(target);
+        if (defenderProfile == null) {
+            return new BasicHitPreparation.InfrastructureFailure(BasicAttackFailureReason.MISSING_TARGET_PROFILE,
+                    "missing_target_profile");
+        }
         var result = combatContract.resolveBasicAttack(
                 attackerProfile,
                 defenderProfile,
@@ -187,9 +252,23 @@ public class RagnarCombatEngine {
                 deterministicRandom(attacker, target, attackerLevel));
         if (result.rejected() || result.resolution() == null) {
             CombatDebugLog.logValidationReject(null, "COMBAT_CONTRACT_REJECTED_" + result.rejectReason());
-            return CombatResolution.miss(attacker.getId(), target.getId());
+            return new BasicHitPreparation.InfrastructureFailure(BasicAttackFailureReason.CONTRACT_REJECTED,
+                    result.rejectReason());
         }
-        return result.resolution();
+        return new BasicHitPreparation.Resolved(result.resolution());
+    }
+
+    private void commitAcceptedBasicAttack(CombatActorState actorState, BasicAttackSource source, int sequenceId,
+            long nowTick, int cooldownTicks, ServerPlayer actor, int targetId) {
+        cooldownService.markBasicAttackUsed(actorState.getCooldowns(), nowTick, cooldownTicks);
+        if (source == BasicAttackSource.SERVER_ATTACK_EVENT) {
+            actorState.setLastServerFallbackTick(nowTick);
+            CombatDebugLog.logBasicAttackDedupe("fallback_accepted", source, actor, sequenceId, targetId, nowTick);
+            return;
+        }
+        actorState.setLastClientPacketSequenceId(sequenceId);
+        actorState.setLastAcceptedSequenceId(sequenceId);
+        CombatDebugLog.logBasicAttackDedupe("packet_accepted", source, actor, sequenceId, targetId, nowTick);
     }
 
     private BasicAttackOutcome infrastructureFailure(BasicAttackSource source,
@@ -214,6 +293,18 @@ public class RagnarCombatEngine {
                 + 13L * target.getId()
                 + sequenceSalt;
         return new java.util.Random(seed);
+    }
+
+    private sealed interface BasicHitPreparation {
+        record Resolved(CombatResolution resolution) implements BasicHitPreparation {
+        }
+
+        record SkippedInvalidTarget(int targetId, BasicAttackFailureReason reason) implements BasicHitPreparation {
+        }
+
+        record InfrastructureFailure(BasicAttackFailureReason failureReason,
+                                     String contractRejectReason) implements BasicHitPreparation {
+        }
     }
 
     public List<CombatResolution> handleSkillUseRequest(CombatRequestContext ctx) {
@@ -258,7 +349,7 @@ public class RagnarCombatEngine {
     private List<CombatResolution> resolveAndApplySkill(CombatRequestContext ctx, CombatActorState actorState, long nowTick) {
         List<CombatResolution> resolutions = skillResolver.resolveSkill(ctx, actorState, nowTick);
         for (CombatResolution res : resolutions) {
-            applyResolution(ctx.actor(), res);
+            applyResolution(ctx.actor(), res, true);
         }
         return resolutions;
     }
@@ -396,6 +487,10 @@ public class RagnarCombatEngine {
     }
 
     private BasicAttackFailureReason applyResolution(ServerPlayer attacker, CombatResolution resolution) {
+        return applyResolution(attacker, resolution, false);
+    }
+
+    private BasicAttackFailureReason applyResolution(ServerPlayer attacker, CombatResolution resolution, boolean skillDamage) {
         net.minecraft.world.entity.Entity target = attacker.serverLevel().getEntity(resolution.targetId());
         if (!(target instanceof LivingEntity livingTarget)) {
             return BasicAttackFailureReason.TARGET_DAMAGE_REJECTED;
@@ -405,10 +500,16 @@ public class RagnarCombatEngine {
             float damage = (float) resolution.finalAmount();
 
             // Mark as processed to avoid CommonEvents double-calc
-            DamageProcessingGuard.markProcessedPlayer(livingTarget);
+            if (skillDamage) {
+                DamageProcessingGuard.markSkillContractDamage(livingTarget);
+            } else {
+                DamageProcessingGuard.markBasicAttack(livingTarget);
+            }
 
+            RoKillCreditService.recordPlayerContribution(attacker, livingTarget, resolution);
             boolean applied = SkillDamageHelper.dealSkillDamage(livingTarget, attacker.damageSources().playerAttack(attacker), damage);
             if (!applied) {
+                RoKillCreditService.clearPlayerContribution(attacker, livingTarget);
                 CombatDebugLog.logDamageApplyFailure(attacker, livingTarget, resolution);
                 feedbackService.sendBasicAttackFeedback(attacker, livingTarget, resolution);
                 return BasicAttackFailureReason.TARGET_DAMAGE_REJECTED;
@@ -417,6 +518,143 @@ public class RagnarCombatEngine {
 
         feedbackService.sendBasicAttackFeedback(attacker, livingTarget, resolution);
         return BasicAttackFailureReason.NONE;
+    }
+
+    public void triggerAutoBlitzFromRangedAttack(ServerPlayer attacker, LivingEntity target, CombatResolution trigger) {
+        if (attacker == null || target == null || trigger == null || !isDamagingOutcome(trigger)) {
+            return;
+        }
+        triggerAutoBlitz(attacker, target, trigger);
+    }
+
+    private void triggerSecondaryActionsAfterPlayerBasicAttack(ServerPlayer attacker, CombatResolution trigger) {
+        if (attacker == null || trigger == null || !isDamagingOutcome(trigger)) {
+            return;
+        }
+        net.minecraft.world.entity.Entity targetEntity = attacker.serverLevel().getEntity(trigger.targetId());
+        if (targetEntity instanceof LivingEntity target) {
+            triggerAutoBlitz(attacker, target, trigger);
+        }
+    }
+
+    private void triggerAutoCounter(ServerPlayer defender, LivingEntity attacker, CombatResolution incoming) {
+        if (defender == null || attacker == null || incoming == null || !isDamagingOutcome(incoming)) {
+            return;
+        }
+        if (!attacker.isAlive() || attacker.distanceToSqr(defender) > 16.0D) {
+            return;
+        }
+
+        int level = skillLevel(defender, AUTO_COUNTER);
+        if (level <= 0) {
+            return;
+        }
+
+        java.util.Random rng = deterministicSecondaryRandom(defender, attacker, incoming, 7100 + level);
+        double chance = Math.min(1.0D, level * 0.20D);
+        if (rng.nextDouble() >= chance) {
+            return;
+        }
+
+        HandAttackProfile attackProfile = HandAttackProfileResolver.resolve(defender, false).orElse(null);
+        CombatantProfile attackerProfile = CombatantProfileResolver.resolvePlayer(defender, attackProfile).orElse(null);
+        CombatantProfile defenderProfile = resolveTargetProfile(attacker);
+        var result = combatContract.resolveBasicAttack(
+                attackerProfile,
+                defenderProfile,
+                new ActionIntent.BasicAttackIntent(false),
+                rng);
+        if (result.rejected() || result.resolution() == null || !isDamagingOutcome(result.resolution())) {
+            return;
+        }
+
+        CombatResolution base = result.resolution();
+        CombatResolution counter = CombatResolution.hit(
+                defender.getId(),
+                attacker.getId(),
+                base.baseAmount(),
+                Math.max(1.0D, base.finalAmount() * 1.5D),
+                true);
+        applySecondarySkillResolution(defender, counter);
+    }
+
+    private void triggerAutoBlitz(ServerPlayer attacker, LivingEntity target, CombatResolution trigger) {
+        if (attacker == null || target == null || trigger == null || !isDamagingOutcome(trigger)) {
+            return;
+        }
+        if (!hasFalcon(attacker) || !isRangedWeapon(attacker)) {
+            return;
+        }
+
+        int level = skillLevel(attacker, BLITZ_BEAT);
+        if (level <= 0) {
+            return;
+        }
+
+        java.util.Random rng = deterministicSecondaryRandom(attacker, target, trigger, 9100 + level);
+        double luk = com.etema.ragnarmmo.common.api.stats.StatAttributes.getTotal(
+                attacker,
+                com.etema.ragnarmmo.common.api.stats.StatKeys.LUK);
+        double chance = Math.min(1.0D, ((luk * 0.3D) + 1.0D) / 100.0D);
+        if (rng.nextDouble() >= chance) {
+            return;
+        }
+
+        double dex = com.etema.ragnarmmo.common.api.stats.StatAttributes.getTotal(
+                attacker,
+                com.etema.ragnarmmo.common.api.stats.StatKeys.DEX);
+        double intel = com.etema.ragnarmmo.common.api.stats.StatAttributes.getTotal(
+                attacker,
+                com.etema.ragnarmmo.common.api.stats.StatKeys.INT);
+        int steelCrow = skillLevel(attacker, STEEL_CROW);
+        int hits = Math.max(1, 1 + ((level - 1) / 2));
+        double perHit = 80.0D + (6.0D * steelCrow) + (2.0D * ((dex / 10.0D) + intel));
+        double totalDamage = Math.max(1.0D, perHit * hits);
+
+        CombatResolution blitz = CombatResolution.hit(
+                attacker.getId(),
+                target.getId(),
+                totalDamage,
+                totalDamage,
+                false);
+        applySecondarySkillResolution(attacker, blitz);
+    }
+
+    private BasicAttackFailureReason applySecondarySkillResolution(ServerPlayer attacker, CombatResolution resolution) {
+        if (attacker == null || resolution == null) {
+            return BasicAttackFailureReason.NO_RESOLUTION_PRODUCED;
+        }
+        return applyResolution(attacker, resolution, true);
+    }
+
+    private static boolean isDamagingOutcome(CombatResolution resolution) {
+        return resolution.resultType() == CombatHitResultType.HIT || resolution.resultType() == CombatHitResultType.CRIT;
+    }
+
+    private static int skillLevel(ServerPlayer player, ResourceLocation skillId) {
+        return PlayerSkillsProvider.get(player)
+                .map(skills -> skills.getSkillLevel(skillId))
+                .orElse(0);
+    }
+
+    private static boolean hasFalcon(ServerPlayer player) {
+        return player.getPersistentData().getBoolean("ragnar_has_falcon")
+                || skillLevel(player, ResourceLocation.fromNamespaceAndPath("ragnarmmo", "falconry_mastery")) > 0;
+    }
+
+    private static boolean isRangedWeapon(ServerPlayer player) {
+        var item = player.getMainHandItem().getItem();
+        return item instanceof BowItem || item instanceof CrossbowItem;
+    }
+
+    private static java.util.Random deterministicSecondaryRandom(ServerPlayer actor, LivingEntity target,
+            CombatResolution trigger, int salt) {
+        long seed = 43L * actor.serverLevel().getGameTime()
+                + 29L * actor.getId()
+                + 17L * target.getId()
+                + 7L * trigger.targetId()
+                + salt;
+        return new java.util.Random(seed);
     }
 
     @net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "ragnarmmo")
@@ -450,6 +688,9 @@ public class RagnarCombatEngine {
                         new ActionIntent.BasicAttackIntent(false),
                         deterministicRandom(p, attacker, p.tickCount));
                 if (result.rejected() || result.resolution() == null) {
+                    e.setAmount(0);
+                    e.setCanceled(true);
+                    CombatDebugLog.logValidationReject(null, "MOB_TO_PLAYER_CONTRACT_REJECTED_" + result.rejectReason());
                     return;
                 }
 
@@ -463,7 +704,8 @@ public class RagnarCombatEngine {
                 }
 
                 e.setAmount((float) resolution.finalAmount());
-                DamageProcessingGuard.markProcessedPlayer(p);
+                DamageProcessingGuard.markMobToPlayerContract(p);
+                RagnarCombatEngine.get().triggerAutoCounter(p, attacker, resolution);
             });
         }
 

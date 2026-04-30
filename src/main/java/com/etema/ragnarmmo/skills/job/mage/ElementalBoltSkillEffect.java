@@ -13,7 +13,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
-import com.etema.ragnarmmo.combat.damage.SkillDamageHelper;
 import com.etema.ragnarmmo.skills.runtime.SkillSequencer;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.HitResult;

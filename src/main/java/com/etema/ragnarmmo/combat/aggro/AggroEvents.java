@@ -1,11 +1,11 @@
 package com.etema.ragnarmmo.combat.aggro;
 
 import com.etema.ragnarmmo.RagnarMMO;
+import com.etema.ragnarmmo.combat.status.RoCombatStatusService;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -19,11 +19,6 @@ import java.util.UUID;
 @Mod.EventBusSubscriber(modid = RagnarMMO.MODID)
 public class AggroEvents {
 
-    // Must match the UUID used in ProvokeSkillEffect
-    private static final UUID PROVOKE_DEF_DEBUFF_UUID = UUID.fromString("a1b2c3d4-dead-beef-cafe-000000000001");
-    private static final UUID PROVOKE_ATK_BUFF_UUID = UUID.fromString("a1b2c3d4-dead-beef-cafe-000000000002");
-    private static final String PROVOKE_UNTIL_TAG = "ragnar_provoke_until";
-
     @SubscribeEvent
     public static void onLivingUpdate(LivingEvent.LivingTickEvent event) {
         if (event.getEntity().level().isClientSide) return;
@@ -31,9 +26,9 @@ public class AggroEvents {
         if (!(mob.level() instanceof ServerLevel serverLevel)) return;
 
         // --- Clean up expired Provoke debuffs ---
-        long until = mob.getPersistentData().getLong(PROVOKE_UNTIL_TAG);
+        long until = mob.getPersistentData().getLong(RoCombatStatusService.PROVOKE_UNTIL_TAG);
         if (until > 0 && mob.level().getGameTime() >= until) {
-            removeProvokeModifiers(mob);
+            removeProvokeState(mob);
         }
 
         // --- Enforce aggro retargeting ---
@@ -43,7 +38,7 @@ public class AggroEvents {
         ServerPlayer aggroTarget = serverLevel.getServer().getPlayerList().getPlayer(targetUUID);
         if (aggroTarget == null || !aggroTarget.isAlive()) {
             AggroManager.clearAggro(mob);
-            removeProvokeModifiers(mob);
+            removeProvokeState(mob);
             return;
         }
 
@@ -58,18 +53,10 @@ public class AggroEvents {
         if (!(event.getEntity() instanceof Mob mob)) return;
         // Clean up all Provoke state when the mob dies
         AggroManager.clearAggro(mob);
-        removeProvokeModifiers(mob);
+        removeProvokeState(mob);
     }
 
-    private static void removeProvokeModifiers(Mob mob) {
-        var armorAttr = mob.getAttribute(Attributes.ARMOR);
-        if (armorAttr != null) {
-            armorAttr.removeModifier(PROVOKE_DEF_DEBUFF_UUID);
-        }
-        var atkAttr = mob.getAttribute(Attributes.ATTACK_DAMAGE);
-        if (atkAttr != null) {
-            atkAttr.removeModifier(PROVOKE_ATK_BUFF_UUID);
-        }
-        mob.getPersistentData().remove(PROVOKE_UNTIL_TAG);
+    private static void removeProvokeState(Mob mob) {
+        RoCombatStatusService.clearProvoke(mob);
     }
 }

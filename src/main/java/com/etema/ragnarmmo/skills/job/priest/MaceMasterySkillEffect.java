@@ -12,7 +12,7 @@ import net.minecraft.world.item.PickaxeItem;
  * Mace Mastery — Passive (Priest)
  * RO: Increases ATK when using maces.
  * MC: +2% damage per level with axes and pickaxes (mace equivalents).
- *     Stored in PersistentData; PriestSkillEvents reads it in LivingHurtEvent.
+ *     HandAttackProfileResolver reads it into the RO attack profile.
  */
 public class MaceMasterySkillEffect implements ISkillEffect {
 

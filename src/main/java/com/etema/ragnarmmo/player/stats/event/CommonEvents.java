@@ -2,7 +2,13 @@ package com.etema.ragnarmmo.player.stats.event;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.etema.ragnarmmo.combat.credit.RoKillCreditService;
 import com.etema.ragnarmmo.combat.element.CombatPropertyResolver;
+import com.etema.ragnarmmo.combat.api.CombatResolution;
+import com.etema.ragnarmmo.combat.contract.ActionIntent;
+import com.etema.ragnarmmo.combat.contract.CombatStrictMode;
+import com.etema.ragnarmmo.combat.contract.CombatantProfileResolver;
+import com.etema.ragnarmmo.combat.engine.RagnarCombatEngine;
 import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadView;
 import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
 import com.etema.ragnarmmo.combat.element.ElementType;
@@ -28,6 +34,7 @@ import com.etema.ragnarmmo.player.stats.network.PlayerStatsSyncService;
 import com.etema.ragnarmmo.mobs.capability.MobProfileProvider;
 import com.etema.ragnarmmo.mobs.capability.MobProfileState;
 import com.etema.ragnarmmo.mobs.companion.CompanionProfileService;
+import com.etema.ragnarmmo.mobs.util.MobProfileEligibility;
 import com.etema.ragnarmmo.player.progression.PlayerProgressionService;
 import com.etema.ragnarmmo.player.stats.progression.JobBonusService;
 import com.etema.ragnarmmo.player.party.PartyXpService;
@@ -225,11 +232,23 @@ public class CommonEvents {
             return;
         }
 
+        if (e.getSource().getEntity() instanceof LivingEntity companion
+                && !(companion instanceof Player)
+                && MobProfileEligibility.isCompanion(companion)) {
+            processCompanionContractDamage(e, companion, tgt);
+            return;
+        }
+
         if (!(e.getSource().getEntity() instanceof Player p))
             return;
 
         // --- GENERIC MELEE PATH ---
         if (DamageProcessingGuard.isProcessedPlayer(tgt)) return;
+        if (!RagnarConfigs.SERVER.combat.serverEventFallbackEnabled.get()) {
+            e.setAmount(0.0F);
+            e.setCanceled(true);
+            return;
+        }
         RagnarCoreAPI.get(p).ifPresent(stats -> {
             var dmgCalc = new com.etema.ragnarmmo.combat.engine.RagnarDamageCalculator();
 
@@ -250,6 +269,53 @@ public class CommonEvents {
             e.setAmount((float) Math.max(1.0, dmg));
             DamageProcessingGuard.markProcessedPlayer(tgt);
         });
+    }
+
+    private static void processCompanionContractDamage(LivingHurtEvent event, LivingEntity companion, LivingEntity target) {
+        if (DamageProcessingGuard.isProcessedByRagnar(target)) {
+            return;
+        }
+        ServerPlayer owner = CompanionProfileService.resolveOnlineOwner(companion).orElse(null);
+        if (owner == null || !(companion instanceof net.minecraft.world.entity.Mob companionMob)) {
+            event.setAmount(0.0F);
+            event.setCanceled(true);
+            return;
+        }
+
+        var attackerProfile = CombatantProfileResolver.resolveMob(companionMob, CombatStrictMode.current()).orElse(null);
+        var defenderProfile = target instanceof ServerPlayer playerTarget
+                ? CombatantProfileResolver.resolvePlayer(playerTarget, null).orElse(null)
+                : target instanceof net.minecraft.world.entity.Mob mobTarget
+                        ? CombatantProfileResolver.resolveMob(mobTarget, CombatStrictMode.current()).orElse(null)
+                        : null;
+        var result = RagnarCombatEngine.get().contract().resolveBasicAttack(
+                attackerProfile,
+                defenderProfile,
+                new ActionIntent.BasicAttackIntent(false),
+                deterministicCompanionRandom(companion, target));
+        if (result.rejected() || result.resolution() == null) {
+            event.setAmount(0.0F);
+            event.setCanceled(true);
+            return;
+        }
+        var resolution = result.resolution();
+        if (resolution.resultType() == com.etema.ragnarmmo.combat.api.CombatHitResultType.MISS
+                || resolution.resultType() == com.etema.ragnarmmo.combat.api.CombatHitResultType.DODGE) {
+            event.setAmount(0.0F);
+            event.setCanceled(true);
+            DamageProcessingGuard.markCompanionContractDamage(target);
+            return;
+        }
+        event.setAmount((float) Math.max(1.0D, resolution.finalAmount()));
+        DamageProcessingGuard.markCompanionContractDamage(target);
+        RoKillCreditService.recordPlayerContribution(owner, target, resolution);
+    }
+
+    private static java.util.Random deterministicCompanionRandom(LivingEntity companion, LivingEntity target) {
+        long seed = 41L * companion.level().getGameTime()
+                + 23L * companion.getId()
+                + 13L * target.getId();
+        return new java.util.Random(seed);
     }
 
     private static void processRangedDamage(LivingHurtEvent e, net.minecraft.nbt.CompoundTag snapshot, Entity shooter, LivingEntity target) {
@@ -295,7 +361,7 @@ public class CommonEvents {
 
         float finalDmg = (float) Math.max(1.0, dmg);
         e.setAmount(finalDmg);
-        DamageProcessingGuard.markProcessedPlayer(target);
+        DamageProcessingGuard.markRangedSnapshot(target);
 
         // Send popoff packet so floating damage numbers appear for bow hits
         if (shooter instanceof net.minecraft.server.level.ServerPlayer sp) {
@@ -305,6 +371,10 @@ public class CommonEvents {
             Network.sendTrackingEntityAndSelf(target,
                     new com.etema.ragnarmmo.combat.net.ClientboundRagnarCombatResultPacket(
                             sp.getId(), target.getId(), resultType, finalDmg, isCrit));
+            RagnarCombatEngine.get().triggerAutoBlitzFromRangedAttack(
+                    sp,
+                    target,
+                    CombatResolution.hit(sp.getId(), target.getId(), dmg, finalDmg, isCrit));
         }
     }
 
@@ -411,21 +481,7 @@ public class CommonEvents {
         }
 
         LivingEntity killed = e.getEntity();
-        Entity sourceEntity = e.getSource().getEntity();
-        ServerPlayer sp = null;
-
-        if (sourceEntity instanceof ServerPlayer) {
-            sp = (ServerPlayer) sourceEntity;
-        } else {
-            // Check for environmental kill credit (last hurt by)
-            LivingEntity lastHurtBy = killed.getLastHurtByMob();
-            if (lastHurtBy instanceof ServerPlayer) {
-                // Only credit if the last hit was recent (e.g., within 5 seconds)
-                if (killed.tickCount - killed.getLastHurtByMobTimestamp() < 100) {
-                    sp = (ServerPlayer) lastHurtBy;
-                }
-            }
-        }
+        ServerPlayer sp = RoKillCreditService.resolveKiller(killed, e.getSource()).orElse(null);
 
         if (sp == null)
             return;
@@ -480,10 +536,14 @@ public class CommonEvents {
                 finalJobExp = applyLevelPenalty(jobExp, finalSp, killed, s.getLevel());
             }
 
-            // Apply party XP sharing - distributes to party members and returns killer's share
-            double jobRatio = finalExp > 0 ? (double) finalJobExp / (double) finalExp : 1.0D;
-            finalExp = PartyXpService.distributeKillXp(finalSp, finalExp, finalSp.getServer());
-            finalJobExp = Math.max(1, (int) Math.round(finalExp * jobRatio));
+            // Apply party XP sharing across base/job EXP separately.
+            PartyXpService.PartyXpAward partyAward = PartyXpService.distributeKillXp(
+                    finalSp,
+                    finalExp,
+                    finalJobExp,
+                    finalSp.getServer());
+            finalExp = partyAward.baseExp();
+            finalJobExp = partyAward.jobExp();
 
             if (s instanceof PlayerStats internal) {
                 internal.ensureBaseStatBaseline(RagnarConfigs.SERVER.progression.baseStatPoints.get());

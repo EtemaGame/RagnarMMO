@@ -42,29 +42,37 @@ class LangFilesTest {
             "\u00c3",
             "\u00c2",
             "\u00e2\u20ac",
-            "\u00e2\u2020");
+            "\u00e2\u2020",
+            "\ufffd");
 
     @Test
-    void enUsAndSpanishLocalesStayInSync() throws IOException {
+    void langFilesStayInSyncWithEnglishBaseline() throws IOException {
         LangFile enUs = readLang("en_us.json");
-        LangFile esEs = readLang("es_es.json");
-
         assertTrue(enUs.duplicateKeys().isEmpty(), () -> "Duplicate keys in en_us.json: " + enUs.duplicateKeys());
-        assertTrue(esEs.duplicateKeys().isEmpty(), () -> "Duplicate keys in es_es.json: " + esEs.duplicateKeys());
-
-        assertEquals(Set.of(), diff(enUs.entries().keySet(), esEs.entries().keySet()),
-                "es_es.json is missing keys from canonical en_us.json");
-        assertEquals(Set.of(), diff(esEs.entries().keySet(), enUs.entries().keySet()),
-                "es_es.json has keys that are not present in canonical en_us.json");
-
         assertNoInvalidKeys(enUs);
-        assertNoInvalidKeys(esEs);
         assertNoDuplicateLikeKeys(enUs);
-        assertNoDuplicateLikeKeys(esEs);
-        assertPlaceholdersMatch(enUs, esEs);
         assertNoSuspiciousEnglishBaselineText(enUs);
         assertNoMojibake(enUs);
-        assertNoMojibake(esEs);
+
+        try (var files = Files.list(LANG_DIR)) {
+            for (Path path : files
+                    .filter(file -> file.getFileName().toString().endsWith(".json"))
+                    .filter(file -> !file.getFileName().toString().equals("en_us.json"))
+                    .sorted()
+                    .toList()) {
+                LangFile locale = readLang(path.getFileName().toString());
+                assertTrue(locale.duplicateKeys().isEmpty(),
+                        () -> "Duplicate keys in " + locale.fileName() + ": " + locale.duplicateKeys());
+                assertEquals(Set.of(), diff(enUs.entries().keySet(), locale.entries().keySet()),
+                        locale.fileName() + " is missing keys from canonical en_us.json");
+                assertEquals(Set.of(), diff(locale.entries().keySet(), enUs.entries().keySet()),
+                        locale.fileName() + " has keys that are not present in canonical en_us.json");
+                assertNoInvalidKeys(locale);
+                assertNoDuplicateLikeKeys(locale);
+                assertPlaceholdersMatch(enUs, locale);
+                assertNoMojibake(locale);
+            }
+        }
     }
 
     private static LangFile readLang(String fileName) throws IOException {

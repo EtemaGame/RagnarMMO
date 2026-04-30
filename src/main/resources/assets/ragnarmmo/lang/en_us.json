@@ -1,4 +1,4 @@
-{
+﻿{
     "achievement.ragnarmmo.acolyte_class.desc":  "Pick up a Golden Apple.",
     "achievement.ragnarmmo.acolyte_class.name":  "Holy Light",
     "achievement.ragnarmmo.adventurer_training.desc":  "Reach Job Level 50.",
@@ -619,7 +619,7 @@
     "screen.ragnarmmo.job_selection.resource":  "Resource:",
     "screen.ragnarmmo.job_selection.resource.mana":  "Mana",
     "screen.ragnarmmo.job_selection.resource.sp":  "SP",
-    "screen.ragnarmmo.job_selection.reset_preview":  "Reset: Job Level -> 1; Base Level and stats stay.",
+    "screen.ragnarmmo.job_selection.reset_preview":  "Reset: Job Level -\u003e 1; Base Level and stats stay.",
     "screen.ragnarmmo.job_selection.role":  "Role:",
     "screen.ragnarmmo.job_selection.select_class":  "Select a class to view details",
     "screen.ragnarmmo.job_selection.skill_bullet":  "- %s",
@@ -1121,19 +1121,18 @@
     "tooltip.ragnarmmo.weight.label":  "Weight",
     "tooltip.ragnarmmo.weight.shift_hint":  "[SHIFT] Weight info",
     "tooltip.ragnarmmo.weight.total":  "(Total: %s)",
-    "item.ragnarmmo.zeny.money_bag": "Money Bag",
-    "item.ragnarmmo.zeny.money_bag.desc": "Your personal wallet interface.",
-    "item.ragnarmmo.zeny.money_bag.instruction": "Right-click to open. Shift+Right-click to deposit coins held.",
-    "screen.ragnarmmo.money_bag.title": "Money Bag",
-    "screen.ragnarmmo.money_bag.balance": "Zeny Balance: %s",
-    "screen.ragnarmmo.money_bag.deposit_all": "Deposit Inventory Coins",
-    "screen.ragnarmmo.money_bag.withdraw": "Withdraw",
-    "screen.ragnarmmo.money_bag.gold": "Gold",
-    "screen.ragnarmmo.money_bag.silver": "Silver",
-    "screen.ragnarmmo.money_bag.copper": "Copper",
-    "screen.ragnarmmo.money_bag.equivalent_title": "Inventory Value: %s Zeny",
-    "tooltip.ragnarmmo.zeny.conversion_silver": "9 Copper = 1 Silver",
-    "tooltip.ragnarmmo.zeny.conversion_gold": "9 Silver = 1 Gold"
-
-
+    "item.ragnarmmo.zeny.money_bag":  "Money Bag",
+    "item.ragnarmmo.zeny.money_bag.desc":  "Your personal wallet interface.",
+    "item.ragnarmmo.zeny.money_bag.instruction":  "Right-click to open. Shift+Right-click to deposit coins held.",
+    "screen.ragnarmmo.money_bag.title":  "Money Bag",
+    "screen.ragnarmmo.money_bag.balance":  "Zeny Balance: %s",
+    "screen.ragnarmmo.money_bag.deposit_all":  "Deposit Inventory Coins",
+    "screen.ragnarmmo.money_bag.withdraw":  "Withdraw",
+    "screen.ragnarmmo.money_bag.gold":  "Gold",
+    "screen.ragnarmmo.money_bag.silver":  "Silver",
+    "screen.ragnarmmo.money_bag.copper":  "Copper",
+    "screen.ragnarmmo.money_bag.equivalent_title":  "Inventory Value: %s Zeny",
+    "tooltip.ragnarmmo.zeny.conversion_silver":  "9 Copper = 1 Silver",
+    "tooltip.ragnarmmo.zeny.conversion_gold":  "9 Silver = 1 Gold"
 }
+

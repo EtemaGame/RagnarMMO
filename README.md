@@ -1,91 +1,114 @@
-# ⚔️ RagnarMMO: The Ultimate RPG Overhaul
+# RagnarMMO
 
-**RagnarMMO** is a comprehensive Minecraft overhaul mod inspired by the legendary progression, combat, and class systems of classic **Ragnarok Online**. It completely replaces the vanilla combat experience with a deep, data-driven MMORPG engine featuring dual leveling, classic stat allocation, real-time floating combat text, and a unique class hierarchy.
+RagnarMMO is a Forge 1.20.1 overhaul mod that brings a Ragnarok Online inspired progression and combat model into Minecraft.
 
----
+The goal is not to add a generic RPG layer on top of vanilla combat. RagnarMMO replaces Minecraft combat balance with an RO-first system: base/job progression, classic stats, HIT/FLEE, CRIT, ASPD, cast timing, skill routing, mob profiles, EXP, party rewards, equipment rules, cards and refinement.
 
-## 🔥 Features at a Glance
+Minecraft remains the world, input, rendering, AI shell and persistence layer. RagnarMMO owns the RPG rules.
 
-### 📈 Dual Progression System
+## Current Highlights
 
-Your character grows in two distinct ways:
+- Dual progression: Base Level and Job Level.
+- Classic stats: STR, AGI, VIT, INT, DEX and LUK.
+- RO-style combat math: HIT vs FLEE, CRIT, Perfect Dodge, DEF/MDEF, ASPD and skill damage contracts.
+- Packet-first server-authoritative combat pipeline.
+- Basic attacks, combat skills and mob attacks are routed through RagnarMMO combat contracts instead of vanilla damage formulas.
+- Skill system with trees, job requirements, cast timing, delays, cooldowns and resource costs.
+- Jobs from Novice into first and second class paths.
+- Dynamic mob profiles with level, tier, race, element, size, ATK/MATK, DEF/MDEF, HIT/FLEE and base/job EXP.
+- Bestiary and mob inspection tools.
+- Party system with shared base/job EXP.
+- Zeny currency, item restrictions, cards, equipment rules and refinement.
+- Life skills: Mining, Woodcutting, Excavation, Farming, Fishing and Exploration.
 
-- **Base Level (Max 99):** Grants **Status Points** to increase your core attributes.
-- **Job Level (Max 50):** Grants **Skill Points** to unlock and upgrade class abilities in your custom skill tree.
+## Jobs
 
-### 🧬 Classic Attribute System (STR, AGI, VIT, INT, DEX, LUK)
+Start as a Novice and advance into classic class roles.
 
-Say goodbye to simple weapon damage. Customize your build by allocating points:
+First jobs:
 
-- 🗡️ **STR (Strength):** Boosts physical damage and inventory weight limit.
-- 💨 **AGI (Agility):** Increases attack speed and Evasion (Flee).
-- 🛡️ **VIT (Vitality):** Increases Max HP, HP Regen, and Physical Defense.
-- 🔮 **INT (Intelligence):** Boosts Magic Attack, Max Mana, and Mana Regen.
-- 🎯 **DEX (Dexterity):** Improves Accuracy (Hit) and reduces ability Cast Times.
-- 🍀 **LUK (Luck):** Increases Critical Hit Rate and Perfect Dodge chance.
+- Swordsman
+- Mage
+- Archer
+- Thief
+- Merchant
+- Acolyte
 
-### 🛡️ Class Hierarchy (Jobs)
+Second jobs currently represented:
 
-Start your journey as a humble **Novice** and evolve into specialized roles!
+- Knight
+- Wizard
+- Hunter
+- Assassin
+- Blacksmith
+- Priest
 
-- **First Jobs:** Swordsman, Mage, Archer, Thief, Merchant, Acolyte. *(Requires Job Lv. 10)*
-- **Second Jobs:** Knight, Wizard, Hunter, Assassin, Blacksmith, Priest. *(Requires Job Lv. 40)*
+## Stats
 
-### ⚔️ Overhauled Combat Engine & Visuals
+RagnarMMO uses RO-style stat identity:
 
-- **Floating Damage Text (Popoffs):** Visually satisfying damage numbers for melee hits, ranged bow shots, and magic abilities!
-- **Dynamic Nameplates:** Clean UI elements displaying mob HP, statuses, and tier levels.
-- **Real Stats Engine:** Combat math is completely overhauled. Armor provides real defense percentages, and evasion actually lets you dodge incoming attacks.
+- STR increases physical attack and weight-related power.
+- AGI improves attack rhythm and FLEE.
+- VIT improves HP and physical durability.
+- INT improves MATK, SP and magical durability.
+- DEX improves HIT and reduces variable cast time.
+- LUK improves CRIT and Perfect Dodge.
 
-### 🐲 Mob Tiers & Bestiary
+## Combat Direction
 
-The world is dangerous and adapts to you. Mobs have dynamic scaling and are categorized into:
+Recent versions focus heavily on making combat feel closer to classic Ragnarok Online:
 
-- 🟢 **Normal** ➔ 🔵 **Elite** ➔ 🟣 **Mini-Boss** ➔ 🔴 **Boss** ➔ 👑 **MVP**
-- Discover enemies and track their stats, drops, and weaknesses using the built-in **Bestiary** (`/ragnar mobmanualui`).
+- Vanilla attack cooldown is not the source of attack speed.
+- Vanilla attack damage and armor are not used as combat balance inputs.
+- Damage skills produce combat intent; the combat engine resolves hit, damage and mitigation.
+- Mob definitions describe monster identity and baselines; runtime profiles scale full RO stats, not only HP.
+- Environmental damage such as fall, lava and void remains Minecraft damage unless explicitly wrapped later.
 
-### ⛏️ Life Skills
+This is an active system and balance is still evolving. Feedback on feel, TTK, skill rhythm and mob progression is especially valuable.
 
-Take a break from grinding mobs and level up your Life Skills. Gain a powerful perk every 10 levels!
-
-- Mining | Woodcutting | Excavation | Farming | Fishing | Exploration
-
-### 🤝 Social & Economy
-
-- **Party System:** Built-in Party HUD to see your teammates' health/mana in real-time. Share XP dynamically within range!
-- **Zeny Economy:** Defeat mobs to earn Copper, Silver, and Gold Zeny coins for trading.
-- **Item Rules & Refining:** Equipment is restricted by Job and Level. Visit an anvil to refine your gear (Safe to +4, risk of breaking beyond for massive power!).
-
----
-
-## ⌨️ Controls & Commands
+## Controls And Commands
 
 | Key / Command | Action |
-|---------------|--------|
-| **V** | Open Character Status / Stat Allocation |
-| **K** | Open Skill Tree |
-| **Y** | Open Achievements / Quest Log |
-| **Left Alt** | Toggle Combat Mode (Enables Skill Hotbar) |
-| **1 - 6** | Use Skills (While in Combat Mode) |
-| `/stats` | Quick access to your character stats |
-| `/party create <name>` | Start a new party |
-| `/pc <message>` | Chat with your party members |
-| `/ragnar mobmanualui` | Open the Mob Catalog (Bestiary) |
-| `/mobstats` | Inspect the scaling of the targeted mob |
+| --- | --- |
+| V | Open character status and stat allocation |
+| K | Open the skill tree |
+| Y | Open achievements / quest log |
+| Left Alt | Toggle combat mode and skill hotbar |
+| 1-6 | Use assigned skills while in combat mode |
+| `/stats` | Show your character stats |
+| `/party create <name>` | Create a party |
+| `/pc <message>` | Send party chat |
+| `/ragnar mobmanualui` | Open the mob catalog |
+| `/mobstats` | Inspect the targeted mob profile |
 
----
+## Server And Modpack Configuration
 
-## ⚙️ For Server Owners & Modpack Makers
+Most systems are configurable through `ragnarmmo-server.toml`, including:
 
-Everything is highly configurable via `ragnarmmo-server.toml`!
+- Level caps and EXP rates.
+- Mob scaling modes and difficulty behavior.
+- Party sharing and anti-farm behavior.
+- Item restrictions, card slots and refinement settings.
+- Economy-related values.
 
-- Adjust Level Caps and XP rates globally.
-- Tweak mob scaling modes (Distance-based, Biome-based, or Player Level-based).
-- Configure safe refinement levels, item restrictions, and anti-farm systems to perfectly fit your modpack's economy.
+The mod is intended to be modpack-friendly, but the combat system deliberately avoids using vanilla attack damage, armor and cooldown as balance sources.
 
-Many things might not work. If you find any issues, please let me know via Discord or through messages here. I would really appreciate it. I'm still making a lot of changes and adding new features, but I needed to upload something to track my own progress and so that anyone using it can give me the feedback I desperately need.
+## Development Status
+
+RagnarMMO is in active development. Many systems are playable, but some content, balance values, skill behaviors and translations may still change between builds.
+
+Useful feedback includes:
+
+- Combat feel and attack rhythm.
+- Mob time-to-kill at different levels.
+- Skill cast/delay/cooldown behavior.
+- Progression speed for base/job levels.
+- Missing or incorrect translations.
+- Compatibility issues with other mods.
 
 Discord: <https://discord.gg/sZ64CgX3JN>
 
----
-**Embark on your journey and forge your own legend with RagnarMMO!**
+## Project Goal
+
+RagnarMMO aims to make Minecraft combat and progression feel like an RO-inspired MMORPG while still preserving Minecraft as the explorable world.
+

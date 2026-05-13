@@ -10,6 +10,7 @@ import com.etema.ragnarmmo.items.network.RoItemsNetwork;
 import com.etema.ragnarmmo.achievements.network.AchievementNetwork;
 import com.etema.ragnarmmo.common.net.effects.SkillEffectsNetwork;
 import com.etema.ragnarmmo.combat.net.CombatNetwork;
+import com.etema.ragnarmmo.bestiary.network.BestiaryNetwork;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -87,6 +88,10 @@ public final class Network {
 
         public static void registerEconomyPackets() {
                 com.etema.ragnarmmo.economy.zeny.network.EconomyNetwork.register(CH, NEXT_ID);
+        }
+
+        public static void registerBestiaryPackets() {
+                BestiaryNetwork.register(CH, NEXT_ID);
         }
 
         /* ─── Helpers ─── */

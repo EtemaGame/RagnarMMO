@@ -1,6 +1,7 @@
 package com.etema.ragnarmmo.common.init;
 
 import com.etema.ragnarmmo.RagnarMMO;
+import com.etema.ragnarmmo.items.RagnarMobItems;
 import com.etema.ragnarmmo.items.RagnarWeaponItems;
 import com.etema.ragnarmmo.items.UtilityItems;
 import com.etema.ragnarmmo.items.ZenyItems;
@@ -45,6 +46,22 @@ public final class RagnarCreativeTabs {
                         // Cards
                         var card = RagnarCardItems.CARD.get();
                         if (card != null) output.accept(card);
+                    })
+                    .build());
+
+    public static final RegistryObject<CreativeModeTab> RAGNAR_MOBS_TAB = TABS.register("mobs",
+            () -> CreativeModeTab.builder()
+                    .title(Component.translatable("itemGroup.ragnarmmo.mobs"))
+                    .icon(() -> new ItemStack(RagnarMobItems.PORING_SPAWN_EGG.get()))
+                    .displayItems((params, output) -> {
+                        output.accept(RagnarMobItems.PORING_SPAWN_EGG.get());
+                        output.accept(RagnarMobItems.POPORING_SPAWN_EGG.get());
+                        output.accept(RagnarMobItems.DROP_SPAWN_EGG.get());
+                        output.accept(RagnarMobItems.MARIN_SPAWN_EGG.get());
+                        output.accept(RagnarMobItems.LUNATIC_SPAWN_EGG.get());
+                        output.accept(RagnarMobItems.FABRE_SPAWN_EGG.get());
+                        output.accept(RagnarMobItems.PUPA_SPAWN_EGG.get());
+                        output.accept(RagnarMobItems.MUKA_SPAWN_EGG.get());
                     })
                     .build());
 

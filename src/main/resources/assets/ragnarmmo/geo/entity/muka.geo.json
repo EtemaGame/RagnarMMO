@@ -1,0 +1,65 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.muka",
+				"texture_width": 64,
+				"texture_height": 64,
+				"visible_bounds_width": 3,
+				"visible_bounds_height": 2,
+				"visible_bounds_offset": [0, 1, 0]
+			},
+			"bones": [
+				{
+					"name": "muka",
+					"pivot": [0.50726, 13.97143, 0.47183]
+				},
+				{
+					"name": "bodydown",
+					"parent": "muka",
+					"pivot": [0.5, 4, 0.5],
+					"cubes": [
+						{"origin": [-3, 0, -3], "size": [7, 8, 7], "uv": [0, 0]},
+						{"origin": [-2, 0, -4], "size": [5, 8, 1], "uv": [36, 30]},
+						{"origin": [-2, 0, 4], "size": [5, 8, 1], "uv": [24, 38]},
+						{"origin": [-4, 0, -2], "size": [1, 8, 5], "uv": [28, 18]},
+						{"origin": [4, 0, -2], "size": [1, 8, 5], "uv": [12, 30]}
+					]
+				},
+				{
+					"name": "bodyup",
+					"parent": "muka",
+					"pivot": [0.51451, 11.60714, 0.44366],
+					"cubes": [
+						{"origin": [-3, 8, -3], "size": [7, 8, 7], "uv": [0, 15]},
+						{"origin": [-2, 16, -2], "size": [5, 1, 5], "uv": [28, 0]},
+						{"origin": [4, 8, -2], "size": [1, 7, 5], "uv": [28, 6]},
+						{"origin": [-2, 8, -4], "size": [5, 7, 1], "uv": [24, 30]},
+						{"origin": [-2, 8, 4], "size": [5, 7, 1], "uv": [36, 38]},
+						{"origin": [-4, 8, -2], "size": [1, 7, 5], "uv": [0, 30]}
+					]
+				},
+				{
+					"name": "hands",
+					"parent": "bodyup",
+					"pivot": [0.60158, 5.8607, -2.19597],
+					"rotation": [45, 0, 0],
+					"cubes": [
+						{"origin": [-5, 5.16919, -2.89092], "size": [1, 1, 5], "pivot": [-4.5, 5.66919, -0.39092], "rotation": [0, 22.5, 0], "uv": [48, 19]},
+						{"origin": [5.10058, 5.16919, -3.46135], "size": [1, 1, 5], "pivot": [4.5, 5.66919, -0.64092], "rotation": [0, -25, 0], "uv": [48, 4]}
+					]
+				},
+				{
+					"name": "hands2",
+					"parent": "hands",
+					"pivot": [0.60158, 5.8607, -2.19597],
+					"cubes": [
+						{"origin": [-6, 5.16919, -5.64092], "size": [1, 1, 3], "uv": [50, 26]},
+						{"origin": [6.25, 5.16919, -5.6409], "size": [1, 1, 3], "uv": [50, 12]}
+					]
+				}
+			]
+		}
+	]
+}

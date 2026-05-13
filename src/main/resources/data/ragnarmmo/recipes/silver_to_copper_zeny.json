@@ -1,10 +1,10 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    { "item": "ragnarmmo:zeny/silver_zeny" }
+    { "item": "ragnarmmo:others/zeny/silver_zeny" }
   ],
   "result": {
-    "item": "ragnarmmo:zeny/copper_zeny",
+    "item": "ragnarmmo:others/zeny/copper_zeny",
     "count": 9
   }
 }

@@ -21,6 +21,12 @@ public class Keybinds {
     public static KeyMapping OPEN_ACHIEVEMENTS = new KeyMapping("key.ragnarmmo.open_achievements", GLFW.GLFW_KEY_Y,
             CATEGORY);
 
+    public static KeyMapping OPEN_RAGNAR_MENU = new KeyMapping("key.ragnarmmo.open_menu", GLFW.GLFW_KEY_R,
+            CATEGORY);
+
+    public static KeyMapping OPEN_BESTIARY = new KeyMapping("key.ragnarmmo.open_bestiary", GLFW.GLFW_KEY_B,
+            CATEGORY);
+
     public static KeyMapping TOGGLE_COMBAT_MODE = new KeyMapping("key.ragnarmmo.toggle_combat",
             GLFW.GLFW_KEY_LEFT_ALT, CATEGORY);
 
@@ -39,6 +45,8 @@ public class Keybinds {
         e.register(OPEN_STATS);
         e.register(OPEN_SKILLS);
         e.register(OPEN_ACHIEVEMENTS);
+        e.register(OPEN_RAGNAR_MENU);
+        e.register(OPEN_BESTIARY);
         e.register(TOGGLE_COMBAT_MODE);
         for (KeyMapping key : HOTBAR_KEYS) {
             e.register(key);

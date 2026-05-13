@@ -1,6 +1,0 @@
-{
-  "parent": "ragnarmmo:item/daggers/base_dagger",
-  "textures": {
-    "layer0": "ragnarmmo:item/weapons/daggers/shadows_embrace"
-  }
-}

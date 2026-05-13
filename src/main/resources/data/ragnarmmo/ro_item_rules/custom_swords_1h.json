@@ -1,74 +1,32 @@
 {
-  "ragnarmmo:swords_1h/ashen_rapier": {
+  "ragnarmmo:weapons/sword1h/sword": {
     "requiredBaseLevel": 8,
     "allowedJobs": ["SWORDSMAN", "MERCHANT"],
     "cardSlots": 1,
     "attributeBonuses": { "dex": 1 }
   },
-  "ragnarmmo:swords_1h/ironleaf_saber": {
+  "ragnarmmo:weapons/sword1h/falchion": {
     "requiredBaseLevel": 12,
     "allowedJobs": ["SWORDSMAN", "MERCHANT"],
     "cardSlots": 1,
     "attributeBonuses": { "str": 1, "dex": 1 }
   },
-  "ragnarmmo:swords_1h/frostwake_blade": {
+  "ragnarmmo:weapons/sword1h/blade": {
     "requiredBaseLevel": 16,
     "allowedJobs": ["SWORDSMAN", "MERCHANT"],
     "cardSlots": 1,
     "attributeBonuses": { "vit": 1, "dex": 1 }
   },
-  "ragnarmmo:swords_1h/warden_estoc": {
+  "ragnarmmo:weapons/sword1h/curved_sword": {
     "requiredBaseLevel": 20,
     "allowedJobs": ["SWORDSMAN", "MERCHANT"],
-    "cardSlots": 1,
+    "cardSlots": 2,
     "attributeBonuses": { "vit": 1, "dex": 2 }
   },
-  "ragnarmmo:swords_1h/crimson_talon": {
-    "requiredBaseLevel": 22,
+  "ragnarmmo:weapons/sword1h/byeollungum": {
+    "requiredBaseLevel": 25,
     "allowedJobs": ["SWORDSMAN", "MERCHANT"],
     "cardSlots": 2,
-    "attributeBonuses": { "str": 2 }
-  },
-  "ragnarmmo:swords_1h/sunspire_blade": {
-    "requiredBaseLevel": 26,
-    "allowedJobs": ["SWORDSMAN", "MERCHANT"],
-    "cardSlots": 2,
-    "attributeBonuses": { "str": 1, "vit": 1 }
-  },
-  "ragnarmmo:swords_1h/cinder_brand": {
-    "requiredBaseLevel": 30,
-    "allowedJobs": ["SWORDSMAN", "MERCHANT"],
-    "cardSlots": 1,
-    "attributeBonuses": { "str": 2, "vit": 1 }
-  },
-  "ragnarmmo:swords_1h/azure_fang": {
-    "requiredBaseLevel": 32,
-    "allowedJobs": ["SWORDSMAN", "MERCHANT"],
-    "cardSlots": 2,
-    "attributeBonuses": { "dex": 2, "agi": 1 }
-  },
-  "ragnarmmo:swords_1h/dawn_edge": {
-    "requiredBaseLevel": 36,
-    "allowedJobs": ["SWORDSMAN", "MERCHANT"],
-    "cardSlots": 2,
-    "attributeBonuses": { "str": 1, "dex": 1, "vit": 1 }
-  },
-  "ragnarmmo:swords_1h/verdant_blade": {
-    "requiredBaseLevel": 38,
-    "allowedJobs": ["SWORDSMAN", "MERCHANT"],
-    "cardSlots": 2,
-    "attributeBonuses": { "agi": 1, "vit": 2 }
-  },
-  "ragnarmmo:swords_1h/moonveil_saber": {
-    "requiredBaseLevel": 42,
-    "allowedJobs": ["SWORDSMAN", "MERCHANT"],
-    "cardSlots": 2,
-    "attributeBonuses": { "dex": 2, "luk": 1 }
-  },
-  "ragnarmmo:swords_1h/abyss_needle": {
-    "requiredBaseLevel": 46,
-    "allowedJobs": ["SWORDSMAN", "MERCHANT"],
-    "cardSlots": 3,
-    "attributeBonuses": { "str": 1, "dex": 2, "luk": 1 }
+    "attributeBonuses": { "str": 2, "dex": 1 }
   }
 }

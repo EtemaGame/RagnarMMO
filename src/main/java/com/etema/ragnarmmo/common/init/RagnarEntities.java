@@ -1,6 +1,12 @@
 package com.etema.ragnarmmo.common.init;
 
 import com.etema.ragnarmmo.RagnarMMO;
+import com.etema.ragnarmmo.entity.mob.AbstractRagnarMobEntity;
+import com.etema.ragnarmmo.entity.mob.FabreEntity;
+import com.etema.ragnarmmo.entity.mob.LunaticEntity;
+import com.etema.ragnarmmo.entity.mob.MukaEntity;
+import com.etema.ragnarmmo.entity.mob.PoringEntity;
+import com.etema.ragnarmmo.entity.mob.PupaEntity;
 import com.etema.ragnarmmo.entity.projectile.MagicProjectileEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -12,6 +18,30 @@ import net.minecraftforge.registries.RegistryObject;
 public final class RagnarEntities {
     public static final DeferredRegister<EntityType<?>> ENTITIES = 
             DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, RagnarMMO.MODID);
+
+    public static final RegistryObject<EntityType<PoringEntity>> PORING =
+            registerCreature("poring", PoringEntity::new, 0.7F, 0.5F);
+
+    public static final RegistryObject<EntityType<PoringEntity>> POPORING =
+            registerCreature("poporing", PoringEntity::new, 0.7F, 0.5F);
+
+    public static final RegistryObject<EntityType<PoringEntity>> DROP =
+            registerCreature("drop", PoringEntity::new, 0.7F, 0.5F);
+
+    public static final RegistryObject<EntityType<PoringEntity>> MARIN =
+            registerCreature("marin", PoringEntity::new, 0.7F, 0.5F);
+
+    public static final RegistryObject<EntityType<LunaticEntity>> LUNATIC =
+            registerCreature("lunatic", LunaticEntity::new, 0.55F, 0.45F);
+
+    public static final RegistryObject<EntityType<FabreEntity>> FABRE =
+            registerCreature("fabre", FabreEntity::new, 0.65F, 0.45F);
+
+    public static final RegistryObject<EntityType<PupaEntity>> PUPA =
+            registerCreature("pupa", PupaEntity::new, 0.7F, 0.8F);
+
+    public static final RegistryObject<EntityType<MukaEntity>> MUKA =
+            registerCreature("muka", MukaEntity::new, 0.8F, 0.7F);
 
     public static final RegistryObject<EntityType<MagicProjectileEntity>> MAGIC_PROJECTILE = 
             ENTITIES.register("magic_projectile", () -> EntityType.Builder.<MagicProjectileEntity>of(MagicProjectileEntity::new, MobCategory.MISC)
@@ -111,5 +141,15 @@ public final class RagnarEntities {
 
     public static void register(IEventBus modBus) {
         ENTITIES.register(modBus);
+    }
+
+    private static <T extends AbstractRagnarMobEntity> RegistryObject<EntityType<T>> registerCreature(String id,
+                                                                                                      EntityType.EntityFactory<T> factory,
+                                                                                                      float width, float height) {
+        return ENTITIES.register(id, () -> EntityType.Builder.<T>of(factory, MobCategory.CREATURE)
+                .sized(width, height)
+                .clientTrackingRange(8)
+                .updateInterval(3)
+                .build(id));
     }
 }

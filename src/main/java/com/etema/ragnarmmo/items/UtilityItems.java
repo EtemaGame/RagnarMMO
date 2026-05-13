@@ -1,7 +1,6 @@
 package com.etema.ragnarmmo.items;
 
 import com.etema.ragnarmmo.common.init.RagnarCore;
-import com.etema.ragnarmmo.mobs.world.BossSigilItem;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -13,14 +12,12 @@ import net.minecraftforge.registries.RegistryObject;
 public final class UtilityItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, RagnarCore.MODID);
 
-    public static final RegistryObject<Item> BLUE_GEMSTONE = ITEMS.register("utility/blue_gemstone",
+    public static final RegistryObject<Item> BLUE_GEMSTONE = ITEMS.register("others/utility/blue_gemstone",
             () -> new Item(new Item.Properties().stacksTo(64)));
-    public static final RegistryObject<Item> ORIDECON = ITEMS.register("utility/oridecon",
+    public static final RegistryObject<Item> ORIDECON = ITEMS.register("others/utility/oridecon",
             () -> new Item(new Item.Properties().stacksTo(64)));
-    public static final RegistryObject<Item> ELUNIUM = ITEMS.register("utility/elunium",
+    public static final RegistryObject<Item> ELUNIUM = ITEMS.register("others/utility/elunium",
             () -> new Item(new Item.Properties().stacksTo(64)));
-    public static final RegistryObject<Item> BOSS_SIGIL = ITEMS.register("utility/boss_sigil",
-            () -> new BossSigilItem(new Item.Properties().stacksTo(16)));
 
     public static void register(IEventBus modBus) {
         ITEMS.register(modBus);

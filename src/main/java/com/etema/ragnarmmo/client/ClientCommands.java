@@ -12,11 +12,13 @@ import net.minecraft.network.chat.Component;
 public class ClientCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        LiteralArgumentBuilder<CommandSourceStack> ragnarNode = Commands.literal("ragnar")
+        LiteralArgumentBuilder<CommandSourceStack> rNode = Commands.literal("r")
                 .then(Commands.literal("hud")
                         .executes(context -> openHudConfig(context.getSource())));
 
-        dispatcher.register(ragnarNode);
+        var root = dispatcher.register(rNode);
+        dispatcher.register(Commands.literal("ragnar").redirect(root));
+        dispatcher.register(Commands.literal("hud").redirect(root.getChild("hud")));
     }
 
     private static int openHudConfig(CommandSourceStack source) {

@@ -4,6 +4,7 @@ import com.etema.ragnarmmo.common.init.RagnarCommand;
 import com.etema.ragnarmmo.common.init.modules.BarModule;
 import com.etema.ragnarmmo.common.init.modules.CoreModule;
 import com.etema.ragnarmmo.common.init.modules.CombatModule;
+import com.etema.ragnarmmo.common.init.modules.BestiaryModule;
 import com.etema.ragnarmmo.common.init.modules.LifeSkillsModule;
 import com.etema.ragnarmmo.common.init.modules.MobsModule;
 import com.etema.ragnarmmo.common.init.modules.SkillsModule;
@@ -53,6 +54,7 @@ public class RagnarMMO {
         LifeSkillsModule.init(modBus);
         ItemsModule.init(modBus);
         com.etema.ragnarmmo.common.init.modules.EconomyModule.init(modBus);
+        BestiaryModule.init(modBus);
 
         BarModule.init();
 

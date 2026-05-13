@@ -24,6 +24,7 @@ public final class ItemsModule {
         // Register items
         ZenyItems.register(modBus);
         UtilityItems.register(modBus);
+        RagnarMobItems.register(modBus);
         RagnarWeaponItems.register(modBus);
         com.etema.ragnarmmo.items.cards.RagnarCardItems.register(modBus);
 

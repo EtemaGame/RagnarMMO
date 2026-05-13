@@ -1,6 +1,8 @@
 package com.etema.ragnarmmo.client;
 
 import com.etema.ragnarmmo.player.stats.PlayerStatsModule;
+import com.etema.ragnarmmo.client.ui.BestiaryScreen;
+import com.etema.ragnarmmo.client.ui.RagnarMainMenuScreen;
 import com.etema.ragnarmmo.client.ui.StatsScreen;
 import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -31,6 +33,22 @@ public class ClientEvents {
         if (Keybinds.TOGGLE_COMBAT_MODE.consumeClick()) {
             isCombatMode = !isCombatMode;
             // Removed Action Bar message to prevent overlap with the skill hotbar's "COMBAT MODE" text
+        }
+
+        if (Keybinds.OPEN_RAGNAR_MENU.consumeClick()) {
+            if (mc.screen instanceof RagnarMainMenuScreen) {
+                mc.setScreen(null);
+            } else if (mc.screen == null) {
+                mc.setScreen(new RagnarMainMenuScreen());
+            }
+        }
+
+        if (Keybinds.OPEN_BESTIARY.consumeClick()) {
+            if (mc.screen instanceof BestiaryScreen) {
+                mc.setScreen(null);
+            } else if (mc.screen == null) {
+                mc.setScreen(new BestiaryScreen());
+            }
         }
 
         // Open Stats Screen (V)

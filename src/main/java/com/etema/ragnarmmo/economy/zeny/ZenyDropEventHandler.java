@@ -17,7 +17,9 @@ public class ZenyDropEventHandler {
         if (killed.level().isClientSide) return;
 
         // Only drop Zeny if killed by a player and it's a hostile mob
-        if (event.getSource().getEntity() instanceof Player player && isHostile(killed)) {
+        if (event.getSource().getEntity() instanceof Player player
+                && com.etema.ragnarmmo.bestiary.data.MobRewardClassifier.classify(killed)
+                        == com.etema.ragnarmmo.bestiary.api.MobRewardDisposition.REWARD_ELIGIBLE) {
             double penalty = com.etema.ragnarmmo.player.stats.util.AntiFarmManager.getPenaltyFactor(player);
             List<ItemStack> zenyDrops = ZenyDropManager.calculateDrops(killed, player, killed.getRandom());
             
@@ -34,16 +36,6 @@ public class ZenyDropEventHandler {
                 event.getDrops().add(entity);
             }
         }
-    }
-
-    private boolean isHostile(LivingEntity entity) {
-        // Hostile monsters and bosses
-        return entity instanceof net.minecraft.world.entity.monster.Monster ||
-               entity instanceof net.minecraft.world.entity.boss.wither.WitherBoss ||
-               entity instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon ||
-               entity instanceof net.minecraft.world.entity.monster.Slime ||
-               entity instanceof net.minecraft.world.entity.monster.Phantom ||
-               entity instanceof net.minecraft.world.entity.monster.Ghast;
     }
 
     @SubscribeEvent

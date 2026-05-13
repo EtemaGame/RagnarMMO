@@ -787,6 +787,39 @@ public class SkillManager implements com.etema.ragnarmmo.skills.api.IPlayerSkill
         }
     }
 
+    /**
+     * Sets every learned skill to its maximum level.
+     *
+     * @return number of skills that changed level
+     */
+    public int unlockAllSkills() {
+        return unlockAllSkills(ChangeReason.ADMIN_COMMAND);
+    }
+
+    public int unlockAllSkills(ChangeReason reason) {
+        int changed = 0;
+        for (SkillState state : skills.values()) {
+            int maxLevel = state.getMaxLevel();
+            if (state.getLevel() < maxLevel) {
+                state.setLevel(maxLevel);
+                changed++;
+            }
+        }
+
+        if (player instanceof ServerPlayer serverPlayer) {
+            com.etema.ragnarmmo.common.net.Network.sendToPlayer(serverPlayer,
+                    new com.etema.ragnarmmo.player.stats.network.ClientboundSkillSyncPacket(serializeNBT()));
+            SkillEffectHandler.refreshPassiveEffects(serverPlayer);
+            com.etema.ragnarmmo.common.api.RagnarCoreAPI.get(serverPlayer).ifPresent(stats -> {
+                if (stats instanceof com.etema.ragnarmmo.player.stats.capability.PlayerStats internal) {
+                    internal.markDirty(com.etema.ragnarmmo.common.api.player.RoPlayerSyncDomain.STATS);
+                }
+            });
+        }
+
+        return changed;
+    }
+
     // === Cooldown Management (Transient) ===
     private final Map<ResourceLocation, Long> cooldowns = new HashMap<>();
     private final Map<ResourceLocation, Integer> cooldownDurations = new HashMap<>();

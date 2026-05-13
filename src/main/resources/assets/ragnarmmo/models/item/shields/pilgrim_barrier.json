@@ -1,6 +1,0 @@
-{
-  "parent": "ragnarmmo:item/shields/base_shield",
-  "textures": {
-    "layer0": "ragnarmmo:item/weapons/shields/pilgrim_barrier"
-  }
-}

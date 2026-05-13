@@ -5,8 +5,8 @@ import java.util.Map;
 /**
  * Data definition for a card loaded from JSON data packs.
  *
- * @param id          unique card identifier (e.g. "zombie_card")
- * @param displayName human-readable name (e.g. "Zombie Card")
+ * @param id          unique card identifier (e.g. "example_card")
+ * @param displayName human-readable name (e.g. "Example Card")
  * @param mobId       registry key of the mob that drops this card (e.g.
  *                    "minecraft:zombie")
  * @param modifiers   attribute modifiers granted by the card (e.g.

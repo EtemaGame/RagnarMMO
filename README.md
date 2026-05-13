@@ -1,114 +1,143 @@
 # RagnarMMO
 
-RagnarMMO is a Forge 1.20.1 overhaul mod that brings a Ragnarok Online inspired progression and combat model into Minecraft.
+RagnarMMO is a Forge 1.20.1 mod inspired by Ragnarok Online, built to replace vanilla combat balance with an RO-style RPG system while keeping Minecraft as the world, engine and sandbox.
 
-The goal is not to add a generic RPG layer on top of vanilla combat. RagnarMMO replaces Minecraft combat balance with an RO-first system: base/job progression, classic stats, HIT/FLEE, CRIT, ASPD, cast timing, skill routing, mob profiles, EXP, party rewards, equipment rules, cards and refinement.
+This project is currently in beta. Content is playable, but balance, visuals, translations and some systems are still being refined.
 
-Minecraft remains the world, input, rendering, AI shell and persistence layer. RagnarMMO owns the RPG rules.
+## Beta Status
 
-## Current Highlights
+Current version: `0.0.2-beta`
 
-- Dual progression: Base Level and Job Level.
-- Classic stats: STR, AGI, VIT, INT, DEX and LUK.
-- RO-style combat math: HIT vs FLEE, CRIT, Perfect Dodge, DEF/MDEF, ASPD and skill damage contracts.
-- Packet-first server-authoritative combat pipeline.
-- Basic attacks, combat skills and mob attacks are routed through RagnarMMO combat contracts instead of vanilla damage formulas.
-- Skill system with trees, job requirements, cast timing, delays, cooldowns and resource costs.
-- Jobs from Novice into first and second class paths.
-- Dynamic mob profiles with level, tier, race, element, size, ATK/MATK, DEF/MDEF, HIT/FLEE and base/job EXP.
-- Bestiary and mob inspection tools.
-- Party system with shared base/job EXP.
-- Zeny currency, item restrictions, cards, equipment rules and refinement.
-- Life skills: Mining, Woodcutting, Excavation, Farming, Fishing and Exploration.
+What is already in place:
 
-## Jobs
+- Base Level and Job Level progression.
+- Classic RO stats: STR, AGI, VIT, INT, DEX and LUK.
+- RO-inspired combat math including HIT, FLEE, CRIT, Perfect Dodge, DEF, MDEF, ASPD and skill resolution.
+- Server-authoritative combat flow.
+- Skill trees with class requirements, cast time, delay, cooldown and resource costs.
+- Job progression from Novice into the classic first and second class paths.
+- Dynamic monster profiles with level, race, element, size, combat stats and EXP.
+- Bestiary, party EXP sharing, zeny, cards, refinement and equipment rules.
+- Life skills such as mining, woodcutting, excavation, farming, fishing and exploration.
 
-Start as a Novice and advance into classic class roles.
+What is in progress:
 
-First jobs:
+- Reworked weapon and mob presentation.
+- More polished art direction for weapons and monsters.
+- Balance tuning for skills, loot, progression and mob difficulty.
+- Broader content coverage across classes, equipment and monsters.
+- Translation cleanup and localization expansion.
 
-- Swordsman
-- Mage
-- Archer
-- Thief
-- Merchant
-- Acolyte
+What is planned:
 
-Second jobs currently represented:
+- More expressive weapon silhouettes and stronger monster identity.
+- Additional class content and progression depth.
+- More bestiary entries, items and systems tied to the RO-inspired loop.
+- Ongoing refinement of UI, feedback and gameplay readability.
 
-- Knight
-- Wizard
-- Hunter
-- Assassin
-- Blacksmith
-- Priest
+## Current Focus
 
-## Stats
+Several placeholder systems and placeholder mobs were removed so the project can move forward with a cleaner foundation.
 
-RagnarMMO uses RO-style stat identity:
+The current mobs and weapons have been reworked compared to the earlier placeholder pass, but they are still evolving. Future updates are expected to improve:
 
-- STR increases physical attack and weight-related power.
-- AGI improves attack rhythm and FLEE.
-- VIT improves HP and physical durability.
-- INT improves MATK, SP and magical durability.
-- DEX improves HIT and reduces variable cast time.
-- LUK improves CRIT and Perfect Dodge.
+- weapon shapes and color work,
+- monster models and texture quality,
+- visual clarity in inventory and combat,
+- and overall consistency with the Ragnar Online-inspired direction.
 
-## Combat Direction
+## Looking For Help
 
-Recent versions focus heavily on making combat feel closer to classic Ragnarok Online:
+We are currently looking for a modeler to help with mob and weapon production.
 
-- Vanilla attack cooldown is not the source of attack speed.
-- Vanilla attack damage and armor are not used as combat balance inputs.
-- Damage skills produce combat intent; the combat engine resolves hit, damage and mitigation.
-- Mob definitions describe monster identity and baselines; runtime profiles scale full RO stats, not only HP.
-- Environmental damage such as fall, lava and void remains Minecraft damage unless explicitly wrapped later.
+One person is already helping the project, and additional support is welcome as the content set grows.
 
-This is an active system and balance is still evolving. Feedback on feel, TTK, skill rhythm and mob progression is especially valuable.
+If you want to contribute, especially with 3D models, creature design or weapon art, join the Discord:
 
-## Controls And Commands
+<https://discord.gg/sZ64CgX3JN>
+
+## Project Overview
+
+RagnarMMO does not aim to be a generic RPG layer on top of vanilla Minecraft.
+It is designed as a full combat and progression rewrite where the RPG rules are primary and Minecraft provides the sandbox, rendering, input and persistence layer.
+
+## Highlights
+
+- Base and Job leveling.
+- RO-style stat growth and combat calculations.
+- Class skills, trees and combat routing.
+- Monster profiles, scaling and drops.
+- Bestiary and party support.
+- Zeny economy, cards, equipment rules and refinement.
+
+## Controls
 
 | Key / Command | Action |
 | --- | --- |
-| V | Open character status and stat allocation |
-| K | Open the skill tree |
-| Y | Open achievements / quest log |
-| Left Alt | Toggle combat mode and skill hotbar |
-| 1-6 | Use assigned skills while in combat mode |
-| `/stats` | Show your character stats |
-| `/party create <name>` | Create a party |
+| `R` | Open the RagnarMMO main menu |
+| `V` | Open character status and stat allocation |
+| `K` | Open the skill tree |
+| `Y` | Open achievements and quest log |
+| `B` | Open the Bestiary |
+| `Left Alt` | Toggle combat mode and the skill hotbar |
+| `1-6` | Use assigned skills in combat mode |
+| `/r stats` | Show character stats |
+| `/r party create <name>` | Create a party |
 | `/pc <message>` | Send party chat |
-| `/ragnar mobmanualui` | Open the mob catalog |
-| `/mobstats` | Inspect the targeted mob profile |
 
-## Server And Modpack Configuration
+## Commands
 
-Most systems are configurable through `ragnarmmo-server.toml`, including:
+The main command root is `/r`. The longer `/ragnar` root still works as an alias.
 
-- Level caps and EXP rates.
-- Mob scaling modes and difficulty behavior.
-- Party sharing and anti-farm behavior.
-- Item restrictions, card slots and refinement settings.
-- Economy-related values.
+| Command | Shortcut | Purpose |
+| --- | --- | --- |
+| `/r stats` | `/stats` | Show your current character stats and progression. |
+| `/r skills` | `/skills` | Show your learned skills and their levels. |
+| `/r skills <skill>` | None | Show detailed information for one skill. |
+| `/r cart` | `/cart` | Open the Pushcart inventory when the skill is learned. |
+| `/r memo` | `/memo` | Show Warp Portal memo destinations. |
+| `/r memo list` | `/memo list` | Show the memo list explicitly. |
+| `/r memo select save` | None | Select the current save point as the active Warp Portal destination. |
+| `/r memo <slot>` | None | Save a Warp Portal memo slot. |
+| `/r lv add <amount>` | `/lv` | Add base EXP to the current character. Operator-only. |
+| `/r lv set <level>` | `/lv` | Set base level directly. Operator-only. |
+| `/r job add <amount>` | `/job` | Add job EXP to the current character. Operator-only. |
+| `/r job set <level>` | `/job` | Set job level directly. Operator-only. |
+| `/r unlock skills all` | `/unlock` | Max out all learned skills on the current character. Operator-only. |
+| `/r unlock achievements all` | `/unlock` | Unlock every achievement on the current character. Operator-only. |
+| `/r unlock all` | `/unlock` | Unlock all skills and achievements together. Operator-only. |
+| `/r reset stats` | `/reset` | Reset allocated stats on the current character. |
+| `/r reset skills` | `/reset` | Reset learned skills on the current character. |
+| `/r reset all confirm` | `/reset` | Fully wipe the current character after confirmation. |
+| `/r debug status` | `/debug` | Show current debug channel state. |
+| `/r debug all on|off|reset` | `/debug` | Toggle all debug channels. |
+| `/r debug <channel> on|off|reset` | `/debug` | Toggle a specific debug channel. |
+| `/r admin player reset <player> stats` | `/admin` | Reset allocated stats for a target player. Operator-only. |
+| `/r admin player reset <player> skills` | `/admin` | Reset learned skills for a target player. Operator-only. |
+| `/r admin player reset <player> all confirm` | `/admin` | Fully wipe a target player. Operator-only. |
+| `/r hud` | `/hud` | Open the client HUD settings screen. Client-only. |
+| `/ragnar ...` | Same as `/r ...` | Long-form alias kept for compatibility. |
+| `/exp`, `/set`, `/party`, `/pc` | Legacy aliases | Older shortcuts still work where preserved. |
+| `/roitems dump_held_item` | None | Print RO item data for the held item. Operator-only. |
+| `/roitems refine <level>` | None | Set held item refine level. Operator-only. |
+| `/roitems refine_info` | None | Show refine cost and chance info. Operator-only. |
+| `/roitems try_refine` | None | Attempt to refine the held item. Operator-only. |
+| `/roitems template` | None | Print a JSON template for the held item. Operator-only. |
+| `/roitems dump_held_item` | None | Print RO item data for the held item. Operator-only. |
+| `/roitems refine <level>` | None | Set held item refine level. Operator-only. |
+| `/roitems refine_info` | None | Show refine cost and chance info. Operator-only. |
+| `/roitems try_refine` | None | Attempt to refine the held item. Operator-only. |
+| `/roitems template` | None | Print a JSON template for the held item. Operator-only. |
 
-The mod is intended to be modpack-friendly, but the combat system deliberately avoids using vanilla attack damage, armor and cooldown as balance sources.
+## Notes
 
-## Development Status
+- The mod is still in active development.
+- Balance values can change between beta builds.
+- Visual assets are being replaced and improved over time.
+- Some translations and descriptions may still be incomplete or temporary.
 
-RagnarMMO is in active development. Many systems are playable, but some content, balance values, skill behaviors and translations may still change between builds.
+## Build
 
-Useful feedback includes:
+The project targets Forge 1.20.1 with GeckoLib support.
 
-- Combat feel and attack rhythm.
-- Mob time-to-kill at different levels.
-- Skill cast/delay/cooldown behavior.
-- Progression speed for base/job levels.
-- Missing or incorrect translations.
-- Compatibility issues with other mods.
-
-Discord: <https://discord.gg/sZ64CgX3JN>
-
-## Project Goal
-
-RagnarMMO aims to make Minecraft combat and progression feel like an RO-inspired MMORPG while still preserving Minecraft as the explorable world.
-
+If you are building from source, use the standard Gradle wrapper tasks for this repository.

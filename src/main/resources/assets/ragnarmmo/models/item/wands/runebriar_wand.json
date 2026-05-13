@@ -1,6 +1,0 @@
-{
-  "parent": "ragnarmmo:item/wands/base_wand",
-  "textures": {
-    "layer0": "ragnarmmo:item/weapons/wands/runebriar_wand"
-  }
-}

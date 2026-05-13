@@ -2,6 +2,7 @@ package com.etema.ragnarmmo.client;
 
 import com.etema.ragnarmmo.client.ui.RagnarStatusOverlay;
 import com.etema.ragnarmmo.common.config.RagnarConfigs;
+import com.etema.ragnarmmo.common.init.RagnarEntities;
 import com.etema.ragnarmmo.player.stats.PlayerStatsModule;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
@@ -43,7 +44,25 @@ public class ClientModEvents {
 
         @SubscribeEvent
         public static void registerRenderers(net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers event) {
-            event.registerEntityRenderer(com.etema.ragnarmmo.common.init.RagnarEntities.MAGIC_PROJECTILE.get(),
+            event.registerEntityRenderer(RagnarEntities.PORING.get(),
+                    com.etema.ragnarmmo.client.render.entity.PoringRenderer::new);
+            event.registerEntityRenderer(RagnarEntities.POPORING.get(),
+                    com.etema.ragnarmmo.client.render.entity.PoporingRenderer::new);
+            event.registerEntityRenderer(RagnarEntities.DROP.get(),
+                    com.etema.ragnarmmo.client.render.entity.DropRenderer::new);
+            event.registerEntityRenderer(RagnarEntities.MARIN.get(),
+                    com.etema.ragnarmmo.client.render.entity.MarinRenderer::new);
+
+            event.registerEntityRenderer(RagnarEntities.LUNATIC.get(),
+                    com.etema.ragnarmmo.client.render.entity.LunaticRenderer::new);
+            event.registerEntityRenderer(RagnarEntities.FABRE.get(),
+                    com.etema.ragnarmmo.client.render.entity.FabreRenderer::new);
+            event.registerEntityRenderer(RagnarEntities.PUPA.get(),
+                    com.etema.ragnarmmo.client.render.entity.PupaRenderer::new);
+            event.registerEntityRenderer(RagnarEntities.MUKA.get(),
+                    com.etema.ragnarmmo.client.render.entity.MukaRenderer::new);
+
+            event.registerEntityRenderer(RagnarEntities.MAGIC_PROJECTILE.get(),
                     com.etema.ragnarmmo.client.render.skill.MagicProjectileRenderer::new);
             
             event.registerEntityRenderer(com.etema.ragnarmmo.common.init.RagnarEntities.SOUL_STRIKE_PROJECTILE.get(),
@@ -73,6 +92,7 @@ public class ClientModEvents {
             event.registerEntityRenderer(com.etema.ragnarmmo.common.init.RagnarEntities.STATUS_OVERLAY.get(),
                     com.etema.ragnarmmo.client.render.entity.StatusOverlayRenderer::new);
         }
+
     }
 
     /**

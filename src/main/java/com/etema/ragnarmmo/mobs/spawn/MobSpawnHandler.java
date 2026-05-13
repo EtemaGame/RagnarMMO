@@ -12,6 +12,7 @@ import com.etema.ragnarmmo.mobs.profile.MobProfile;
 import com.etema.ragnarmmo.mobs.util.MobProfileEligibility;
 import com.etema.ragnarmmo.mobs.util.MobProfileEligibility.Classification;
 import com.etema.ragnarmmo.player.stats.util.AntiFarmManager;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -27,6 +28,9 @@ public class MobSpawnHandler {
     @SubscribeEvent
     public void onFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
         if (!RagnarConfigs.SERVER.progression.antiFarmSpawnReduction.get()) {
+            return;
+        }
+        if (event.getSpawnType() == MobSpawnType.SPAWN_EGG) {
             return;
         }
 

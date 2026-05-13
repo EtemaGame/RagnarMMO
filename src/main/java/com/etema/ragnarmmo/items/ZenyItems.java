@@ -18,16 +18,16 @@ import java.util.List;
 public final class ZenyItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, RagnarCore.MODID);
 
-    public static final RegistryObject<Item> COPPER_ZENY = ITEMS.register("zeny/copper_zeny",
-            () -> new ZenyItem(new Item.Properties().stacksTo(64), "item.ragnarmmo.zeny.copper_zeny"));
+    public static final RegistryObject<Item> COPPER_ZENY = ITEMS.register("others/zeny/copper_zeny",
+            () -> new ZenyItem(new Item.Properties().stacksTo(64), "item.ragnarmmo.others.zeny.copper_zeny"));
 
-    public static final RegistryObject<Item> SILVER_ZENY = ITEMS.register("zeny/silver_zeny",
-            () -> new ZenyItem(new Item.Properties().stacksTo(64), "item.ragnarmmo.zeny.silver_zeny"));
+    public static final RegistryObject<Item> SILVER_ZENY = ITEMS.register("others/zeny/silver_zeny",
+            () -> new ZenyItem(new Item.Properties().stacksTo(64), "item.ragnarmmo.others.zeny.silver_zeny"));
 
-    public static final RegistryObject<Item> GOLD_ZENY = ITEMS.register("zeny/gold_zeny",
-            () -> new ZenyItem(new Item.Properties().stacksTo(64), "item.ragnarmmo.zeny.gold_zeny"));
+    public static final RegistryObject<Item> GOLD_ZENY = ITEMS.register("others/zeny/gold_zeny",
+            () -> new ZenyItem(new Item.Properties().stacksTo(64), "item.ragnarmmo.others.zeny.gold_zeny"));
 
-    public static final RegistryObject<Item> MONEY_BAG = ITEMS.register("zeny/money_bag",
+    public static final RegistryObject<Item> MONEY_BAG = ITEMS.register("others/zeny/money_bag",
             () -> new MoneyBagItem(new Item.Properties().stacksTo(1)));
 
     public static void register(IEventBus modBus) {

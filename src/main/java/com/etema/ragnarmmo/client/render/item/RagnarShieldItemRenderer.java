@@ -82,11 +82,13 @@ public final class RagnarShieldItemRenderer extends BlockEntityWithoutLevelRende
         }
 
         String path = key.getPath();
-        if (!path.startsWith("shields/")) {
+        if (!path.startsWith("shield/") && !path.startsWith("shields/")) {
             return FALLBACK_MATERIAL;
         }
 
-        String shieldId = path.substring("shields/".length());
+        String shieldId = path.startsWith("shield/")
+                ? path.substring("shield/".length())
+                : path.substring("shields/".length());
         return new Material(Sheets.SHIELD_SHEET,
                 ResourceLocation.fromNamespaceAndPath(RagnarMMO.MODID, "entity/shield/" + shieldId));
     }

@@ -39,7 +39,7 @@ public class WarpPortalSkillEffect implements ISkillEffect {
         PlayerSkillsProvider.get(player).ifPresent(skills -> {
             if (!UtilityItems.consumeBlueGemstone(player)) {
                 player.sendSystemMessage(Component.translatable("message.ragnarmmo.no_resource",
-                        Component.translatable("item.ragnarmmo.utility.blue_gemstone")));
+                        Component.translatable("item.ragnarmmo.others.utility.blue_gemstone")));
                 return;
             }
 

@@ -34,7 +34,7 @@ public class MoneyBagItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("item.ragnarmmo.zeny.money_bag.desc").withStyle(ChatFormatting.GOLD));
-        tooltip.add(Component.translatable("item.ragnarmmo.zeny.money_bag.instruction").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.ragnarmmo.others.zeny.money_bag.desc").withStyle(ChatFormatting.GOLD));
+        tooltip.add(Component.translatable("item.ragnarmmo.others.zeny.money_bag.instruction").withStyle(ChatFormatting.GRAY));
     }
 }

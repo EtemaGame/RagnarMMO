@@ -56,7 +56,6 @@ public final class RagnarConfigs {
             public final HudComponent cast;
             public final HudComponent skillHotbar;
             public final HudComponent partyFrame;
-            public final HudComponent targetFrame;
             public final HudComponent notifications;
 
             Hud(ForgeConfigSpec.Builder builder) {
@@ -71,7 +70,6 @@ public final class RagnarConfigs {
                 cast = new HudComponent(builder, "cast", 0.5, 0.65, 40);
                 skillHotbar = new HudComponent(builder, "skill_hotbar", 0.5, 1.0, 30);
                 partyFrame = new HudComponent(builder, "party_frame", 0.0, 0.12, 20);
-                targetFrame = new HudComponent(builder, "target_frame", 0.5, 0.08, 25);
                 notifications = new HudComponent(builder, "notifications", 1.0, 0.12, 50);
                 builder.pop();
             }
@@ -332,7 +330,6 @@ public final class RagnarConfigs {
         public static final class Mobs {
             public final ForgeConfigSpec.BooleanValue enabled;
             public final ForgeConfigSpec.ConfigValue<List<? extends String>> excludeList;
-            public final ForgeConfigSpec.BooleanValue renderNumericHealth;
             public final DefaultProfile defaultProfile;
             public final Attributes attributes;
             public final Companions companions;
@@ -344,7 +341,6 @@ public final class RagnarConfigs {
                 builder.comment("V2 mob runtime profile configuration").push("mobs");
                 enabled = builder.define("enabled", true);
                 excludeList = builder.defineList("exclude_list", List.of("minecraft:armor_stand", "minecraft:villager"), o -> o instanceof String);
-                renderNumericHealth = builder.define("render_numeric_health", true);
                 defaultProfile = new DefaultProfile(builder);
                 attributes = new Attributes(builder);
                 companions = new Companions(builder);

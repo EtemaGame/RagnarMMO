@@ -73,11 +73,6 @@ public class HudOverlayConfigScreen extends Screen {
                 font -> PartyHudOverlay.getWidth(),
                 PartyHudOverlay::getPreviewHeight,
                 (g, f, s, p, w) -> PartyHudOverlay.renderPreview(g, f));
-        addComponent(RagnarConfigs.CLIENT.hud.targetFrame,
-                Component.translatable("screen.ragnarmmo.overlay.widget.target_frame"),
-                font -> TargetFrameOverlay.getWidth(),
-                TargetFrameOverlay::getHeight,
-                (g, f, s, p, w) -> TargetFrameOverlay.renderPreview(g, f));
         addComponent(RagnarConfigs.CLIENT.hud.notifications,
                 Component.translatable("screen.ragnarmmo.overlay.widget.notifications"),
                 font -> SkillOverlay.getWidth(),

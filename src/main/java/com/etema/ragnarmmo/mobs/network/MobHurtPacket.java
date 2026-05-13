@@ -3,15 +3,13 @@ package com.etema.ragnarmmo.mobs.network;
 import java.util.function.Supplier;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 
 /**
- * Server-to-client packet that notifies when a mob has been hurt.
- * This enables the client to show health bars for entities that were
- * damaged on the server side (dedicated server compatibility).
+ * Deprecated compatibility packet kept registered so packet IDs after the mob
+ * module do not shift during the Jade tooltip migration.
  */
+@Deprecated(forRemoval = false)
 public class MobHurtPacket {
     private final int entityId;
 
@@ -29,8 +27,6 @@ public class MobHurtPacket {
 
     public static void handle(MobHurtPacket msg, Supplier<NetworkEvent.Context> ctxSup) {
         var ctx = ctxSup.get();
-        ctx.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> () -> com.etema.ragnarmmo.client.ClientPacketHandler.handleMobHurt(msg.entityId)));
         ctx.setPacketHandled(true);
     }
 

@@ -26,10 +26,9 @@ public class ClientModEvents {
     public static class ModBusEvents {
         @SubscribeEvent
         public static void registerOverlays(RegisterGuiOverlaysEvent event) {
-            // Default HUD z-order: status, party, target, hotbar, cast, notifications.
+            // Default HUD z-order: status, party, hotbar, cast, notifications.
             event.registerAboveAll("ragnar_status", RagnarStatusOverlay.INSTANCE);
             event.registerAboveAll("party_hud", com.etema.ragnarmmo.client.PartyHudOverlay.PARTY_HUD);
-            event.registerAboveAll("ragnar_target_frame", com.etema.ragnarmmo.client.ui.TargetFrameOverlay.INSTANCE);
             event.registerAboveAll("hotbar_overlay", com.etema.ragnarmmo.client.ui.HotbarOverlay.INSTANCE);
             event.registerAboveAll("ragnar_cast", com.etema.ragnarmmo.client.ui.CastOverlay.INSTANCE);
             event.registerAboveAll("skill_xp", com.etema.ragnarmmo.client.SkillOverlay.HUD_SKILL_XP);

@@ -6,7 +6,7 @@ import net.minecraft.world.entity.player.Player;
 
 /**
  * Interface for accessing player skills data.
- * Used by other modules (like RagnarBar) to avoid direct dependency on
+ * Used by other modules to avoid direct dependency on
  * RagnarSkills implementation.
  */
 public interface IPlayerSkills {

@@ -9,6 +9,7 @@ public final class MobNetwork {
     private MobNetwork() {
     }
 
+    @SuppressWarnings("deprecation")
     public static void register(SimpleChannel ch, AtomicInteger id) {
         ch.messageBuilder(SyncMobProfilePacket.class, id.getAndIncrement(), NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(SyncMobProfilePacket::encode)

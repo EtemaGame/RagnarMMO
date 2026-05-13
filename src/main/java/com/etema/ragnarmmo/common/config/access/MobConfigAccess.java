@@ -48,10 +48,6 @@ public final class MobConfigAccess {
         return entityType != null && snapshot().excludeList.contains(entityType.toString());
     }
 
-    public static boolean renderNumericHealth() {
-        return snapshot().renderNumericHealth;
-    }
-
     public static DefaultProfile getDefaultProfile() {
         return snapshot().defaultProfile;
     }
@@ -113,7 +109,6 @@ public final class MobConfigAccess {
     private static final class Snapshot {
         final boolean enabled;
         final List<String> excludeList;
-        final boolean renderNumericHealth;
         final DefaultProfile defaultProfile;
         final FormulaRules formulaRules;
         final DifficultyRules difficultyRules;
@@ -124,7 +119,6 @@ public final class MobConfigAccess {
             var difficulty = RagnarConfigs.SERVER.difficulty;
             enabled = mobs.enabled.get();
             excludeList = List.copyOf(mobs.excludeList.get());
-            renderNumericHealth = mobs.renderNumericHealth.get();
             defaultProfile = readDefaultProfile(mobs.defaultProfile);
             formulaRules = readFormulaRules(mobs.attributes);
             difficultyRules = readDifficultyRules(difficulty);

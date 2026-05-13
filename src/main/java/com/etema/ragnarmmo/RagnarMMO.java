@@ -1,7 +1,6 @@
 package com.etema.ragnarmmo;
 
 import com.etema.ragnarmmo.common.init.RagnarCommand;
-import com.etema.ragnarmmo.common.init.modules.BarModule;
 import com.etema.ragnarmmo.common.init.modules.CoreModule;
 import com.etema.ragnarmmo.common.init.modules.CombatModule;
 import com.etema.ragnarmmo.common.init.modules.BestiaryModule;
@@ -57,8 +56,6 @@ public class RagnarMMO {
         ItemsModule.init(modBus);
         com.etema.ragnarmmo.common.init.modules.EconomyModule.init(modBus);
         BestiaryModule.init(modBus);
-
-        BarModule.init();
 
         MinecraftForge.EVENT_BUS.register(this);
 

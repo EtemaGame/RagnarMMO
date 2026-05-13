@@ -1,4 +1,4 @@
-﻿{
+{
     "achievement.ragnarmmo.acolyte_class.desc":  "Pick up a Golden Apple.",
     "achievement.ragnarmmo.acolyte_class.name":  "Holy Light",
     "achievement.ragnarmmo.adventurer_training.desc":  "Reach Job Level 50.",
@@ -413,7 +413,6 @@
     "screen.ragnarmmo.overlay.widget.party_frame":  "Party Frame",
     "screen.ragnarmmo.overlay.widget.skill_hotbar":  "Skill Hotbar",
     "screen.ragnarmmo.overlay.widget.status":  "Status",
-    "screen.ragnarmmo.overlay.widget.target_frame":  "Target Frame",
     "screen.ragnarmmo.hotbar.combat_mode":  "COMBAT MODE",
     "screen.ragnarmmo.notifications.level_up":  "Level Up!",
     "screen.ragnarmmo.notifications.life_level":  "%s %s Level %s",
@@ -995,5 +994,7 @@
     "item.ragnarmmo.others.eggs.fabre_spawn_egg":  "Fabre Spawn Egg",
     "item.ragnarmmo.others.eggs.pupa_spawn_egg":  "Pupa Spawn Egg",
     "item.ragnarmmo.others.eggs.muka_spawn_egg":  "Muka Spawn Egg",
-    "itemGroup.ragnarmmo.mobs":  "Ragnar Mobs"
+    "itemGroup.ragnarmmo.mobs":  "Ragnar Mobs",
+
+    "jade.ragnarmmo.level":  "Lv %s"
 }

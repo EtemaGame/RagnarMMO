@@ -300,21 +300,6 @@ public final class ClientPacketHandler {
         DerivedStatsClientCache.update(msg.toDerivedStats());
     }
 
-    // ═══════════════════════════════════════════════
-    // MobHurtPacket
-    // ═══════════════════════════════════════════════
-    public static void handleMobHurt(int entityId) {
-        var mc = Minecraft.getInstance();
-        if (mc.level == null)
-            return;
-
-        var entity = mc.level.getEntity(entityId);
-        if (entity instanceof net.minecraft.world.entity.LivingEntity living) {
-            com.etema.ragnarmmo.client.render.RagnarBarRenderHandler.markEntityHurt(living);
-        }
-    }
-
-    // ═══════════════════════════════════════════════
     // SyncRoItemRulesPacket
     // ═══════════════════════════════════════════════
     public static void handleRoItemRulesSync(

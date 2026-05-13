@@ -34,6 +34,12 @@ Current compatibility aliases are audited in `docs/LEGACY_COMPATIBILITY.md`.
 Do not remove command aliases, mixin aliases, or skill data aliases without
 updating that audit and planning a deprecation or migration path.
 
+## Optional UI Dependencies
+
+Mob profile tooltips are delegated to Jade when Jade is installed. Keep
+RagnarMMO-owned overhead nameplate and target-frame mob rendering removed unless
+there is a clear gameplay need that Jade cannot cover.
+
 ## Beta Smoke Checklist
 
 Before each beta release:

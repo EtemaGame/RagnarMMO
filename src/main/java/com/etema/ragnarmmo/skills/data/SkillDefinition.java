@@ -321,6 +321,11 @@ public final class SkillDefinition implements ISkillDefinition {
         return levelData;
     }
 
+    /**
+     * Compatibility bridge for legacy and external skill data keys. Keep the
+     * accepted aliases documented before removing any of them.
+     */
+    @Deprecated(forRemoval = false)
     private int getAliasedLevelInt(int level, int defaultValue, String... aliases) {
         SkillLevelData data = levelData.get(level);
         if (data == null) {

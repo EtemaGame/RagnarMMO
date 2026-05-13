@@ -58,6 +58,6 @@ class CombatContractSourceTest {
     }
 
     private static String read(String relative) throws IOException {
-        return Files.readString(ROOT.resolve(relative));
+        return Files.readString(ROOT.resolve(relative)).replace("\r\n", "\n");
     }
 }

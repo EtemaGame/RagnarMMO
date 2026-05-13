@@ -27,6 +27,7 @@ public final class ItemsModule {
         RagnarMobItems.register(modBus);
         RagnarWeaponItems.register(modBus);
         com.etema.ragnarmmo.items.cards.RagnarCardItems.register(modBus);
+        com.etema.ragnarmmo.items.loot.RagnarLootModifiers.register(modBus);
 
         RagnarMMO.LOGGER.info("RO Items module initialized");
     }

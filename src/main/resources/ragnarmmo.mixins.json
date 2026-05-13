@@ -6,7 +6,6 @@
   "refmap": "ragnarmmo.refmap.json",
   "mixins": [
     "MerchantOfferMixin",
-    "LivingEntityMixin",
     "MeleeAttackGoalMixin"
   ],
   "client": [],

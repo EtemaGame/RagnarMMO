@@ -9,6 +9,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.registries.RegistryObject;
 
 public final class MobsModule {
     private MobsModule() {
@@ -26,14 +27,10 @@ public final class MobsModule {
     }
 
     private static void registerAttributes(final EntityAttributeCreationEvent event) {
-        registerAttributes(event, RagnarEntities.PORING.get());
-        registerAttributes(event, RagnarEntities.POPORING.get());
-        registerAttributes(event, RagnarEntities.DROP.get());
-        registerAttributes(event, RagnarEntities.MARIN.get());
-        registerAttributes(event, RagnarEntities.LUNATIC.get());
-        registerAttributes(event, RagnarEntities.FABRE.get());
-        registerAttributes(event, RagnarEntities.PUPA.get());
-        registerAttributes(event, RagnarEntities.MUKA.get());
+        for (RegistryObject<? extends net.minecraft.world.entity.EntityType<? extends AbstractRagnarMobEntity>> entityType
+                : RagnarEntities.RAGNAR_MOBS) {
+            registerAttributes(event, entityType.get());
+        }
     }
 
     private static void registerAttributes(EntityAttributeCreationEvent event,

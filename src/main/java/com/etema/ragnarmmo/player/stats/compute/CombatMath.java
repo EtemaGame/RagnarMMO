@@ -1,8 +1,15 @@
 package com.etema.ragnarmmo.player.stats.compute;
 
-import com.etema.ragnarmmo.common.api.mobs.query.MobConsumerReadViewResolver;
-import com.etema.ragnarmmo.mobs.capability.MobProfileProvider;
-import com.etema.ragnarmmo.mobs.capability.MobProfileState;
+import com.etema.ragnarmmo.combat.formula.AccuracyFormulaService;
+import com.etema.ragnarmmo.combat.formula.AspdFormulaService;
+import com.etema.ragnarmmo.combat.formula.DamageFormulaService;
+import com.etema.ragnarmmo.combat.formula.DefenseFormulaService;
+import com.etema.ragnarmmo.combat.formula.FormulaUtil;
+import com.etema.ragnarmmo.combat.formula.ResourceFormulaService;
+import com.etema.ragnarmmo.combat.formula.StatusResistanceService;
+import com.etema.ragnarmmo.combat.resolver.MobCombatProfileResolver;
+import com.etema.ragnarmmo.combat.resolver.TargetCombatProfileResolver;
+import com.etema.ragnarmmo.combat.resolver.WeaponClassificationService;
 import net.minecraft.world.item.*;
 
 import java.util.OptionalDouble;
@@ -89,11 +96,11 @@ public final class CombatMath {
     // ========================================
 
     public static double clamp(double min, double max, double value) {
-        return Math.max(min, Math.min(max, value));
+        return FormulaUtil.clamp(min, max, value);
     }
 
     public static double soft(double value, double constant) {
-        return value / (value + constant);
+        return FormulaUtil.soft(value, constant);
     }
 
     // ========================================
@@ -184,46 +191,25 @@ public final class CombatMath {
     // ========================================
 
     public static double computeStatusATK(int STR, int DEX, int LUK, int level, boolean isRanged) {
-        if (isRanged) {
-            return DEX
-                    + Math.pow(Math.floor(DEX / 10.0), 2)
-                    + Math.floor(STR / STR_TO_RANGED_ATK_DIVISOR)
-                    + Math.floor(LUK / LUK_TO_ATK_DIVISOR);
-        }
-        return STR
-                + Math.pow(Math.floor(STR / 10.0), 2)
-                + Math.floor(DEX / DEX_TO_ATK_DIVISOR)
-                + Math.floor(LUK / LUK_TO_ATK_DIVISOR);
+        return DamageFormulaService.statusAtk(STR, DEX, LUK, isRanged);
     }
 
     public static double computeWeaponATK(double weaponBase, int STR, int DEX, boolean isRanged) {
-        return Math.max(0.0, weaponBase);
+        return DamageFormulaService.weaponAtk(weaponBase);
     }
     
     public static int computeRangedDrawTicks(int baseDrawTicks, int agi) {
-        // Reducción de tiempo de carga: 1% por cada punto de AGI.
-        // Formula RO style: Ticks * (1 - AGI/100)
-        double reduction = Math.min(0.9, agi / 100.0);
-        return (int) Math.max(1, Math.round(baseDrawTicks * (1.0 - reduction)));
+        return DamageFormulaService.rangedDrawTicks(baseDrawTicks, agi);
     }
 
     public static double computeTotalATK(int STR, int DEX, int LUK, int level,
             double weaponATK, double bonusATK, boolean isRanged) {
-        double status = computeStatusATK(STR, DEX, LUK, level, isRanged);
-        double weapon = computeWeaponATK(weaponATK, STR, DEX, isRanged);
-        return status + weapon + bonusATK;
+        return DamageFormulaService.totalAtk(STR, DEX, LUK, weaponATK, bonusATK, isRanged);
     }
 
     public static double computeDamageVariance(double baseDamage, int DEX, int LUK,
             java.util.Random rng) {
-        double dexFactor = clamp(0, 1, DEX / DEX_VARIANCE_DIVISOR);
-        double lukBonus = LUK_VARIANCE_BONUS > 0 ? LUK / LUK_VARIANCE_BONUS : 0;
-
-        double floor = MIN_DAMAGE_ROLL + (1 - MIN_DAMAGE_ROLL) * (dexFactor + lukBonus);
-        floor = clamp(MIN_DAMAGE_ROLL, 1.0, floor);
-
-        double variance = floor + rng.nextDouble() * (1.0 - floor);
-        return baseDamage * variance;
+        return DamageFormulaService.damageVariance(baseDamage, DEX, LUK, rng);
     }
 
     /**
@@ -231,13 +217,7 @@ public final class CombatMath {
      * Used by StatComputer to show the damage range in UI.
      */
     public static double computeDamageVarianceFloor(double baseDamage, int DEX, int LUK) {
-        double dexFactor = clamp(0, 1, DEX / DEX_VARIANCE_DIVISOR);
-        double lukBonus = LUK_VARIANCE_BONUS > 0 ? LUK / LUK_VARIANCE_BONUS : 0;
-
-        double floor = MIN_DAMAGE_ROLL + (1 - MIN_DAMAGE_ROLL) * (dexFactor + lukBonus);
-        floor = clamp(MIN_DAMAGE_ROLL, 1.0, floor);
-
-        return baseDamage * floor;
+        return DamageFormulaService.damageVarianceFloor(baseDamage, DEX, LUK);
     }
 
     // ========================================
@@ -245,20 +225,20 @@ public final class CombatMath {
     // ========================================
 
     public static double computeStatusMATKMin(int INT) {
-        return INT + Math.pow(Math.floor(INT / 7.0), 2);
+        return DamageFormulaService.statusMatkMin(INT);
     }
 
     public static double computeStatusMATKMax(int INT) {
-        return INT + Math.pow(Math.floor(INT / 5.0), 2);
+        return DamageFormulaService.statusMatkMax(INT);
     }
 
     public static double computeStatusMATK(int INT, int DEX, int LUK, int level) {
-        return (computeStatusMATKMin(INT) + computeStatusMATKMax(INT)) * 0.5;
+        return DamageFormulaService.statusMatk(INT);
     }
 
     public static double computeTotalMATK(int INT, int DEX, int LUK, int level,
             double spellBase, double bonusMATK) {
-        return computeStatusMATK(INT, DEX, LUK, level) + spellBase + bonusMATK;
+        return DamageFormulaService.totalMatk(INT, spellBase, bonusMATK);
     }
 
     // ========================================
@@ -266,19 +246,19 @@ public final class CombatMath {
     // ========================================
 
     public static double computeHIT(int DEX, int LUK, int level, double bonus) {
-        return RoPreRenewalFormulaService.hit(DEX, level, bonus);
+        return AccuracyFormulaService.hit(DEX, level, bonus);
     }
 
     public static double computeFLEE(int AGI, int LUK, int level, double bonus) {
-        return RoPreRenewalFormulaService.flee(AGI, level, bonus);
+        return AccuracyFormulaService.flee(AGI, level, bonus);
     }
 
     public static double computeHitRate(double attackerHIT, double defenderFLEE) {
-        return RoPreRenewalFormulaService.hitRate(attackerHIT, defenderFLEE);
+        return AccuracyFormulaService.hitRate(attackerHIT, defenderFLEE);
     }
 
     public static double computePerfectDodge(int LUK) {
-        return RoPreRenewalFormulaService.perfectDodge(LUK);
+        return AccuracyFormulaService.perfectDodge(LUK);
     }
 
     // ========================================
@@ -286,12 +266,11 @@ public final class CombatMath {
     // ========================================
 
     public static double computeCritChance(int LUK, int DEX, double bonus) {
-        return RoPreRenewalFormulaService.criticalChance(LUK, bonus);
+        return AccuracyFormulaService.criticalChance(LUK, bonus);
     }
 
     public static double computeCritDamageMultiplier(int LUK, int STR) {
-        // Base 1.4x (RO Classic). Removed extra scaling to match test expectations.
-        return CRIT_BASE_MULT;
+        return DamageFormulaService.critDamageMultiplier();
     }
 
     // ========================================
@@ -299,65 +278,19 @@ public final class CombatMath {
     // ========================================
 
     public static boolean isRangedWeapon(ItemStack weapon) {
-        if (weapon.isEmpty())
-            return false;
-        Item item = weapon.getItem();
-        return item instanceof BowItem
-                || item instanceof CrossbowItem
-                || item instanceof TridentItem
-                || com.etema.ragnarmmo.items.runtime.RangedWeaponStatsHelper.hasManualProfile(weapon);
+        return WeaponClassificationService.isRangedWeapon(weapon);
     }
 
     public static int getWeaponBaseASPD(ItemStack weapon) {
-        if (weapon.isEmpty())
-            return 180; // Puño
-
-        int configuredAspd = com.etema.ragnarmmo.items.runtime.WeaponStatHelper.getConfiguredAspd(weapon);
-        if (configuredAspd > 0) {
-            return configuredAspd;
-        }
-
-        Item item = weapon.getItem();
-        boolean isDagger = weapon.getTags().anyMatch(t -> t.location().getPath().contains("daggers"));
-        boolean isMace = weapon.getTags().anyMatch(t -> t.location().getPath().contains("maces"));
-        boolean isStaff = weapon.getTags().anyMatch(t -> t.location().getPath().contains("staves"));
-        boolean isWand = weapon.getTags().anyMatch(t -> t.location().getPath().contains("wands"));
-        boolean isTwoHanded = weapon.getTags().anyMatch(t -> t.location().getPath().contains("two_handed"));
-
-        if (isDagger)
-            return 178;
-        if (isWand)
-            return 172;
-        if (isStaff)
-            return 165;
-        if (isMace)
-            return 160;
-        if (item instanceof SwordItem)
-            return isTwoHanded ? 158 : 170;
-        if (item instanceof AxeItem)
-            return isTwoHanded ? 150 : 155;
-        if (item instanceof ShieldItem)
-            return 150;
-        if (item instanceof BowItem || item instanceof CrossbowItem)
-            return 170;
-        if (item instanceof PickaxeItem)
-            return 160;
-        if (item instanceof ShovelItem)
-            return 165;
-        if (item instanceof HoeItem)
-            return 175;
-        if (item instanceof TridentItem)
-            return 150;
-
-        return 170;
+        return WeaponClassificationService.baseAspd(weapon);
     }
 
     public static int computeASPD_RO(int baseWeaponASPD, boolean hasShield, int AGI, int DEX, double bonus) {
-        return RoPreRenewalFormulaService.aspdRo(baseWeaponASPD, hasShield, AGI, DEX, bonus);
+        return AspdFormulaService.aspdRo(baseWeaponASPD, hasShield, AGI, DEX, bonus);
     }
 
     public static double convertASPD_ToAPS(int aspdRO) {
-        return RoPreRenewalFormulaService.aspdToAttacksPerSecond(aspdRO);
+        return AspdFormulaService.attacksPerSecond(aspdRO);
     }
 
     /**
@@ -385,26 +318,20 @@ public final class CombatMath {
     // ========================================
 
     public static double computeSoftDEF(int VIT, int AGI, int level) {
-        double vitComponent = Math.floor(VIT * 0.5);
-        double scalingComponent = Math.max(Math.floor(VIT * 0.3), Math.floor((VIT * VIT) / 150.0) - 1.0);
-        return Math.max(0.0, vitComponent + scalingComponent);
+        return DefenseFormulaService.softDef(VIT);
     }
 
     public static double computeHardDEF(double armorDEF, int VIT) {
-        // In classic, it's strictly the armor DEF (Hard DEF). 
-        // VIT Soft DEF is handled separately in computeSoftDEF.
-        return armorDEF;
+        return DefenseFormulaService.hardDef(armorDEF);
     }
 
     public static double computePhysDR(double hardDEF) {
-        return clamp(0, DR_PHYS_MAX, hardDEF * HARD_DEF_REDUCTION_MULT);
+        return DefenseFormulaService.physicalDamageReduction(hardDEF);
     }
 
     public static double applyPhysicalDefense(double rawDamage, double softDEF,
             double hardDEF, double drPhys) {
-        double afterHard = rawDamage * (1.0 - drPhys);
-        double afterSoft = Math.max(1.0, afterHard - softDEF);
-        return afterSoft;
+        return DefenseFormulaService.applyPhysicalDefense(rawDamage, softDEF, drPhys);
     }
 
     // ========================================
@@ -412,11 +339,11 @@ public final class CombatMath {
     // ========================================
 
     public static double computeSoftMDEF(int INT, int VIT) {
-        return Math.max(0.0, INT + Math.floor(VIT / 2.0));
+        return DefenseFormulaService.softMdef(INT, VIT);
     }
 
     public static double computeHardMDEF(double equipMDEF) {
-        return Math.max(0.0, equipMDEF);
+        return DefenseFormulaService.hardMdef(equipMDEF);
     }
 
     public static double computeMDEF(int INT, int VIT, int DEX, int level, double equipMDEF) {
@@ -424,12 +351,11 @@ public final class CombatMath {
     }
 
     public static double computeMagicDR(double hardMDEF) {
-        return clamp(0.0, DR_MAGIC_MAX, hardMDEF / 100.0);
+        return DefenseFormulaService.magicDamageReduction(hardMDEF);
     }
 
     public static double applyMagicDefense(double rawDamage, double softMDEF, double hardMDEF) {
-        double afterHard = rawDamage * (1.0 - computeMagicDR(hardMDEF));
-        return Math.max(1.0, afterHard - softMDEF);
+        return DefenseFormulaService.applyMagicDefense(rawDamage, softMDEF, hardMDEF);
     }
 
     // ========================================
@@ -438,7 +364,7 @@ public final class CombatMath {
 
     public static double computeCastTime(double baseCast, int DEX, int INT,
             boolean useRenewalFormula) {
-        return RoPreRenewalFormulaService.variableCastSeconds(baseCast, DEX, 0.0D);
+        return ResourceFormulaService.variableCastSeconds(baseCast, DEX);
     }
 
     public static int computeCastDelay(int baseDelayTicks, net.minecraft.world.entity.player.Player player) {
@@ -453,47 +379,20 @@ public final class CombatMath {
     // HP / MANA
     // ========================================
 
-    private static double getJobHpMultiplier(String jobId) {
-        var job = com.etema.ragnarmmo.common.api.jobs.JobType.fromId(jobId);
-        return switch (job) {
-            case SWORDSMAN, KNIGHT -> 1.5;
-            case THIEF, MERCHANT, ASSASSIN, BLACKSMITH -> 1.2;
-            case MAGE, WIZARD -> 0.8;
-            default -> 1.0;
-        };
-    }
-
-    private static double getJobSpMultiplier(String jobId) {
-        var job = com.etema.ragnarmmo.common.api.jobs.JobType.fromId(jobId);
-        return switch (job) {
-            case MAGE, WIZARD, ACOLYTE, PRIEST -> 1.5;
-            case ARCHER, HUNTER -> 1.2;
-            case THIEF, ASSASSIN -> 0.8;
-            case SWORDSMAN, KNIGHT -> 0.7;
-            default -> 1.0;
-        };
-    }
-
     public static double computeMaxHP(int VIT, int level, String jobId) {
-        double jobMult = getJobHpMultiplier(jobId);
-        double hpBase = 35 + (level * 5 * jobMult);
-        return Math.floor(hpBase * (1.0 + VIT / 100.0));
+        return ResourceFormulaService.maxHp(VIT, level, jobId);
     }
 
     public static double computeHPRegen(int VIT, double maxHP) {
-        double regen = HP_REGEN_BASE + VIT * VIT_TO_HP_REGEN;
-        return Math.min(regen, maxHP * HP_REGEN_MAX_PERCENT);
+        return ResourceFormulaService.hpRegen(VIT, maxHP);
     }
 
     public static double computeMaxSP(int INT, int level, String jobId) {
-        double jobMult = getJobSpMultiplier(jobId);
-        double spBase = 100 + ((level - 1) * 3 * jobMult);
-        return Math.floor(spBase * (1.0 + INT / 100.0));
+        return ResourceFormulaService.maxSp(INT, level, jobId);
     }
 
     public static double computeSPRegen(int INT, double maxSP) {
-        double regen = maxSP * (MANA_REGEN_BASE_PERCENT + INT * INT_TO_MANA_REGEN);
-        return Math.min(regen, maxSP * MANA_REGEN_MAX_PERCENT);
+        return ResourceFormulaService.spRegen(INT, maxSP);
     }
 
     // ========================================
@@ -591,20 +490,7 @@ public final class CombatMath {
      * should handle their own neutral estimate path.</p>
      */
     public static OptionalInt tryGetTargetLevel(net.minecraft.world.entity.LivingEntity entity) {
-        if (entity instanceof net.minecraft.world.entity.player.Player p) {
-            var stats = p.getCapability(com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider.CAP).resolve();
-            if (stats.isPresent() && stats.get().getLevel() > 0) {
-                return OptionalInt.of(stats.get().getLevel());
-            }
-            return OptionalInt.empty();
-        }
-
-        var readView = MobConsumerReadViewResolver.resolve(entity).orElse(null);
-
-        if (readView != null && readView.level() > 0) {
-            return OptionalInt.of(readView.level());
-        }
-        return OptionalInt.empty();
+        return TargetCombatProfileResolver.tryGetTargetLevel(entity);
     }
 
     /**
@@ -612,17 +498,7 @@ public final class CombatMath {
      * directly. Callers should keep their existing formula-based estimate when this is empty.
      */
     public static OptionalInt tryGetResolvedMobHit(net.minecraft.world.entity.LivingEntity entity) {
-        if (entity instanceof net.minecraft.world.entity.player.Player) {
-            return OptionalInt.empty();
-        }
-
-        return MobProfileProvider.get(entity)
-                .resolve()
-                .filter(MobProfileState::isInitialized)
-                .map(MobProfileState::profile)
-                .filter(profile -> profile.hit() > 0)
-                .map(profile -> OptionalInt.of(profile.hit()))
-                .orElse(OptionalInt.empty());
+        return MobCombatProfileResolver.tryGetResolvedMobHit(entity);
     }
 
     /**
@@ -630,17 +506,7 @@ public final class CombatMath {
      * directly. Callers should keep their existing formula-based estimate when this is empty.
      */
     public static OptionalInt tryGetResolvedMobFlee(net.minecraft.world.entity.LivingEntity entity) {
-        if (entity instanceof net.minecraft.world.entity.player.Player) {
-            return OptionalInt.empty();
-        }
-
-        return MobProfileProvider.get(entity)
-                .resolve()
-                .filter(MobProfileState::isInitialized)
-                .map(MobProfileState::profile)
-                .filter(profile -> profile.flee() > 0)
-                .map(profile -> OptionalInt.of(profile.flee()))
-                .orElse(OptionalInt.empty());
+        return MobCombatProfileResolver.tryGetResolvedMobFlee(entity);
     }
 
     /**
@@ -648,146 +514,70 @@ public final class CombatMath {
      * directly. The value is expressed as a 0..1 chance like the rest of the runtime combat layer.
      */
     public static OptionalDouble tryGetResolvedMobCritChance(net.minecraft.world.entity.LivingEntity entity) {
-        if (entity instanceof net.minecraft.world.entity.player.Player) {
-            return OptionalDouble.empty();
-        }
-
-        return MobProfileProvider.get(entity)
-                .resolve()
-                .filter(MobProfileState::isInitialized)
-                .map(MobProfileState::profile)
-                .map(profile -> OptionalDouble.of(clamp(0.0D, 1.0D, profile.crit() / 100.0D)))
-                .orElse(OptionalDouble.empty());
+        return MobCombatProfileResolver.tryGetResolvedMobCritChance(entity);
     }
 
     /**
      * Returns the final resolved ASPD in RO scale when that source exposes it directly.
      */
     public static OptionalInt tryGetResolvedMobAspd(net.minecraft.world.entity.LivingEntity entity) {
-        if (entity instanceof net.minecraft.world.entity.player.Player) {
-            return OptionalInt.empty();
-        }
-
-        return MobProfileProvider.get(entity)
-                .resolve()
-                .filter(MobProfileState::isInitialized)
-                .map(MobProfileState::profile)
-                .filter(profile -> profile.aspd() > 0)
-                .map(profile -> OptionalInt.of(profile.aspd()))
-                .orElse(OptionalInt.empty());
+        return MobCombatProfileResolver.tryGetResolvedMobAspd(entity);
     }
 
     /**
      * Converts resolved mob ASPD into a melee attack interval in ticks for vanilla mob AI.
      */
     public static OptionalInt tryGetResolvedMobAttackIntervalTicks(net.minecraft.world.entity.LivingEntity entity) {
-        OptionalInt aspd = tryGetResolvedMobAspd(entity);
-        if (aspd.isEmpty()) {
-            return OptionalInt.empty();
-        }
-
-        double aps = convertASPD_ToAPS(aspd.getAsInt());
-        return OptionalInt.of(Math.max(2, (int) Math.round(20.0D / aps)));
+        return MobCombatProfileResolver.tryGetResolvedMobAttackIntervalTicks(entity);
     }
 
     public static TargetStats getTargetStats(net.minecraft.world.entity.LivingEntity entity) {
-        if (entity instanceof net.minecraft.world.entity.player.Player p) {
-            var stats = p.getCapability(com.etema.ragnarmmo.player.stats.capability.PlayerStatsProvider.CAP).resolve();
-            if (stats.isPresent()) {
-                var s = stats.get();
-                return new TargetStats(
-                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.STR),
-                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.DEX),
-                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.VIT),
-                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.INT),
-                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.LUK),
-                    s.get(com.etema.ragnarmmo.common.api.stats.StatKeys.AGI),
-                    (int) Math.round(EquipmentStatSnapshot.computeArmorHardMdef(p))
-                );
-            }
-        } else {
-            var profile = MobProfileProvider.get(entity)
-                    .resolve()
-                    .filter(MobProfileState::isInitialized)
-                    .map(MobProfileState::profile)
-                    .orElse(null);
-            var readView = MobConsumerReadViewResolver.resolve(entity).orElse(null);
-            var inspectionStats = readView != null ? readView.inspectionStats() : null;
-            if (profile != null) {
-                return new TargetStats(1, 1, 1, 1, 1, 1, profile.mdef());
-            }
-
-            if (inspectionStats != null) {
-                return new TargetStats(1, 1, 1, 1, 1, 1, inspectionStats.mdef());
-            }
-        }
-        return new TargetStats(1, 1, 1, 1, 1, 1, 0);
+        var stats = TargetCombatProfileResolver.getTargetStats(entity);
+        return new TargetStats(stats.str(), stats.dex(), stats.vit(), stats.intel(), stats.luk(), stats.agi(), stats.mdef());
     }
 
     public static float computeStunChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {
         TargetStats ts = getTargetStats(target);
-        // RO formula: (1 - VIT/100)
-        double res = 1.0 - (ts.vit / 100.0) - (ts.luk / 300.0);
-        res = clamp(0.0, 1.0, res);
-        return (float) (baseChance * res);
+        return StatusResistanceService.chanceByVitAndLuk(baseChance, ts.vit, ts.luk);
     }
 
     public static int computeStunDuration(int baseDurationTicks, net.minecraft.world.entity.LivingEntity target) {
         TargetStats ts = getTargetStats(target);
-        double res = 1.0 - (ts.vit / 100.0);
-        res = clamp(0.0, 1.0, res);
-        return (int) (baseDurationTicks * res);
+        return StatusResistanceService.durationByVit(baseDurationTicks, ts.vit);
     }
 
     public static float computeSilenceChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {
         TargetStats ts = getTargetStats(target);
-        // RO Resistance: INT
-        double res = 1.0 - (ts.intel / 100.0) - (ts.luk / 300.0);
-        res = clamp(0.0, 1.0, res);
-        return (float) (baseChance * res);
+        return StatusResistanceService.chanceByIntAndLuk(baseChance, ts.intel, ts.luk);
     }
 
     public static int computeSilenceDuration(int baseDurationTicks, net.minecraft.world.entity.LivingEntity target) {
         TargetStats ts = getTargetStats(target);
-        double res = 1.0 - (ts.intel / 100.0);
-        res = clamp(0.0, 1.0, res);
-        return (int) (baseDurationTicks * res);
+        return StatusResistanceService.durationByInt(baseDurationTicks, ts.intel);
     }
 
     public static float computeFrozenChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {
         TargetStats ts = getTargetStats(target);
-        // RO Resistance: MDEF (Hard)
-        double res = 1.0 - (ts.mdef / 100.0) - (ts.luk / 300.0);
-        res = clamp(0.0, 1.0, res);
-        return (float) (baseChance * res);
+        return StatusResistanceService.chanceByMdefAndLuk(baseChance, ts.mdef, ts.luk);
     }
 
     public static float computeSleepChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {
         TargetStats ts = getTargetStats(target);
-        // RO Resistance: AGI
-        double res = 1.0 - (ts.agi / 100.0) - (ts.luk / 300.0);
-        res = clamp(0.0, 1.0, res);
-        return (float) (baseChance * res);
+        return StatusResistanceService.chanceByAgiAndLuk(baseChance, ts.agi, ts.luk);
     }
 
     public static int computeSleepDuration(int baseDurationTicks, net.minecraft.world.entity.LivingEntity target) {
         TargetStats ts = getTargetStats(target);
-        double res = 1.0 - (ts.agi / 100.0);
-        res = clamp(0.0, 1.0, res);
-        return (int) (baseDurationTicks * res);
+        return StatusResistanceService.durationByAgi(baseDurationTicks, ts.agi);
     }
     
     public static float computePoisonChance(float baseChance, net.minecraft.world.entity.LivingEntity target) {
         TargetStats ts = getTargetStats(target);
-        double res = 1.0 - (ts.vit / 100.0) - (ts.luk / 300.0);
-        res = clamp(0.0, 1.0, res);
-        return (float) (baseChance * res);
+        return StatusResistanceService.chanceByVitAndLuk(baseChance, ts.vit, ts.luk);
     }
 
     public static int computePoisonDuration(int baseDurationTicks, net.minecraft.world.entity.LivingEntity target) {
         TargetStats ts = getTargetStats(target);
-        double res = 1.0 - (ts.vit / 100.0);
-        res = clamp(0.0, 1.0, res);
-        return (int) (baseDurationTicks * res);
+        return StatusResistanceService.durationByVit(baseDurationTicks, ts.vit);
     }
 }

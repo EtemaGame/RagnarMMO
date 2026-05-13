@@ -983,9 +983,17 @@
     "entity.ragnarmmo.poporing":  "Poporing",
     "entity.ragnarmmo.drop":  "Drop",
     "entity.ragnarmmo.marin":  "Marin",
+    "entity.ragnarmmo.lunatic":  "Lunatic",
+    "entity.ragnarmmo.fabre":  "Fabre",
+    "entity.ragnarmmo.pupa":  "Pupa",
+    "entity.ragnarmmo.muka":  "Muka",
     "item.ragnarmmo.others.eggs.poring_spawn_egg":  "Poring Spawn Egg",
     "item.ragnarmmo.others.eggs.poporing_spawn_egg":  "Poporing Spawn Egg",
     "item.ragnarmmo.others.eggs.drop_spawn_egg":  "Drop Spawn Egg",
     "item.ragnarmmo.others.eggs.marin_spawn_egg":  "Marin Spawn Egg",
+    "item.ragnarmmo.others.eggs.lunatic_spawn_egg":  "Lunatic Spawn Egg",
+    "item.ragnarmmo.others.eggs.fabre_spawn_egg":  "Fabre Spawn Egg",
+    "item.ragnarmmo.others.eggs.pupa_spawn_egg":  "Pupa Spawn Egg",
+    "item.ragnarmmo.others.eggs.muka_spawn_egg":  "Muka Spawn Egg",
     "itemGroup.ragnarmmo.mobs":  "Ragnar Mobs"
 }

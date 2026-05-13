@@ -15,6 +15,8 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.List;
+
 public final class RagnarEntities {
     public static final DeferredRegister<EntityType<?>> ENTITIES = 
             DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, RagnarMMO.MODID);
@@ -42,6 +44,17 @@ public final class RagnarEntities {
 
     public static final RegistryObject<EntityType<MukaEntity>> MUKA =
             registerCreature("muka", MukaEntity::new, 0.8F, 0.7F);
+
+    public static final List<RegistryObject<? extends EntityType<? extends AbstractRagnarMobEntity>>> RAGNAR_MOBS = List.of(
+            PORING,
+            POPORING,
+            DROP,
+            MARIN,
+            LUNATIC,
+            FABRE,
+            PUPA,
+            MUKA
+    );
 
     public static final RegistryObject<EntityType<MagicProjectileEntity>> MAGIC_PROJECTILE = 
             ENTITIES.register("magic_projectile", () -> EntityType.Builder.<MagicProjectileEntity>of(MagicProjectileEntity::new, MobCategory.MISC)

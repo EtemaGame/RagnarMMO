@@ -29,6 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * packets via dedicated {@code *Network} classes colocated with their packets.
  * <p>
  * Registration order is preserved to maintain stable packet IDs.
+ * Target packet ranges for a future explicit-ID migration:
+ * core/stats 000-099, combat 100-199, skills 200-299, party 300-399,
+ * mobs 400-499, items 500-599, economy 600-699, bestiary 700-799.
  */
 public final class Network {
         private static final String PROTOCOL = "2";

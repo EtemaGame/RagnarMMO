@@ -62,6 +62,8 @@ public final class RagnarCreativeTabs {
                         output.accept(RagnarMobItems.FABRE_SPAWN_EGG.get());
                         output.accept(RagnarMobItems.PUPA_SPAWN_EGG.get());
                         output.accept(RagnarMobItems.MUKA_SPAWN_EGG.get());
+                        output.accept(RagnarMobItems.CREAMY_SPAWN_EGG.get());
+                        output.accept(RagnarMobItems.CREAMY_FEAR_SPAWN_EGG.get());
                     })
                     .build());
 

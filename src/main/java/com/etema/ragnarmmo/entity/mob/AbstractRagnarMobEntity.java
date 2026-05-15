@@ -37,6 +37,10 @@ public abstract class AbstractRagnarMobEntity extends PathfinderMob implements G
 
     protected static final RawAnimation PUPA_IDLE = RawAnimation.begin().thenLoop("animation.ragnarmmo.pupa.idle");
 
+    protected static final RawAnimation CREAMY_IDLE = RawAnimation.begin().thenLoop("walk/stading");
+    protected static final RawAnimation CREAMY_WALK = RawAnimation.begin().thenLoop("walk/stading");
+    protected static final RawAnimation CREAMY_ATTACK = RawAnimation.begin().thenLoop("attack");
+
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     protected AbstractRagnarMobEntity(EntityType<? extends PathfinderMob> type, Level level) {
@@ -88,6 +92,9 @@ public abstract class AbstractRagnarMobEntity extends PathfinderMob implements G
         if (type == RagnarEntities.PUPA.get()) {
             return animationForPupa();
         }
+        if (type == RagnarEntities.CREAMY.get() || type == RagnarEntities.CREAMY_FEAR.get()) {
+            return animationForCreamy();
+        }
         return PORING_IDLE;
     }
 
@@ -109,6 +116,10 @@ public abstract class AbstractRagnarMobEntity extends PathfinderMob implements G
 
     protected RawAnimation animationForPupa() {
         return PUPA_IDLE;
+    }
+
+    protected RawAnimation animationForCreamy() {
+        return selectStatefulAnimation(CREAMY_IDLE, CREAMY_WALK, CREAMY_ATTACK);
     }
 
     protected RawAnimation selectStatefulAnimation(RawAnimation idle, RawAnimation walk, RawAnimation attack) {

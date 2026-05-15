@@ -38,6 +38,12 @@ public final class RagnarMobItems {
     public static final RegistryObject<Item> MUKA_SPAWN_EGG = ITEMS.register("others/eggs/muka_spawn_egg",
             () -> createEgg(RagnarEntities.MUKA, 0xC69B5A, 0x6E4B2E));
 
+    public static final RegistryObject<Item> CREAMY_SPAWN_EGG = ITEMS.register("others/eggs/creamy_spawn_egg",
+            () -> createEgg(RagnarEntities.CREAMY, 0xFFD27A, 0xDC5F8C));
+
+    public static final RegistryObject<Item> CREAMY_FEAR_SPAWN_EGG = ITEMS.register("others/eggs/creamy_fear_spawn_egg",
+            () -> createEgg(RagnarEntities.CREAMY_FEAR, 0x4B0082, 0x000000));
+
     public static void register(IEventBus modBus) {
         ITEMS.register(modBus);
     }

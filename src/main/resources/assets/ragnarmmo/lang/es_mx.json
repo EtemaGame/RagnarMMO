@@ -306,6 +306,8 @@
     "message.ragnarmmo.combat_mode.off":  "Modo Combate: §cOFF",
     "message.ragnarmmo.combat_mode.on":  "Modo Combate: §aON",
     "message.ragnarmmo.exp_gain":  "EXP +%s por derrotar a %s",
+    "message.ragnarmmo.exp_gain_dual": "Base EXP +%s | Job EXP +%s for defeating %s",
+    "message.ragnarmmo.anti_farm_warning": "Warning: Stationary anti-farm penalty active. Move to another area!",
     "message.ragnarmmo.exp_loss":  "EXP -%s por morir",
     "message.ragnarmmo.exp_loss_death":  "Perdiste %s de EXP por morir.",
     "message.ragnarmmo.exp_loss_death_dual":  "Perdiste %s de EXP Base y %s de EXP de Job por morir.",
@@ -986,6 +988,8 @@
     "entity.ragnarmmo.fabre":  "Fabre",
     "entity.ragnarmmo.pupa":  "Pupa",
     "entity.ragnarmmo.muka":  "Muka",
+    "entity.ragnarmmo.creamy":  "Creamy",
+    "entity.ragnarmmo.creamy_fear":  "Creamy Fear",
     "item.ragnarmmo.others.eggs.poring_spawn_egg":  "Huevo generador de Poring",
     "item.ragnarmmo.others.eggs.poporing_spawn_egg":  "Huevo generador de Poporing",
     "item.ragnarmmo.others.eggs.drop_spawn_egg":  "Huevo generador de Drop",
@@ -994,6 +998,8 @@
     "item.ragnarmmo.others.eggs.fabre_spawn_egg":  "Huevo generador de Fabre",
     "item.ragnarmmo.others.eggs.pupa_spawn_egg":  "Huevo generador de Pupa",
     "item.ragnarmmo.others.eggs.muka_spawn_egg":  "Huevo generador de Muka",
+    "item.ragnarmmo.others.eggs.creamy_spawn_egg":  "Creamy Spawn Egg",
+    "item.ragnarmmo.others.eggs.creamy_fear_spawn_egg":  "Creamy Fear Spawn Egg",
     "itemGroup.ragnarmmo.mobs":  "Ragnar Mobs",
 
     "jade.ragnarmmo.level":  "Lv %s"

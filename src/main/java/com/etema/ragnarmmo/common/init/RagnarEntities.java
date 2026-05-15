@@ -2,6 +2,8 @@ package com.etema.ragnarmmo.common.init;
 
 import com.etema.ragnarmmo.RagnarMMO;
 import com.etema.ragnarmmo.entity.mob.AbstractRagnarMobEntity;
+import com.etema.ragnarmmo.entity.mob.CreamyEntity;
+import com.etema.ragnarmmo.entity.mob.CreamyFearEntity;
 import com.etema.ragnarmmo.entity.mob.FabreEntity;
 import com.etema.ragnarmmo.entity.mob.LunaticEntity;
 import com.etema.ragnarmmo.entity.mob.MukaEntity;
@@ -14,8 +16,6 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-
-import java.util.List;
 
 public final class RagnarEntities {
     public static final DeferredRegister<EntityType<?>> ENTITIES = 
@@ -45,16 +45,11 @@ public final class RagnarEntities {
     public static final RegistryObject<EntityType<MukaEntity>> MUKA =
             registerCreature("muka", MukaEntity::new, 0.8F, 0.7F);
 
-    public static final List<RegistryObject<? extends EntityType<? extends AbstractRagnarMobEntity>>> RAGNAR_MOBS = List.of(
-            PORING,
-            POPORING,
-            DROP,
-            MARIN,
-            LUNATIC,
-            FABRE,
-            PUPA,
-            MUKA
-    );
+    public static final RegistryObject<EntityType<CreamyEntity>> CREAMY =
+            registerCreature("creamy", CreamyEntity::new, 0.6F, 0.8F);
+
+    public static final RegistryObject<EntityType<CreamyFearEntity>> CREAMY_FEAR =
+            registerCreature("creamy_fear", CreamyFearEntity::new, 0.6F, 0.8F);
 
     public static final RegistryObject<EntityType<MagicProjectileEntity>> MAGIC_PROJECTILE = 
             ENTITIES.register("magic_projectile", () -> EntityType.Builder.<MagicProjectileEntity>of(MagicProjectileEntity::new, MobCategory.MISC)

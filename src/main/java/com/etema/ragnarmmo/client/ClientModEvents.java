@@ -60,6 +60,10 @@ public class ClientModEvents {
                     com.etema.ragnarmmo.client.render.entity.PupaRenderer::new);
             event.registerEntityRenderer(RagnarEntities.MUKA.get(),
                     com.etema.ragnarmmo.client.render.entity.MukaRenderer::new);
+            event.registerEntityRenderer(RagnarEntities.CREAMY.get(),
+                    com.etema.ragnarmmo.client.render.entity.CreamyRenderer::new);
+            event.registerEntityRenderer(RagnarEntities.CREAMY_FEAR.get(),
+                    com.etema.ragnarmmo.client.render.entity.CreamyFearRenderer::new);
 
             event.registerEntityRenderer(RagnarEntities.MAGIC_PROJECTILE.get(),
                     com.etema.ragnarmmo.client.render.skill.MagicProjectileRenderer::new);

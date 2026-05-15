@@ -16,11 +16,12 @@ class RagnarMobRegistrationSourceTest {
         String entities = Files.readString(ROOT.resolve("common/init/RagnarEntities.java"));
         String module = Files.readString(ROOT.resolve("common/init/modules/MobsModule.java"));
 
-        assertTrue(entities.contains("RAGNAR_MOBS"));
-        assertTrue(module.contains("RagnarEntities.RAGNAR_MOBS"));
-        assertFalse(module.contains("RagnarEntities.PORING.get()"));
-        assertFalse(module.contains("RagnarEntities.POPORING.get()"));
-        assertFalse(module.contains("RagnarEntities.LUNATIC.get()"));
+        assertFalse(entities.contains("RAGNAR_MOBS"));
+        assertTrue(module.contains("RagnarEntities.PORING.get()"));
+        assertTrue(module.contains("RagnarEntities.POPORING.get()"));
+        assertTrue(module.contains("RagnarEntities.LUNATIC.get()"));
+        assertTrue(module.contains("RagnarEntities.CREAMY.get()"));
+        assertTrue(module.contains("RagnarEntities.CREAMY_FEAR.get()"));
     }
 
     @Test
@@ -36,6 +37,8 @@ class RagnarMobRegistrationSourceTest {
         assertMobLang(entities, lang, "fabre");
         assertMobLang(entities, lang, "pupa");
         assertMobLang(entities, lang, "muka");
+        assertMobLang(entities, lang, "creamy");
+        assertMobLang(entities, lang, "creamy_fear");
     }
 
     @Test
@@ -50,6 +53,8 @@ class RagnarMobRegistrationSourceTest {
         assertMobVisuals(clientEvents, "FABRE", "fabre", "FabreRenderer", "fabre");
         assertMobVisuals(clientEvents, "PUPA", "pupa", "PupaRenderer", "pupa");
         assertMobVisuals(clientEvents, "MUKA", "muka", "MukaRenderer", "muka");
+        assertMobVisuals(clientEvents, "CREAMY", "creamy", "CreamyRenderer", "creamy");
+        assertMobVisuals(clientEvents, "CREAMY_FEAR", "creamy_fear", "CreamyFearRenderer", "creamy");
     }
 
     @Test
@@ -65,6 +70,8 @@ class RagnarMobRegistrationSourceTest {
         assertSpawnEgg(items, lang, "FABRE", "fabre");
         assertSpawnEgg(items, lang, "PUPA", "pupa");
         assertSpawnEgg(items, lang, "MUKA", "muka");
+        assertSpawnEgg(items, lang, "CREAMY", "creamy");
+        assertSpawnEgg(items, lang, "CREAMY_FEAR", "creamy_fear");
     }
 
     private static void assertMobLang(String entities, String lang, String id) {
